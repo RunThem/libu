@@ -26,7 +26,6 @@ makl_args_init "$@"
 . build/mk_cflags
 . build/mk_modules
 . build/mk_support
-. build/mk_compat
 
 # General settings (version is read from the VERSION file)
 makl_pkg_name "libu"

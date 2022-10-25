@@ -23,6 +23,5 @@
 
 #include <u/missing.h>
 #include <u/toolbox.h>
-#include <u/compat.h>
 
 #endif /* !_U_LIBU_H_ */
