@@ -14,7 +14,7 @@
 #include <toolbox/carpal.h>
 #include <toolbox/misc.h>
 #include <u/missing.h>
-#include <missing/syslog.h>
+#include <syslog.h>
 
 /* applications that use libu will defined their own "int facility" variable */
 extern int facility;
@@ -31,15 +31,9 @@ static void *f_unlock_arg = NULL;
 
 enum { STRERR_BUFSZ = 128, ERRMSG_BUFSZ = 256 };
 
-#ifdef OS_WIN
-#define err_type DWORD
-#define save_errno(var) var = GetLastError();
-#define restore_errno(var) SetLastError(var);
-#else
 #define err_type int
 #define save_errno(var) var = errno;
 #define restore_errno(var) errno = var;
-#endif
 
 int u_log_set_lock(u_log_lock_t f, void *arg)
 {

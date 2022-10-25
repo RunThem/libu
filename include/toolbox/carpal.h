@@ -347,20 +347,6 @@ extern "C" {
  *      ...
  *  \endcode
  */
-#ifdef OS_WIN
-#define msg_strerror(label, en)                                     \
-    do {                                                            \
-        LPVOID lpMsgBuf = NULL;  DWORD dw = GetLastError();         \
-        if(FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |          \
-            FORMAT_MESSAGE_FROM_SYSTEM, NULL, dw,                   \
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),              \
-            (LPTSTR) &lpMsgBuf, 0, NULL ) && lpMsgBuf)              \
-        {                                                           \
-            msg(label, 0, "%s", lpMsgBuf);                          \
-            LocalFree(lpMsgBuf);                                    \
-        }                                                           \
-    } while(0)
-#else   /* !OS_WIN */
 #define msg_strerror(label, en)                                     \
     do {                                                            \
         enum { _DBG_BUFSZ = 256 };                                  \
@@ -371,7 +357,6 @@ extern "C" {
             msg(label, 0, "errno: %d (%s)", errno, _eb);            \
         }                                                           \
     } while(0)  
-#endif /* OS_WIN */
 
 /**
  *  \}

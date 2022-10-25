@@ -682,9 +682,6 @@ ssize_t u_write (int fd, void *buf, size_t size)
  */ 
 int u_sleep(unsigned int secs)
 {
-#ifdef OS_WIN
-    Sleep(secs * 1000);
-#else
     int sleep_for, c;
 
     for (sleep_for = secs; sleep_for > 0; sleep_for = c)
@@ -694,7 +691,7 @@ int u_sleep(unsigned int secs)
         else if (errno != EINTR)
             return -1; /* should never happen */
     }
-#endif
+
     return 0;
 }
 

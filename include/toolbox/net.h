@@ -35,17 +35,6 @@
   #include <fcntl.h>
 #endif  /* HAVE_FCNTL */
 
-#ifdef OS_WIN
-  #include <windows.h>
-  /* #include <winsock.h> not compatible with ws2tcpip.h */
-  #include <winsock2.h>
-  #include <ws2tcpip.h>
-
-  #define EINPROGRESS   WSAEWOULDBLOCK
-  #define ETIMEDOUT     WSAETIMEDOUT
-  #define EAFNOSUPPORT  WSAEAFNOSUPPORT
-#endif  /* OS_WIN */
-
 #ifndef HAVE_IN_ADDR_T
   typedef unsigned long in_addr_t;
 #endif

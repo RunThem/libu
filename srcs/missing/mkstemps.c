@@ -33,14 +33,6 @@
 
 #include <u/missing/mkstemps.h>
 
-#ifdef OS_WIN
-#include <windows.h>
-#define __mkdir(dir, perm) CreateDirectory(dir, NULL)
-#define lstat(path, buf) stat(path, buf)
-#else
-#define __mkdir(dir, perm) mkdir(dir, perm)
-#endif
-
 #ifndef HAVE_MKSTEMPS
 
 #include <sys/types.h>
@@ -127,7 +119,7 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
             if (errno != EEXIST)
                 return (0);
         } else if (domkdir) {
-            if (__mkdir(path, 0700) == 0)
+            if (mkdir(path, 0700) == 0)
                 return (1);
             if (errno != EEXIST)
                 return (0);

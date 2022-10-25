@@ -21,6 +21,6 @@ int mkstemps (char *template, int suffixlen);
 }
 #endif  /* __cplusplus */
 
-#endif  /* HAVE_MKTEMP */
+#endif  /* HAVE_MKSTEMPS */
 
 #endif  /* !_LIBU_MKSTEMPS_H_ */
