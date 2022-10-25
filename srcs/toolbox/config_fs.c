@@ -9,11 +9,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include <toolbox/carpal.h>
-#include <toolbox/config.h>
-#include <toolbox/misc.h>
-#include <toolbox/memory.h>
-#include <toolbox/str.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/config.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/str.h>
 
 static int drv_fs_open (const char *path, void **parg)
 {

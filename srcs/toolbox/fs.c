@@ -10,9 +10,9 @@
 #include <stdio.h>
 
 #include <u/libu_conf.h>
-#include <toolbox/fs.h>
-#include <toolbox/carpal.h>
-#include <toolbox/misc.h>
+#include <u/toolbox/fs.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/misc.h>
 
 /**
     \defgroup fs File system

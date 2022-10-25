@@ -7,11 +7,11 @@
 #include <ctype.h>
 #include <math.h>
 
-#include <toolbox/json.h>
-#include <toolbox/carpal.h>
-#include <toolbox/misc.h>
-#include <toolbox/memory.h>
-#include <toolbox/lexer.h>
+#include <u/toolbox/json.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/lexer.h>
 
 /* Internal representation of any JSON value. */
 struct u_json_s

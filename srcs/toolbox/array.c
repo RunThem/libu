@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 #include <u/libu.h>
-#include <toolbox/array.h>
+#include <u/toolbox/array.h>
 
 /* for C89 implementations */
 #ifndef SIZE_MAX

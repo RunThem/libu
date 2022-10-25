@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <u/libu.h>
-#include <toolbox/buf.h>
+#include <u/toolbox/buf.h>
 
 struct u_buf_s
 {

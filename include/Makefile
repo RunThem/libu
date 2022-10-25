@@ -3,6 +3,6 @@
 include common.mk
 include ../Makefile.conf
 
-SUBDIR = u toolbox missing
+SUBDIR = u u/toolbox u/missing
 
 include subdir.mk

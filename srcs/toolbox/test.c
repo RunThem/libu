@@ -11,9 +11,9 @@
 #include <strings.h>
 #include <time.h>
 
-#include <toolbox/carpal.h>
-#include <toolbox/misc.h>
-#include <toolbox/test.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/test.h>
 
 #if defined(HAVE_WAIT3) || defined(HAVE_WAIT)
   #include <sys/wait.h>

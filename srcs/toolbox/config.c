@@ -10,13 +10,13 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include <toolbox/carpal.h>
-#include <toolbox/queue.h>
-#include <toolbox/list.h>
-#include <toolbox/config.h>
-#include <toolbox/misc.h>
-#include <toolbox/memory.h>
-#include <toolbox/str.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/queue.h>
+#include <u/toolbox/list.h>
+#include <u/toolbox/config.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/str.h>
 
 
 TAILQ_HEAD(u_config_list_s, u_config_s);

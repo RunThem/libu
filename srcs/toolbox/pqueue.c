@@ -2,9 +2,9 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l.
  */ 
 
-#include <toolbox/carpal.h>
-#include <toolbox/misc.h>
-#include <toolbox/pqueue.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/pqueue.h>
 
 typedef struct u_pq_item_s
 {

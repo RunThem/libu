@@ -9,9 +9,9 @@
 #include <string.h>
 #include <strings.h>
 
-#include <toolbox/carpal.h>
-#include <toolbox/net.h>
-#include <toolbox/misc.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/net.h>
+#include <u/toolbox/misc.h>
 
 #ifndef HAVE_GETADDRINFO
 /* Duplicate addrinfo layout in case struct addrinfo and related

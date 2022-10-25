@@ -2,10 +2,10 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l.
  */
 
-#include <toolbox/bst.h>
-#include <toolbox/carpal.h>
-#include <toolbox/memory.h>
-#include <toolbox/misc.h>
+#include <u/toolbox/bst.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/misc.h>
 
 struct u_bst_node_s
 {

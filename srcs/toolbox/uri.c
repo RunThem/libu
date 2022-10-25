@@ -6,11 +6,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <toolbox/uri.h>
-#include <toolbox/carpal.h>
-#include <toolbox/misc.h>
-#include <toolbox/memory.h>
-#include <toolbox/lexer.h>
+#include <u/toolbox/uri.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/lexer.h>
 
 /* Internal representation of an URI value. */
 struct u_uri_s

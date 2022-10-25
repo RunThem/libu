@@ -5,6 +5,6 @@ include ../../Makefile.conf
 
 INCS = libu.h missing.h toolbox.h libu_conf.h
 
-LINKS = missing toolbox
+SUBDIR = missing toolbox
 
 include incs.mk

@@ -6,12 +6,12 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <toolbox/memory.h>
-#include <toolbox/carpal.h>
-#include <toolbox/hmap.h>
-#include <toolbox/queue.h>
-#include <toolbox/str.h>
-#include <toolbox/misc.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/hmap.h>
+#include <u/toolbox/queue.h>
+#include <u/toolbox/str.h>
+#include <u/toolbox/misc.h>
 
 /* default limits handled by policies */
 #define U_HMAP_MAX_SIZE      512

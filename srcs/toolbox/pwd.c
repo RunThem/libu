@@ -6,8 +6,8 @@
 #include <sys/types.h>
 #include <u/libu_conf.h>
 #include <u/libu.h>
-#include <toolbox/hmap.h>
-#include <toolbox/pwd.h>
+#include <u/toolbox/hmap.h>
+#include <u/toolbox/pwd.h>
 
 /* in-memory db */
 static int u_pwd_db_new (u_pwd_t *pwd);

@@ -16,9 +16,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include <toolbox/misc.h>
-#include <toolbox/carpal.h>
-#include <toolbox/memory.h>
+#include <u/toolbox/misc.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/memory.h>
 
 /**
     \defgroup misc Miscellaneous

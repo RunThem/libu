@@ -10,9 +10,9 @@
 #include <stdint.h>
 #include <signal.h>
 #include <unistd.h>
-#include <toolbox/log.h>
-#include <toolbox/carpal.h>
-#include <toolbox/misc.h>
+#include <u/toolbox/log.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/misc.h>
 #include <u/missing.h>
 #include <syslog.h>
 

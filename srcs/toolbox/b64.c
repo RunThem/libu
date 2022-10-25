@@ -7,8 +7,8 @@
 #include <ctype.h>
 
 #include <u/libu_conf.h>
-#include <toolbox/carpal.h>
-#include <toolbox/b64.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/b64.h>
 
 static const char E[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

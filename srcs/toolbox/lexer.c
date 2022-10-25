@@ -4,10 +4,10 @@
 
 #include <ctype.h>
 
-#include <toolbox/carpal.h>
-#include <toolbox/lexer.h>
-#include <toolbox/memory.h>
-#include <toolbox/misc.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/lexer.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/misc.h>
 
 /* Lexer context. */
 struct u_lexer_s
