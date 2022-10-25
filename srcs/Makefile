@@ -70,20 +70,8 @@ ifdef SHLIB_NO_UNDEFINED_SYMS
 endif
 
 # missing sources
-ifndef HAVE_VSYSLOG
-    SRCS += missing/vsyslog.c
-endif
-ifndef HAVE_SYSLOG
-    SRCS += missing/syslog.c
-endif
 ifndef HAVE_STRTOK_R
     SRCS += missing/strtok_r.c
-endif
-ifndef HAVE_UNLINK
-    SRCS += missing/unlink.c
-endif
-ifndef HAVE_GETPID
-    SRCS += missing/getpid.c
 endif
 ifndef HAVE_FNMATCH
     SRCS += missing/fnmatch.c
@@ -100,17 +88,11 @@ endif
 ifndef HAVE_STRLCAT
     SRCS += missing/strlcat.c
 endif
-ifndef HAVE_GETTIMEOFDAY
-    SRCS += missing/gettimeofday.c
-endif
 ifndef HAVE_DAEMON
     SRCS += missing/daemon.c
 endif
 ifndef HAVE_MKSTEMPS
     SRCS += missing/mkstemps.c
-endif
-ifndef HAVE_SETENV
-    SRCS += missing/setenv.c
 endif
 
 include lib.mk

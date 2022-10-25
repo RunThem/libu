@@ -17,61 +17,19 @@
 #include <u/toolbox/log.h>
 #include <u/toolbox/test.h>
 #include <u/toolbox/lexer.h>
-
-#ifndef NO_NET
-  #include <u/toolbox/net.h>
-#endif  /* !NO_NET */
-
-#ifndef NO_ENV
-  #include <u/toolbox/env.h>
-#endif  /* !NO_ENV */
-
-#ifndef NO_HMAP
-  #include <u/toolbox/hmap.h>
-#endif  /* !NO_HMAP */
-
-#ifndef NO_CONFIG
-  #include <u/toolbox/config.h>
-#endif  /* !NO_CONFIG */
-
-#ifndef NO_FS
-  #include <u/toolbox/fs.h>
-#endif  /* !NO_FS */
-
-#ifndef NO_PWD
-  #ifdef NO_HMAP
-    #include <u/toolbox/hmap.h>
-  #endif    /* NO_HMAP */
-  #include <u/toolbox/pwd.h>
-#endif  /* !NO_PWD */
-
-#ifndef NO_LIST
-  #include <u/toolbox/list.h>
-#endif  /* !NO_LIST */
-
-#ifndef NO_ARRAY
-  #include <u/toolbox/array.h>
-#endif  /* !NO_ARRAY */
-
-#ifndef NO_RB
-  #include <u/toolbox/rb.h>
-#endif  /* !NO_RB */
-
-#ifndef NO_PQUEUE
-  #include <u/toolbox/pqueue.h>
-#endif  /* !NO_PQUEUE */
-
-#ifndef NO_BST
-  #include <u/toolbox/bst.h>
-#endif  /* !NO_BST */
-
-#ifndef NO_JSON
-  #include <u/toolbox/json.h>
-#endif  /* !NO_JSON */
-
-#ifndef NO_B64
-  #include <u/toolbox/b64.h>
-#endif  /* !NO_B64 */
-
+#include <u/toolbox/net.h>
+#include <u/toolbox/env.h>
+#include <u/toolbox/hmap.h>
+#include <u/toolbox/config.h>
+#include <u/toolbox/fs.h>
+#include <u/toolbox/hmap.h>
+#include <u/toolbox/pwd.h>
+#include <u/toolbox/list.h>
+#include <u/toolbox/array.h>
+#include <u/toolbox/rb.h>
+#include <u/toolbox/pqueue.h>
+#include <u/toolbox/bst.h>
+#include <u/toolbox/json.h>
+#include <u/toolbox/b64.h>
 
 #endif  /* !_LIBU_TOOLBOX_H_ */

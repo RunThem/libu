@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include <u/missing/syslog.h>
 #include <u/toolbox/log.h>
 
 #ifdef __cplusplus

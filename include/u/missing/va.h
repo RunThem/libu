@@ -4,6 +4,7 @@
 #ifndef _LIBU_VA_H_
 #define _LIBU_VA_H_
 #include <u/libu_conf.h>
+#include <stdarg.h>
 
 #if defined(va_copy)
    /* C99 va_copy */

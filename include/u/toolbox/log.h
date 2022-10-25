@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <syslog.h>
 
 #include <u/missing.h>
 #include <u/toolbox/logprv.h>
