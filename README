@@ -75,13 +75,7 @@ inclusion of specific bits selectively using the following switches:
     - --no_json: to disable the json module
     - --no_bst: to disable the bst module
 
-Also, some specific features regarding the networking code can be disabled
-at configuration:
-    - --no_ipv6: to disable IPv6 protocol support
-    - --no_sctp: to disable SCTP protocol support
-    - --no_unixsock: to disable UNIX IPC support
-
-If you need to enable compatibility with (some, not all) 1.X interfaces, 
+If you need to enable compatibility with (some, not all) 1.X interfaces,
 specify the --compat_1x command line switch.
 
 == Build, Test and Install ==

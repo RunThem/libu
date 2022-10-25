@@ -98,12 +98,6 @@ void u_trim (char *s);
 void u_use_unused_args (char *dummy, ...);
 void *u_memdup (const void *src, size_t size);
 
-/* depreacated interfaces */
-int u_tokenize (char *wlist, const char *delim, char **tokv, size_t tokv_sz) \
-    __LIBU_DEPRECATED;
-char *u_sstrncpy (char *dst, const char *src, size_t size) \
-    __LIBU_DEPRECATED;
-
 /**
  *  \}
  */

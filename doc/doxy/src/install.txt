@@ -78,13 +78,7 @@ inclusion of specific bits selectively using the following switches:
     - \c --no_json: to disable the \ref json module
     - \c --no_bst: to disable the \ref bst module
 
-Also, some specific features regarding the networking code can be disabled
-at configuration:
-    - \c --no_ipv6: to disable IPv6 protocol support
-    - \c --no_sctp: to disable SCTP protocol support
-    - \c --no_unixsock: to disable UNIX IPC support
-
-If you need to enable compatibility with (some, not all) 1.X interfaces, 
+If you need to enable compatibility with (some, not all) 1.X interfaces,
 specify the \c --compat_1x command line switch.
 
 \section    build Build, Test and Install

@@ -26,9 +26,8 @@
   #endif
   #include <arpa/inet.h>
   #include <netdb.h>
-  #ifndef NO_UNIXSOCK
-    #include <sys/un.h>
-  #endif
+
+  #include <sys/un.h>
 #endif  /* OS_UNIX */
 
 #ifdef HAVE_FCNTL
@@ -90,43 +89,7 @@ typedef enum {
     U_NET_OPT_DONT_CONNECT = (1 << 1),  
     /**< Do not \c connect(2) when creating an (UDP) active socket */
 
-    U_NET_OPT_SCTP_ONE_TO_MANY = (1 << 2),  
-    /**< Use one-to-many model when creating SCTP sockets */ 
-
-    U_NET_OPT_SCTP_DATA_IO_EVENT = (1 << 3),
-    /**< SCTP only: get extra information as ancillary data with the 
-     *   receive calls, e.g. the stream number */
-
-    U_NET_OPT_SCTP_ASSOCIATION_EVENT = (1 << 4),
-    /**< SCTP only: get notification about changes in associations, 
-     *   including the arrival of new associations */
-
-    U_NET_OPT_SCTP_ADDRESS_EVENT = (1 << 5),
-    /**< SCTP only: get notfication when some event occurs concerning one 
-     *   of the peer's addresses, e.g. addition, deletion, reachability, 
-     *   unreachability */
-
-    U_NET_OPT_SCTP_SEND_FAILURE_EVENT = (1 << 6),
-    /**< SCTP only: when a send fails, the data is returned with an error */
-
-    U_NET_OPT_SCTP_PEER_ERROR_EVENT = (1 << 7),
-    /**< SCTP only: get peer error messages (as TLV) from the stack */
-
-    U_NET_OPT_SCTP_SHUTDOWN_EVENT = (1 << 8),
-    /**< SCTP only: get notifications about the peer having closed or 
-     *   shutdown an association */
-
-    U_NET_OPT_SCTP_PARTIAL_DELIVERY_EVENT = (1 << 9),
-    /**< SCTP only: get notified about issues that may occur in the partial 
-     *   delivery API */
-
-    U_NET_OPT_SCTP_ADAPTATION_LAYER_EVENT = (1 << 10),
-    /**< SCTP only: get events coming from the adaptation layer */
-
-    U_NET_OPT_SCTP_AUTHENTICATION_EVENT = (1 << 11),
-    /**< SCTP only: get authentication events, e.g. activation of new keys */
-
-    U_NET_OPT_DGRAM_BROADCAST = (1 << 20)
+    U_NET_OPT_DGRAM_BROADCAST = (1 << 2)
     /**< DGRAM only: automatically sets broadcast option in client socket using
      *   setsockopt() */
 

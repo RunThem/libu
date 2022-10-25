@@ -22,7 +22,7 @@ struct u_addrinfo_s
     int ai_family;      /* AF_INET, AF_INET6, AF_UNIX */
     int ai_socktype;    /* SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET */
     int ai_protocol;    /* (ai_family == AF_UNIX) => 0, otherwise one of:
-                           IPPROTO_TCP, IPPROTO_UDP, IPPROTO_SCTP */
+                           IPPROTO_TCP, IPPROTO_UDP */
     char *ai_canonname;
     u_socklen_t ai_addrlen;
     struct sockaddr *ai_addr;
@@ -42,9 +42,6 @@ struct u_net_addr_s
 /* private stuff */ 
 static int na_new (u_net_mode_t mode, u_net_addr_t **pa);
 static void ai_free (u_addrinfo_t *ai);
-#ifndef NO_SCTP
-static int sctp_enable_events (int s, int opts);
-#endif  /* !NO_SCTP */
 static int bind_reuse_addr (int s);
 
 /* low level resolvers */
@@ -52,21 +49,17 @@ static int do_resolv (
         int rf (const char *, const char *, const char *, u_addrinfo_t *ai), 
         const char *host, const char *port, const char *path, int family, 
         int type, int proto, u_addrinfo_t **pai);
-#ifndef NO_UNIXSOCK
 /* this is needed here because getaddrinfo() don't understand AF_UNIX */
 static int resolv_sun (const char *dummy1, const char *dummy2, const char *path,
         u_addrinfo_t *ai); 
-#endif  /* !NO_UNIXSOCK */
 static int ai_resolv (const char *host, const char *port, const char *path,
         int family, int type, int proto, int passive, u_addrinfo_t **pai);
 
 #ifndef HAVE_GETADDRINFO
 static int resolv_sin (const char *host, const char *port, const char *dummy, 
         u_addrinfo_t *ai); 
-#ifndef NO_IPV6
 static int resolv_sin6 (const char *host, const char *port, const char *dummy,
         u_addrinfo_t *ai);
-#endif  /* !NO_IPV6 */
 static int resolv_port (const char *s_port, uint16_t *pin_port);
 #endif  /* !HAVE_GETADDRINFO */
 
@@ -108,19 +101,16 @@ static inline int update_timeout (struct timeval *timeout,
             <td></td>
             <td><b>TCP</b></td>
             <td><b>UDP</b></td>
-            <td><b>SCTP</b></td>
           </tr>
           <tr>
             <td><b>IPv4</b></td>
             <td><tt>tcp://</tt> or <tt>tcp4://</tt></td>
             <td><tt>udp://</tt> or <tt>udp4://</tt></td>
-            <td><tt>sctp://</tt> or <tt>sctp4://</tt></td>
           </tr>
           <tr>
             <td><b>IPv6</b></td>
             <td><tt>tcp6://</tt></td>
             <td><tt>udp6://</tt></td>
-            <td><tt>sctp6://</tt></td>
           </tr>
           <tr>
             <td><b>UNIX</b></td>
@@ -139,8 +129,7 @@ static inline int update_timeout (struct timeval *timeout,
         <code>[1..65535]</code>) separated by a single \c ':' character, e.g.:
         - <code> tcp://www.kame.net:http </code>
         - <code> udp6://[fe80::200:f8ff:fe21:67cf]:65432 </code>
-        - <code> sctp4://myhost:9999 </code>
-  
+
         Note that IPv6 numeric addresses must be enclosed with brackets as per 
         RFC 3986.
   
@@ -754,10 +743,8 @@ const char *u_inet_ntop (int af, const void *src, char *dst, u_socklen_t len)
         
         return dst;
     }
-#ifndef NO_IPV6
     if (af == AF_INET6)
         return inet_ntop(af, src, dst, len);
-#endif  /* !NO_IPV6 */
 
     errno = EAFNOSUPPORT;
     return NULL;
@@ -781,23 +768,19 @@ const char *u_sa_ntop (const struct sockaddr *sa, char *d, size_t dlen)
             dbg_if (u_snprintf(d, dlen, "%s:%d", a, ntohs(s4->sin_port)));
             break;
         }
-#ifndef NO_IPV6
-        case AF_INET6: 
+        case AF_INET6:
         {
             const struct sockaddr_in6 *s6 = (const struct sockaddr_in6 *) sa;
             dbg_err_if (!u_inet_ntop(AF_INET6, &s6->sin6_addr, a, sizeof a));
             dbg_if (u_snprintf(d, dlen, "[%s]:%d", a, ntohs(s6->sin6_port)));
             break;
         }
-#endif  /* !NO_IPV6 */
-#ifndef NO_UNIXSOCK
         case AF_UNIX:
         {
             const struct sockaddr_un *su = (const struct sockaddr_un *) sa;
             dbg_if (u_strlcpy(d, su->sun_path, dlen));
             break;
         }
-#endif  /* !NO_UNIXSOCK */
         default:
             dbg_err("unhandled socket type");
     }
@@ -827,16 +810,7 @@ static int do_sock (
 
     for ( ; ap != NULL; ap = ap->ai_next)
     {
-#ifndef NO_SCTP
-        /* override .ai_socktype for SCTP one-to-many sockets with 
-         * SOCK_SEQPACKET.  the default is SOCK_STREAM, see scheme_mapper() 
-         * in sctp[46] branches */ 
-        sock_type = (ap->ai_protocol == IPPROTO_SCTP && 
-                (a->opts & U_NET_OPT_SCTP_ONE_TO_MANY)) ? 
-            SOCK_SEQPACKET : ap->ai_socktype;
-#else
         sock_type = ap->ai_socktype;
-#endif  /* !NO_SCTP */
 
         if ((sd = wf(ap->ai_addr, ap->ai_addrlen, ap->ai_family, sock_type, 
                     ap->ai_protocol, a->opts, backlog, timeout)) >= 0)
@@ -896,12 +870,7 @@ static int do_csock (struct sockaddr *sad, u_socklen_t sad_len, int domain,
 #endif  /* HAVE_SO_BROADCAST */
     }
 
-#ifndef NO_SCTP
-    if (opts & U_NET_OPT_SCTP_ONE_TO_MANY)
-        dbg_err_sif (sctp_enable_events(s, opts));
-#endif  /* NO_SCTP */
-
-    /* NOTE that by default UDP and SCTP sockets (not only TCP and UNIX) are 
+    /* NOTE that by default UDP sockets (not only TCP and UNIX) are
      * connected.  For UDP this has a couple of important implications:
      * 1) the caller must use u{,_net}_write for I/O instead of sendto 
      * 2) async errors are returned to the process. */
@@ -931,11 +900,6 @@ static int do_ssock (struct sockaddr *sad, u_socklen_t sad_len, int domain,
     if (domain != AF_UNIX && !(opts & U_NET_OPT_DONT_REUSE_ADDR))
         dbg_err_if (bind_reuse_addr(s));
 
-#ifndef NO_SCTP
-    if (opts & U_NET_OPT_SCTP_ONE_TO_MANY)
-        dbg_err_sif (sctp_enable_events(s, opts));
-#endif
-
     dbg_err_sif (u_bind(s, (struct sockaddr *) sad, sad_len) == -1);
 
     /* only stream and seqpacket sockets enter the LISTEN state */
@@ -963,47 +927,6 @@ err:
     return ~0;
 }
 
-#ifndef NO_SCTP
-/* change server/client notification settings for one-to-many SCTP sockets */
-static int sctp_enable_events (int s, int o)
-{
-    struct sctp_event_subscribe e;
-
-    e.sctp_data_io_event = 
-        (o & U_NET_OPT_SCTP_DATA_IO_EVENT) ? 1 : 0;
-
-    e.sctp_association_event = 
-        (o & U_NET_OPT_SCTP_ASSOCIATION_EVENT) ? 1 : 0;
-
-    e.sctp_address_event = 
-        (o & U_NET_OPT_SCTP_ADDRESS_EVENT) ? 1 : 0;
-
-    e.sctp_send_failure_event = 
-        (o & U_NET_OPT_SCTP_SEND_FAILURE_EVENT) ? 1 : 0;
-
-    e.sctp_peer_error_event = 
-        (o & U_NET_OPT_SCTP_PEER_ERROR_EVENT) ? 1 : 0;
-    
-    e.sctp_shutdown_event = 
-        (o & U_NET_OPT_SCTP_SHUTDOWN_EVENT) ? 1 : 0;
-    
-    e.sctp_partial_delivery_event = 
-        (o & U_NET_OPT_SCTP_PARTIAL_DELIVERY_EVENT) ? 1 : 0;
-    
-    e.sctp_adaptation_layer_event = 
-        (o & U_NET_OPT_SCTP_ADAPTATION_LAYER_EVENT) ? 1 : 0;
-    
-    e.sctp_authentication_event = 
-        (o & U_NET_OPT_SCTP_AUTHENTICATION_EVENT) ? 1 : 0;
-
-    dbg_err_if (u_setsockopt(s, IPPROTO_SCTP, SCTP_EVENTS, &e, sizeof e) == -1);
-
-    return 0;
-err:
-    return ~0;
-}
-#endif  /* !NO_SCTP */
-
 static int scheme_mapper (const char *scheme, u_net_scheme_map_t *map)
 {
     dbg_return_if (scheme == NULL, ~0);
@@ -1021,25 +944,12 @@ static int scheme_mapper (const char *scheme, u_net_scheme_map_t *map)
         map->sock_type = SOCK_DGRAM;
         map->proto  = IPPROTO_UDP;
     }
-#ifndef NO_SCTP
-    else if (!strcasecmp(scheme, "sctp4") || !strcasecmp(scheme, "sctp"))
-    {
-        map->addr_family = AF_INET;
-        /* default to STREAM, will be set to SEQPACKET in case 
-         * U_NET_OPT_SCTP_ONE_TO_MANY is set */
-        map->sock_type = SOCK_STREAM;
-        map->proto  = IPPROTO_SCTP;
-    }
-#endif  /* !NO_SCTP */
-#ifndef NO_UNIXSOCK
     else if (!strcasecmp(scheme, "unix"))
     {
         map->addr_family = AF_UNIX;
         map->sock_type = SOCK_STREAM;   /* default to STREAM sockets */
         map->proto  = 0;
     }
-#endif  /* !NO_UNIXSOCK */
-#ifndef NO_IPV6
     else if (!strcasecmp(scheme, "tcp6"))
     {
         map->addr_family = AF_INET6;
@@ -1052,17 +962,6 @@ static int scheme_mapper (const char *scheme, u_net_scheme_map_t *map)
         map->sock_type = SOCK_DGRAM;
         map->proto  = IPPROTO_UDP;
     }
-#ifndef NO_SCTP
-    else if (!strcasecmp(scheme, "sctp6"))
-    {
-        map->addr_family = AF_INET6;
-        /* default to STREAM, will be set to SEQPACKET in case 
-         * U_NET_OPT_SCTP_ONE_TO_MANY is set */
-        map->sock_type = SOCK_STREAM;
-        map->proto  = IPPROTO_SCTP;
-    }
-#endif  /* !NO_SCTP */
-#endif  /* !NO_IPV6 */
     else
         return ~0;
 
@@ -1138,8 +1037,7 @@ err:
     return ~0;
 }
 
-#ifndef NO_UNIXSOCK
-static int resolv_sun (const char *dummy1, const char *dummy2, 
+static int resolv_sun (const char *dummy1, const char *dummy2,
         const char *path, u_addrinfo_t *ai)
 {
     char *cname = NULL;
@@ -1174,7 +1072,6 @@ err:
     U_FREE(cname);
     return ~0;
 }
-#endif  /* !NO_UNIXSOCK */
 
 static void ai_free (u_addrinfo_t *ai)
 {
@@ -1267,16 +1164,12 @@ static int ai_resolv (const char *host, const char *port, const char *path,
         case AF_INET:
             return do_resolv(resolv_sin, host, port, NULL, family, type, 
                     proto, pai);
-#ifndef NO_UNIXSOCK
         case AF_UNIX:
             return do_resolv(resolv_sun, NULL, NULL, path, family, type,
                     proto, pai);
-#endif  /* !NO_UNIXSOCK */
-#ifndef NO_IPV6
         case AF_INET6:
             return do_resolv(resolv_sin6, host, port, NULL, family, type, 
                     proto, pai);
-#endif  /* !NO_IPV6 */
         default:
             dbg_return_ifm (1, ~0, "address family not supported");
     }
@@ -1334,8 +1227,7 @@ err:
     return ~0;
 }
 
-#ifndef NO_IPV6
-static int resolv_sin6 (const char *host, const char *port, 
+static int resolv_sin6 (const char *host, const char *port,
         const char *dummy, u_addrinfo_t *ai)
 {
     char *cname = NULL;
@@ -1406,7 +1298,6 @@ err:
     U_FREE(cname);
     return ~0;
 }
-#endif  /* !NO_IPV6 */
 
 /* given a port string (both numeric and service), return a port in network 
  * format ready to be used in struct sockaddr_in{,6} */
