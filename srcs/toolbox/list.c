@@ -2,8 +2,9 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
  */
 
-#include <u/libu_conf.h>
-#include <u/libu.h>
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/queue.h>
 #include <u/toolbox/list.h>
 
 typedef struct u_list_item_s

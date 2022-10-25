@@ -3,6 +3,7 @@
  */
 
 #include <stdlib.h>
+
 #include <u/toolbox/memory.h>
 
 typedef struct u_memory_funcs_s

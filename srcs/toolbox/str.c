@@ -2,8 +2,6 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
  */
 
-#include <stdlib.h>
-#include <errno.h>
 #include <u/toolbox/str.h>
 #include <u/toolbox/misc.h>
 #include <u/toolbox/carpal.h>

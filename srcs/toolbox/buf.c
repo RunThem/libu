@@ -7,7 +7,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <u/libu.h>
+
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/misc.h>
 #include <u/toolbox/buf.h>
 
 struct u_buf_s

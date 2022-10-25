@@ -8,11 +8,9 @@
 #include <string.h>
 #include <strings.h>
 #include <stdio.h>
-#include <fcntl.h>
 
 #include <u/toolbox/carpal.h>
 #include <u/toolbox/queue.h>
-#include <u/toolbox/list.h>
 #include <u/toolbox/config.h>
 #include <u/toolbox/misc.h>
 #include <u/toolbox/memory.h>

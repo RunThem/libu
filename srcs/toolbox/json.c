@@ -2,10 +2,8 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
  */
 
-#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
 
 #include <u/toolbox/json.h>
 #include <u/toolbox/carpal.h>

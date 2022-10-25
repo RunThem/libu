@@ -2,7 +2,6 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <string.h>

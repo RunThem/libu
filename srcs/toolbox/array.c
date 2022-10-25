@@ -3,7 +3,11 @@
  */
 
 #include <stdint.h>
-#include <u/libu.h>
+#include <stddef.h>
+
+#include <u/toolbox/carpal.h>
+#include <u/toolbox/memory.h>
+#include <u/toolbox/misc.h>
 #include <u/toolbox/array.h>
 
 /* for C89 implementations */

@@ -2,19 +2,15 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
  */
 
-#include <sys/types.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <stdint.h>
-#include <signal.h>
-#include <unistd.h>
-#include <u/toolbox/log.h>
-#include <u/toolbox/carpal.h>
-#include <u/toolbox/misc.h>
-#include <u/missing.h>
 #include <syslog.h>
+#include <stdint.h>
+#include <unistd.h>
+
+#include <u/toolbox/log.h>
 
 /* applications that use libu will defined their own "int facility" variable */
 extern int facility;

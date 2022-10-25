@@ -2,19 +2,15 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
  */
 
-#include <u/libu_conf.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <time.h>
 #include <errno.h>
-#include <signal.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/types.h>
 
 #include <u/toolbox/misc.h>
 #include <u/toolbox/carpal.h>

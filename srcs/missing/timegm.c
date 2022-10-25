@@ -1,6 +1,6 @@
 /* $Id: timegm.c,v 1.1 2006/11/20 13:38:01 tho Exp $ */
 
-#include <u/libu_conf.h>
+#include <u/missing/timegm.h>
 #include <time.h>
 
 #ifndef HAVE_TIMEGM

@@ -2,17 +2,11 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 
-#include <u/libu_conf.h>
 #include <u/toolbox/fs.h>
 #include <u/toolbox/carpal.h>
-#include <u/toolbox/misc.h>
 
 /**
     \defgroup fs File system

@@ -1,10 +1,7 @@
 /*
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.
  */
-#include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <u/toolbox/memory.h>
 #include <u/toolbox/carpal.h>

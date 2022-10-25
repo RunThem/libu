@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <missing/daemon.h>
+#include <u/missing/daemon.h>
 
 #if !defined(HAVE_FORK)
 

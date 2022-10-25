@@ -2,8 +2,6 @@
  * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
  */
 
-#include <sys/types.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -11,9 +9,6 @@
 
 #include <u/toolbox/carpal.h>
 #include <u/toolbox/config.h>
-#include <u/toolbox/misc.h>
-#include <u/toolbox/memory.h>
-#include <u/toolbox/str.h>
 
 static int drv_fs_open (const char *path, void **parg)
 {

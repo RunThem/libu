@@ -4,8 +4,8 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <u/libu_conf.h>
-#include <u/libu.h>
+
+#include <u/toolbox/misc.h>
 #include <u/toolbox/hmap.h>
 #include <u/toolbox/pwd.h>
 
