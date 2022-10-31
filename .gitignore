@@ -149,3 +149,4 @@ build/.deps
 Makefile.conf
 doc/doxy/libu.doxy
 include/u/libu_conf.h
+compile_commands.json
