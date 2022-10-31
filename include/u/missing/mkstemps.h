@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.  
+/*
+ * Copyright (c) 2005-2012 by KoanLogic s.r.l. - All rights reserved.
  */
 
 #ifndef _LIBU_MKSTEMPS_H_
@@ -8,19 +8,19 @@
 #include <u/libu_conf.h>
 
 #ifdef HAVE_MKSTEMPS
-#include <stdlib.h>
-#else   /* !HAVE_MKSTEMPS */
+#  include <stdlib.h>
+#else /* !HAVE_MKSTEMPS */
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 extern "C" {
-#endif  /* __cplusplus */
+#  endif /* __cplusplus */
 
-int mkstemps (char *template, int suffixlen);
+int mkstemps(char* template, int suffixlen);
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 }
-#endif  /* __cplusplus */
+#  endif /* __cplusplus */
 
-#endif  /* HAVE_MKSTEMPS */
+#endif /* HAVE_MKSTEMPS */
 
-#endif  /* !_LIBU_MKSTEMPS_H_ */
+#endif /* !_LIBU_MKSTEMPS_H_ */

@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-int u_env_init (const char *prefix, const char *cfile);
-const char *u_env_var (const char *name);
+int u_env_init(const char* prefix, const char* cfile);
+const char* u_env_var(const char* name);
 
 #ifdef __cplusplus
 }

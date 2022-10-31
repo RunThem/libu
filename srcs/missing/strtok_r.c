@@ -13,11 +13,11 @@
  *
  * 1. Redistributions of source code must retain the above copyright
  *    notices, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notices, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
  *
@@ -45,71 +45,60 @@
 
 #ifndef HAVE_STRTOK_R
 
-#include <stdio.h>
-#include <stddef.h>
-#include <string.h>
+#  include <stddef.h>
+#  include <stdio.h>
+#  include <string.h>
 
-char *strtok_r(char *s, const char *delim, char **last)
-{
-    char *spanp;
-    int c, sc;
-    char *tok;
+char* strtok_r(char* s, const char* delim, char** last) {
+  char* spanp;
+  int c, sc;
+  char* tok;
 
-    if (s == NULL && (s = *last) == NULL)
-    {
-        return NULL;
-    }
+  if (s == NULL && (s = *last) == NULL) {
+    return NULL;
+  }
 
-    /*
-     * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
-     */
+  /*
+   * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
+   */
 cont:
-    c = *s++;
-    for (spanp = (char *)delim; (sc = *spanp++) != 0; )
-    {
-        if (c == sc)
-        {
-            goto cont;
-        }
+  c = *s++;
+  for (spanp = (char*)delim; (sc = *spanp++) != 0;) {
+    if (c == sc) {
+      goto cont;
     }
+  }
 
-    if (c == 0)        /* no non-delimiter characters */
-    {
-        *last = NULL;
-        return NULL;
-    }
-    tok = s - 1;
+  if (c == 0) /* no non-delimiter characters */
+  {
+    *last = NULL;
+    return NULL;
+  }
+  tok = s - 1;
 
-    /*
-     * Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
-     * Note that delim must have one NUL; we stop if we see that, too.
-     */
-    for (;;)
-    {
-        c = *s++;
-        spanp = (char *)delim;
-        do
-        {
-            if ((sc = *spanp++) == c)
-            {
-                if (c == 0)
-                {
-                    s = NULL;
-                }
-                else
-                {
-                    char *w = s - 1;
-                    *w = '\0';
-                }
-                *last = s;
-                return tok;
-            }
+  /*
+   * Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
+   * Note that delim must have one NUL; we stop if we see that, too.
+   */
+  for (;;) {
+    c     = *s++;
+    spanp = (char*)delim;
+    do {
+      if ((sc = *spanp++) == c) {
+        if (c == 0) {
+          s = NULL;
+        } else {
+          char* w = s - 1;
+          *w      = '\0';
         }
-        while (sc != 0);
-    }
-    /* NOTREACHED */
+        *last = s;
+        return tok;
+      }
+    } while (sc != 0);
+  }
+  /* NOTREACHED */
 }
 
-#else   /* HAVE_STRTOK_R */
-char *strtok_r(char *s, const char *delim, char **last);
-#endif  /* !HAVE_STRTOK_R */ 
+#else  /* HAVE_STRTOK_R */
+char* strtok_r(char* s, const char* delim, char** last);
+#endif /* !HAVE_STRTOK_R */

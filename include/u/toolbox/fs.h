@@ -11,9 +11,9 @@
 extern "C" {
 #endif
 
-int u_move(const char *src, const char *dst);
-int u_copy(const char *src, const char *dst);
-int u_remove(const char *file);
+int u_move(const char* src, const char* dst);
+int u_copy(const char* src, const char* dst);
+int u_remove(const char* file);
 
 #ifdef __cplusplus
 }

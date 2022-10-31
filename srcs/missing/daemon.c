@@ -33,54 +33,55 @@
 
 #if !defined(HAVE_FORK)
 
-int daemon(int nochdir, int noclose)
-{
+int daemon(int nochdir, int noclose) {
   u_unused_args(nochdir, noclose);
   u_warn("daemon(3) not implemented: fork(2) is not available on target OS");
   return -1;
 }
 
-#else   /* HAVE_FORK */
+#else /* HAVE_FORK */
 
-#ifndef _PATH_DEVNULL
-#define _PATH_DEVNULL "/dev/null"
-#endif
+#  ifndef _PATH_DEVNULL
+#    define _PATH_DEVNULL "/dev/null"
+#  endif
 
-#include <fcntl.h>
-#ifdef HAVE_PATHS
-#include <paths.h>
-#endif
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
+#  include <fcntl.h>
+#  ifdef HAVE_PATHS
+#    include <paths.h>
+#  endif
+#  include <stdio.h>
+#  include <stdlib.h>
+#  include <unistd.h>
 
-int daemon(int nochdir, int noclose)
-{
-	int fd;
+int daemon(int nochdir, int noclose) {
+  int fd;
 
-	switch (fork()) {
-	case -1:
-		return (-1);
-	case 0:
-		break;
-	default:
-		_exit(0);
-	}
+  switch (fork()) {
+    case -1:
+      return (-1);
+    case 0:
+      break;
+    default:
+      _exit(0);
+  }
 
-	if (setsid() == -1)
-		return (-1);
+  if (setsid() == -1) {
+    return (-1);
+  }
 
-	if (!nochdir)
-		(void)chdir("/");
+  if (!nochdir) {
+    (void)chdir("/");
+  }
 
-	if (!noclose && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
-		(void)dup2(fd, STDIN_FILENO);
-		(void)dup2(fd, STDOUT_FILENO);
-		(void)dup2(fd, STDERR_FILENO);
-		if (fd > STDERR_FILENO)
-			(void)close(fd);
-	}
-	return (0);
+  if (!noclose && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
+    (void)dup2(fd, STDIN_FILENO);
+    (void)dup2(fd, STDOUT_FILENO);
+    (void)dup2(fd, STDERR_FILENO);
+    if (fd > STDERR_FILENO) {
+      (void)close(fd);
+    }
+  }
+  return (0);
 }
 
-#endif  /* !HAVE_FORK */
+#endif /* !HAVE_FORK */

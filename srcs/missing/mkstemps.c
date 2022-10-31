@@ -35,129 +35,135 @@
 
 #ifndef HAVE_MKSTEMPS
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <limits.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
+#  include <ctype.h>
+#  include <errno.h>
+#  include <fcntl.h>
+#  include <limits.h>
+#  include <stdio.h>
+#  include <stdlib.h>
+#  include <string.h>
+#  include <sys/stat.h>
+#  include <sys/types.h>
+#  include <time.h>
+#  include <unistd.h>
 
-static int _gettemp(char *, int *, int, int);
-static unsigned int __time_seed (void);
+static int _gettemp(char*, int*, int, int);
+static unsigned int __time_seed(void);
 
 static const unsigned char padchar[] =
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-int mkstemps(char *path, int slen)
-{
-    int fd;
+int mkstemps(char* path, int slen) {
+  int fd;
 
-    return (_gettemp(path, &fd, 0, slen) ? fd : -1);
+  return (_gettemp(path, &fd, 0, slen) ? fd : -1);
 }
 
-static int _gettemp(char *path, int *doopen, int domkdir, int slen)
-{
-    char *start, *trv, *suffp;
-    char *pad;
-    struct stat sbuf;
-    int rval;
-    int __rand;
+static int _gettemp(char* path, int* doopen, int domkdir, int slen) {
+  char *start, *trv, *suffp;
+  char* pad;
+  struct stat sbuf;
+  int rval;
+  int __rand;
 
-    srand(__time_seed());
+  srand(__time_seed());
 
-    if (doopen != NULL && domkdir) {
-        errno = EINVAL;
-        return (0);
-    }
+  if (doopen != NULL && domkdir) {
+    errno = EINVAL;
+    return (0);
+  }
 
-    for (trv = path; *trv != '\0'; ++trv)
-        ;
-    trv -= slen;
-    suffp = trv;
-    --trv;
-    if (trv < path) {
-        errno = EINVAL;
-        return (0);
-    }
+  for (trv = path; *trv != '\0'; ++trv) {
+    ;
+  }
+  trv -= slen;
+  suffp = trv;
+  --trv;
+  if (trv < path) {
+    errno = EINVAL;
+    return (0);
+  }
 
-    /* Fill space with random characters */
-    while (trv >= path && *trv == 'X') {
-        __rand = rand() % (sizeof(padchar) - 1);
-        *trv-- = padchar[__rand];
-    }
-    start = trv + 1;
+  /* Fill space with random characters */
+  while (trv >= path && *trv == 'X') {
+    __rand = rand() % (sizeof(padchar) - 1);
+    *trv-- = padchar[__rand];
+  }
+  start = trv + 1;
 
-    /*
-     * check the target directory.
-     */
-    if (doopen != NULL || domkdir) {
-        for (; trv > path; --trv) {
-            if (*trv == '/') {
-                *trv = '\0';
-                rval = stat(path, &sbuf);
-                *trv = '/';
-                if (rval != 0)
-                    return (0);
-                if (!S_ISDIR(sbuf.st_mode)) {
-                    errno = ENOTDIR;
-                    return (0);
-                }
-                break;
-            }
+  /*
+   * check the target directory.
+   */
+  if (doopen != NULL || domkdir) {
+    for (; trv > path; --trv) {
+      if (*trv == '/') {
+        *trv = '\0';
+        rval = stat(path, &sbuf);
+        *trv = '/';
+        if (rval != 0) {
+          return (0);
         }
-    }
-
-    for (;;) {
-        if (doopen) {
-            if ((*doopen = open(path, O_CREAT|O_EXCL|O_RDWR, 0600)) >= 0)
-                return (1);
-            if (errno != EEXIST)
-                return (0);
-        } else if (domkdir) {
-            if (mkdir(path, 0700) == 0)
-                return (1);
-            if (errno != EEXIST)
-                return (0);
-        } else if (lstat(path, &sbuf))
-            return (errno == ENOENT);
-
-        /* If we have a collision, cycle through the space of filenames */
-        for (trv = start;;) {
-            if (*trv == '\0' || trv == suffp)
-                return (0);
-            pad = strchr((const char *) padchar, *trv);
-            if (pad == NULL || *++pad == '\0')
-                *trv++ = padchar[0];
-            else {
-                *trv++ = *pad;
-                break;
-            }
+        if (!S_ISDIR(sbuf.st_mode)) {
+          errno = ENOTDIR;
+          return (0);
         }
+        break;
+      }
     }
-    /*NOTREACHED*/
+  }
+
+  for (;;) {
+    if (doopen) {
+      if ((*doopen = open(path, O_CREAT | O_EXCL | O_RDWR, 0600)) >= 0) {
+        return (1);
+      }
+      if (errno != EEXIST) {
+        return (0);
+      }
+    } else if (domkdir) {
+      if (mkdir(path, 0700) == 0) {
+        return (1);
+      }
+      if (errno != EEXIST) {
+        return (0);
+      }
+    } else if (lstat(path, &sbuf)) {
+      return (errno == ENOENT);
+    }
+
+    /* If we have a collision, cycle through the space of filenames */
+    for (trv = start;;) {
+      if (*trv == '\0' || trv == suffp) {
+        return (0);
+      }
+      pad = strchr((const char*)padchar, *trv);
+      if (pad == NULL || *++pad == '\0') {
+        *trv++ = padchar[0];
+      } else {
+        *trv++ = *pad;
+        break;
+      }
+    }
+  }
+  /*NOTREACHED*/
 }
 
-static unsigned int __time_seed (void)
-{
-    time_t now;
-    unsigned char *p;
-    unsigned seed = 0;
-    size_t i;
+static unsigned int __time_seed(void) {
+  time_t now;
+  unsigned char* p;
+  unsigned seed = 0;
+  size_t i;
 
-    now = time(NULL);
-    p = (unsigned char *) &now;
+  now = time(NULL);
+  p   = (unsigned char*)&now;
 
-    for (i = 0; i < sizeof now; i++)
-        seed = seed * (UCHAR_MAX + 2U) + p[i];
+  for (i = 0; i < sizeof now; i++) {
+    seed = seed * (UCHAR_MAX + 2U) + p[i];
+  }
 
-    return seed;
+  return seed;
 }
 
-#else   /* HAVE_MKSTEMPS */
-int mkstemps (char *template, int suffixlen);
-#endif  /* !HAVE_MKSTEMPS */
+#else  /* HAVE_MKSTEMPS */
+int mkstemps(char* template, int suffixlen);
+#endif /* !HAVE_MKSTEMPS */
