@@ -1,17 +1,15 @@
 /* libs */
+#include "src/buf.h"
 #include "src/str.h"
 #include "src/u.h"
-#include "src/buf.h"
+#include "src/vec.h"
 
 int main(int argc, const char** argv) {
+  vec(int) vv = nullptr;
 
-  buf_t buf = nullptr;
+  // vec_init_from(&vv, 100, 203);
 
-  int a[] = {0x01, 0x05, 0x03};
-
-  buf = buf_new(p(a), 10);
-
-  inf_hex(buf->c_buf, buf->len);
+  inf("%ld, %ld", vv->len, vv->cap);
 
   return 0;
 }
