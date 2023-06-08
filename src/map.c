@@ -115,3 +115,33 @@
                                                                                                    \
     _m_pop__N;                                                                                     \
   })
+
+#define __map_at(map, _key)                                                                        \
+  ({                                                                                               \
+    map_K(map) _m_at__key      = (_key);                                                           \
+    size_t _m_at__hash         = _(map)->hash_func((void*)&_m_at__key, sizeof(map_K(map)));        \
+    size_t _m_at__idx          = _m_at__hash & (_(map)->_cap - 1);                                 \
+    map_T(map)* _m_at__node    = _(map)->nodes[_m_at__idx].next;                                   \
+    map_V(map)* _m_at__value_p = nullptr;                                                          \
+                                                                                                   \
+    for (; _m_at__node != nullptr; _m_at__node = _m_at__node->next) {                              \
+      if (_m_at__node->hash == _m_at__hash &&                                                      \
+          !memcmp((void*)&_m_at__node->key, (void*)&_m_at__key, sizeof(map_K(map)))) {             \
+        _m_at__value_p = &_m_at__node->value;                                                      \
+        break;                                                                                     \
+      }                                                                                            \
+    }                                                                                              \
+                                                                                                   \
+    _m_at__value_p;                                                                                \
+  })
+
+#define __map_set(map, _key, _value)                                                               \
+  ({                                                                                               \
+    map_V(map)* _m_set__value_p = map_at(map, _key);                                               \
+    map_V(map) _m_set__value    = *_m_set__value_p;                                                \
+    map_V(map) _m_set___value   = (_value);                                                        \
+                                                                                                   \
+    memcpy((void*)_m_set__value_p, (void*)&_m_set___value, sizeof(map_V(map)));                    \
+                                                                                                   \
+    _m_set__value;                                                                                 \
+  })

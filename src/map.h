@@ -131,3 +131,41 @@ hash_t map_int_hash(const uint8_t* ptr, size_t len) {
  *    // m -> (2) { { 2: "two" } }
  * */
 #define map_pop(map, _key) __map_pop(map, _key)
+
+/*
+ * 访问某元素
+ *
+ * code:
+ *    map(int, c_str) m;
+ *
+ *    map_init(&m);
+ *
+ *    map_push(&m, 1, "one");
+ *    map_push(&m, 2, "two");
+ *
+ *    auto v = map_at(&m, 1);
+ *
+ *    assert(!strncmp("one", v));
+ *
+ *    // m -> (2) { { 2: "two" } }
+ * */
+#define map_at(map, _key) __map_at(map, _key)
+
+/*
+ * 覆盖元素, 元素必须存在, 否则未定义行为
+ *
+ * code:
+ *    map(int, c_str) m;
+ *
+ *    map_init(&m);
+ *
+ *    map_push(&m, 1, "one");
+ *    map_push(&m, 2, "two");
+ *
+ *    auto v = map_set(&m, 1, "first");
+ *
+ *    assert(!strncmp("one", v));
+ *
+ *    // m -> (2) { { 1: "first" }, { 2: "two" } }
+ * */
+#define map_set(map, _key, _value) __map_set(map, _key, _value)

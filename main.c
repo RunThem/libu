@@ -42,10 +42,9 @@ int main(int argc, const char** argv) {
   map_push(&m, 1, "one");
   map_push(&m, 2, "two");
 
-  auto v = map_pop(&m, 2);
+  auto v = map_set(&m, 1, "first");
 
-  inf("%d", v.key);
-  inf("%s", v.value);
+  inf("%s", v);
 
   map_dis(&m, fn);
 
