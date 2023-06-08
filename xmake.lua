@@ -20,7 +20,6 @@ add_includedirs('$(projectdir)/src')
 
 target('u', function()
   set_kind('static')
-  add_files('src/*.c')
   add_headerfiles('src/*.h', { prefixdir = 'u' })
 
   add_packages('mimalloc')
@@ -29,6 +28,7 @@ end)
 target('test', function()
   set_kind('binary')
   add_files('main.c')
+  set_default('false')
 
   add_deps('u')
 end)
@@ -37,6 +37,5 @@ target('fmt', function()
   set_kind('phony')
   set_default('false')
 
-  add_files('src/**.c')
   set_pcheader('src/**.h')
 end)
