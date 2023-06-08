@@ -1,7 +1,7 @@
 #pragma once
 
 #include "u.h"
-#include "vec.c"
+#include "vec.in"
 
 #define vec(T)                                                                                     \
   struct {                                                                                         \

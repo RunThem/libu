@@ -1,6 +1,6 @@
 #pragma once
 
-#include "map.c"
+#include "map.in"
 #include "u.h"
 
 /*
