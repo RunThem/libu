@@ -41,6 +41,7 @@
 #define va_empty(...)    __va_size("ignore" __VA_OPT__(, ) __VA_ARGS__, 0, 0, 0, 0, 0, 0, 1)
 #define va_opt(i, ...)   __va_opt(__va_cut(i, __VA_ARGS__))
 #define va_slice(i, ...) va_opt(i, __VA_ARGS__) va_cut(i, __VA_ARGS__)
+#define va_or(t, f, ...) va_at(1 __VA_OPT__(, ) va_at(0, __VA_ARGS__), f, t)
 
 #define __va_th(...) va_at(0, __VA_ARGS__)
 
@@ -239,7 +240,7 @@ typedef long double f128_t;
 
 #define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 
-#define array_len(a) (sizeof(a) / sizeof((a)[0]))
+#define arrlen(a) (sizeof(a) / sizeof((a)[0]))
 
 #define swap(a, b)                                                                                 \
   do {                                                                                             \
@@ -248,24 +249,54 @@ typedef long double f128_t;
     (b)             = (_swap__tmp);                                                                \
   } while (0)
 
-#define min_from(_0, _1, arg...)                                                                   \
+#define min(_0, _1, arg...)                                                                        \
   ({                                                                                               \
-    typeof(_0) _min_from__arr[] = {(_0), (_1)va_slice(0, arg)};                                    \
-    size_t _min_from__idx       = 0;                                                               \
-    for (size_t _min_from__i = 1; _min_from__i < array_len(_min_from__arr); _min_from__i++)        \
-      if (_min_from__arr[_min_from__idx] > _min_from__arr[_min_from__i])                           \
-        _min_from__idx = _min_from__i;                                                             \
+    typeof(_0) _min__arr[] = {(_0), (_1)va_slice(0, arg)};                                         \
+    size_t _min__idx       = 0;                                                                    \
+    for (size_t _min__i = 1; _min__i < arrlen(_min__arr); _min__i++)                               \
+      if (_min__arr[_min__idx] > _min__arr[_min__i])                                               \
+        _min__idx = _min__i;                                                                       \
                                                                                                    \
-    _min_from__arr[_min_from__idx];                                                                \
+    _min__arr[_min__idx];                                                                          \
   })
 
-#define max_from(_0, _1, arg...)                                                                   \
+#define max(_0, _1, arg...)                                                                        \
   ({                                                                                               \
-    typeof(_0) _max_from__arr[] = {(_0), (_1)va_slice(0, arg)};                                    \
-    size_t _max_from__idx       = 0;                                                               \
-    for (size_t _max_from__i = 1; _max_from__i < array_len(_max_from__arr); _max_from__i++)        \
-      if (_max_from__arr[_max_from__idx] < _max_from__arr[_max_from__i])                           \
-        _max_from__idx = _max_from__i;                                                             \
+    typeof(_0) _max__arr[] = {(_0), (_1)va_slice(0, arg)};                                         \
+    size_t _max__idx       = 0;                                                                    \
+    for (size_t _max__i = 1; _max__i < arrlen(_max__arr); _max__i++)                               \
+      if (_max__arr[_max__idx] < _max__arr[_max__i])                                               \
+        _max__idx = _max__i;                                                                       \
                                                                                                    \
-    _max_from__arr[_max_from__idx];                                                                \
+    _max__arr[_max__idx];                                                                          \
   })
+
+#define min_idx(ptr, size, arg...)                                                                 \
+  ({                                                                                               \
+    size_t _min_idx__idx = 0;                                                                      \
+    auto _min_idx__fn    = va_0th((nullptr), arg);                                                 \
+    for (size_t _min_idx__i = 1; _min_idx__i < (size); _min_idx__i++)                              \
+      if (va_or((ptr)[_min_idx__idx] > (ptr)[_min_idx__i],                                         \
+                (1) == _min_idx__fn((ptr)[_min_idx__idx], (ptr)[_min_idx__i]),                     \
+                arg))                                                                              \
+        _min_idx__idx = _min_idx__i;                                                               \
+    (void)_min_idx__fn;                                                                            \
+    _min_idx__idx;                                                                                 \
+  })
+
+#define max_idx(ptr, size, arg...)                                                                 \
+  ({                                                                                               \
+    size_t _max_idx__idx = 0;                                                                      \
+    auto _max_idx__lm    = va_0th((nullptr), arg);                                                 \
+    for (size_t _max_idx__i = 1; _max_idx__i < (size); _max_idx__i++)                              \
+      if (va_or((ptr)[_max_idx__idx] < (ptr)[_max_idx__i],                                         \
+                (-1) == _max_idx__lm((ptr)[_max_idx__idx], (ptr)[_max_idx__i]),                    \
+                arg))                                                                              \
+        _max_idx__idx = _max_idx__i;                                                               \
+    (void)_max_idx__lm;                                                                            \
+    _max_idx__idx;                                                                                 \
+  })
+
+#define min_from(ptr, size, arg...) ({ (ptr)[min_idx(ptr, size, arg)]; })
+
+#define max_from(ptr, size, arg...) ({ (ptr)[max_idx(ptr, size, arg)]; })
