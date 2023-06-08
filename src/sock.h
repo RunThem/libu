@@ -21,6 +21,14 @@ typedef struct {
   socklen_t value_len;
 } sock_opt;
 
+/*
+ * socket 配置文件
+ *
+ * url -> "tcp4//127.0.0.1#8080"
+ * url -> "tcp4//127.0.0.1#8080"
+ *
+ * 若listen > 0, 则表示为服务器模式
+ * */
 typedef struct {
   int fd;
 
@@ -42,4 +50,7 @@ typedef struct {
   } addr;
 } sock_addr_t;
 
+/*
+ * 创建一个socket, .fd就是描述符
+ * */
 int sock_open(sock_conf_t* conf);
