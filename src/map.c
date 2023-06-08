@@ -145,3 +145,54 @@
                                                                                                    \
     _m_set__value;                                                                                 \
   })
+
+#define __map_for(map, it)                                                                         \
+  for (size_t _m_for__i = 0; _m_for__i < _(map)->_cap; _m_for__i++)                                \
+    for (map_T(map) * (it) = _(map)->nodes[_m_for__i].next; (it) != nullptr; (it) = (it)->next)
+
+#define __map_keys(map)                                                                            \
+  ({                                                                                               \
+    vec(map_K(map)) _m_keys__vec = nullptr;                                                        \
+    vec_init(&_m_keys__vec, _(map)->len);                                                          \
+                                                                                                   \
+    map_for(map, _m_keys__it) {                                                                    \
+      vec_push_b(&_m_keys__vec, _m_keys__it->key);                                                 \
+    }                                                                                              \
+                                                                                                   \
+    _m_keys__vec;                                                                                  \
+  })
+
+#define __map_values(map)                                                                          \
+  ({                                                                                               \
+    vec(map_V(map)) _m_values__vec = nullptr;                                                      \
+    vec_init(&_m_values__vec, _(map)->len);                                                        \
+                                                                                                   \
+    map_for(map, _m_values__it) {                                                                  \
+      vec_push_b(&_m_values__vec, _m_values__it->value);                                           \
+    }                                                                                              \
+                                                                                                   \
+    _m_values__vec;                                                                                \
+  })
+
+#define __map_dis(map, fn)                                                                         \
+  do {                                                                                             \
+    inf("len %ld, _cap %ld: {", _(map)->len, _(map)->_cap);                                        \
+                                                                                                   \
+    for (size_t __i = 0; __i < _(map)->_cap; __i++) {                                              \
+      if (_(map)->nodes[__i].hash == 0) {                                                          \
+        continue;                                                                                  \
+      }                                                                                            \
+                                                                                                   \
+      __prt("  [%ld] len %ld { \n", __i, _(map)->nodes[__i].hash);                                 \
+                                                                                                   \
+      map_T(map)* __node = _(map)->nodes[__i].next;                                                \
+      for (; __node != nullptr; __node = __node->next) {                                           \
+        __prt("    ");                                                                             \
+        fn(__node->key, __node->value);                                                            \
+      }                                                                                            \
+                                                                                                   \
+      __prt("  }\n");                                                                              \
+    }                                                                                              \
+                                                                                                   \
+    __prt("}\n");                                                                                  \
+  } while (0)

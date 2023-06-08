@@ -169,3 +169,45 @@ hash_t map_int_hash(const uint8_t* ptr, size_t len) {
  *    // m -> (2) { { 1: "first" }, { 2: "two" } }
  * */
 #define map_set(map, _key, _value) __map_set(map, _key, _value)
+
+#define map_for(map, it)                                                                           \
+  for (size_t _m_for__i = 0; _m_for__i < _(map)->_cap; _m_for__i++)                                \
+    for (map_T(map) * (it) = _(map)->nodes[_m_for__i].next; (it) != nullptr; (it) = (it)->next)
+
+/*
+ * 收集key
+ *
+ * code:
+ *    map(int, c_str) m;
+ *
+ *    map_init(&m);
+ *
+ *    map_push(&m, 1, "one");
+ *    map_push(&m, 2, "two");
+ *
+ *    auto v = map_key(&m);
+ *
+ *    // m -> (2) { { 1: "first" }, { 2: "two" } }
+ *    // v -> (2) { 1, 2 }
+ * */
+#define map_keys(map) __map_keys(map)
+
+/*
+ * 收集value
+ *
+ * code:
+ *    map(int, c_str) m;
+ *
+ *    map_init(&m);
+ *
+ *    map_push(&m, 1, "one");
+ *    map_push(&m, 2, "two");
+ *
+ *    auto v = map_value(&m);
+ *
+ *    // m -> (2) { { 1: "first" }, { 2: "two" } }
+ *    // v -> (2) { "one", "two" }
+ * */
+#define map_values(map) __map_values(map)
+
+#define map_dis(map, fn) __map_dis(map, fn)
