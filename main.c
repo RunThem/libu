@@ -1,17 +1,17 @@
 /* libs */
 #include "src/str.h"
 #include "src/u.h"
-
-#include <assert.h>
-#include <string.h>
+#include "src/buf.h"
 
 int main(int argc, const char** argv) {
 
-  str_t str = str_new("hello world");
+  buf_t buf = nullptr;
 
-  str_trim(&str, "ol");
+  int a[] = {0x01, 0x05, 0x03};
 
-  inf("%s", str->c_str);
+  buf = buf_new(p(a), 10);
+
+  inf_hex(buf->c_buf, buf->len);
 
   return 0;
 }
