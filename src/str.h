@@ -129,6 +129,18 @@ int __str_resize(str_t* str, size_t len);
 #define str_resize(s, len) __str_resize(s, len)
 
 /*
+ * 访问字符串中的某个字符
+ *
+ * str_t str = str_new("hello");
+ *
+ * auto c = str_at(&str, 2);
+ *
+ * assert('l' == *c);
+ * */
+c_str __str_at(str_t* str, size_t idx);
+#define str_at(s, idx) __str_at(s, idx)
+
+/*
  * 在字符串结尾追加字符串
  *
  * str_t str = str_new("hello");

@@ -113,6 +113,14 @@ err:
   return -1;
 }
 
+c_str __str_at(str_t* str, size_t idx) {
+  u_ret_if(str == nullptr, nullptr);
+  u_ret_if(_str == nullptr, nullptr);
+  u_ret_if(idx >= _str->len, nullptr);
+
+  return &_str->c_str[idx];
+}
+
 int __str_push(str_t* str, c_str c_string, size_t size) {
   int ret = 0;
 
