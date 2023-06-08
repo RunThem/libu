@@ -227,3 +227,23 @@ typedef long double f128_t;
 #define u_alloc_if(mem, arg...) u_goto_if((mem) == nullptr, err, arg)
 
 #define u_ret_no_if(expr, arg...) u_ret_if(expr, , arg)
+
+/*************************************************************************************************
+ * __misc__
+ *************************************************************************************************/
+#define container_of(ptr, type, member)                                                            \
+  ({                                                                                               \
+    const typeof(((type*)0)->member)* _container_of__mptr = ((void*)(ptr));                        \
+    (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
+  })
+
+#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
+
+#define array_len(a) (sizeof(a) / sizeof((a)[0]))
+
+#define swap(a, b)                                                                                 \
+  do {                                                                                             \
+    auto _swap__tmp = a;                                                                           \
+    (a)             = (b);                                                                         \
+    (b)             = (_swap__tmp);                                                                \
+  } while (0)

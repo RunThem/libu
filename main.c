@@ -5,24 +5,19 @@
 
 int main(int argc, const char** argv) {
 
-  u_if(1 != 1);
-  u_if(1 == 1);
+  int arr[] = {1, 2, 3, 4, 5, 6};
 
-  u_if(1 == 1, "1 == 1");
+  inf("%ld", array_len(arr));
 
-  u_if(1 == 1, "1 == %d", 1);
+  int a = 0;
+  int b = 100;
 
-  u_goto_if(1 == 1);
+  swap(a, b);
 
-err:
+  inf("%d, %d", a, b);
 
-  u_goto_if(1 == 1, loop);
-
-loop:
-
-  u_goto_if(1 == 1, loop_1, "goto loop_1");
-
-loop_1:
+  inf("%d", align_of(9, 8));
+  inf("%d", align_of(9, 4));
 
   return 0;
 }
