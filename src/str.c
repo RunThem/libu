@@ -288,3 +288,29 @@ bool __str_suffix(str_t* str, c_str c_string, size_t len) {
 bool __str_contain(str_t* str, c_str c_string, size_t len) {
   return __str_find(str, c_string, len, 0) != -1;
 }
+
+size_t __str_count(str_t* str, c_str c_string, size_t len) {
+  c_str tmp    = nullptr;
+  c_str ptr    = nullptr;
+  size_t count = 0;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(c_string == nullptr, -1);
+  u_ret_if(len > _str->len, -1);
+
+  ptr = _str->c_str;
+
+  while (true) {
+    tmp = strstr(ptr, c_string);
+
+    if (tmp == nullptr) {
+      break;
+    }
+
+    ptr = tmp + 1;
+    count++;
+  }
+
+  return count;
+}

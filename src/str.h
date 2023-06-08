@@ -307,3 +307,15 @@ bool __str_suffix(str_t* str, c_str c_string, size_t len);
  * */
 bool __str_contain(str_t* str, c_str c_string, size_t len);
 #define str_contain(s, c_s, arg...) __str_contain(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
+
+/*
+ * 统计字符串包含子串个数
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    assert(3 == str_count(&str, 'l'));
+ *    assert(2 == str_count(&str, "o"));
+ * */
+size_t __str_count(str_t* str, c_str c_string, size_t len);
+#define str_count(s, c_s, arg...) __str_count(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
