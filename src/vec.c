@@ -146,10 +146,11 @@ size_t __vec__cap(size_t size) {
     _v_insert__ret;                                                                                \
   })
 
-#define __vec_erase(vec, idx, arg...)                                                                \
+#define __vec_erase(vec, idx, arg...)                                                              \
   ({                                                                                               \
     ssize_t _v_erase__ret = (idx < 0 || idx > _(vec)->len) ? -1 : 0;                               \
     ssize_t _v_erase__len = va_0th(1, arg);                                                        \
+                                                                                                   \
     if (_v_erase__ret != -1) {                                                                     \
       if (idx + _v_erase__len >= _(vec)->len) {                                                    \
         _v_erase__len = -2;                                                                        \
@@ -169,4 +170,42 @@ size_t __vec__cap(size_t size) {
     }                                                                                              \
                                                                                                    \
     _(vec)->len;                                                                                   \
+  })
+
+#define __vec_find(vec, item, arg...)                                                              \
+  ({                                                                                               \
+    ssize_t _v_find__ret = -1;                                                                     \
+    auto _v_find__lm     = va_0th((nullptr), arg);                                                 \
+                                                                                                   \
+    for (size_t _v_find__i = 0; _v_find__i < _(vec)->len; _v_find__i++) {                          \
+      if (va_or(_(vec)->data[_v_find__i] == item,                                                  \
+                _v_find__lm(_(vec)->data[_v_find__i], item),                                       \
+                arg)) {                                                                            \
+        _v_find__ret = _v_find__i;                                                                 \
+        break;                                                                                     \
+      }                                                                                            \
+    }                                                                                              \
+                                                                                                   \
+    (void)_v_find__lm;                                                                             \
+    _v_find__ret;                                                                                  \
+  })
+
+#define __vec_contain(vec, item, arg...) ({ (bool)(vec_find(vec, item, arg) != -1); })
+
+#define __vec_comp(vec, v, arg...)                                                                 \
+  ({                                                                                               \
+    bool _v_comp__ret = true;                                                                      \
+    auto _v_comp__lm  = va_0th((nullptr), arg);                                                    \
+                                                                                                   \
+    for (size_t _v_comp__i = 0; _v_comp__i < _(vec)->len; _v_comp__i++) {                          \
+      if (va_or(_(vec)->data[_v_comp__i] != (v)->data[_v_comp__i],                                 \
+                !_v_comp__lm(_(vec)->data[_v_comp__i], (v)->data[_v_comp__i]),                     \
+                arg)) {                                                                            \
+        _v_comp__ret = false;                                                                      \
+        break;                                                                                     \
+      }                                                                                            \
+    }                                                                                              \
+                                                                                                   \
+    (void)_v_comp__lm;                                                                             \
+    _v_comp__ret;                                                                                  \
   })

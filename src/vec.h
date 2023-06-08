@@ -230,3 +230,51 @@
  *    // v   -> (2, 8) { 1, 10 };
  * */
 #define vec_erase(vec, idx, arg...) __vec_erase(vec, idx, arg)
+
+/*
+ * 在vec中查照元素, 并返回下标
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto idx = vec_find(&v, 5);
+ *
+ *    assert(2 == idx);
+ * */
+#define vec_find(vec, item, arg...) __vec_find(vec, item, arg)
+
+/*
+ * 在vec中是否包含某元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto is = vec_contain(&v, 5);
+ *
+ *    assert(idx);
+ *
+ *    is = vec_contain(&v, 100);
+ *
+ *    assert(!idx);
+ * */
+#define vec_contain(vec, item, arg...) ({ (bool)(vec_find(vec, item, arg) != -1); })
+
+/*
+ * 比较两个vec是否长度相同, 元素相同
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto v_1 = vec_clone(&vv);
+ *
+ *    auto is = vec_comp(&v, v_1);
+ *
+ *    assert(idx);
+ * */
+#define vec_comp(vec, v, arg...) __vec_comp(vec, v, arg)
