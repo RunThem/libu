@@ -1,4 +1,5 @@
 #include "str.h"
+#include "u.h"
 
 #define _str (*str)
 
@@ -96,3 +97,18 @@ bool __str_empty(str_t* str) {
   return (_str)->len == 0;
 }
 
+int __str_resize(str_t* str, size_t len) {
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(len <= _str->len, -1);
+
+  _str = (str_t)u_realloc(_str, len);
+  u_alloc_if(_str);
+
+  _str->cap = len;
+
+  return 0;
+
+err:
+  return -1;
+}

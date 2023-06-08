@@ -7,9 +7,5 @@
 
 int main(int argc, const char** argv) {
 
-  str_t str = str_new("hello");
-
-  assert(false == str_empty(&str));
-
   return 0;
 }

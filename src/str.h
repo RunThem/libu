@@ -115,3 +115,15 @@ void __str_cleanup(str_t* str);
  * */
 bool __str_empty(str_t* str);
 #define str_empty(s) __str_empty(s)
+
+/*
+ * 扩容字符串, len 必须大于 str_len(str)
+ *
+ * str_t str = str_new("");
+ *
+ * str_resize(&str, 100);
+ *
+ * assert(100 == str->cap);
+ * */
+int __str_resize(str_t* str, size_t len);
+#define str_resize(s, len) __str_resize(s, len)
