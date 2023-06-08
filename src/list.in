@@ -1,0 +1,30 @@
+#include "u.h"
+
+#define __list_header                                                                              \
+  (sizeof(struct {                                                                                 \
+    size_t len;                                                                                    \
+    void* head; /* head */                                                                         \
+    void* tail; /* tail */                                                                         \
+  }))
+
+#define __list_init(list) ({ _(list) = u_talloc(__list_header, typeof(_(list))); })
+
+#define __list_clear(list)                                                                         \
+  ({                                                                                               \
+    list_T(list)* _l_clear__node = _(list)->head;                                                  \
+    while (_(list)->head != _(list)->tail) {                                                       \
+      _(list)->head = _l_clear__node->next;                                                        \
+      u_free(_l_clear__node);                                                                      \
+      _l_clear__node = _(list)->head;                                                              \
+    }                                                                                              \
+    u_free(_l_clear__node);                                                                        \
+    _(list)->head = _(list)->tail = nullptr;                                                       \
+    _(list)->len                  = 0;                                                             \
+  })
+
+#define __list_cleanup(list)                                                                       \
+  ({                                                                                               \
+    list_clear(list);                                                                              \
+    u_free(_(list));                                                                               \
+    _(list) = nullptr;                                                                             \
+  })
