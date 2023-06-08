@@ -18,12 +18,19 @@ add_requires('mimalloc')
 
 add_includedirs('$(projectdir)/src')
 
-target('libu', function()
+target('u', function()
   set_kind('static')
   add_files('src/*.c')
   add_headerfiles('src/*.h', { prefixdir = 'u' })
 
   add_packages('mimalloc')
+end)
+
+target('test', function()
+  set_kind('binary')
+  add_files('main.c')
+
+  add_deps('u')
 end)
 
 target('fmt', function()
