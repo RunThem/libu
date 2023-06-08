@@ -247,3 +247,25 @@ typedef long double f128_t;
     (a)             = (b);                                                                         \
     (b)             = (_swap__tmp);                                                                \
   } while (0)
+
+#define min_from(_0, _1, arg...)                                                                   \
+  ({                                                                                               \
+    typeof(_0) _min_from__arr[] = {(_0), (_1)va_slice(0, arg)};                                    \
+    size_t _min_from__idx       = 0;                                                               \
+    for (size_t _min_from__i = 1; _min_from__i < array_len(_min_from__arr); _min_from__i++)        \
+      if (_min_from__arr[_min_from__idx] > _min_from__arr[_min_from__i])                           \
+        _min_from__idx = _min_from__i;                                                             \
+                                                                                                   \
+    _min_from__arr[_min_from__idx];                                                                \
+  })
+
+#define max_from(_0, _1, arg...)                                                                   \
+  ({                                                                                               \
+    typeof(_0) _max_from__arr[] = {(_0), (_1)va_slice(0, arg)};                                    \
+    size_t _max_from__idx       = 0;                                                               \
+    for (size_t _max_from__i = 1; _max_from__i < array_len(_max_from__arr); _max_from__i++)        \
+      if (_max_from__arr[_max_from__idx] < _max_from__arr[_max_from__i])                           \
+        _max_from__idx = _max_from__i;                                                             \
+                                                                                                   \
+    _max_from__arr[_max_from__idx];                                                                \
+  })
