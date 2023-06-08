@@ -145,3 +145,28 @@ size_t __vec__cap(size_t size) {
                                                                                                    \
     _v_insert__ret;                                                                                \
   })
+
+#define __vec_erase(vec, idx, arg...)                                                                \
+  ({                                                                                               \
+    ssize_t _v_erase__ret = (idx < 0 || idx > _(vec)->len) ? -1 : 0;                               \
+    ssize_t _v_erase__len = va_0th(1, arg);                                                        \
+    if (_v_erase__ret != -1) {                                                                     \
+      if (idx + _v_erase__len >= _(vec)->len) {                                                    \
+        _v_erase__len = -2;                                                                        \
+      }                                                                                            \
+                                                                                                   \
+      if (_v_erase__len == -1) {                                                                   \
+        _(vec)->len -= idx;                                                                        \
+        memmove(_(vec)->data, &_(vec)->data[idx], _(vec)->len* vec_itsize(vec));                   \
+      } else if (_v_erase__len == -2) {                                                            \
+        _(vec)->len = idx;                                                                         \
+      } else {                                                                                     \
+        memmove(&_(vec)->data[idx],                                                                \
+                &_(vec)->data[idx + _v_erase__len],                                                \
+                (_(vec)->len - idx - _v_erase__len) * vec_itsize(vec));                            \
+        _(vec)->len -= _v_erase__len;                                                              \
+      }                                                                                            \
+    }                                                                                              \
+                                                                                                   \
+    _(vec)->len;                                                                                   \
+  })

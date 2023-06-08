@@ -216,3 +216,17 @@
  *    // v   -> (6, 8) { 1, 4, 8, 9, 5, 10 };
  * */
 #define vec_insert(vec, idx, item, arg...) __vec_insert(vec, idx, item, arg)
+
+/*
+ * 删除vec中部分元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    vec_erase(&v, 1, 2);
+ *
+ *    // v   -> (2, 8) { 1, 10 };
+ * */
+#define vec_erase(vec, idx, arg...) __vec_erase(vec, idx, arg)
