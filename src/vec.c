@@ -209,3 +209,13 @@ size_t __vec__cap(size_t size) {
     (void)_v_comp__lm;                                                                             \
     _v_comp__ret;                                                                                  \
   })
+
+#define __vec_dis(v, fn)                                                                           \
+  do {                                                                                             \
+    __inf("len %ld, cap %ld: {", _(v)->len, _(v)->cap);                                            \
+    for (size_t i = 0; i < _(v)->len; i++) {                                                       \
+      fn(_(v)->data[i]);                                                                           \
+      __prt(", ");                                                                                 \
+    }                                                                                              \
+    __prt("\b\b}\n");                                                                              \
+  } while (0)

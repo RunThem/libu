@@ -278,3 +278,10 @@
  *    assert(idx);
  * */
 #define vec_comp(vec, v, arg...) __vec_comp(vec, v, arg)
+
+#define vec_for(vec, it)                                                                           \
+  for (auto(it) = vec_at(vec, 0); _(vec)->len > 0 && (it) <= vec_at(vec, _(vec)->len - 1); (it)++)
+
+#define vec_each(vec, i) for (size_t(i) = 0; (i) < _(vec)->len; (i)++)
+
+#define vec_dis(v, fn) __vec_dis(v, fn)
