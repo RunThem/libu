@@ -1,6 +1,6 @@
 #pragma once
 
-#include "map.h"
+#include "map.c"
 #include "u.h"
 
 /*
@@ -77,4 +77,19 @@ hash_t map_int_hash(const uint8_t* ptr, size_t len) {
   return hash;
 }
 
+/*
+ * map 节点大小
+ * */
 #define map_itsize(map) ({ sizeof(map_T(map)); })
+
+/*
+ * 初始化map, 并设置桶个数
+ * */
+#define map_init(map, arg...) __map_init(map, arg)
+
+/*
+ * 清除map, 释放所有节点
+ * */
+#define map_clear(map) __map_clear(map)
+
+#define map_cleanup(map) __map_cleanup(map)
