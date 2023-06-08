@@ -161,3 +161,9 @@ typedef long double f128_t;
       __prt("%*s'\n", 48 - 3 * ((int)__pos % 16) + (int)__i, __buf);                               \
     }                                                                                              \
   } while (0)
+
+#define err(fmt, ...)                                                                              \
+  do {                                                                                             \
+    const char* __ERROR__ = (errno != 0) ? strerror(errno) : "no errno";                           \
+    inf("(\x1b[31m%s\x1b[0m) " fmt, __ERROR__ __VA_OPT__(, ) __VA_ARGS__);                         \
+  } while (0)
