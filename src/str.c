@@ -26,7 +26,7 @@ str_t __str_new(c_str c_string, size_t len) {
   str_t str  = nullptr;
 
   u_ret_if(c_string == nullptr, nullptr);
-  u_ret_if(len <= 0, nullptr);
+  u_ret_if(len < 0, nullptr);
 
   cap = str_cap(len);
 
@@ -88,3 +88,11 @@ void __str_cleanup(str_t* str) {
   u_free(_str);
   _str = nullptr;
 }
+
+bool __str_empty(str_t* str) {
+  u_ret_if(str == nullptr, true);
+  u_ret_if(_str == nullptr, true);
+
+  return (_str)->len == 0;
+}
+

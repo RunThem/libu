@@ -101,3 +101,17 @@ void __str_clear(str_t* str);
  * */
 void __str_cleanup(str_t* str);
 #define str_cleanup(s) __str_cleanup(s)
+
+/*
+ * 判断字符串是否为空
+ *
+ * str_t str = str_new("");
+ *
+ * assert(true == str_empty(&str));
+ *
+ * str_t str = str_new("hello");
+ *
+ * assert(false == str_empty(&str));
+ * */
+bool __str_empty(str_t* str);
+#define str_empty(s) __str_empty(s)

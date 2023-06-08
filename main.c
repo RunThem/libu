@@ -9,9 +9,7 @@ int main(int argc, const char** argv) {
 
   str_t str = str_new("hello");
 
-  str_cleanup(&str);
-
-  assert(nullptr == str);
+  assert(false == str_empty(&str));
 
   return 0;
 }
