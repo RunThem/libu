@@ -246,3 +246,64 @@ int __str_insert_f(str_t* str, size_t idx, c_str fmt, ...);
  * */
 int __str_erase(str_t* str, size_t idx, ssize_t len);
 #define str_erase(s, idx, arg...) __str_erase(s, idx, va_0th(1, arg))
+
+/*
+ * 比较两个字符串
+ *
+ * code:
+ *    str_t str = str_new("hello");
+ *    str_t str_1 = str_new("hello");
+ *
+ *    assert(!str_comp(&str, "hello"));
+ *    assert(!str_comp(&str, str_1));
+ * */
+int __str_comp(str_t* str, c_str c_string, size_t len);
+#define str_comp(s, c_s) __str_comp(s, __str_start(c_s), __str_size(c_s))
+
+/*
+ * 在字符串中查照
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    assert(4 == str_find(&str, "o"));
+ *    assert(7 == str_find(&str, "o", 5));
+ * */
+ssize_t __str_find(str_t* str, c_str c_string, size_t len, size_t idx);
+#define str_find(s, c_s, arg...) __str_find(s, __str_start(c_s), __str_size(c_s), va_0th(0, arg))
+
+/*
+ * 判断字符串前缀
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    assert(str_prefix(&str, "hello"));
+ *    assert(!str_prefix(&str, "help"));
+ * */
+bool __str_prefix(str_t* str, c_str c_string, size_t len);
+#define str_prefix(s, c_s, arg...) __str_prefix(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
+
+/*
+ * 判断字符串后缀
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    assert(str_suffix(&str, "world"));
+ *    assert(!str_suffix(&str, "word"));
+ * */
+bool __str_suffix(str_t* str, c_str c_string, size_t len);
+#define str_suffix(s, c_s, arg...) __str_suffix(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
+
+/*
+ * 判断字符串是否包含另一个字符串
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    assert(str_contain(&str, "world"));
+ *    assert(!str_contain(&str, "word"));
+ * */
+bool __str_contain(str_t* str, c_str c_string, size_t len);
+#define str_contain(s, c_s, arg...) __str_contain(s, __str_start(c_s), va_0th(__str_size(c_s), arg))

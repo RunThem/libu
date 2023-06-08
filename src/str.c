@@ -248,3 +248,43 @@ int __str_erase(str_t* str, size_t idx, ssize_t len) {
 
   return 0;
 }
+
+int __str_comp(str_t* str, c_str c_string, size_t len) {
+  u_ret_if(str == nullptr, false);
+  u_ret_if(_str == nullptr, false);
+  u_ret_if(c_string == nullptr, false);
+  u_ret_if(len != _str->len, false);
+
+  return strncmp(_str->c_str, c_string, len);
+}
+
+ssize_t __str_find(str_t* str, c_str c_string, size_t len, size_t idx) {
+  c_str p = nullptr;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(c_string == nullptr, -1);
+  u_ret_if(len > _str->len, -1);
+  u_ret_if(idx >= _str->len, -1);
+  u_ret_if(len + idx >= _str->len, -1);
+
+  p = strstr(&_str->c_str[idx], c_string);
+  u_goto_if(p == nullptr);
+
+  return p - _str->c_str;
+
+err:
+  return -1;
+}
+
+bool __str_prefix(str_t* str, c_str c_string, size_t len) {
+  return __str_find(str, c_string, len, 0) == 0;
+}
+
+bool __str_suffix(str_t* str, c_str c_string, size_t len) {
+  return __str_find(str, c_string, len, _str->len - len) == (_str->len - len);
+}
+
+bool __str_contain(str_t* str, c_str c_string, size_t len) {
+  return __str_find(str, c_string, len, 0) != -1;
+}
