@@ -127,3 +127,52 @@ bool __str_empty(str_t* str);
  * */
 int __str_resize(str_t* str, size_t len);
 #define str_resize(s, len) __str_resize(s, len)
+
+/*
+ * 在字符串结尾追加字符串
+ *
+ * str_t str = str_new("hello");
+ *
+ * str_push(&str, " world.");
+ *
+ * assert(!strncmp("hello world.", str->c_str, str->len));
+ * */
+int __str_push(str_t* str, c_str c_string, size_t size);
+#define str_push(s, c_s, arg...) __str_push(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
+
+/*
+ * 与 `str_push` 类似
+ *
+ * str_t str = str_new("hello");
+ *
+ * str_push_f(&str, " %s.", "world");
+ *
+ * assert(!strncmp("hello world.", str->c_str, str->len));
+ * */
+int __str_push_f(str_t* str, c_str fmt, ...);
+#define str_push_f(s, fmt, arg...) __str_push_f(s, __str_start(fmt) va_slice(0, arg))
+
+/*
+ * 在字符串中间插入字符串
+ *
+ * str_t str = str_new("hello");
+ *
+ * str_insert(&str, 2, " world.");
+ *
+ * assert(!strncmp("he world.llo", str->c_str, str->len));
+ * */
+int __str_insert(str_t* str, size_t idx, c_str c_string, size_t size);
+#define str_insert(s, idx, c_s, arg...)                                                            \
+  __str_insert(s, idx, __str_start(c_s), va_0th(__str_size(c_s), arg))
+
+/*
+ * 与 `str_insert` 类似
+ *
+ * str_t str = str_new("hello");
+ *
+ * str_insert_f(&str, 2, " %s.", "world");
+ *
+ * assert(!strncmp("he world.llo", str->c_str, str->len));
+ * */
+int __str_insert_f(str_t* str, size_t idx, c_str fmt, ...);
+#define str_insert_f(s, idx, fmt, arg...) __str_insert_f(s, idx, __str_start(fmt) va_slice(0, arg))

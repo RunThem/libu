@@ -112,3 +112,108 @@ int __str_resize(str_t* str, size_t len) {
 err:
   return -1;
 }
+
+int __str_push(str_t* str, c_str c_string, size_t size) {
+  int ret = 0;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(c_string == nullptr, -1);
+
+  if (size > _str->cap - _str->len) {
+    ret = __str_resize(str, str_cap(_str->len) + size);
+    u_goto_if(ret != 0);
+  }
+
+  strncpy(&_str->c_str[_str->len], c_string, size);
+  _str->len += size;
+
+  return 0;
+
+err:
+  return -1;
+}
+
+int __str_push_f(str_t* str, c_str fmt, ...) {
+  char buf[4096] = {0};
+  int size       = 0;
+  int ret        = 0;
+  va_list ap;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(fmt == nullptr, -1);
+
+  va_start(ap, fmt);
+  size = vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+
+  if (size > _str->cap - _str->len) {
+    ret = __str_resize(str, str_cap(_str->len) + size);
+    u_goto_if(ret != 0);
+  }
+
+  strncpy(&_str->c_str[_str->len], buf, size);
+  _str->len += size;
+
+  return 0;
+
+err:
+  return -1;
+}
+
+int __str_insert(str_t* str, size_t idx, c_str c_string, size_t size) {
+  int ret = 0;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(idx < 0 || idx > _str->len, -1);
+  u_ret_if(c_string == nullptr, -1);
+
+  if (size > _str->cap - _str->len) {
+    ret = __str_resize(str, str_cap(_str->len) + size);
+    u_goto_if(ret != 0);
+  }
+
+  if (idx < _str->len) {
+    memmove(&_str->c_str[idx + size], &_str->c_str[idx], _str->len - idx);
+  }
+
+  strncpy(&_str->c_str[idx], c_string, size);
+  _str->len += size;
+
+  return 0;
+
+err:
+  return -1;
+}
+
+int __str_insert_f(str_t* str, size_t idx, c_str fmt, ...) {
+  char buf[4096] = {0};
+  int size       = 0;
+  int ret        = 0;
+  va_list ap;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(idx < 0 || idx > _str->len, -1);
+  u_ret_if(fmt == nullptr, -1);
+
+  va_start(ap, fmt);
+  size = vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+
+  if (size > _str->cap - _str->len) {
+    ret = __str_resize(str, str_cap(_str->len) + size);
+    u_goto_if(ret != 0);
+  }
+
+  memmove(&_str->c_str[idx + size], &_str->c_str[idx], _str->len - idx);
+  strncpy(&_str->c_str[idx], buf, size);
+  _str->len += size;
+
+  return 0;
+
+err:
+  return -1;
+}
