@@ -76,3 +76,28 @@ str_t __str_new(c_str c_string, size_t len);
  */
 str_t __str_new_f(c_str fmt, ...);
 #define str_new_f(fmt, arg...) __str_new_f(__str_start(fmt), arg)
+
+/*
+ * 清除字符串中内容, 使长度为0
+ *
+ * str_t str = str_new("hello");
+ *
+ * str_clear(&str);
+ *
+ * assert(0 == str->len);
+ * assert('\0' == str->c_str[0]);
+ * */
+void __str_clear(str_t* str);
+#define str_clear(s) __str_clear(s)
+
+/*
+ * 释放字符串
+ *
+ * str_t str = str_new("hello");
+ *
+ * str_cleanup(&str);
+ *
+ * assert(nullptr == str);
+ * */
+void __str_cleanup(str_t* str);
+#define str_cleanup(s) __str_cleanup(s)

@@ -1,5 +1,7 @@
 #include "str.h"
 
+#define _str (*str)
+
 /* clang-format off */
 size_t __str_char_size(char c)     { return sizeof(char); }
 size_t __str_c_str_size(c_str s)   { return strlen(s); }
@@ -69,4 +71,20 @@ str_t __str_new_f(c_str fmt, ...) {
 
 err:
   return nullptr;
+}
+
+void __str_clear(str_t* str) {
+  u_ret_no_if(str == nullptr);
+  u_ret_no_if(_str == nullptr);
+
+  _str->len      = 0;
+  _str->c_str[0] = '\0';
+}
+
+void __str_cleanup(str_t* str) {
+  u_ret_no_if(str == nullptr);
+  u_ret_no_if(_str == nullptr);
+
+  u_free(_str);
+  _str = nullptr;
 }
