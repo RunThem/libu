@@ -319,3 +319,38 @@ bool __str_contain(str_t* str, c_str c_string, size_t len);
  * */
 size_t __str_count(str_t* str, c_str c_string, size_t len);
 #define str_count(s, c_s, arg...) __str_count(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
+
+/*
+ * 剪切字符串中某一部分, 并返回这部分, len 若为0, 则 len = str->len - idx
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    auto str_1 = str_cut(&str, 5, 1);
+ *
+ *    assert(!strncmp("helloworld", str->c_str, str->len));
+ *    assert(!strncmp(" ", str_1->c_str, str_1->len));
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    auto str_1 = str_cut(&str, 5, 0);
+ *
+ *    assert(!strncmp("hello", str->c_str, str->len));
+ *    assert(!strncmp(" world", str_1->c_str, str_1->len));
+ * */
+str_t __str_cut(str_t* str, size_t idx, size_t len);
+#define str_cut(s, idx, arg...) __str_cut(s, idx, va_0th(0, arg))
+
+/*
+ * 拷贝字符串count次
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    str_repeat(&str, 3);
+ *
+ *    assert(!strncmp("hello worldhello worldhello world", str->c_str, str->len));
+ * */
+int __str_repeat(str_t* str, size_t count);
+#define str_repeat(s, cnt) __str_repeat(s, cnt)

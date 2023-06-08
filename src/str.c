@@ -314,3 +314,51 @@ size_t __str_count(str_t* str, c_str c_string, size_t len) {
 
   return count;
 }
+
+str_t __str_cut(str_t* str, size_t idx, size_t len) {
+  str_t sub_str = nullptr;
+
+  u_ret_if(str == nullptr, nullptr);
+  u_ret_if(_str == nullptr, nullptr);
+  u_ret_if(idx >= _str->len, nullptr);
+  u_ret_if(idx + len > _str->len, nullptr);
+
+  if (len == 0) {
+    sub_str = __str_new(&_str->c_str[idx], _str->len - idx);
+    u_goto_if(sub_str == nullptr);
+
+    __str_erase(str, idx, -2);
+  } else {
+    sub_str = __str_new(&_str->c_str[idx], len);
+    u_goto_if(sub_str == nullptr);
+
+    __str_erase(str, idx, (ssize_t)len);
+  }
+
+  return sub_str;
+
+err:
+  return nullptr;
+}
+
+int __str_repeat(str_t* str, size_t count) {
+  int ret = 0;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(count <= 1, -1);
+
+  ret = __str_resize(str, str_cap(_str->len * count));
+  u_goto_if(ret != 0);
+
+  for (size_t i = 0; i < count; i++) {
+    strncpy(&_str->c_str[i * _str->len], _str->c_str, _str->len);
+  }
+
+  _str->len *= count;
+
+  return 0;
+
+err:
+  return -1;
+}
