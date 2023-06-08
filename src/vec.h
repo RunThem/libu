@@ -63,3 +63,18 @@
  * 判断vec是否为空
  * */
 #define vec_empty(vec) __vec_empty(vec)
+
+/*
+ * 扩容vec, size 必须大于 vec->len;
+ * */
+#define vec_resize(vec, size) __vec_resize(vec, size)
+
+/*
+ * 清除vec, 设置长度为0
+ * */
+#define vec_clear(vec) __vec_clear(vec)
+
+/*
+ * 释放vec
+ * */
+#define vec_cleanup(vec) __vec_cleanup(vec)

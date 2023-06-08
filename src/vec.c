@@ -44,3 +44,30 @@ size_t __vec__cap(size_t size) {
   })
 
 #define __vec_empty(vec) ({ _(vec)->len == 0; })
+
+#define __vec_resize(vec, size)                                                                    \
+  ({                                                                                               \
+    ssize_t _v_resize__ret = 0;                                                                    \
+    if (_(vec)->cap >= (size)) {                                                                   \
+      _(vec)->len    = size;                                                                       \
+      _v_resize__ret = _(vec)->cap;                                                                \
+    } else {                                                                                       \
+      _(vec)         = u_realloc(_(vec), __vec_header + vec_itsize(vec) * (size));                 \
+      _v_resize__ret = _(vec)->cap = (_(vec) == nullptr) ? -1 : (size);                            \
+    }                                                                                              \
+                                                                                                   \
+    _v_resize__ret;                                                                                \
+  })
+
+#define __vec_clear(vec) ({ _(vec)->len = 0; })
+
+#define __vec_cleanup(vec)                                                                         \
+  ({                                                                                               \
+    ssize_t _v_cleanup__ret = (_(vec) == nullptr) ? -1 : 0;                                        \
+    if (_v_cleanup__ret != -2) {                                                                   \
+      u_free(_(vec));                                                                              \
+      (vec) = nullptr;                                                                             \
+    }                                                                                              \
+                                                                                                   \
+    _v_cleanup__ret;                                                                               \
+  })
