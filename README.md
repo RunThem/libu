@@ -6,11 +6,11 @@
 -->
 
   <h3 align="center">libu</h3>
-  <p align="center">快速开始你的项目!</p>
+  <p align="center">基于C23标准&语言表达式扩展的基础库!</p>
 </p>
 <br />
 
- 简单的C项目模板
+`C` 在 `C23` 标准之前, 缺少抽象能力, 很难写出好用的容器, 但在C23标准后就不一样了, 它提供了 `typeof` 和 `auto`, 再加上`语句表达式扩展`, 就可以利用宏来实现好用的容器了. 当然, 缺点也是有的, 就是代码会急速的膨胀起来.
  
 ## 目录
 
@@ -22,20 +22,16 @@
 
 ### 上手指南
 
-将本仓库克隆至本地并改名.
-
 ###### 配置要求
 
 1. [xmake](https://github.com/xmake-io/xmake) 项目构建工具
-2. [c2x compiler](https://zh.cppreference.com/w/c/23) 支持 `c2x` 标准的C编译器
+2. [c2x compiler](https://zh.cppreference.com/w/c/23) 支持 `c2x` 标准的C编译器(默认为Clang 16.0)
 
 ###### **安装步骤**
 
 ```shell
-git clone https://github.com/RunThem/libu.git ${your_repository}
-cd ${your_repository}
-
-bash -c 'sed -i "s/libu/$(basename `pwd`)/g" README.md xmake.lua && git update-ref -d HEAD && git add . && git commit -m "first commit" && git remote remove origin'
+git clone https://github.com/RunThem/libu.git
+cd libu
 
 xmake f -m debug --toolchain=clang && xmake
 
