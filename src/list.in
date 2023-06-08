@@ -163,3 +163,27 @@
       _(list)->len++;                                                                              \
     }                                                                                              \
   })
+
+#define __list_erase(list, _node)                                                                    \
+  ({                                                                                               \
+    if (_node != nullptr) {                                                                        \
+      list_T(list)* _l_erase__prev = (_node)->prev;                                                \
+      list_T(list)* _l_erase__next = (_node)->next;                                                \
+                                                                                                   \
+      if (_(list)->len == 1) {                                                                     \
+        _(list)->head = _(list)->tail = nullptr;                                                   \
+        u_free(_node);                                                                             \
+      } else if (_node == _(list)->head) {                                                         \
+        u_free(list_pop_f(list));                                                                  \
+      } else if (_node == _(list)->tail) {                                                         \
+        u_free(list_pop_b(list));                                                                  \
+      } else {                                                                                     \
+        _l_erase__prev->next = _l_erase__next;                                                     \
+        _l_erase__next->prev = _l_erase__prev;                                                     \
+        u_free(_node);                                                                             \
+      }                                                                                            \
+                                                                                                   \
+      _(list)->len--;                                                                              \
+    }                                                                                              \
+  })
+

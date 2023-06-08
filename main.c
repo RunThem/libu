@@ -16,6 +16,10 @@ int main(int argc, const char** argv) {
 
   list_insert_b(&lst, lst->head, 1000);
 
+  list_for(&lst, it) {
+    inf("%d", it->val);
+  }
+
   list_cleanup(&lst);
 
   return 0;

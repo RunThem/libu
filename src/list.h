@@ -192,3 +192,25 @@
  *    // lst -> { 100, 40, 30, 20, 10 }
  * */
 #define list_insert_f(list, _idx, _val) __list_insert_f(list, _idx, _val)
+
+/*
+ * 在list中删除节点
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    list_erase(&lst, lst->head);
+ *
+ *    // lst -> { 30, 20, 10 }
+ * */
+#define list_erase(list, _node) __list_erase(list, _node)
+
+#define list_for(list, it)                                                                         \
+  for (auto(it) = (list_T(list)*)list_peek_f(list); (it) != nullptr; (it) = (it)->next)
