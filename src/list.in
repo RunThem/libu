@@ -28,3 +28,37 @@
     u_free(_(list));                                                                               \
     _(list) = nullptr;                                                                             \
   })
+
+#define __list_push_b(list, _val)                                                                  \
+  ({                                                                                               \
+    list_T(list)* _l_push_b__node = nullptr;                                                       \
+    list_T(list)* _l_push_b__tail = _(list)->tail;                                                 \
+                                                                                                   \
+    if (_l_push_b__tail == nullptr) {                                                              \
+      _l_push_b__node = list_node(list, _val, nullptr, nullptr);                                   \
+      _(list)->head = _(list)->tail = _l_push_b__node;                                             \
+    } else {                                                                                       \
+      _l_push_b__node       = list_node(list, _val, _(list)->tail, nullptr);                       \
+      _l_push_b__tail->next = _l_push_b__node;                                                     \
+      _(list)->tail         = _l_push_b__node;                                                     \
+    }                                                                                              \
+                                                                                                   \
+    _(list)->len++;                                                                                \
+  })
+
+#define __list_push_f(list, _val)                                                                  \
+  ({                                                                                               \
+    list_T(list)* _l_push_f__node = nullptr;                                                       \
+    list_T(list)* _l_push_f__head = _(list)->head;                                                 \
+                                                                                                   \
+    if (_l_push_f__head == nullptr) {                                                              \
+      _l_push_f__node = list_node(list, _val, nullptr, nullptr);                                   \
+      _(list)->head = _(list)->tail = _l_push_f__node;                                             \
+    } else {                                                                                       \
+      _l_push_f__node       = list_node(list, _val, nullptr, _(list)->head);                       \
+      _l_push_f__head->prev = _l_push_f__node;                                                     \
+      _(list)->head         = _l_push_f__node;                                                     \
+    }                                                                                              \
+                                                                                                   \
+    _(list)->len++;                                                                                \
+  })
