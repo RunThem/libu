@@ -38,4 +38,15 @@ c_str __str_string_start(void* s);
   })
 /* clang-format on */
 
+/*
+ * 返回c字符, c字符数组, str_t的长度
+ *
+ * assert(1 == str_len(c('a')));
+ *
+ * assert(5 == str_len("hello"));
+ *
+ * str_t str = str_new("hello world.");
+ *
+ * assert(12 == str_new(str));
+ * */
 #define str_len(s) __str_size(s)
