@@ -380,3 +380,28 @@ int __str_replace(str_t* str,
                 __str_start(d_s),                                                                  \
                 __str_size(d_s),                                                                   \
                 va_0th(1, arg))
+
+/*
+ * 将字符串转小写
+ * */
+int __str_2lower(str_t* str);
+#define str_2lower(s) __str_2lower(s)
+
+/*
+ * 将字符串转大写
+ * */
+int __str_2upper(str_t* str);
+#define str_2upper(s) __str_2upper(s)
+
+/*
+ * 删除字符串中在c_string中出现的字符
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    str_trim(&str, "ol");
+ *
+ *    assert(!strncmp("he wrd", str->c_str, str->len));
+ * */
+int __str_trim(str_t* str, c_str c_string, size_t len);
+#define str_trim(s, c_s, arg...) __str_trim(s, __str_start(c_s), va_0th(__str_size(c_s), arg))

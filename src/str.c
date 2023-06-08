@@ -1,6 +1,8 @@
 #include "str.h"
 #include "u.h"
 
+#include <ctype.h>
+
 #define _str (*str)
 
 /* clang-format off */
@@ -397,4 +399,46 @@ int __str_replace(str_t* str,
   }
 
   return _count == count;
+}
+
+int __str_2lower(str_t* str) {
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+
+  for (size_t i = 0; i < _str->len; i++) {
+    _str->c_str[i] = c(tolower(_str->c_str[i]));
+  }
+
+  return 0;
+}
+
+int __str_2upper(str_t* str) {
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+
+  for (size_t i = 0; i < _str->len; i++) {
+    _str->c_str[i] = c(toupper(_str->c_str[i]));
+  }
+
+  return 0;
+}
+
+int __str_trim(str_t* str, c_str c_string, size_t len) {
+  c_str ptr = nullptr;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(c_string == nullptr, -1);
+  u_ret_if(len <= 0, -1);
+
+  while (true) {
+    ptr = strpbrk(_str->c_str, c_string);
+    if (ptr == nullptr) {
+      break;
+    }
+
+    __str_erase(str, ptr - _str->c_str, 1);
+  }
+
+  return 0;
 }
