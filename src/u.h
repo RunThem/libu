@@ -4,6 +4,7 @@
  * __include__
  *************************************************************************************************/
 #include <stddef.h>
+#include <stdio.h>
 
 /*************************************************************************************************
  * __va__
@@ -68,3 +69,95 @@ typedef fnt(comp_fn, int, const void*, const void*);
 typedef float f32_t;
 typedef double f64_t;
 typedef long double f128_t;
+
+/*************************************************************************************************
+ * __print__
+ *************************************************************************************************/
+#define __fmt_base(expr)                                                                           \
+  _Generic((expr),                                                                                 \
+      char: "\'%c\'",                                                                              \
+      signed char: "%hhi",                                                                         \
+      unsigned char: "%hhu",                                                                       \
+      short: "%hi",                                                                                \
+      unsigned short: "%hu",                                                                       \
+      int: "%d",                                                                                   \
+      unsigned int: "%u",                                                                          \
+      long: "%ld",                                                                                 \
+      unsigned long: "%lu",                                                                        \
+      long long: "%lld",                                                                           \
+      unsigned long long: "%llu",                                                                  \
+      float: "%f",                                                                                 \
+      double: "%lf",                                                                               \
+      char*: "\"%s\"",                                                                             \
+      const char*: "\"%s\"",                                                                       \
+      signed char*: "\"%s\"",                                                                      \
+      const signed char*: "\"%s\"",                                                                \
+      unsigned char*: "\"%s\"",                                                                    \
+      const unsigned char*: "\"%s\"",                                                              \
+      default: "%p")
+
+#define __prt(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define __inf(fmt, ...)                                                                            \
+  __prt("\x1b[02m[%s $%d %s]\x1b[0m: " fmt,                                                        \
+        __FILE__,                                                                                  \
+        __LINE__,                                                                                  \
+        __FUNCTION__ __VA_OPT__(, ) __VA_ARGS__)
+
+#define inf(fmt, ...) __inf(fmt "\n", __VA_ARGS__)
+
+#define inf_arr(arr, arg...)                                                                       \
+  do {                                                                                             \
+    char* __delim  = "";                                                                           \
+    char __fmt[72] = {0};                                                                          \
+    size_t __size  = va_0th(array_len(arr), arg);                                                  \
+                                                                                                   \
+    snprintf(__fmt, array_len(__fmt), "%%s%s", __fmt_base(arr[0]));                                \
+    __inf("\x1b[36;1m%s\x1b[0m = (len: %ld) [", #arr, __size);                                     \
+    for (size_t __i = 0; __i < __size; __i++) {                                                    \
+      __prt(__fmt, __delim, arr[__i]);                                                             \
+      __delim = ", ";                                                                              \
+    }                                                                                              \
+    __prt("]\n");                                                                                  \
+  } while (0)
+
+#define inf_hex(ptr, arg...)                                                                       \
+  do {                                                                                             \
+                                                                                                   \
+    char __buf[18] = {'\''};                                                                       \
+    uint8_t* __ptr = (uint8_t*)ptr;                                                                \
+    size_t __i     = 0;                                                                            \
+    size_t __pos   = 0;                                                                            \
+    size_t __size  = va_0th(sizeof(ptr), arg);                                                     \
+    __inf("\x1b[36;1m%s\x1b[0m = (size: %ld)\n", #ptr, __size);                                    \
+    while (__size > 0) {                                                                           \
+      if ((__pos % 16) == 0)                                                                       \
+        __prt("    %08lx: ", __pos);                                                               \
+                                                                                                   \
+      __prt("%02x ", __ptr[__pos] & 0xff);                                                         \
+      if ((__pos % 16) == 7)                                                                       \
+        __prt(" ");                                                                                \
+                                                                                                   \
+      if ((__pos % 16) == 15) {                                                                    \
+        for (__i = 1; __i < 18; __i++) {                                                           \
+          auto __idx = __pos - 16 + __i;                                                           \
+          __buf[__i] = isprint(__ptr[__idx]) ? __ptr[__idx] : '.';                                 \
+        }                                                                                          \
+                                                                                                   \
+        __buf[__i - 1] = '\0';                                                                     \
+        __prt("%s'\n", __buf);                                                                     \
+      }                                                                                            \
+                                                                                                   \
+      __pos++;                                                                                     \
+      __size--;                                                                                    \
+    }                                                                                              \
+                                                                                                   \
+    if ((__pos % 16) != 0) {                                                                       \
+      for (__i = 1; __i < __pos % 16 + 2; __i++) {                                                 \
+        auto __idx = __pos - (__pos % 16) + __i - 1;                                               \
+        __buf[__i] = isprint(__ptr[__idx]) ? __ptr[__idx] : '.';                                   \
+      }                                                                                            \
+                                                                                                   \
+      __buf[__i - 1] = '\0';                                                                       \
+      __prt("%*s'\n", 48 - 3 * ((int)__pos % 16) + (int)__i, __buf);                               \
+    }                                                                                              \
+  } while (0)
