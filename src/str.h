@@ -47,6 +47,32 @@ c_str __str_string_start(void* s);
  *
  * str_t str = str_new("hello world.");
  *
- * assert(12 == str_new(str));
+ * assert(12 == str_len(str));
  * */
 #define str_len(s) __str_size(s)
+
+/*
+ * 返回新建字符串并赋值, len 必须小于或等于 str_len(c_str)
+ *
+ * str_t str = str_new("hello");
+ *
+ * assert(5 == str->len);
+ *
+ * str_t str = str_new("hello world", 5);
+ *
+ * assert(5 == str->len);
+ * assert(!strncmp("hello", str->c_str, 5));
+ * */
+str_t __str_new(c_str c_string, size_t len);
+#define str_new(s, arg...) __str_new(__str_start(s), va_0th(__str_size(s), arg))
+
+/*
+ * 与 `str_new` 类型, 只是是以格式化字符串的形式创建一个字符串
+ *
+ * str_t str = str_new_f("hell%c", 'o');
+ *
+ * assert(5 == str->len);
+ * assert(!strncmp("hello", str->c_str, 5));
+ */
+str_t __str_new_f(c_str fmt, ...);
+#define str_new_f(fmt, arg...) __str_new_f(__str_start(fmt), arg)

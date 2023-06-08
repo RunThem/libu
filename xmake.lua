@@ -20,6 +20,7 @@ add_includedirs('$(projectdir)/src')
 
 target('u', function()
   set_kind('static')
+  add_files('src/*.c')
   add_headerfiles('src/*.h', { prefixdir = 'u' })
 
   add_packages('mimalloc')
