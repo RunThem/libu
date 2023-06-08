@@ -92,4 +92,42 @@ hash_t map_int_hash(const uint8_t* ptr, size_t len) {
  * */
 #define map_clear(map) __map_clear(map)
 
+/*
+ * 释放map, 释放所有节点
+ * */
 #define map_cleanup(map) __map_cleanup(map)
+
+/*
+ * 添加元素
+ *
+ * code:
+ *    map(int, char*) m;
+ *
+ *    map_init(&m);
+ *
+ *    map_push(1, "one");
+ *    map_push(2, "two");
+ *
+ *    // m -> (2) { { 1: "one" }, { 2: "two" } }
+ * */
+#define map_push(map, _key, _value) __map_push(map, _key, _value)
+
+/*
+ * 删除元素
+ *
+ * code:
+ *    map(int, c_str) m;
+ *
+ *    map_init(&m);
+ *
+ *    map_push(&m, 1, "one");
+ *    map_push(&m, 2, "two");
+ *
+ *    auto v = map_pop(&m, 1);
+ *
+ *    assert(1 == v.key);
+ *    assert(!strncmp("one", v.value, 3));
+ *
+ *    // m -> (2) { { 2: "two" } }
+ * */
+#define map_pop(map, _key) __map_pop(map, _key)

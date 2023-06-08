@@ -42,3 +42,76 @@
     u_free(_(map));                                                                                \
     _(map) = nullptr;                                                                              \
   })
+
+#define map_node(map, _key, _value, _hash)                                                         \
+  ({                                                                                               \
+    map_T(map)* _m_node__node = u_talloc(map_itsize(map), map_T(map)*);                            \
+    _m_node__node->hash       = (_hash);                                                           \
+    _m_node__node->key        = (_key);                                                            \
+    _m_node__node->value      = (_value);                                                          \
+    _m_node__node;                                                                                 \
+  })
+
+#define __map_push(map, _key, _value)                                                              \
+  ({                                                                                               \
+    ssize_t _m_push__ret      = 0;                                                                 \
+    map_K(map) _m_push__key   = (_key);                                                            \
+    map_V(map) _m_push__value = (_value);                                                          \
+    size_t _m_push__hash      = _(map)->hash_func((void*)&_m_push__key, sizeof(map_K(map)));       \
+    size_t _m_push__idx       = _m_push__hash % (_(map)->_cap);                                    \
+    map_T(map)* _m_push__node = (_(map)->nodes[_m_push__idx].next == nullptr) ?                    \
+                                    &_(map)->nodes[_m_push__idx] :                                 \
+                                    _(map)->nodes[_m_push__idx].next;                              \
+                                                                                                   \
+    /*                                                                                             \
+        inf("push hash 0x%ld, idx %ld, key %d,\t\t value \"%s\"", _m_push__hash, _m_push__idx,     \
+       _m_push__key, _m_push__value);                                                              \
+    */                                                                                             \
+                                                                                                   \
+    for (; _m_push__node != nullptr; _m_push__node = _m_push__node->next) {                        \
+      if (_m_push__node->hash == _m_push__hash &&                                                  \
+          !memcmp((void*)&_m_push__node->key, (void*)&_m_push__key, sizeof(map_K(map)))) {         \
+        memcpy((void*)&_m_push__node->value, (void*)&_m_push__value, sizeof(map_V(map)));          \
+        _m_push__ret = 1;                                                                          \
+      }                                                                                            \
+      if (_m_push__node->next == nullptr) {                                                        \
+        break;                                                                                     \
+      }                                                                                            \
+    }                                                                                              \
+                                                                                                   \
+    if (_m_push__ret == 0) {                                                                       \
+      _m_push__node->next = map_node(map, _key, _value, _m_push__hash);                            \
+      _(map)->nodes[_m_push__idx].hash++;                                                          \
+      _(map)->len++;                                                                               \
+    }                                                                                              \
+                                                                                                   \
+    _m_push__ret;                                                                                  \
+  })
+
+#define __map_pop(map, _key)                                                                       \
+  ({                                                                                               \
+    map_K(map) _m_pop__key   = (_key);                                                             \
+    size_t _m_pop__hash      = _(map)->hash_func((void*)&_m_pop__key, sizeof(map_K(map)));         \
+    size_t _m_pop__idx       = _m_pop__hash & (_(map)->_cap - 1);                                  \
+    map_T(map)* _m_pop__node = &_(map)->nodes[_m_pop__idx];                                        \
+    struct {                                                                                       \
+      map_K(map) key;                                                                              \
+      map_V(map) value;                                                                            \
+    } _m_pop__N = {0};                                                                             \
+                                                                                                   \
+    for (; _m_pop__node != nullptr; _m_pop__node = _m_pop__node->next) {                           \
+      map_T(map)* _m_pop___node = _m_pop__node->next;                                              \
+      if (_m_pop___node->hash == _m_pop__hash &&                                                   \
+          !memcmp((void*)&_m_pop___node->key, (void*)&_m_pop__key, sizeof(map_K(map)))) {          \
+        memcpy((void*)&_m_pop__N, (void*)&_m_pop___node->key, sizeof(_m_pop__N));                  \
+                                                                                                   \
+        _m_pop__node->next = _m_pop___node->next;                                                  \
+        u_free(_m_pop___node);                                                                     \
+        _m_pop__node->hash--;                                                                      \
+                                                                                                   \
+        break;                                                                                     \
+      }                                                                                            \
+    }                                                                                              \
+                                                                                                   \
+    _m_pop__N;                                                                                     \
+  })
