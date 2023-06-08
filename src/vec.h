@@ -71,10 +71,148 @@
 
 /*
  * 清除vec, 设置长度为0
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    vec_clear(&v);
+ *
+ *    // v   -> (0, 8) { };
  * */
 #define vec_clear(vec) __vec_clear(vec)
 
 /*
  * 释放vec
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    vec_clear(&v);
+ *
+ *    assert(nullptr == v);
  * */
 #define vec_cleanup(vec) __vec_cleanup(vec)
+
+/*
+ * 访问vec中某一元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto p = vec_at(&v, 2)
+ *
+ *    assert(5 == *p);
+ * */
+#define vec_at(vec, idx) __vec_at(vec, idx)
+
+/*
+ * 在vec结尾追加元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    vec_push_b(&v, 2);
+ *
+ *    // v   -> (5, 8) { 1, 4, 5, 10, 2 };
+ * */
+#define vec_push_b(vec, item, arg...) __vec_insert(vec, (*vec)->len, item, arg)
+
+/*
+ * 在vec开头追加元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    vec_push_f(&v, 2);
+ *
+ *    // v   -> (5, 8) { 2, 1, 4, 5, 10 };
+ * */
+#define vec_push_f(vec, item, arg...) __vec_insert(vec, 0, item, arg)
+
+/*
+ * 访问vec中结尾元素, 从vec中删除结尾元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto p = vec_pop_b(&v);
+ *
+ *    assert(10 == *p);
+ *
+ *    // v   -> (3, 8) { 1, 4, 5 };
+ * */
+#define vec_pop_b(vec) __vec_pop_b(vec)
+
+/*
+ * 访问vec中开头元素, 从vec中删除开头元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto p = vec_pop_f(&v);
+ *
+ *    assert(1 == *p);
+ *
+ *    // v   -> (3, 8) { 4, 5, 10 };
+ * */
+#define vec_pop_f(vec) __vec_pop_f(vec)
+
+/*
+ * 与 `vec_pop_b`类似, 但不删除元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto p = vec_peek_b(&v);
+ *
+ *    assert(1 == *p);
+ *
+ *    // v   -> (4, 8) { 1, 4, 5, 10 };
+ * */
+#define vec_peek_b(vec) ({ _(vec)->data[(_(vec)->len == 0) ? 0 : _(vec)->len - 1]; })
+
+/*
+ * 与 `vec_pop_f`类似, 但不删除元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto p = vec_peek_f(&v);
+ *
+ *    assert(1 == *p);
+ *
+ *    // v   -> (4, 8) { 1, 4, 5, 10 };
+ * */
+#define vec_peek_f(vec) ({ _(vec)->data[0]; })
+
+/*
+ * 在vec中插入元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    vec_insert(&v, 2, 8, 9);
+ *
+ *    // v   -> (6, 8) { 1, 4, 8, 9, 5, 10 };
+ * */
+#define vec_insert(vec, idx, item, arg...) __vec_insert(vec, idx, item, arg)
