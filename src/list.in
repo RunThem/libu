@@ -62,3 +62,55 @@
                                                                                                    \
     _(list)->len++;                                                                                \
   })
+
+#define __list_pop_b(list)                                                                         \
+  ({                                                                                               \
+    list_T(list)* _l_pop_b__node = _(list)->tail;                                                  \
+    list_T(list)* _l_pop_b__prev = nullptr;                                                        \
+                                                                                                   \
+    if (_l_pop_b__node == _(list)->head) {                                                         \
+      if (_l_pop_b__node != nullptr) {                                                             \
+        _(list)->head = _(list)->tail = nullptr;                                                   \
+        _(list)->len--;                                                                            \
+      }                                                                                            \
+    } else {                                                                                       \
+      _l_pop_b__prev       = _l_pop_b__node->prev;                                                 \
+      _l_pop_b__prev->next = nullptr;                                                              \
+      _(list)->tail        = _l_pop_b__prev;                                                       \
+      _(list)->len--;                                                                              \
+    }                                                                                              \
+                                                                                                   \
+    _l_pop_b__node;                                                                                \
+  })
+
+#define __list_pop_f(list)                                                                         \
+  ({                                                                                               \
+    list_T(list)* _l_pop_f__node = _(list)->head;                                                  \
+    list_T(list)* _l_pop_f__next = nullptr;                                                        \
+                                                                                                   \
+    if (_l_pop_f__node == _(list)->tail) {                                                         \
+      if (_l_pop_f__node != nullptr) {                                                             \
+        _(list)->head = _(list)->tail = nullptr;                                                   \
+        _(list)->len--;                                                                            \
+      }                                                                                            \
+    } else {                                                                                       \
+      _l_pop_f__next       = _l_pop_f__node->next;                                                 \
+      _l_pop_f__next->prev = nullptr;                                                              \
+      _(list)->head        = _l_pop_f__next;                                                       \
+      _(list)->len--;                                                                              \
+    }                                                                                              \
+                                                                                                   \
+    _l_pop_f__node;                                                                                \
+  })
+
+#define __list_peek_b(list)                                                                        \
+  ({                                                                                               \
+    list_T(list)* _l_peek_b__node = _(list)->tail;                                                 \
+    _l_peek_b__node;                                                                               \
+  })
+
+#define __list_peek_f(list)                                                                        \
+  ({                                                                                               \
+    list_T(list)* _l_peek_f__node = _(list)->head;                                                 \
+    _l_peek_f__node;                                                                               \
+  })

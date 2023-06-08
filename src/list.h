@@ -70,3 +70,87 @@
  *    // lst -> { 40, 30, 20, 10 }
  * */
 #define list_push_f(list, _val) __list_push_f(list, _val)
+
+/*
+ * 在list结尾删除节点, 并返回节点
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    auto v = list_pop_b(&lst);
+ *
+ *    assert(10 == v->val);
+ *
+ *    // lst -> { 40, 30, 20 }
+ * */
+#define list_pop_b(list)
+
+/*
+ * 在list开头删除节点, 并返回节点
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    auto v = list_pop_f(&lst);
+ *
+ *    assert(40 == v->val);
+ *
+ *    // lst -> { 30, 20, 10 }
+ * */
+#define list_pop_f(list)
+
+/*
+ * 返回list尾节点
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    auto v = list_peek_b(&lst);
+ *
+ *    assert(10 == v->val);
+ *
+ *    // lst -> { 40, 30, 20, 10 }
+ * */
+#define list_peek_b(list)
+
+/*
+ * 返回list头节点
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    auto v = list_peek_f(&lst);
+ *
+ *    assert(40 == v->val);
+ *
+ *    // lst -> { 40, 30, 20, 10 }
+ * */
+#define list_peek_f(list)\
