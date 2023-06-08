@@ -314,7 +314,7 @@ bool __str_contain(str_t* str, c_str c_string, size_t len);
  * code:
  *    str_t str = str_new("hello world");
  *
- *    assert(3 == str_count(&str, 'l'));
+ *    assert(3 == str_count(&str, c('l')));
  *    assert(2 == str_count(&str, "o"));
  * */
 size_t __str_count(str_t* str, c_str c_string, size_t len);
@@ -354,3 +354,27 @@ str_t __str_cut(str_t* str, size_t idx, size_t len);
  * */
 int __str_repeat(str_t* str, size_t count);
 #define str_repeat(s, cnt) __str_repeat(s, cnt)
+
+/*
+ * 替换字符串中某一部分
+ *
+ * code:
+ *    str_t str = str_new("hello world");
+ *
+ *    str_replace(&str, "l", "_l_");
+ *
+ *    assert(!strncmp("hello worldhello worldhello world", str->c_str, str->len));
+ * */
+int __str_replace(str_t* str,
+                  c_str src_string,
+                  size_t src_len,
+                  c_str dst_string,
+                  size_t dst_len,
+                  size_t count);
+#define str_replace(s, s_s, d_s, arg...)                                                           \
+  __str_replace(s,                                                                                 \
+                __str_start(s_s),                                                                  \
+                __str_size(s_s),                                                                   \
+                __str_start(d_s),                                                                  \
+                __str_size(d_s),                                                                   \
+                va_0th(1, arg))

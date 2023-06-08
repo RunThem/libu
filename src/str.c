@@ -362,3 +362,39 @@ int __str_repeat(str_t* str, size_t count) {
 err:
   return -1;
 }
+
+int __str_replace(str_t* str,
+                  c_str src_string,
+                  size_t src_len,
+                  c_str dst_string,
+                  size_t dst_len,
+                  size_t count) {
+  c_str p       = nullptr;
+  size_t idx    = 0;
+  size_t _count = 0;
+
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(src_string == nullptr, -1);
+  u_ret_if(src_len <= 0, -1);
+  u_ret_if(dst_string == nullptr, -1, );
+  u_ret_if(dst_len <= 0, -1);
+  u_ret_if(count < 0, -1);
+
+  while (count == 0 || _count < count) {
+    p = strstr(&_str->c_str[idx], src_string);
+    if (p == nullptr) {
+      break;
+    }
+
+    idx = p - _str->c_str;
+
+    __str_erase(str, idx, (ssize_t)src_len);
+    __str_insert(str, idx, dst_string, dst_len);
+
+    _count++;
+    idx += dst_len;
+  }
+
+  return _count == count;
+}
