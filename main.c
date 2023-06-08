@@ -12,6 +12,10 @@ int main(int argc, const char** argv) {
 
   list(int) lst = nullptr;
 
+  list_init(&lst);
+
+  list_insert_b(&lst, lst->head, 1000);
+
   list_cleanup(&lst);
 
   return 0;

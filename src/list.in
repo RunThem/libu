@@ -29,6 +29,15 @@
     _(list) = nullptr;                                                                             \
   })
 
+#define list_node(list, _val, _prev, _next)                                                        \
+  ({                                                                                               \
+    list_T(list)* _l_node__node = u_talloc(list_itsize(list), list_T(list)*);                      \
+    _l_node__node->val          = _val;                                                            \
+    _l_node__node->prev         = _prev;                                                           \
+    _l_node__node->next         = _next;                                                           \
+    _l_node__node;                                                                                 \
+  })
+
 #define __list_push_b(list, _val)                                                                  \
   ({                                                                                               \
     list_T(list)* _l_push_b__node = nullptr;                                                       \
@@ -113,4 +122,44 @@
   ({                                                                                               \
     list_T(list)* _l_peek_f__node = _(list)->head;                                                 \
     _l_peek_f__node;                                                                               \
+  })
+
+#define __list_insert_b(list, _idx, _val)                                                          \
+  ({                                                                                               \
+    list_T(list)* _l_insert_b__node = nullptr;                                                     \
+    list_T(list)* _l_insert_b__next = nullptr;                                                     \
+    list_T(list)* _l_insert_b__prev = (_idx);                                                      \
+                                                                                                   \
+    if (_l_insert_b__prev == _(list)->tail) {                                                      \
+      list_push_b(list, _val);                                                                     \
+    } else {                                                                                       \
+      _l_insert_b__next       = _l_insert_b__prev->next;                                           \
+      _l_insert_b__node       = list_node(list, _val, _l_insert_b__prev, _l_insert_b__next);       \
+      _l_insert_b__prev->next = _l_insert_b__node;                                                 \
+      if (_l_insert_b__next != nullptr) {                                                          \
+        _l_insert_b__next->prev = _l_insert_b__node;                                               \
+      }                                                                                            \
+                                                                                                   \
+      _(list)->len++;                                                                              \
+    }                                                                                              \
+  })
+
+#define __list_insert_f(list, _idx, _val)                                                          \
+  ({                                                                                               \
+    list_T(list)* _l_insert_f__node = nullptr;                                                     \
+    list_T(list)* _l_insert_f__prev = nullptr;                                                     \
+    list_T(list)* _l_insert_f__next = (_idx);                                                      \
+                                                                                                   \
+    if (_l_insert_f__next == _(list)->head) {                                                      \
+      list_push_f(list, _val);                                                                     \
+    } else {                                                                                       \
+      _l_insert_f__prev       = _l_insert_f__next->prev;                                           \
+      _l_insert_f__node       = list_node(list, _val, _l_insert_f__prev, _l_insert_f__next);       \
+      _l_insert_f__next->prev = _l_insert_f__node;                                                 \
+      if (_l_insert_f__prev != nullptr) {                                                          \
+        _l_insert_f__prev->next = _l_insert_f__node;                                               \
+      }                                                                                            \
+                                                                                                   \
+      _(list)->len++;                                                                              \
+    }                                                                                              \
   })

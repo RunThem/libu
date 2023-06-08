@@ -90,7 +90,7 @@
  *
  *    // lst -> { 40, 30, 20 }
  * */
-#define list_pop_b(list)
+#define list_pop_b(list) __list_pop_b(list)
 
 /*
  * 在list开头删除节点, 并返回节点
@@ -111,7 +111,7 @@
  *
  *    // lst -> { 30, 20, 10 }
  * */
-#define list_pop_f(list)
+#define list_pop_f(list) __list_pop_f(list)
 
 /*
  * 返回list尾节点
@@ -132,7 +132,7 @@
  *
  *    // lst -> { 40, 30, 20, 10 }
  * */
-#define list_peek_b(list)
+#define list_peek_b(list) __list_peek_b(list)
 
 /*
  * 返回list头节点
@@ -153,4 +153,42 @@
  *
  *    // lst -> { 40, 30, 20, 10 }
  * */
-#define list_peek_f(list)\
+#define list_peek_f(list) __list_peek_f(list)
+
+/*
+ * 在list中插入节点, 在 _idx 后面插入
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    list_insert_b(&lst, lst->head, 100);
+ *
+ *    // lst -> { 40, 100, 30, 20, 10 }
+ * */
+#define list_insert_b(list, _idx, _val) __list_insert_b(list, _idx, _val)
+
+/*
+ * 在list中插入节点, 在 _idx 前面插入
+ *
+ * code:
+ *    list(int) lst = nullptr;
+ *
+ *    list_init(&lst);
+ *
+ *    list_push_f(&lst, 10);
+ *    list_push_f(&lst, 20);
+ *    list_push_f(&lst, 30);
+ *    list_push_f(&lst, 40);
+ *
+ *    list_insert_f(&lst, lst->head, 100);
+ *
+ *    // lst -> { 100, 40, 30, 20, 10 }
+ * */
+#define list_insert_f(list, _idx, _val) __list_insert_f(list, _idx, _val)
