@@ -31,6 +31,7 @@ target('test', function()
   set_default('false')
 
   add_deps('u')
+  add_packages('mimalloc')
 end)
 
 target('fmt', function()

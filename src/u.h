@@ -4,6 +4,7 @@
  * __include__
  *************************************************************************************************/
 #include <errno.h>
+#include <mimalloc.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -300,3 +301,48 @@ typedef long double f128_t;
 #define min_from(ptr, size, arg...) ({ (ptr)[min_idx(ptr, size, arg)]; })
 
 #define max_from(ptr, size, arg...) ({ (ptr)[max_idx(ptr, size, arg)]; })
+
+/*************************************************************************************************
+ * __alloc__
+ *************************************************************************************************/
+#define u_malloc(size)                                                                             \
+  ({                                                                                               \
+    void* _ptr = mi_malloc(size);                                                                  \
+    if (errno == 2)                                                                                \
+      errno = 0;                                                                                   \
+    _ptr;                                                                                          \
+  })
+
+#define u_calloc(count, size)                                                                      \
+  ({                                                                                               \
+    void* _ptr = mi_calloc(count, size);                                                           \
+    if (errno == 2)                                                                                \
+      errno = 0;                                                                                   \
+    _ptr;                                                                                          \
+  })
+
+#define u_zalloc(size)                                                                             \
+  ({                                                                                               \
+    void* _ptr = mi_calloc(1, size);                                                               \
+    if (errno == 2)                                                                                \
+      errno = 0;                                                                                   \
+    _ptr;                                                                                          \
+  })
+
+#define u_talloc(size, type)                                                                       \
+  ({                                                                                               \
+    void* _ptr = mi_calloc(1, size);                                                               \
+    if (errno == 2)                                                                                \
+      errno = 0;                                                                                   \
+    (type) _ptr;                                                                                   \
+  })
+
+#define u_realloc(ptr, size)                                                                       \
+  ({                                                                                               \
+    void* _ptr = mi_realloc(ptr, size);                                                            \
+    if (errno == 2)                                                                                \
+      errno = 0;                                                                                   \
+    _ptr;                                                                                          \
+  })
+
+#define u_free(ptr) ({ mi_free(ptr); })
