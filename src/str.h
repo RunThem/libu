@@ -41,27 +41,32 @@ c_str __str_string_start(void* s);
 /*
  * 返回c字符, c字符数组, str_t的长度
  *
- * assert(1 == str_len(c('a')));
+ * code:
+ *    assert(1 == str_len(c('a')));
  *
- * assert(5 == str_len("hello"));
+ * code:
+ *    assert(5 == str_len("hello"));
  *
- * str_t str = str_new("hello world.");
+ * code:
+ *    str_t str = str_new("hello world.");
  *
- * assert(12 == str_len(str));
+ *    assert(12 == str_len(str));
  * */
 #define str_len(s) __str_size(s)
 
 /*
  * 返回新建字符串并赋值, len 必须小于或等于 str_len(c_str)
  *
- * str_t str = str_new("hello");
+ * code
+ *    str_t str = str_new("hello");
  *
- * assert(5 == str->len);
+ *    assert(5 == str->len);
  *
- * str_t str = str_new("hello world", 5);
+ * code:
+ *    str_t str = str_new("hello world", 5);
  *
- * assert(5 == str->len);
- * assert(!strncmp("hello", str->c_str, 5));
+ *    assert(5 == str->len);
+ *    assert(!strncmp("hello", str->c_str, 5));
  * */
 str_t __str_new(c_str c_string, size_t len);
 #define str_new(s, arg...) __str_new(__str_start(s), va_0th(__str_size(s), arg))
@@ -69,10 +74,11 @@ str_t __str_new(c_str c_string, size_t len);
 /*
  * 与 `str_new` 类型, 只是是以格式化字符串的形式创建一个字符串
  *
- * str_t str = str_new_f("hell%c", 'o');
+ * code:
+ *    str_t str = str_new_f("hell%c", 'o');
  *
- * assert(5 == str->len);
- * assert(!strncmp("hello", str->c_str, 5));
+ *    assert(5 == str->len);
+ *    assert(!strncmp("hello", str->c_str, 5));
  */
 str_t __str_new_f(c_str fmt, ...);
 #define str_new_f(fmt, arg...) __str_new_f(__str_start(fmt), arg)
@@ -80,12 +86,13 @@ str_t __str_new_f(c_str fmt, ...);
 /*
  * 清除字符串中内容, 使长度为0
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * str_clear(&str);
+ *    str_clear(&str);
  *
- * assert(0 == str->len);
- * assert('\0' == str->c_str[0]);
+ *    assert(0 == str->len);
+ *    assert('\0' == str->c_str[0]);
  * */
 void __str_clear(str_t* str);
 #define str_clear(s) __str_clear(s)
@@ -93,11 +100,12 @@ void __str_clear(str_t* str);
 /*
  * 释放字符串
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * str_cleanup(&str);
+ *    str_cleanup(&str);
  *
- * assert(nullptr == str);
+ *    assert(nullptr == str);
  * */
 void __str_cleanup(str_t* str);
 #define str_cleanup(s) __str_cleanup(s)
@@ -105,13 +113,15 @@ void __str_cleanup(str_t* str);
 /*
  * 判断字符串是否为空
  *
- * str_t str = str_new("");
+ * code:
+ *    str_t str = str_new("");
  *
- * assert(true == str_empty(&str));
+ *    assert(true == str_empty(&str));
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * assert(false == str_empty(&str));
+ *    assert(false == str_empty(&str));
  * */
 bool __str_empty(str_t* str);
 #define str_empty(s) __str_empty(s)
@@ -119,11 +129,12 @@ bool __str_empty(str_t* str);
 /*
  * 扩容字符串, len 必须大于 str_len(str)
  *
- * str_t str = str_new("");
+ * code:
+ *    str_t str = str_new("");
  *
- * str_resize(&str, 100);
+ *    str_resize(&str, 100);
  *
- * assert(100 == str->cap);
+ *    assert(100 == str->cap);
  * */
 int __str_resize(str_t* str, size_t len);
 #define str_resize(s, len) __str_resize(s, len)
@@ -131,11 +142,12 @@ int __str_resize(str_t* str, size_t len);
 /*
  * 访问字符串中的某个字符
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * auto c = str_at(&str, 2);
+ *    auto c = str_at(&str, 2);
  *
- * assert('l' == *c);
+ *    assert('l' == *c);
  * */
 c_str __str_at(str_t* str, size_t idx);
 #define str_at(s, idx) __str_at(s, idx)
@@ -143,11 +155,12 @@ c_str __str_at(str_t* str, size_t idx);
 /*
  * 在字符串结尾追加字符串
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * str_push(&str, " world.");
+ *    str_push(&str, " world.");
  *
- * assert(!strncmp("hello world.", str->c_str, str->len));
+ *    assert(!strncmp("hello world.", str->c_str, str->len));
  * */
 int __str_push(str_t* str, c_str c_string, size_t size);
 #define str_push(s, c_s, arg...) __str_push(s, __str_start(c_s), va_0th(__str_size(c_s), arg))
@@ -155,11 +168,12 @@ int __str_push(str_t* str, c_str c_string, size_t size);
 /*
  * 与 `str_push` 类似
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * str_push_f(&str, " %s.", "world");
+ *    str_push_f(&str, " %s.", "world");
  *
- * assert(!strncmp("hello world.", str->c_str, str->len));
+ *    assert(!strncmp("hello world.", str->c_str, str->len));
  * */
 int __str_push_f(str_t* str, c_str fmt, ...);
 #define str_push_f(s, fmt, arg...) __str_push_f(s, __str_start(fmt) va_slice(0, arg))
@@ -167,11 +181,12 @@ int __str_push_f(str_t* str, c_str fmt, ...);
 /*
  * 在字符串中间插入字符串
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * str_insert(&str, 2, " world.");
+ *    str_insert(&str, 2, " world.");
  *
- * assert(!strncmp("he world.llo", str->c_str, str->len));
+ *    assert(!strncmp("he world.llo", str->c_str, str->len));
  * */
 int __str_insert(str_t* str, size_t idx, c_str c_string, size_t size);
 #define str_insert(s, idx, c_s, arg...)                                                            \
@@ -180,11 +195,54 @@ int __str_insert(str_t* str, size_t idx, c_str c_string, size_t size);
 /*
  * 与 `str_insert` 类似
  *
- * str_t str = str_new("hello");
+ * code:
+ *    str_t str = str_new("hello");
  *
- * str_insert_f(&str, 2, " %s.", "world");
+ *    str_insert_f(&str, 2, " %s.", "world");
  *
- * assert(!strncmp("he world.llo", str->c_str, str->len));
+ *    assert(!strncmp("he world.llo", str->c_str, str->len));
  * */
 int __str_insert_f(str_t* str, size_t idx, c_str fmt, ...);
 #define str_insert_f(s, idx, fmt, arg...) __str_insert_f(s, idx, __str_start(fmt) va_slice(0, arg))
+
+/*
+ * 删除字符串中某一部分
+ *
+ * code:
+ *    str_t str = str_new("hello, world");
+ *
+ *    str_erase(&str, 5);
+ *
+ *    assert(!strncmp("hello world", str->c_str, str->len));
+ *
+ * code:
+ *    str_t str = str_new("hello, world");
+ *
+ *    str_erase(&str, 5, 2);
+ *
+ *    assert(!strncmp("helloworld", str->c_str, str->len));
+ *
+ * code:
+ *    str_t str = str_new("hello, world");
+ *
+ *    str_erase(&str, 5, 100);
+ *
+ *    assert(!strncmp("hello", str->c_str, str->len));
+ *
+ * code:
+ *    str_t str = str_new("hello, world");
+ *
+ *    str_erase(&str, 5, -1);
+ *
+ *    assert(!strncmp(", world", str->c_str, str->len));
+ *
+ * code:
+ *    str_t str = str_new("hello, world");
+ *
+ *    str_erase(&str, 5, -2);
+ *
+ *    assert(!strncmp("hello", str->c_str, str->len));
+ *
+ * */
+int __str_erase(str_t* str, size_t idx, ssize_t len);
+#define str_erase(s, idx, arg...) __str_erase(s, idx, va_0th(1, arg))

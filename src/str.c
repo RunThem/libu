@@ -225,3 +225,26 @@ int __str_insert_f(str_t* str, size_t idx, c_str fmt, ...) {
 err:
   return -1;
 }
+
+int __str_erase(str_t* str, size_t idx, ssize_t len) {
+  u_ret_if(str == nullptr, -1);
+  u_ret_if(_str == nullptr, -1);
+  u_ret_if(idx < 0 || idx > _str->len, -1);
+
+  if (len == -1) {
+    memmove(_str->c_str, &_str->c_str[idx], _str->len - idx);
+
+    _str->c_str[_str->len - idx] = '\0';
+    _str->len -= idx;
+  } else if (len == -2 || _str->len <= idx + len) {
+    _str->c_str[idx] = '\0';
+    _str->len        = idx;
+  } else {
+    memmove(&_str->c_str[idx], &_str->c_str[idx + len], _str->len - idx - len);
+
+    _str->c_str[_str->len - len] = '\0';
+    _str->len -= len;
+  }
+
+  return 0;
+}
