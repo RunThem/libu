@@ -14,29 +14,16 @@ set_warnings('all', 'error')
 
 add_cflags('-std=gnu2x')
 
---- clang block
--- add_cflags('-fblocks')
--- if is_plat('linux') then
---   add_ldflags('-lBlocksRuntime')
---   add_defines('__linux__=1')
--- end
-
-add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
-add_requires(
-  -- RunThem repo
-  'libu',
-
-  -- xrepo
-  'mimalloc'
-)
+add_requires('mimalloc')
 
 add_includedirs('$(projectdir)/src')
 
 target('libu', function()
-  set_kind('binary')
+  set_kind('static')
   add_files('src/*.c')
+  add_headerfiles('src/*.h', { prefixdir = 'u' })
 
-  add_packages('mimalloc', 'libu')
+  add_packages('mimalloc')
 end)
 
 target('fmt', function()
