@@ -28,7 +28,9 @@ c_str __str_c_str_start(void* s);
 c_str __str_string_start(void* s);
 #define __str_start(s)                                                                             \
   ({                                                                                               \
+    char __eof = '\0';                                                                             \
     auto __str = (s);                                                                              \
+    (void)__eof;                                                                                   \
     _Generic(s,                                                                                    \
              char:               __str_char_start,                                                 \
              char*:              __str_c_str_start,                                                \
