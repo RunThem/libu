@@ -272,6 +272,12 @@ typedef long double f128_t;
     _max__arr[_max__idx];                                                                          \
   })
 
+/*
+ * a > b  ->  1
+ * a == b ->  0
+ * a < b  -> -1
+ * */
+
 #define min_idx(ptr, size, arg...)                                                                 \
   ({                                                                                               \
     size_t _min_idx__idx = 0;                                                                      \
