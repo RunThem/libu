@@ -2,6 +2,7 @@
 #include "u.h"
 
 #include <ctype.h>
+#include <stdarg.h>
 
 #define _str (*str)
 
