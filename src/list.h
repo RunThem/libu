@@ -9,11 +9,20 @@
     void* head; /* head */                                                                         \
     void* tail; /* tail */                                                                         \
     struct {                                                                                       \
-      void* prev; /* head */                                                                       \
-      void* next; /* tail */                                                                       \
+      void* prev;                                                                                  \
+      void* next;                                                                                  \
       T val;                                                                                       \
     } node[0];                                                                                     \
   }*
+
+#define list_iter(T)                                                                               \
+  struct {                                                                                         \
+    void* prev;                                                                                    \
+    void* next;                                                                                    \
+    T val;                                                                                         \
+  }*
+
+#define list_get_iter(list) (_(list)->head)
 
 #undef _
 #define _(list)      (*(list))
