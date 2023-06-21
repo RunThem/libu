@@ -14,6 +14,11 @@ set_warnings('all', 'error')
 
 add_cflags('-std=gnu2x')
 
+if is_mode('debug') then
+  add_cflags('-Wno-unused-function')
+  add_cflags('-Wno-unused-variable')
+end
+
 add_requires('mimalloc')
 
 add_includedirs('$(projectdir)/src')
