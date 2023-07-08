@@ -15,14 +15,14 @@
     } node[0];                                                                                     \
   }*
 
-#define list_iter(T)                                                                               \
+#define list_it(T)                                                                                 \
   struct {                                                                                         \
     void* prev;                                                                                    \
     void* next;                                                                                    \
     T val;                                                                                         \
   }*
 
-#define list_get_iter(list) (_(list)->head)
+#define list_iter(list) (_(list)->head)
 
 #undef _
 #define _(list)      (*(list))
