@@ -252,13 +252,13 @@ int __str_erase(str_t* str, size_t idx, ssize_t len) {
   return 0;
 }
 
-int __str_comp(str_t* str, c_str c_string, size_t len) {
+bool __str_comp(str_t* str, c_str c_string, size_t len) {
   u_ret_if(str == nullptr, false);
   u_ret_if(_str == nullptr, false);
   u_ret_if(c_string == nullptr, false);
   u_ret_if(len != _str->len, false);
 
-  return strncmp(_str->c_str, c_string, len);
+  return !strncmp(_str->c_str, c_string, len);
 }
 
 ssize_t __str_find(str_t* str, c_str c_string, size_t len, size_t idx) {

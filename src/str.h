@@ -259,7 +259,7 @@ int __str_erase(str_t* str, size_t idx, ssize_t len);
  *    assert(!str_comp(&str, "hello"));
  *    assert(!str_comp(&str, str_1));
  * */
-int __str_comp(str_t* str, c_str c_string, size_t len);
+bool __str_comp(str_t* str, c_str c_string, size_t len);
 #define str_comp(s, c_s) __str_comp(s, __str_start(c_s), __str_size(c_s))
 
 /*
