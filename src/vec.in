@@ -61,7 +61,7 @@
     ssize_t _v_cleanup__ret = (_(vec) == nullptr) ? -1 : 0;                                        \
     if (_v_cleanup__ret != -2) {                                                                   \
       u_free(_(vec));                                                                              \
-      (vec) = nullptr;                                                                             \
+      _(vec) = nullptr;                                                                            \
     }                                                                                              \
                                                                                                    \
     _v_cleanup__ret;                                                                               \
