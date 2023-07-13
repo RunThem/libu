@@ -6,8 +6,7 @@
     size_t cap;                                                                                    \
   }))
 
-#define __vec__cap(size)  (size < 8) ? 8 : (\
-  (size < 1024) ? size * 2 : size + 512)
+#define __vec__cap(size) (size < 8) ? 8 : ((size < 1024) ? size * 2 : size + 512)
 
 #undef _
 #define _(v) (*(v))
@@ -85,12 +84,36 @@
                                                                                                    \
     if (_(vec)->len > 0) {                                                                         \
       _(vec)->len--;                                                                               \
-      _v_pop_b__item_p = &_(vec)->data[_(vec)->len]                                                \
+      _v_pop_b__item_p = &_(vec)->data[_(vec)->len];                                               \
     } else {                                                                                       \
       bzero(&_v_pop_b__item_p, sizeof(void*));                                                     \
     }                                                                                              \
                                                                                                    \
     _v_pop_b__item_p;                                                                              \
+  })
+
+#define __vec_pop(vec, idx)                                                                        \
+  ({                                                                                               \
+    vec_T(vec) * _v_pop__item_p;                                                                   \
+                                                                                                   \
+    if (_(vec)->len > 0 && (idx) < _(vec)->len) {                                                  \
+      if (idx == 0) {                                                                              \
+        _v_pop__item_p = __vec_pop_f(vec);                                                         \
+      } else if (idx == _(vec)->len - 1) {                                                         \
+        _v_pop__item_p = __vec_pop_b(vec);                                                         \
+      } else {                                                                                     \
+        _(vec)->len--;                                                                             \
+        _v_pop__item_p = &_(vec)->data[idx];                                                       \
+                                                                                                   \
+        memmove(&_(vec)->data[idx],                                                                \
+                &_(vec)->data[idx + 1],                                                            \
+                (_(vec)->len - idx) * vec_itsize(vec));                                            \
+      }                                                                                            \
+    } else {                                                                                       \
+      bzero(&_v_pop__item_p, vec_itsize(vec));                                                     \
+    }                                                                                              \
+                                                                                                   \
+    _v_pop__item_p;                                                                                \
   })
 
 #define __vec_pop_f(vec)                                                                           \

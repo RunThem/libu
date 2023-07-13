@@ -156,20 +156,20 @@
 #define vec_pop_b(vec) __vec_pop_b(vec)
 
 /*
- * 访问vec中开头元素, 从vec中删除开头元素
+ * 访问vec中指定索引元素, 从vec中删除该元素
  *
  * code:
  *    vec(int) v = nullptr;
  *
  *    vec_init_from(&vv, 1, 4, 5, 10);
  *
- *    auto p = vec_pop_f(&v);
+ *    auto p = vec_pop(&v, 1);
  *
- *    assert(1 == *p);
+ *    assert(4 == *p);
  *
- *    // v   -> (3, 8) { 4, 5, 10 };
+ *    // v   -> (3, 8) { 1, 5, 10 };
  * */
-#define vec_pop_f(vec) __vec_pop_f(vec)
+#define vec_pop(vec, idx) __vec_pop(vec, idx)
 
 /*
  * 与 `vec_pop_b`类似, 但不删除元素
