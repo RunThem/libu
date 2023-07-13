@@ -185,7 +185,7 @@
  *
  *    // v   -> (3, 8) { 4, 5, 10 };
  * */
-#define vec_pop_f(vec, idx) __vec_pop_f(vec, idx)
+#define vec_pop_f(vec) __vec_pop_f(vec)
 
 /*
  * 与 `vec_pop_b`类似, 但不删除元素
