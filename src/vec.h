@@ -172,6 +172,22 @@
 #define vec_pop(vec, idx) __vec_pop(vec, idx)
 
 /*
+ * 访问vec中开头元素, 从vec中开头元素
+ *
+ * code:
+ *    vec(int) v = nullptr;
+ *
+ *    vec_init_from(&vv, 1, 4, 5, 10);
+ *
+ *    auto p = vec_pop_f(&v);
+ *
+ *    assert(1 == *p);
+ *
+ *    // v   -> (3, 8) { 4, 5, 10 };
+ * */
+#define vec_pop_f(vec, idx) __vec_pop_f(vec, idx)
+
+/*
  * 与 `vec_pop_b`类似, 但不删除元素
  *
  * code:
