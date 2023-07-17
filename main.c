@@ -8,23 +8,17 @@
 #include "src/u.h"
 #include "src/vec.h"
 
-#include <stdio.h>
+#define _typeof(t) __builtin_classify_type(t)
+
+#define me(x, ...) (&(struct { typeof(x) _; }){(x)})
+
+void print(void* ptr) {
+  inf("%d\n", *(int*)ptr);
+}
 
 int main(int argc, const char** argv) {
 
-  vec(int) vv = nullptr;
-
-  vec_init_from(&vv, 1, 2, 3, 4, 5, 6);
-
-  vec_for(&vv, it) {
-    inf("%d", *it);
-  }
-
-  vec_pop(&vv, 1);
-
-  vec_for(&vv, it) {
-    inf("%d", *it);
-  }
+  print(me(10));
 
   return 0;
 }
