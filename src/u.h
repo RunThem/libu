@@ -66,6 +66,8 @@
 /*************************************************************************************************
  * __type__
  *************************************************************************************************/
+typedef void* any_t;
+
 #define useno(x) ((void)(x))
 #define c(c)     ((char)(c))
 #define p(p)     ((void*)(p))
@@ -237,6 +239,10 @@ typedef long double f128_t;
 /*************************************************************************************************
  * __misc__
  *************************************************************************************************/
+#define me(v)    (&(struct { typeof(v) _; }){(v)})
+#define as(v, T) ((T)(v))
+#define rs(...)  #__VA_ARGS__
+
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
     const typeof(((type*)0)->member)* _container_of__mptr = ((void*)(ptr));                        \
@@ -253,6 +259,27 @@ typedef long double f128_t;
     (a)             = (b);                                                                         \
     (b)             = (_swap__tmp);                                                                \
   } while (0)
+
+#define fn_eq_use(name) (fn_eq_##name)
+#define fn_eq_dec(name) bool fn_eq_##name(any_t _x, any_t _y)
+#define fn_eq_def(name, type, code)                                                                \
+  fn_eq_dec(name) {                                                                                \
+    auto x = *(type*)_x;                                                                           \
+    auto y = *(type*)_y;                                                                           \
+    return (code);                                                                                 \
+  }
+
+#define fn_cmp_use(name) (fn_cmp_##name)
+#define fn_cmp_dec(name) int fn_cmp_##name(any_t _x, any_t _y)
+#define fn_cmp_def(name, type, code)                                                               \
+  fn_cmp_dec(name) {                                                                               \
+    auto x = *(type*)_x;                                                                           \
+    auto y = *(type*)_y;                                                                           \
+    if (fn_eq_use(name)(_x, _y)) {                                                                 \
+      return 0;                                                                                    \
+    }                                                                                              \
+    return (code) ? 1 : -1;                                                                        \
+  }
 
 #define min(_0, _1, arg...)                                                                        \
   ({                                                                                               \
