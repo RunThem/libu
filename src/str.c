@@ -1,4 +1,5 @@
 #include "str.h"
+
 #include "u.h"
 
 #include <ctype.h>
@@ -407,7 +408,7 @@ int __str_2lower(str_t* str) {
   u_ret_if(_str == nullptr, -1);
 
   for (size_t i = 0; i < _str->len; i++) {
-    _str->c_str[i] = c(tolower(_str->c_str[i]));
+    _str->c_str[i] = chr(tolower(_str->c_str[i]));
   }
 
   return 0;
@@ -418,7 +419,7 @@ int __str_2upper(str_t* str) {
   u_ret_if(_str == nullptr, -1);
 
   for (size_t i = 0; i < _str->len; i++) {
-    _str->c_str[i] = c(toupper(_str->c_str[i]));
+    _str->c_str[i] = chr(toupper(_str->c_str[i]));
   }
 
   return 0;

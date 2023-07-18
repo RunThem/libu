@@ -69,12 +69,12 @@
 typedef void* any_t;
 
 #define useno(x) ((void)(x))
-#define c(c)     ((char)(c))
-#define p(p)     ((void*)(p))
+#define chr(c)   (as(c, char))
+#define any(p)   (as(p, any_t))
 
 #define fnt(n, r, ...) r (*n)(__VA_ARGS__)
 
-typedef fnt(comp_fn, int, const void*, const void*);
+typedef fnt(cmp_fn, int, any_t, any_t);
 
 typedef float f32_t;
 typedef double f64_t;
@@ -245,7 +245,7 @@ typedef long double f128_t;
 
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
-    const typeof(((type*)0)->member)* _container_of__mptr = ((void*)(ptr));                        \
+    const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \
     (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
   })
 
@@ -344,7 +344,7 @@ typedef long double f128_t;
  *************************************************************************************************/
 #define u_malloc(size)                                                                             \
   ({                                                                                               \
-    void* _ptr = mi_malloc(size);                                                                  \
+    any_t _ptr = mi_malloc(size);                                                                  \
     if (errno == 2)                                                                                \
       errno = 0;                                                                                   \
     _ptr;                                                                                          \
@@ -352,7 +352,7 @@ typedef long double f128_t;
 
 #define u_calloc(count, size)                                                                      \
   ({                                                                                               \
-    void* _ptr = mi_calloc(count, size);                                                           \
+    any_t _ptr = mi_calloc(count, size);                                                           \
     if (errno == 2)                                                                                \
       errno = 0;                                                                                   \
     _ptr;                                                                                          \
@@ -360,7 +360,7 @@ typedef long double f128_t;
 
 #define u_zalloc(size)                                                                             \
   ({                                                                                               \
-    void* _ptr = mi_calloc(1, size);                                                               \
+    any_t _ptr = mi_calloc(1, size);                                                               \
     if (errno == 2)                                                                                \
       errno = 0;                                                                                   \
     _ptr;                                                                                          \
@@ -368,7 +368,7 @@ typedef long double f128_t;
 
 #define u_talloc(size, type)                                                                       \
   ({                                                                                               \
-    void* _ptr = mi_calloc(1, size);                                                               \
+    any_t _ptr = mi_calloc(1, size);                                                               \
     if (errno == 2)                                                                                \
       errno = 0;                                                                                   \
     (type) _ptr;                                                                                   \
@@ -376,7 +376,7 @@ typedef long double f128_t;
 
 #define u_realloc(ptr, size)                                                                       \
   ({                                                                                               \
-    void* _ptr = mi_realloc(ptr, size);                                                            \
+    any_t _ptr = mi_realloc(ptr, size);                                                            \
     if (errno == 2)                                                                                \
       errno = 0;                                                                                   \
     _ptr;                                                                                          \
