@@ -1,303 +1,77 @@
 #pragma once
 
 #include "u.h"
-#include "vec.in"
+
+typedef struct {
+  size_t itsize;
+  size_t len;
+  size_t cap;
+  any_t items;
+} vec_t;
 
 #define vec(T)                                                                                     \
   struct {                                                                                         \
-    size_t len;                                                                                    \
-    size_t cap;                                                                                    \
-    T data[0];                                                                                     \
-  }*
+    vec_t _;                                                                                       \
+    T it;                                                                                          \
+  }
 
-/*
- * vec 中的元素类型
- * */
-#define vec_T(v) typeof(_(v)->data[0])
+#define vec_itsize(vec) ((vec)->_.itsize)
+#define vec_len(vec)    ((vec)->_.len)
+#define vec_cap(vec)    ((vec)->_.cap)
+#define vec_data(vec)   (as((vec)->_.items, typeof((vec)->it)*))
+#define vec_empty(vec)  ((vec)->_.len == 0)
+#define vec_clear(vec)  ((vec)->_.len = 0)
 
-/*
- * vec 中的元素大小
- * */
-#define vec_itsize(vec) ({ sizeof(vec_T(vec)); })
+ret_t __vec_init(any_t _self, size_t itsize, size_t cap);
+#define vec_init(vec, itsize, cap) __vec_init(vec, itsize, cap)
 
-/*
- * 初始化一个vec, 确定其大小
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init(&vv, 4);
- *
- *    // v -> (0, 8) { };
- * */
-#define vec_init(vec, arg...) __vec_init(vec, arg)
+ret_t __vec_resize(any_t _self, size_t cap);
+#define vec_resize(vec, cap) __vec_resize(vec, cap)
 
-/*
- * 初始化一个vec, 并添加一些数据进去
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    // v -> (4, 8) { 1, 4, 5, 10 };
- * */
-#define vec_init_from(vec, item, arg...) __vec_init_from(vec, item, arg)
+ret_t __vec_push(any_t _self, size_t idx, any_t it);
+#define vec_push(vec, idx, _it) __vec_push(vec, idx, ((vec)->it = _it, &(vec)->it))
+#define vec_push_f(vec, _it)    __vec_push(vec, 0, ((vec)->it = _it, &(vec)->it))
+#define vec_push_b(vec, _it)    __vec_push(vec, vec_len(vec), ((vec)->it = _it, &(vec)->it))
 
-/*
- * 克隆一个vec, 内存布局相同
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto v_1 = vec_clone(&v);
- *
- *    // v   -> (4, 8) { 1, 4, 5, 10 };
- *    // v_1 -> (4, 8) { 1, 4, 5, 10 };
- * */
-#define vec_clone(vec) __vec_clone(vec)
+ret_t __vec_pop(any_t _self, size_t idx, any_t it);
+#define vec_pop(vec, idx) __vec_pop(vec, idx, (bzero(&(vec)->it, vec_itsize(vec)), &(vec)->it))
+#define vec_pop_f(vec)    __vec_pop(vec, 0, (bzero(&(vec)->it, vec_itsize(vec)), &(vec)->it))
+#define vec_pop_b(vec)                                                                             \
+  __vec_pop(vec, vec_len(vec) - 1, (bzero(&(vec)->it, vec_itsize(vec)), &(vec)->it))
 
-/*
- * 判断vec是否为空
- * */
-#define vec_empty(vec) __vec_empty(vec)
+ret_t __vec_at(any_t _self, size_t idx, any_t it);
+#define vec_at(vec, idx)   (__vec_at(vec, idx, &(vec)->it), (vec)->it)
+#define vec_at_f(vec, idx) (__vec_at(vec, 0, &(vec)->it), (vec)->it)
+#define vec_at_b(vec, idx) (__vec_at(vec, vec_len(vec) - 1, &(vec)->it), (vec)->it)
 
-/*
- * 扩容vec, size 必须大于 vec->len;
- * */
-#define vec_resize(vec, size) __vec_resize(vec, size)
+ret_t __vec_set(any_t _self, size_t idx, any_t it);
+#define vec_set(vec, idx, _it) __vec_set(vec, idx, ((vec)->it = _it, &(vec)->it))
+#define vec_set_f(vec, _it)    __vec_set(vec, 0, ((vec)->it = _it, &(vec)->it))
+#define vec_set_b(vec, _it)    __vec_set(vec, vec_len(vec) - 1, ((vec)->it = _it, &(vec)->it))
 
-/*
- * 清除vec, 设置长度为0
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    vec_clear(&v);
- *
- *    // v   -> (0, 8) { };
- * */
-#define vec_clear(vec) __vec_clear(vec)
-
-/*
- * 释放vec
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    vec_clear(&v);
- *
- *    assert(nullptr == v);
- * */
+ret_t __vec_cleanup(any_t _self);
 #define vec_cleanup(vec) __vec_cleanup(vec)
 
-/*
- * 访问vec中某一元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto p = vec_at(&v, 2)
- *
- *    assert(5 == *p);
- * */
-#define vec_at(vec, idx) __vec_at(vec, idx)
+vec_t __vec_clone(any_t _self);
+#define vec_clone(vec)                                                                             \
+  ((struct {                                                                                       \
+    vec_t _;                                                                                       \
+    typeof((vec)->it) it;                                                                          \
+  }){._ = __vec_clone(vec)})
 
-/*
- * 在vec结尾追加元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    vec_push_b(&v, 2);
- *
- *    // v   -> (5, 8) { 1, 4, 5, 10, 2 };
- * */
-#define vec_push_b(vec, item, arg...) __vec_insert(vec, (*vec)->len, item, arg)
+ret_t __vec_erase(any_t _self, size_t idx);
+#define vec_erase(vec, idx) __vec_erase(vec, idx)
 
-/*
- * 在vec开头追加元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    vec_push_f(&v, 2);
- *
- *    // v   -> (5, 8) { 2, 1, 4, 5, 10 };
- * */
-#define vec_push_f(vec, item, arg...) __vec_insert(vec, 0, item, arg)
+ssize_t __vec_find(any_t _self, any_t it, eq_fn fn);
+#define vec_find(vec, _it, fn) __vec_find(vec, ((vec)->it = _it, &(vec)->it), fn)
 
-/*
- * 访问vec中结尾元素, 从vec中删除结尾元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto p = vec_pop_b(&v);
- *
- *    assert(10 == *p);
- *
- *    // v   -> (3, 8) { 1, 4, 5 };
- * */
-#define vec_pop_b(vec) __vec_pop_b(vec)
+ssize_t __vec_sort(any_t _self, cmp_fn fn);
+#define vec_sort(vec, fn) __vec_sort(vec, fn)
 
-/*
- * 访问vec中指定索引元素, 从vec中删除该元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto p = vec_pop(&v, 1);
- *
- *    assert(4 == *p);
- *
- *    // v   -> (3, 8) { 1, 5, 10 };
- * */
-#define vec_pop(vec, idx) __vec_pop(vec, idx)
+ssize_t __vec_min(any_t _self, cmp_fn fn);
+#define vec_min(vec, fn) __vec_min(vec, fn)
 
-/*
- * 访问vec中开头元素, 从vec中开头元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto p = vec_pop_f(&v);
- *
- *    assert(1 == *p);
- *
- *    // v   -> (3, 8) { 4, 5, 10 };
- * */
-#define vec_pop_f(vec) __vec_pop_f(vec)
+ssize_t __vec_max(any_t _self, cmp_fn fn);
+#define vec_max(vec, fn) __vec_max(vec, fn)
 
-/*
- * 与 `vec_pop_b`类似, 但不删除元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto p = vec_peek_b(&v);
- *
- *    assert(1 == *p);
- *
- *    // v   -> (4, 8) { 1, 4, 5, 10 };
- * */
-#define vec_peek_b(vec) ({ _(vec)->data[(_(vec)->len == 0) ? 0 : _(vec)->len - 1]; })
-
-/*
- * 与 `vec_pop_f`类似, 但不删除元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto p = vec_peek_f(&v);
- *
- *    assert(1 == *p);
- *
- *    // v   -> (4, 8) { 1, 4, 5, 10 };
- * */
-#define vec_peek_f(vec) ({ _(vec)->data[0]; })
-
-/*
- * 在vec中插入元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    vec_insert(&v, 2, 8, 9);
- *
- *    // v   -> (6, 8) { 1, 4, 8, 9, 5, 10 };
- * */
-#define vec_insert(vec, idx, item, arg...) __vec_insert(vec, idx, item, arg)
-
-/*
- * 删除vec中部分元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    vec_erase(&v, 1, 2);
- *
- *    // v   -> (2, 8) { 1, 10 };
- * */
-#define vec_erase(vec, idx, arg...) __vec_erase(vec, idx, arg)
-
-/*
- * 在vec中查照元素, 并返回下标
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto idx = vec_find(&v, 5);
- *
- *    assert(2 == idx);
- * */
-#define vec_find(vec, item, arg...) __vec_find(vec, item, arg)
-
-/*
- * 在vec中是否包含某元素
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto is = vec_contain(&v, 5);
- *
- *    assert(idx);
- *
- *    is = vec_contain(&v, 100);
- *
- *    assert(!idx);
- * */
-#define vec_contain(vec, item, arg...) ({ (bool)(vec_find(vec, item, arg) != -1); })
-
-/*
- * 比较两个vec是否长度相同, 元素相同
- *
- * code:
- *    vec(int) v = nullptr;
- *
- *    vec_init_from(&vv, 1, 4, 5, 10);
- *
- *    auto v_1 = vec_clone(&vv);
- *
- *    auto is = vec_comp(&v, v_1);
- *
- *    assert(idx);
- * */
-#define vec_comp(vec, v, arg...) __vec_comp(vec, v, arg)
-
-#define vec_for(vec, it)                                                                           \
-  for (auto(it) = vec_at(vec, 0); _(vec)->len > 0 && (it) <= vec_at(vec, _(vec)->len - 1); (it)++)
-
-#define vec_each(vec, i) for (size_t(i) = 0; (i) < _(vec)->len; (i)++)
-
-#define vec_dis(v, fn) __vec_dis(v, fn)
+#define vec_for(vec, i) for (size_t i = 0; i < vec_len(vec); i++)
