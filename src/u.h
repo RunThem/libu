@@ -70,49 +70,6 @@
         __FUNCTION__ __VA_OPT__(, ) __VA_ARGS__)
 
 #define inf(fmt, ...) __inf(fmt "\n", __VA_ARGS__)
-
-#define inf_hex(ptr, arg...)                                                                       \
-  do {                                                                                             \
-                                                                                                   \
-    char __buf[18] = {'\''};                                                                       \
-    uint8_t* __ptr = (uint8_t*)ptr;                                                                \
-    size_t __i     = 0;                                                                            \
-    size_t __pos   = 0;                                                                            \
-    size_t __size  = va_0th(sizeof(ptr), arg);                                                     \
-    __inf("\x1b[36;1m%s\x1b[0m = (size: %ld)\n", #ptr, __size);                                    \
-    while (__size > 0) {                                                                           \
-      if ((__pos % 16) == 0)                                                                       \
-        __prt("    %08lx: ", __pos);                                                               \
-                                                                                                   \
-      __prt("%02x ", __ptr[__pos] & 0xff);                                                         \
-      if ((__pos % 16) == 7)                                                                       \
-        __prt(" ");                                                                                \
-                                                                                                   \
-      if ((__pos % 16) == 15) {                                                                    \
-        for (__i = 1; __i < 18; __i++) {                                                           \
-          auto __idx = __pos - 16 + __i;                                                           \
-          __buf[__i] = isprint(__ptr[__idx]) ? __ptr[__idx] : '.';                                 \
-        }                                                                                          \
-                                                                                                   \
-        __buf[__i - 1] = '\0';                                                                     \
-        __prt("%s'\n", __buf);                                                                     \
-      }                                                                                            \
-                                                                                                   \
-      __pos++;                                                                                     \
-      __size--;                                                                                    \
-    }                                                                                              \
-                                                                                                   \
-    if ((__pos % 16) != 0) {                                                                       \
-      for (__i = 1; __i < __pos % 16 + 2; __i++) {                                                 \
-        auto __idx = __pos - (__pos % 16) + __i - 1;                                               \
-        __buf[__i] = isprint(__ptr[__idx]) ? __ptr[__idx] : '.';                                   \
-      }                                                                                            \
-                                                                                                   \
-      __buf[__i - 1] = '\0';                                                                       \
-      __prt("%*s'\n", 48 - 3 * ((int)__pos % 16) + (int)__i, __buf);                               \
-    }                                                                                              \
-  } while (0)
-
 #define err(fmt, ...)                                                                              \
   do {                                                                                             \
     const char* __ERROR__ = (errno != 0) ? strerror(errno) : "no errno";                           \
@@ -280,3 +237,47 @@ static fn_cmp_def(uint64, uint64_t, (x > y));
 #define u_zalloc(size)            ({ any_t _ptr = mi_calloc(1, size);       if (errno == 2) { errno = 0; } _ptr; })
 #define u_talloc(size, type)      ({ any_t _ptr = mi_calloc(1, size);       if (errno == 2) { errno = 0; } (type)_ptr; })
 /* clang-format on */
+
+/*************************************************************************************************
+ * function
+ *************************************************************************************************/
+static void __inf_hex(const uint8_t* arr, size_t size);
+#define inf_hex(arr, size)                                                                         \
+  do {                                                                                             \
+    __inf("\x1b[36;1m%s\x1b[0m(%ld)\n", #arr, size);                                               \
+    __inf_hex(as(arr, uint8_t*), size);                                                            \
+  } while (0)
+
+static void __inf_hex(const uint8_t* arr, size_t size) {
+  char buf[17] = {0};
+  size_t i     = 0;
+  size_t pos   = 0;
+  size_t idx   = 0;
+
+  for (; pos < size; pos++) {
+    if ((pos % 16) == 0) {
+      printf("   %08lx: ", pos);
+    }
+
+    printf("%02x %s", arr[pos] & 0xff, (pos % 16) == 7 ? " " : "");
+    if ((pos % 16) == 15) {
+      for (i = 0; i < arr_len(buf); i++) {
+        idx    = pos - 16 + i;
+        buf[i] = isprint(arr[idx]) ? arr[idx] : '.';
+      }
+
+      buf[i - 1] = '\0';
+      printf("%s\n", buf);
+    }
+  }
+
+  if ((pos % 16) != 0) {
+    for (i = 0; i < pos % 16 + 2; i++) {
+      idx    = pos - (pos % 16) + i - 1;
+      buf[i] = isprint(arr[idx]) ? arr[idx] : '.';
+    }
+
+    buf[i - 1] = '\0';
+    printf("%*s\n", 47 - 3 * ((int)pos % 16) + (int)i, buf);
+  }
+}
