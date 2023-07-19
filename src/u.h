@@ -75,6 +75,7 @@ typedef void* any_t;
 #define fnt(n, r, ...) r (*n)(__VA_ARGS__)
 
 typedef fnt(cmp_fn, int, any_t, any_t);
+typedef fnt(eq_fn, bool, any_t, any_t);
 
 typedef int ret_t;
 
@@ -340,6 +341,30 @@ typedef long double f128_t;
 #define min_from(ptr, size, arg...) ({ (ptr)[min_idx(ptr, size, arg)]; })
 
 #define max_from(ptr, size, arg...) ({ (ptr)[max_idx(ptr, size, arg)]; })
+
+static fn_eq_def(bool, bool, (x == y));
+static fn_eq_def(char, char, (x == y));
+static fn_eq_def(int, int, (x == y));
+static fn_eq_def(int8, int8_t, (x == y));
+static fn_eq_def(int16, int16_t, (x == y));
+static fn_eq_def(int32, int32_t, (x == y));
+static fn_eq_def(int64, int64_t, (x == y));
+static fn_eq_def(uint8, uint8_t, (x == y));
+static fn_eq_def(uint16, uint16_t, (x == y));
+static fn_eq_def(uint32, uint32_t, (x == y));
+static fn_eq_def(uint64, uint64_t, (x == y));
+
+static fn_cmp_def(bool, bool, (x > y));
+static fn_cmp_def(char, char, (x > y));
+static fn_cmp_def(int, int, (x > y));
+static fn_cmp_def(int8, int8_t, (x > y));
+static fn_cmp_def(int16, int16_t, (x > y));
+static fn_cmp_def(int32, int32_t, (x > y));
+static fn_cmp_def(int64, int64_t, (x > y));
+static fn_cmp_def(uint8, uint8_t, (x > y));
+static fn_cmp_def(uint16, uint16_t, (x > y));
+static fn_cmp_def(uint32, uint32_t, (x > y));
+static fn_cmp_def(uint64, uint64_t, (x > y));
 
 /*************************************************************************************************
  * __alloc__
