@@ -76,6 +76,8 @@ typedef void* any_t;
 
 typedef fnt(cmp_fn, int, any_t, any_t);
 
+typedef int ret_t;
+
 typedef float f32_t;
 typedef double f64_t;
 typedef long double f128_t;
