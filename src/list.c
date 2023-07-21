@@ -15,7 +15,10 @@ ret_t __list_init(any_t _self, size_t itsize) {
   u_ret_if(_self == nullptr, -1);
   u_ret_if(itsize == 0, -1);
 
+  self->len    = 0;
   self->itsize = itsize;
+  self->head   = nullptr;
+  self->tail   = nullptr;
 
   return 0;
 }
@@ -129,6 +132,44 @@ ret_t __list_pop(any_t _self, any_t idx, any_t it) {
   next = node->next;
 
   memcpy(it, any(node) + sizeof(node_t), self->itsize);
+
+  if (prev == nullptr) {
+    self->head = next;
+  } else {
+    prev->next = next;
+  }
+
+  if (next == nullptr) {
+    self->tail = prev;
+  } else {
+    next->prev = prev;
+  }
+
+  u_free(node);
+  self->len--;
+
+  return 0;
+
+err:
+  return -2;
+}
+
+ret_t __list_erase(any_t _self, any_t idx) {
+  node_t* node = nullptr;
+  node_t* prev = nullptr;
+  node_t* next = nullptr;
+  list_t* self = as(_self, list_t*);
+
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(idx == nullptr, -1);
+
+  u_ret_if(self->len == 0, -1);
+
+  for (node = self->head; node != nullptr && node != idx; node = node->next) { }
+  u_goto_if(node == nullptr);
+
+  prev = node->prev;
+  next = node->next;
 
   if (prev == nullptr) {
     self->head = next;
