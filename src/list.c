@@ -1,5 +1,7 @@
 #include "list.h"
 
+#include <bits/types/error_t.h>
+
 typedef struct {
   any_t prev;
   any_t next;
@@ -60,12 +62,16 @@ static node_t* __list_node(any_t _self, any_t it, any_t prev, any_t next) {
   u_ret_if(it == nullptr, nullptr);
 
   node = u_talloc(sizeof(node_t) + self->itsize, node_t*);
+  u_alloc_if(node);
 
   memcpy(any(node) + sizeof(node_t), it, self->itsize);
   node->prev = prev;
   node->next = next;
 
   return node;
+
+err:
+  return nullptr;
 }
 
 ret_t __list_push(any_t _self, any_t idx, any_t it) {
