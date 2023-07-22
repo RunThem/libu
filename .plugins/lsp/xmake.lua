@@ -21,7 +21,10 @@
 task('lsp')
 set_category('plugin')
 
-on_run('main')
+on_run(function()
+  os.exec('xmake project -k cmake build/lsp')
+  os.exec('xmake project -k compile_commands build/lsp')
+end)
 
 set_menu({
   usage = 'xmake lsp',
