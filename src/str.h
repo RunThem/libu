@@ -18,6 +18,7 @@ size_t __str_string_size(str_t s);
 #define __str_size(s)                                                                              \
   _Generic(s,                                                                                      \
            char:               __str_char_size,                                                    \
+           int:                __str_char_size,                                                    \
            char*:              __str_c_str_size,                                                   \
            const char*:        __str_c_str_size,                                                   \
            struct __str*:      __str_string_size                                                   \
@@ -33,6 +34,7 @@ c_str __str_string_start(void* s);
     (void)__eof;                                                                                   \
     _Generic(s,                                                                                    \
              char:               __str_char_start,                                                 \
+             int:                __str_char_start,                                                 \
              char*:              __str_c_str_start,                                                \
              const char* :       __str_c_str_start,                                                \
              struct __str*:      __str_string_start                                                \
