@@ -1,14 +1,14 @@
 /* libs */
-#include "src/buf.h"
-#include "src/fs.h"
-#include "src/list.h"
-#include "src/map.h"
-#include "src/que.h"
-#include "src/sock.h"
-#include "src/stack.h"
-#include "src/str.h"
-#include "src/u.h"
-#include "src/vec.h"
+#include "buf.h"
+#include "fs.h"
+#include "list.h"
+#include "map.h"
+#include "que.h"
+#include "sock.h"
+#include "stack.h"
+#include "str.h"
+#include "u.h"
+#include "vec.h"
 
 #define _typeof(t) __builtin_classify_type(t)
 

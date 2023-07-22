@@ -37,13 +37,13 @@ end
 add_requires('mimalloc')
 
 --- Project common header file path
-add_includedirs('$(projectdir)/src')
+add_includedirs('$(projectdir)/inc')
 
 --- Main target
 target('u', function()
   set_kind('static')
-  add_files('src/*.c')
-  add_headerfiles('src/*.h', { prefixdir = 'u' })
+  add_files('$(projectdir)/src/*.c')
+  add_headerfiles('$(projectdir)/inc/*.h', { prefixdir = 'u' })
 
   add_packages('mimalloc')
 end)
