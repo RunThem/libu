@@ -86,7 +86,6 @@ ret_t __list_push(any_t _self, any_t idx, any_t it) {
 
   prev = idx;
   next = (idx == nullptr) ? self->head : as(idx, node_t*)->next;
-  inf("prev(%p), next(%p)", prev, next);
 
   node = __list_node(_self, it, prev, next);
   u_alloc_if(node);

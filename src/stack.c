@@ -54,7 +54,6 @@ err:
 }
 
 ret_t __stack_clear(any_t _self) {
-  any_t ptr     = nullptr;
   stack_t* self = as(_self, stack_t*);
 
   u_ret_if(_self == nullptr, -1);
@@ -66,7 +65,6 @@ ret_t __stack_clear(any_t _self) {
 }
 
 ret_t __stack_cleanup(any_t _self) {
-  any_t ptr     = nullptr;
   stack_t* self = as(_self, stack_t*);
 
   u_ret_if(_self == nullptr, -1);

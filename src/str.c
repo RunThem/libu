@@ -1,5 +1,7 @@
 #include "str.h"
 
+#include <stdarg.h>
+
 #define _str (*str)
 
 /* clang-format off */
