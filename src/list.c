@@ -1,7 +1,5 @@
 #include "list.h"
 
-#include <bits/types/error_t.h>
-
 typedef struct {
   any_t prev;
   any_t next;

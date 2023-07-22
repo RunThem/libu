@@ -1,10 +1,5 @@
 #include "str.h"
 
-#include "u.h"
-
-#include <ctype.h>
-#include <stdarg.h>
-
 #define _str (*str)
 
 /* clang-format off */
