@@ -44,9 +44,9 @@ ret_t __vec_pop(any_t _self, size_t idx, any_t it);
 #define vec_pop_b(vec)    __vec_pop(vec, vec_len(vec) - 1, (____vec_bzero(vec), &(vec)->it))
 
 ret_t __vec_at(any_t _self, size_t idx, any_t it);
-#define vec_at(vec, idx)   (__vec_at(vec, idx, (____vec_bzero(vec), &(vec)->it), (vec)->it)
-#define vec_at_f(vec, idx) (__vec_at(vec, 0, (____vec_bzero(vec), &(vec)->it), (vec)->it)
-#define vec_at_b(vec, idx) (__vec_at(vec, vec_len(vec) - 1, (____vec_bzero(vec), &(vec)->it), (vec)->it)
+#define vec_at(vec, idx) (__vec_at(vec, idx, (____vec_bzero(vec), &(vec)->it)), (vec)->it)
+#define vec_at_f(vec)    (__vec_at(vec, 0, (____vec_bzero(vec), &(vec)->it)), (vec)->it)
+#define vec_at_b(vec)    (__vec_at(vec, vec_len(vec) - 1, (____vec_bzero(vec), &(vec)->it)), (vec)->it)
 
 ret_t __vec_set(any_t _self, size_t idx, any_t it);
 #define vec_set(vec, idx, _it)                                                                     \
