@@ -58,7 +58,7 @@
  * __print__
  *************************************************************************************************/
 #ifdef NDEBUG
-#  define _prt(fmt, ...)
+#  define __prt(fmt, ...)
 #else
 #  define __prt(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
 #endif
