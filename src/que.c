@@ -109,7 +109,6 @@ err:
 }
 
 ret_t __que_pop(any_t _self, any_t it) {
-  ret_t code  = 0;
   que_t* self = as(_self, que_t*);
 
   u_ret_if(_self == nullptr, -1);
@@ -131,7 +130,6 @@ ret_t __que_pop(any_t _self, any_t it) {
 }
 
 ret_t __que_peek(any_t _self, any_t it) {
-  ret_t code  = 0;
   que_t* self = as(_self, que_t*);
 
   u_ret_if(_self == nullptr, -1);
