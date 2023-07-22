@@ -41,8 +41,6 @@ ret_t __vec_resize(any_t _self, size_t cap) {
   u_ret_if(_self == nullptr, -1);
   u_ret_if(self->cap >= cap, -1);
 
-  cap = __vec_cap(cap);
-
   ptr = u_realloc(self->items, self->itsize * cap);
   u_alloc_if(ptr);
 
@@ -130,7 +128,7 @@ ret_t __vec_push(any_t _self, size_t idx, any_t it) {
   u_ret_if(self->len < idx, -1);
 
   if (self->len == self->cap) {
-    code = __vec_resize(self, self->cap + 1);
+    code = __vec_resize(self, __vec_cap(self->cap));
     u_goto_if(code != 0);
   }
 
