@@ -23,7 +23,7 @@ ret_t __que_init(any_t _self, size_t itsize, size_t cap) {
   self->s_idx = 0;
   self->e_idx = 0;
 
-  self->items = u_calloc(cap, itsize);
+  self->items = u_calloc(self->cap, itsize);
   u_alloc_if(self->items);
 
   return 0;

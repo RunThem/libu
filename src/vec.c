@@ -1,6 +1,5 @@
 #include "vec.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 static size_t __vec_cap(size_t size) {
@@ -23,7 +22,7 @@ ret_t __vec_init(any_t _self, size_t itsize, size_t cap) {
   self->len    = 0;
   self->cap    = __vec_cap(cap);
 
-  self->items = u_calloc(cap, itsize);
+  self->items = u_calloc(self->cap, itsize);
   u_alloc_if(self->items);
 
   return 0;
