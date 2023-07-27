@@ -150,9 +150,9 @@ typedef long double f128_t;
 /* array utils function */
 #define arr_len(a) (sizeof(a) / sizeof((a)[0]))
 
-#define arr_for(arr, i) for (size_t i = 0; i < arr_len(arr); i++)
+#define arr_for(arr, i) for (size_t i = 0; (i) < arr_len(arr); (i)++)
 
-#define arr_sort(arr, size, fn) qsort(arr, size, sizeof(arr[0]), fn)
+#define arr_sort(arr, size, fn) qsort(arr, size, sizeof((arr)[0]), fn)
 
 #define arr_min(ptr, size, fn)                                                                     \
   ({                                                                                               \
