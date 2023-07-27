@@ -1,4 +1,5 @@
 /* libs */
+// #include "buf.h"
 #include "buf.h"
 #include "fs.h"
 #include "list.h"
@@ -13,15 +14,32 @@
 #define _typeof(t) __builtin_classify_type(t)
 
 int main(int argc, const char** argv) {
+  buf_t buf = {0};
 
-  str_t str = str_new('c');
+  buf_init(&buf, 10);
 
-  inf("'%s'", str->c_str);
+  int a = 124823;
+  buf_push(&buf, 10);
 
-  auto c = 'c';
+  buf_push(&buf, &a, 4);
 
-  inf("sizeof(%lu)", sizeof(c));
-  inf_hex((uint8_t*)__str_char_start(&c), 4l);
+  inf_hex(buf_data(&buf), buf_len(&buf));
+  buf_hex(&buf);
+
+  int b = 0;
+  buf_pop(&buf, &b, 2);
+
+  inf("%d", b);
+
+  buf_hex(&buf);
+
+  buf_peek(&buf, &b);
+
+  inf("%d", b);
+
+  buf_hex(&buf);
+
+  buf_cleanup(&buf);
 
   return 0;
 }

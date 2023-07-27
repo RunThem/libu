@@ -1,136 +1,115 @@
 #include "buf.h"
 
-#define _buf (*buf)
-
-static size_t buf_cap(size_t len) {
-  if (len < 32) {
+static size_t __buf_cap(size_t size) {
+  if (size < 32) {
     return 32;
-  } else if (len < 1024) {
-    return len * 2;
+  } else if (size < 1024) {
+    return size * 2;
   }
 
-  return len + 1024;
+  return size + 512;
 }
 
-buf_t buf_new(c_buf c_buffer, size_t len) {
-  size_t cap = 0;
-  buf_t buf  = nullptr;
+ret_t __buf_init(any_t _self, size_t cap) {
+  buf_t* self = as(_self, buf_t*);
 
-  u_ret_if(c_buffer == nullptr, nullptr);
-  u_ret_if(len == 0, nullptr);
+  u_ret_if(_self == nullptr, -1);
 
-  cap = buf_cap(len);
+  self->len = 0;
+  self->cap = __buf_cap(cap);
 
-  buf = u_talloc(sizeof(struct __buf) + 1 + cap, buf_t);
-  u_alloc_if(buf);
-
-  buf->len = len;
-  buf->cap = cap;
-  memcpy(buf->c_buf, c_buffer, len);
-
-  return buf;
-
-err:
-  return nullptr;
-}
-
-int buf_init(buf_t* buf, size_t len) {
-  size_t cap = 0;
-
-  u_ret_if(buf == nullptr, -1);
-
-  cap = buf_cap(len);
-
-  _buf = u_talloc(sizeof(struct __buf) + 1 + cap, buf_t);
-  u_alloc_if(_buf);
-
-  _buf->cap = cap;
+  self->c_buf = u_calloc(self->cap, sizeof(uint8_t));
+  u_alloc_if(self->c_buf);
 
   return 0;
 
 err:
-  return -1;
+  bzero(self, sizeof(buf_t));
+  return -2;
 }
 
-bool buf_empty(buf_t* buf) {
-  u_ret_if(buf == nullptr, -1);
-  u_ret_if(_buf == nullptr, -1);
+ret_t __buf_resize(any_t _self, size_t cap) {
+  uint8_t* ptr = nullptr;
+  buf_t* self  = as(_self, buf_t*);
 
-  return _buf->len == 0;
-}
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(self->cap >= cap, -2);
 
-int buf_resize(buf_t* buf, size_t len) {
-  u_ret_if(buf == nullptr, -1);
-  u_ret_if(_buf == nullptr, -1);
-  u_ret_if(len <= _buf->cap, -1);
+  ptr = u_realloc(self->c_buf, sizeof(uint8_t) * cap);
+  u_alloc_if(ptr);
 
-  _buf = (buf_t)u_realloc(_buf, len);
-  u_alloc_if(_buf);
-
-  _buf->cap = len;
+  self->c_buf = ptr;
+  self->cap   = cap;
 
   return 0;
 
 err:
-  return -1;
+  bzero(self, sizeof(buf_t));
+  return -2;
 }
 
-void buf_clear(buf_t* buf) {
-  u_ret_no_if(buf == nullptr);
-  u_ret_no_if(_buf == nullptr);
+ret_t __buf_cleanup(any_t _self) {
+  buf_t* self = as(_self, buf_t*);
 
-  _buf->len      = 0;
-  _buf->c_buf[0] = '\0';
+  u_ret_if(_self == nullptr, -1);
+
+  u_free(self->c_buf);
+
+  bzero(self, sizeof(buf_t));
+
+  return 0;
 }
 
-void buf_cleanup(buf_t* buf) {
-  u_ret_no_if(buf == nullptr);
-  u_ret_no_if(_buf == nullptr);
+ret_t __buf_push(any_t _self, any_t mem, size_t len) {
+  ret_t code  = 0;
+  buf_t* self = as(_self, buf_t*);
 
-  u_free(_buf);
-  _buf = nullptr;
-}
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(mem == nullptr, -1);
 
-int __buf_push(buf_t* buf, c_buf c_buffer, size_t size) {
-  int ret = 0;
+  u_ret_if(self->c_buf == nullptr, -1);
 
-  u_ret_if(buf == nullptr, -1);
-  u_ret_if(_buf == nullptr, -1);
-  u_ret_if(c_buffer == nullptr, -1);
-
-  if (size > _buf->cap - _buf->len) {
-    ret = buf_resize(buf, buf_cap(_buf->len) + size);
-    u_goto_if(ret != 0);
+  if (self->cap - self->len < len) {
+    code = __buf_resize(self, __buf_cap(self->cap));
+    u_goto_if(code != 0);
   }
 
-  memcpy(&_buf->c_buf[_buf->len], c_buffer, size);
-  _buf->len += size;
+  memcpy(self->c_buf + self->len, mem, len);
+
+  self->len += len;
 
   return 0;
 
 err:
-  return -1;
+  return -2;
 }
 
-int __buf_pop(buf_t* buf, c_buf c_buffer, size_t size) {
-  u_ret_if(buf == nullptr, -1);
-  u_ret_if(_buf == nullptr, -1);
-  u_ret_if(c_buffer == nullptr, -1);
-  u_ret_if(size == 0 || size > _buf->len, -1);
+ret_t __buf_pop(any_t _self, any_t mem, size_t len) {
+  buf_t* self = as(_self, buf_t*);
 
-  memcpy(c_buffer, &_buf->c_buf[_buf->len - size], size);
-  _buf->len -= size;
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(mem == nullptr, -1);
+
+  u_ret_if(self->c_buf == nullptr, -1);
+  u_ret_if(self->len < len, -1);
+
+  memcpy(mem, self->c_buf + self->len - len, len);
+
+  self->len -= len;
 
   return 0;
 }
 
-int __buf_peek(buf_t* buf, c_buf c_buffer, size_t size) {
-  u_ret_if(buf == nullptr, -1);
-  u_ret_if(_buf == nullptr, -1);
-  u_ret_if(c_buffer == nullptr, -1);
-  u_ret_if(size == 0 || size > _buf->len, -1);
+ret_t __buf_peek(any_t _self, any_t mem, size_t len) {
+  buf_t* self = as(_self, buf_t*);
 
-  memcpy(c_buffer, &_buf->c_buf[_buf->len - size], size);
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(mem == nullptr, -1);
+
+  u_ret_if(self->c_buf == nullptr, -1);
+  u_ret_if(self->len < len, -1);
+
+  memcpy(mem, self->c_buf + self->len - len, len);
 
   return 0;
 }
