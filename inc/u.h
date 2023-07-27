@@ -54,6 +54,13 @@
 #define va_4th(def, ...) __va_th(va_cut(4, __VA_ARGS__) va_opt(4, __VA_ARGS__) def)
 #define va_5th(def, ...) __va_th(va_cut(5, __VA_ARGS__) va_opt(5, __VA_ARGS__) def)
 
+#define va_0or(t, f, ...) va_at(1 va_opt(0, __VA_ARGS__) va_at(0, __VA_ARGS__), t, f)
+#define va_1or(t, f, ...) va_at(1 va_opt(1, __VA_ARGS__) va_at(1, __VA_ARGS__), t, f)
+#define va_2or(t, f, ...) va_at(1 va_opt(2, __VA_ARGS__) va_at(2, __VA_ARGS__), t, f)
+#define va_3or(t, f, ...) va_at(1 va_opt(3, __VA_ARGS__) va_at(3, __VA_ARGS__), t, f)
+#define va_4or(t, f, ...) va_at(1 va_opt(4, __VA_ARGS__) va_at(4, __VA_ARGS__), t, f)
+#define va_5or(t, f, ...) va_at(1 va_opt(5, __VA_ARGS__) va_at(5, __VA_ARGS__), t, f)
+
 /*************************************************************************************************
  * __print__
  *************************************************************************************************/
