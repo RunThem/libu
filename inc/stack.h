@@ -17,6 +17,7 @@ typedef struct {
     T it;                                                                                          \
   }
 
+#define stack_isinit(stack) ((stack)->_.itsize != 0)
 #define stack_itsize(stack) ((stack)->_.itsize)
 #define stack_len(stack)    ((stack)->_.len)
 #define stack_cap(stack)    ((stack)->_.cap)
@@ -26,7 +27,7 @@ typedef struct {
 #define ____stack_bzero(stack) bzero(&(stack)->it, stack_itsize(stack))
 
 ret_t __stack_init(any_t _self, size_t itsize, size_t cap);
-#define stack_init(stack, itsize, cap) __stack_init(stack, itsize, cap)
+#define stack_init(stack, cap) __stack_init(stack, sizeof((stack)->it), cap)
 
 ret_t __stack_resize(any_t _self, size_t cap);
 #define stack_resize(stack, cap) __stack_resize(stack, cap)

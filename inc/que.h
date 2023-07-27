@@ -17,6 +17,7 @@ typedef struct {
     T it;                                                                                          \
   }
 
+#define que_isinit(que) ((que)->_.itsize != 0)
 #define que_itsize(que) ((que)->_.itsize)
 #define que_len(que)    ((que)->_.len)
 #define que_cap(que)    ((que)->_.cap)
@@ -26,7 +27,7 @@ typedef struct {
 #define ____que_bzero(que) bzero(&(que)->it, que_itsize(que))
 
 ret_t __que_init(any_t _self, size_t itsize, size_t cap);
-#define que_init(que, itsize, cap) __que_init(que, itsize, cap)
+#define que_init(que, cap) __que_init(que, sizeof((que)->it), cap)
 
 ret_t __que_resize(any_t _self, size_t cap);
 #define que_resize(que, cap) __que_resize(que, cap)
