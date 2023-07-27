@@ -15,6 +15,7 @@ typedef struct {
     T it;                                                                                          \
   }
 
+#define vec_isinit(vec) ((vec)->_.itsize != 0)
 #define vec_itsize(vec) ((vec)->_.itsize)
 #define vec_len(vec)    ((vec)->_.len)
 #define vec_cap(vec)    ((vec)->_.cap)
@@ -26,7 +27,7 @@ typedef struct {
 #define ____vec_bzero(vec) bzero(&(vec)->it, vec_itsize(vec))
 
 ret_t __vec_init(any_t _self, size_t itsize, size_t cap);
-#define vec_init(vec, itsize, cap) __vec_init(vec, itsize, cap)
+#define vec_init(vec, cap) __vec_init(vec, sizeof((vec)->it), cap)
 
 ret_t __vec_resize(any_t _self, size_t cap);
 #define vec_resize(vec, cap) __vec_resize(vec, cap)

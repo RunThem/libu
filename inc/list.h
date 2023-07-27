@@ -23,6 +23,7 @@ typedef struct {
     T it;                                                                                          \
   }
 
+#define list_isinit(list) ((list)->_.itsize != 0)
 #define list_itsize(list) ((list)->_.itsize)
 #define list_len(list)    ((list)->_.len)
 #define list_empty(list)  ((list)->_.len == 0)
@@ -37,7 +38,7 @@ typedef struct {
   }*)(node))
 
 ret_t __list_init(any_t _self, size_t itsize);
-#define list_init(list, itsize) __list_init(list, itsize)
+#define list_init(list) __list_init(list, sizeof((list)->it))
 
 ret_t __list_push(any_t _self, any_t idx, any_t it);
 #define list_push(list, idx, _it)                                                                  \
