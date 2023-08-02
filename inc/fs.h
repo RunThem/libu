@@ -1,8 +1,9 @@
 #pragma once
 
-#include "str.h"
+// #include "str.h"
 #include "u.h"
 
+#if 0
 /*
  * 返回文件大小, 失败返回-1, 必须是文件, 而不能是目录
  * */
@@ -27,3 +28,5 @@ off_t fs_write(c_str filename, c_str buf, size_t len);
  * 删除一个文件, 必须是文件, 而不能是目录
  * */
 bool fs_remove(c_str filename);
+
+#endif

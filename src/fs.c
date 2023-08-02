@@ -5,6 +5,7 @@
 /* libs */
 #include "fs.h"
 
+#if 0
 off_t fs_size(c_str filename) {
   int ret        = 0;
   struct stat st = {0};
@@ -91,3 +92,5 @@ bool fs_remove(c_str filename) {
 err:
   return false;
 }
+
+#endif

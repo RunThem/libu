@@ -1,6 +1,7 @@
 #include "sock.h"
 
-#include <stdlib.h>
+#if 0
+#  include <stdlib.h>
 
 struct sock_url {
   int family;
@@ -214,3 +215,5 @@ int sock_open(sock_conf_t* conf) {
 
   return ret;
 }
+
+#endif
