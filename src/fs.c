@@ -5,7 +5,6 @@
 /* libs */
 #include "fs.h"
 
-#if 0
 off_t fs_size(c_str filename) {
   int ret        = 0;
   struct stat st = {0};
@@ -23,23 +22,24 @@ bool fs_exists(c_str filename) {
 }
 
 str_t fs_read(c_str filename) {
+  ret_t code  = 0;
   int fd      = 0;
   off_t size  = 0;
   ssize_t len = 0;
-  str_t str   = nullptr;
+  str_t str   = {0};
 
-  u_ret_if(filename == nullptr, nullptr);
+  u_ret_if(filename == nullptr, str);
 
   size = fs_size(filename);
   u_goto_if(size == -1);
 
-  str = str_new("", size);
-  u_alloc_if(str);
+  code = str_init(&str, size);
+  u_goto_if(code != 0);
 
   fd = open(filename, O_RDONLY);
   u_goto_if(fd < 0);
 
-  len = read(fd, str->c_str, size);
+  len = read(fd, str.c_str, size);
   u_goto_if(len != size);
 
   close(fd);
@@ -47,13 +47,13 @@ str_t fs_read(c_str filename) {
   return str;
 
 err:
-  if (str != nullptr) {
+  if (str_isinit(&str)) {
     str_cleanup(&str);
   }
 
   u_close_if(fd);
 
-  return nullptr;
+  return str;
 }
 
 off_t fs_write(c_str filename, c_str buf, size_t len) {
@@ -92,5 +92,3 @@ bool fs_remove(c_str filename) {
 err:
   return false;
 }
-
-#endif

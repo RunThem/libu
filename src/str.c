@@ -23,6 +23,52 @@ static size_t __str_cap(size_t size) {
   return size + 1024;
 }
 
+str_t __str_from(c_str cstr, size_t len) {
+  ret_t code = 0;
+  str_t self = {0};
+
+  u_ret_if(cstr == nullptr, self);
+  u_ret_if(len == 0, self);
+
+  code = __str_init(&self, len);
+  u_goto_if(code != 0);
+
+  __str_push(&self, 0, cstr, len);
+
+  return self;
+
+err:
+  bzero(&self, sizeof(str_t));
+
+  return self;
+}
+
+str_t __str_fromf(c_str fmt, ...) {
+  ret_t code     = 0;
+  str_t self     = {0};
+  char buf[4096] = {0};
+  size_t len     = 0;
+  va_list ap     = {0};
+
+  u_ret_if(fmt == nullptr, self);
+
+  code = __str_init(&self, 0);
+  u_goto_if(code != 0);
+
+  va_start(ap, fmt);
+  len = vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+
+  __str_push(&self, 0, buf, len);
+
+  return self;
+
+err:
+  bzero(&self, sizeof(str_t));
+
+  return self;
+}
+
 ret_t __str_init(any_t _self, size_t cap) {
   str_t* self = as(_self, str_t*);
 

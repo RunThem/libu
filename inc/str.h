@@ -49,6 +49,12 @@ extern c_str __str_string_start(void* s);
 #define str_empty(str)  ((str)->len == 0)
 #define str_clear(str)  ((str)->len = 0)
 
+str_t __str_from(c_str cstr, size_t len);
+#define str_from(cstr, arg...) __str_from(__str_start(cstr), va_0th(__str_size(cstr), arg))
+
+str_t __str_fromf(c_str fmt, ...);
+#define str_fromf(fmt, arg...) __str_fromf(__str_start(fmt) va_opt(0, arg) arg)
+
 ret_t __str_init(any_t _self, size_t cap);
 #define str_init(str, cap) __str_init(str, cap)
 

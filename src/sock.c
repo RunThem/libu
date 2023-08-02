@@ -1,7 +1,7 @@
 #include "sock.h"
+#include "str.h"
 
-#if 0
-#  include <stdlib.h>
+#include <stdlib.h>
 
 struct sock_url {
   int family;
@@ -45,13 +45,13 @@ static void sock_pack_url(c_str url, struct sock_url* url_res) {
     tmp = strrchr(url, '#');
 
     if (tmp == nullptr) {
-      url_res->addr = str_new(url);
+      url_res->addr = str_from(url);
     } else {
       url_res->port = atoi(tmp + 1);
-      url_res->addr = str_new(url, tmp - url);
+      url_res->addr = str_from(url, tmp - url);
     }
   } else {
-    url_res->addr = str_new(url);
+    url_res->addr = str_from(url);
   }
 }
 
@@ -64,6 +64,7 @@ static bool sock_set_opt(sock_conf_t* conf, int fd) {
     ret = setsockopt(fd, SOL_SOCKET, opt->opt_id, opt->value, opt->value_len);
     u_goto_if(ret < 0);
   }
+
   return true;
 
 err:
@@ -87,11 +88,11 @@ err:
 }
 
 static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
-  int fd     = -1;
-  int ret    = 0;
-  str_t port = nullptr;
-  struct addrinfo hints;
-  struct addrinfo* res = nullptr;
+  int fd                = -1;
+  int ret               = 0;
+  str_t port            = {0};
+  struct addrinfo hints = {0};
+  struct addrinfo* res  = nullptr;
 
   hints.ai_family   = url->family;
   hints.ai_socktype = url->type;
@@ -102,9 +103,9 @@ static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
     hints.ai_flags |= AI_PASSIVE;
   }
 
-  port = str_new_f("%u", url->port);
+  port = str_fromf("%u", url->port);
 
-  ret = getaddrinfo(url->addr->c_str, port->c_str, &hints, &res);
+  ret = getaddrinfo(url->addr.c_str, port.c_str, &hints, &res);
   u_goto_if(ret != 0, err, "getaddrinfo() -> %d(%s)", ret, gai_strerror(ret));
 
   for (auto ai = res; ai != nullptr; ai = ai->ai_next) {
@@ -162,7 +163,7 @@ static int sock_open_unix(sock_conf_t* conf, struct sock_url* url) {
   u_goto_if(!ret);
 
   addr.sun_family = AF_LOCAL;
-  strncpy(addr.sun_path, url->addr->c_str, url->addr->len);
+  strncpy(addr.sun_path, url->addr.c_str, url->addr.len);
 
   if (conf->listen > 0) {
     ret = bind(fd, (struct sockaddr*)&addr, addr_len);
@@ -194,14 +195,14 @@ int sock_open(sock_conf_t* conf) {
   sock_pack_url(conf->url, &url);
 
   if (url.family == AF_LOCAL) {
-    inf("domain(AF_LOCAL), protocol(%d), addr(%s)", url.protocol, url.addr->c_str);
+    inf("domain(AF_LOCAL), protocol(%d), addr(%s)", url.protocol, url.addr.c_str);
 
     ret = sock_open_unix(conf, &url);
   } else {
     inf("domain(%d), protocol(%d), addr(%s), port(%d)",
         url.family,
         url.protocol,
-        url.addr->c_str,
+        url.addr.c_str,
         url.port);
 
     ret = sock_open_ip(conf, &url);
@@ -216,4 +217,3 @@ int sock_open(sock_conf_t* conf) {
   return ret;
 }
 
-#endif

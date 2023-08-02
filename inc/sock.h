@@ -9,12 +9,10 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#if 0
 /* libs */
-#  include "str.h"
-#  include "u.h"
+#include "str.h"
 
-#  define SOCK_MAX_OPTS 4
+#define SOCK_MAX_OPTS 4
 
 typedef struct {
   int opt_id;
@@ -55,5 +53,3 @@ typedef struct {
  * 创建一个socket, .fd就是描述符
  * */
 int sock_open(sock_conf_t* conf);
-
-#endif

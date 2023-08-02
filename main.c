@@ -11,8 +11,6 @@
 #include "u.h"
 #include "vec.h"
 
-#include <string.h>
-
 #define _typeof(t) __builtin_classify_type(t)
 
 int main(int argc, const char** argv) {
