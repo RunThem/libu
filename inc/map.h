@@ -57,9 +57,10 @@ ret_t __map_pop(any_t _self, any_t key, any_t val);
 
 ret_t __map_at(any_t _self, any_t key, any_t val);
 #define map_at(map, _key)                                                                          \
-  __map_at(map,                                                                                    \
-           (____map_k_bzero(map), (map)->key = (_key), &(map)->key),                               \
-           (____map_v_bzero(map), &(map)->val))
+  (__map_at(map,                                                                                   \
+            (____map_k_bzero(map), (map)->key = (_key), &(map)->key),                              \
+            (____map_v_bzero(map), &(map)->val)),                                                  \
+   (map)->val)
 
 ret_t __map_clear(any_t _self);
 #define map_clear(map) __map_clear(map)
@@ -78,4 +79,3 @@ ret_t __map_cleanup(any_t _self);
          }**)((map)->_.nodes.items))[i];                                                           \
          (it) != nullptr;                                                                          \
          (it) = nullptr)
-

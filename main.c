@@ -15,21 +15,25 @@
 
 int main(int argc, const char** argv) {
 
-  list(int) lst = {0};
+  map(int, char) mm = {};
 
-  list_init(&lst);
+  map_init(&mm, map_mem_hash);
 
-  for (size_t i = 0; i < 10; i++) {
-    list_push_b(&lst, i);
-  }
+  map_push(&mm, 12, 'a');
+  map_push(&mm, 2, '4');
+  map_push(&mm, 14, 'v');
+  map_push(&mm, 132, 'm');
 
-  inf("%ld", list_len(&lst));
+  inf("%ld", map_len(&mm));
 
-  list_for(&lst, it) {
-    inf("%d", it->it);
-  }
+  inf("'%c'", map_at(&mm, 12));
+  inf("'%c'", map_at(&mm, 2));
+  inf("'%c'", map_at(&mm, 14));
+  inf("'%c'", map_at(&mm, 132));
 
-  // Generic map data structure
+  /*
+   * fixme: map_for() failed.
+   * */
 
   return 0;
 }
