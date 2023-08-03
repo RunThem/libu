@@ -18,7 +18,7 @@ ret_t __que_init(any_t _self, size_t itsize, size_t cap) {
 
   self->itsize = itsize;
   self->len    = 0;
-  self->cap    = __que_cap(cap);
+  self->cap    = cap;
 
   self->s_idx = 0;
   self->e_idx = 0;

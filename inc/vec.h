@@ -2,6 +2,10 @@
 
 #include "u.h"
 
+#ifndef U_VEC_ITEMS_CAP
+#  define U_VEC_ITEMS_CAP 16
+#endif
+
 typedef struct {
   size_t itsize;
   size_t len;
@@ -19,7 +23,7 @@ typedef struct {
 #define vec_itsize(vec) ((vec)->_.itsize)
 #define vec_len(vec)    ((vec)->_.len)
 #define vec_cap(vec)    ((vec)->_.cap)
-#define vec_data(vec)   (as((vec)->_.items, typeof((vec)->it)*))
+#define vec_items(vec)  (as((vec)->_.items, typeof((vec)->it)*))
 #define vec_empty(vec)  ((vec)->_.len == 0)
 #define vec_clear(vec)  ((vec)->_.len = 0)
 
@@ -27,7 +31,7 @@ typedef struct {
 #define ____vec_bzero(vec) bzero(&(vec)->it, vec_itsize(vec))
 
 ret_t __vec_init(any_t _self, size_t itsize, size_t cap);
-#define vec_init(vec, cap) __vec_init(vec, sizeof((vec)->it), cap)
+#define vec_init(vec, arg...) __vec_init(vec, sizeof((vec)->it), va_0th(U_VEC_ITEMS_CAP, arg))
 
 ret_t __vec_resize(any_t _self, size_t cap);
 #define vec_resize(vec, cap) __vec_resize(vec, cap)

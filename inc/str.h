@@ -45,7 +45,7 @@ extern c_str __str_string_start(void* s);
 #define str_isinit(str) ((str)->c_str == nullptr)
 #define str_len(str)    ((str)->len)
 #define str_cap(str)    ((str)->cap)
-#define str_data(str)   ((str)->c_str)
+#define str_cstr(str)   ((str)->c_str)
 #define str_empty(str)  ((str)->len == 0)
 #define str_clear(str)  ((str)->len = 0)
 

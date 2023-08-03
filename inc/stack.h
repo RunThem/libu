@@ -2,7 +2,9 @@
 
 #include "u.h"
 
-#include <stddef.h>
+#ifndef U_STACK_ITEMS_CAP
+#  define U_STACK_ITEMS_CAP 16
+#endif
 
 typedef struct {
   size_t itsize;
@@ -27,7 +29,8 @@ typedef struct {
 #define ____stack_bzero(stack) bzero(&(stack)->it, stack_itsize(stack))
 
 ret_t __stack_init(any_t _self, size_t itsize, size_t cap);
-#define stack_init(stack, cap) __stack_init(stack, sizeof((stack)->it), cap)
+#define stack_init(stack, arg...)                                                                  \
+  __stack_init(stack, sizeof((stack)->it), va_0th(U_STACK_ITEMS_CAP, arg))
 
 ret_t __stack_resize(any_t _self, size_t cap);
 #define stack_resize(stack, cap) __stack_resize(stack, cap)

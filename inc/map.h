@@ -5,7 +5,7 @@
 #include "vec.h"
 
 #ifndef U_MAP_BUCKETS_NUM
-#  define U_MAP_BUCKETS_NUM 5
+#  define U_MAP_BUCKETS_NUM 64
 #endif
 
 typedef uint64_t hash_t;

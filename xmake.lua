@@ -49,7 +49,7 @@ target('u', function()
 end)
 
 --- Demo target
-target('test', function()
+target('demo', function()
   set_kind('binary')
   add_files('main.c')
   set_default('false')

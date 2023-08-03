@@ -20,7 +20,7 @@ ret_t __vec_init(any_t _self, size_t itsize, size_t cap) {
 
   self->itsize = itsize;
   self->len    = 0;
-  self->cap    = __vec_cap(cap);
+  self->cap    = cap;
 
   self->items = u_calloc(self->cap, itsize);
   u_alloc_if(self->items);

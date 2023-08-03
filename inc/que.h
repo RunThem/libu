@@ -2,6 +2,10 @@
 
 #include "u.h"
 
+#ifndef U_QUE_ITEMS_CAP
+#  define U_QUE_ITEMS_CAP 16
+#endif
+
 typedef struct {
   size_t itsize;
   size_t len;
@@ -27,7 +31,7 @@ typedef struct {
 #define ____que_bzero(que) bzero(&(que)->it, que_itsize(que))
 
 ret_t __que_init(any_t _self, size_t itsize, size_t cap);
-#define que_init(que, cap) __que_init(que, sizeof((que)->it), cap)
+#define que_init(que, arg...) __que_init(que, sizeof((que)->it), va_0th(U_QUE_ITEMS_CAP, arg))
 
 ret_t __que_resize(any_t _self, size_t cap);
 #define que_resize(que, cap) __que_resize(que, cap)
