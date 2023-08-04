@@ -1,9 +1,9 @@
+--- Project
+set_project('libu')
+
 --- xmake configure
 set_xmakever('2.6.1')
 add_plugindirs('.plugins')
-
---- Project name
-set_project('libu')
 
 --- Project version
 set_version('0.1.0')
