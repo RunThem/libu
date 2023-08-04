@@ -6,7 +6,7 @@ add_plugindirs('.plugins')
 set_project('libu')
 
 --- Project version
-set_version('0.0.1')
+set_version('0.1.0')
 
 --- Build mode
 add_rules('mode.debug', 'mode.release')
