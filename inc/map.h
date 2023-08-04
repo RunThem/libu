@@ -20,7 +20,7 @@ typedef struct {
   size_t ksize;
   size_t vsize;
   size_t len;
-  vec_t hashs;
+  vec(hash_t) hashs;
   list_t buckets[U_MAP_BUCKETS_NUM];
 } map_t;
 
