@@ -1,5 +1,4 @@
 /* libs */
-// #include "buf.h"
 #include "buf.h"
 #include "fs.h"
 #include "list.h"
@@ -17,23 +16,22 @@ int main(int argc, const char** argv) {
 
   map(int, char) mm = {};
 
-  map_init(&mm, map_mem_hash);
+  map_init(&mm);
 
   map_push(&mm, 12, 'a');
   map_push(&mm, 2, '4');
   map_push(&mm, 14, 'v');
   map_push(&mm, 132, 'm');
 
-  inf("%ld", map_len(&mm));
+  printf("len is %ld\n", map_len(&mm));
+  printf("'%c'\n", map_at(&mm, 12));
+  printf("'%c'\n", map_at(&mm, 2));
+  printf("'%c'\n", map_at(&mm, 14));
+  printf("'%c'\n", map_at(&mm, 132));
 
-  inf("'%c'", map_at(&mm, 12));
-  inf("'%c'", map_at(&mm, 2));
-  inf("'%c'", map_at(&mm, 14));
-  inf("'%c'", map_at(&mm, 132));
-
-  /*
-   * fixme: map_for() failed.
-   * */
+  map_for(&mm, i) {
+    printf("%d, %c\n", mm.key, mm.val);
+  }
 
   return 0;
 }

@@ -20,7 +20,7 @@ typedef struct {
   size_t ksize;
   size_t vsize;
   size_t len;
-  vec_t nodes;
+  vec_t hashs;
   list_t buckets[U_MAP_BUCKETS_NUM];
 } map_t;
 
@@ -37,11 +37,13 @@ typedef struct {
 #define map_len(map)    ((map)->_.len)
 #define map_empty(map)  ((map)->_.len == 0)
 
+/* private macro */
 #define ____map_k_bzero(map) bzero(&(map)->key, map_ksize(map))
 #define ____map_v_bzero(map) bzero(&(map)->val, map_vsize(map))
 
 ret_t __map_init(any_t _self, size_t ksize, size_t vsize, map_hash_fn fn);
-#define map_init(map, fn) __map_init(map, sizeof((map)->key), sizeof((map)->val), fn)
+#define map_init(map, arg...)                                                                      \
+  __map_init(map, sizeof((map)->key), sizeof((map)->val), va_0th(map_mem_hash, arg))
 
 ret_t __map_push(any_t _self, any_t key, any_t val);
 #define map_push(map, _key, _val)                                                                  \
@@ -68,14 +70,7 @@ ret_t __map_clear(any_t _self);
 ret_t __map_cleanup(any_t _self);
 #define map_cleanup(map) __map_cleanup(map)
 
-#define map_for(map, it)                                                                           \
-  for (size_t i = 0; i < mm._.nodes.len; i++)                                                      \
-    for (auto(it) = ((struct {                                                                     \
-           any_t __prev;                                                                           \
-           any_t __next;                                                                           \
-           hash_t __hash;                                                                          \
-           typeof((map)->key) key;                                                                 \
-           typeof((map)->val) val;                                                                 \
-         }**)((map)->_.nodes.items))[i];                                                           \
-         (it) != nullptr;                                                                          \
-         (it) = nullptr)
+/* private function */
+ret_t __map_range(any_t _self, size_t idx, any_t key, any_t val);
+#define map_for(map, i)                                                                            \
+  for (size_t i = 0; 0 == __map_range(map, i, &(map)->key, &(map)->val); (i)++)

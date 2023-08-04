@@ -1,5 +1,4 @@
 #include "map.h"
-
 #include "u.h"
 
 /* |    8    |     ...      |
@@ -58,7 +57,7 @@ ret_t __map_init(any_t _self, size_t ksize, size_t vsize, map_hash_fn fn) {
   self->vsize   = vsize;
   self->hash_fn = fn != nullptr ? fn : map_mem_hash;
 
-  __vec_init(&self->nodes, sizeof(any_t), 1);
+  __vec_init(&self->hashs, sizeof(hash_t), 0);
 
   arr_for(self->buckets, i) {
     __list_init(&self->buckets[i], sizeof(hash_t) + ksize + vsize);
@@ -73,7 +72,7 @@ ret_t __map_clear(any_t _self) {
   u_ret_if(_self == nullptr, -1);
 
   self->len       = 0;
-  self->nodes.len = 0;
+  self->hashs.len = 0;
 
   arr_for(self->buckets, i) {
     __list_clear(&self->buckets[i]);
@@ -92,7 +91,7 @@ ret_t __map_cleanup(any_t _self) {
   self->vsize   = 0;
   self->hash_fn = nullptr;
 
-  __vec_cleanup(&self->nodes);
+  __vec_cleanup(&self->hashs);
 
   arr_for(self->buckets, i) {
     __list_cleanup(&self->buckets[i]);
@@ -142,16 +141,12 @@ ret_t __map_push(any_t _self, any_t key, any_t val) {
     /* add node */
     self->len++;
     __list_push(list, list->tail, hash);
-
-    it = __list_find(list, hash, fn_eq_use(map_hash_eq));
   } else {
     /* change node */
     memcpy(__map_val(self, &it->it), val, self->vsize);
   }
 
-  u_goto_if(it == nullptr);
-
-  __vec_push(&self->nodes, self->nodes.len, &it);
+  __vec_push(&self->hashs, self->hashs.len, hash);
 
   u_free(hash);
 
@@ -183,9 +178,9 @@ ret_t __map_pop(any_t _self, any_t key, any_t val) {
 
   memcpy(val, __map_val(self, &it->it), self->vsize);
 
-  idx = __vec_find(&self->nodes, &it, fn_eq_use(map_node_eq));
+  idx = __vec_find(&self->hashs, &it, fn_eq_use(map_node_eq));
 
-  __vec_erase(&self->nodes, idx);
+  __vec_erase(&self->hashs, idx);
   __list_erase(list, it);
 
   self->len--;
@@ -213,6 +208,34 @@ ret_t __map_at(any_t _self, any_t key, any_t val) {
   it = __list_find(list, &hash, fn_eq_use(map_hash_eq));
   u_goto_if(it == nullptr);
 
+  memcpy(val, __map_val(self, &it->it), self->vsize);
+
+  return 0;
+
+err:
+  return -2;
+}
+
+ret_t __map_range(any_t _self, size_t idx, any_t key, any_t val) {
+  hash_t hash           = {0};
+  list_t* list          = nullptr;
+  map_t* self           = as(_self, map_t*);
+  list_iter(hash_t)* it = nullptr;
+
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(idx >= self->hashs.len, -1);
+  u_ret_if(key == nullptr, -1);
+  u_ret_if(val == nullptr, -1);
+
+  __vec_at(&self->hashs, idx, &hash);
+
+  list = &self->buckets[hash % U_MAP_BUCKETS_NUM];
+  u_goto_if(list->len == 0);
+
+  it = __list_find(list, &hash, fn_eq_use(map_hash_eq));
+  u_goto_if(it == nullptr);
+
+  memcpy(key, __map_key(self, &it->it), self->ksize);
   memcpy(val, __map_val(self, &it->it), self->vsize);
 
   return 0;
