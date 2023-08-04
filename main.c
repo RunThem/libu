@@ -14,30 +14,11 @@
 
 int main(int argc, const char** argv) {
 
-  map(int, char) mm = {};
-
-  map_init(&mm);
-
-  for (size_t i = 'a'; i <= 'z'; i++) {
-    map_push(&mm, i, i);
-  }
-
-  inf("len is %ld", map_len(&mm));
-
-  map_for(&mm, i) {
-    inf("key(%d), val('%c')", mm.key, mm.val);
-  }
-
-  for (size_t i = 'f'; i <= 'k'; i++) {
-    map_pop(&mm, i);
-    inf("pop(%d, '%c')", mm.key, mm.val);
-  }
-
-  inf("len is %ld", map_len(&mm));
-
-  map_for(&mm, i) {
-    inf("key(%d), val('%c')", mm.key, mm.val);
-  }
+#ifdef USE_MIMALLOC
+  printf("use mimalloc\n");
+#else
+  printf("no use mimalloc\n");
+#endif
 
   return 0;
 }
