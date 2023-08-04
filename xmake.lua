@@ -33,6 +33,18 @@ if lambda then
   end
 end
 
+--- Mimalloc option
+option('mimalloc', function()
+  set_default(true)
+  set_category('option')
+  set_description('Enable or disable "mimalloc"')
+end)
+
+if has_config('mimalloc') then
+  add_requires('mimalloc')
+  add_defines('USE_MIMALLOC')
+end
+
 --- Private repositories
 add_requires('mimalloc')
 
@@ -45,7 +57,9 @@ target('u', function()
   add_files('$(projectdir)/src/*.c')
   add_headerfiles('$(projectdir)/inc/*.h', { prefixdir = 'u' })
 
-  add_packages('mimalloc')
+  if has_config('mimalloc') then
+    add_packages('mimalloc')
+  end
 end)
 
 --- Demo target
@@ -55,5 +69,8 @@ target('demo', function()
   set_default('false')
 
   add_deps('u')
-  add_packages('mimalloc')
+
+  if has_config('mimalloc') then
+    add_packages('mimalloc')
+  end
 end)

@@ -5,9 +5,11 @@
  *************************************************************************************************/
 #include <ctype.h>
 #include <errno.h>
-#include <mimalloc.h>
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*************************************************************************************************
@@ -240,12 +242,22 @@ static fn_cmp_def(uint64, uint64_t, (x > y));
  * __alloc__
  *************************************************************************************************/
 /* clang-format off */
-#define u_free(ptr)               ({ mi_free(ptr); })
-#define u_malloc(size)            ({ any_t _ptr = mi_malloc(size);          if (errno == 2) { errno = 0; } _ptr; })
-#define u_calloc(count, size)     ({ any_t _ptr = mi_calloc(count, size);   if (errno == 2) { errno = 0; } _ptr; })
-#define u_realloc(ptr, size)      ({ any_t _ptr = mi_realloc(ptr, size);    if (errno == 2) { errno = 0; } _ptr; })
-#define u_zalloc(size)            ({ any_t _ptr = mi_calloc(1, size);       if (errno == 2) { errno = 0; } _ptr; })
-#define u_talloc(size, type)      ({ any_t _ptr = mi_calloc(1, size);       if (errno == 2) { errno = 0; } (type)_ptr; })
+#ifdef USE_MIMALLOC
+#  include <mimalloc.h>
+#  define u_free(ptr)               ({ mi_free(ptr); })
+#  define u_malloc(size)            ({ any_t _ptr = mi_malloc(size);        if (errno == 2) { errno = 0; } _ptr; })
+#  define u_calloc(count, size)     ({ any_t _ptr = mi_calloc(count, size); if (errno == 2) { errno = 0; } _ptr; })
+#  define u_realloc(ptr, size)      ({ any_t _ptr = mi_realloc(ptr, size);  if (errno == 2) { errno = 0; } _ptr; })
+#  define u_zalloc(size)            ({ any_t _ptr = mi_calloc(1, size);     if (errno == 2) { errno = 0; } _ptr; })
+#  define u_talloc(size, type)      ({ any_t _ptr = mi_calloc(1, size);     if (errno == 2) { errno = 0; } (type)_ptr; })
+#else
+#  define u_free(ptr)               ({ free(ptr); })
+#  define u_malloc(size)            ({ any_t _ptr = malloc(size);        _ptr; })
+#  define u_calloc(count, size)     ({ any_t _ptr = calloc(count, size); _ptr; })
+#  define u_realloc(ptr, size)      ({ any_t _ptr = realloc(ptr, size);  _ptr; })
+#  define u_zalloc(size)            ({ any_t _ptr = calloc(1, size);     _ptr; })
+#  define u_talloc(size, type)      ({ any_t _ptr = calloc(1, size);     (type)_ptr; })
+#endif
 /* clang-format on */
 
 /*************************************************************************************************
