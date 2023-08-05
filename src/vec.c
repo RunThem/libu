@@ -256,3 +256,15 @@ ssize_t __vec_max(any_t _self, cmp_fn fn) {
 
   return idx;
 }
+
+bool __vec_cmp(any_t _self, any_t _cmp) {
+  vec_t* self = as(_self, vec_t*);
+  vec_t* cmp  = as(_cmp, vec_t*);
+
+  u_ret_if(_self == nullptr, false);
+  u_ret_if(_cmp == nullptr, false);
+  u_ret_if(self->itsize != cmp->itsize, false);
+  u_ret_if(self->len != cmp->len, false);
+
+  return !memcmp(self->items, cmp->items, self->len * self->itsize);
+}

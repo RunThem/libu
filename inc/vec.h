@@ -86,4 +86,7 @@ ssize_t __vec_min(any_t _self, cmp_fn fn);
 ssize_t __vec_max(any_t _self, cmp_fn fn);
 #define vec_max(vec, fn) __vec_max(vec, fn)
 
+bool __vec_cmp(any_t _self, any_t _cmp);
+#define vec_cmp(vec1, vec2) __vec_cmp(vec1, vec2)
+
 #define vec_for(vec, i) for (size_t i = 0; (i) < vec_len(vec); (i)++)
