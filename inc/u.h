@@ -88,7 +88,7 @@
   do {                                                                                             \
     const char* __ERROR__ = (errno != 0) ? strerror(errno) : "no errno";                           \
     inf("(\x1b[31m%s\x1b[0m) " fmt, __ERROR__ __VA_OPT__(, ) __VA_ARGS__);                         \
-    useno(__ERROR__);                                                                              \
+    noused(__ERROR__);                                                                             \
   } while (0)
 
 /*************************************************************************************************
@@ -151,9 +151,9 @@ typedef _Atomic(uint64_t)            atomic_u64_t;
 /*************************************************************************************************
  * __misc__
  *************************************************************************************************/
-#define useno(x) ((void)(x))
-#define chr(c)   (as(c, char))
-#define any(p)   (as(p, any_t))
+#define noused(x) ((void)(x))
+#define chr(c)    (as(c, char))
+#define any(p)    (as(p, any_t))
 
 #ifdef USE_LAMBDA
 #  define lm(ret, ...) ^ret(__VA_ARGS__)
@@ -252,8 +252,8 @@ static fn_cmp_def(uint32, uint32_t, (x > y));
 static fn_cmp_def(uint64, uint64_t, (x > y));
 
 /* clang-format off */
-#define min(x, y) ({ auto __min_x__ = (x); auto __min_y__ = (y); useno(&__min_x__ == &__min_y__); __min_x__ < __min_y__ ? __min_x__ : __min_y__; })
-#define max(x, y) ({ auto __max_x__ = (x); auto __max_y__ = (y); useno(&__max_x__ == &__max_y__); __max_x__ < __max_y__ ? __max_x__ : __max_y__; })
+#define min(x, y) ({ auto __min_x__ = (x); auto __min_y__ = (y); noused(&__min_x__ == &__min_y__); __min_x__ < __min_y__ ? __min_x__ : __min_y__; })
+#define max(x, y) ({ auto __max_x__ = (x); auto __max_y__ = (y); noused(&__max_x__ == &__max_y__); __max_x__ < __max_y__ ? __max_x__ : __max_y__; })
 /* clang-format on */
 
 /*************************************************************************************************
