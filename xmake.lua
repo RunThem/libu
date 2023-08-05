@@ -6,7 +6,7 @@ set_xmakever('2.6.1')
 add_plugindirs('.plugins')
 
 --- Project version
-set_version('0.1.0')
+set_version('0.2.0')
 
 --- Build mode
 add_rules('mode.debug', 'mode.release')
@@ -14,18 +14,24 @@ add_rules('mode.debug', 'mode.release')
 --- Macro definition
 add_defines('_GNU_SOURCE=1')
 
---- No warning
+--- No warning, no error
 set_warnings('all', 'error')
 
---- Build C flags
-add_cflags('-std=gnu2x')
+--- Language standard
+set_languages('clatest')
 
 --- Unused variables and functions
 add_cflags('-Wno-unused-function', '-Wno-unused-variable')
 
---- Lambda expressions
-local lambda = false
-if lambda then
+--- Lambda expressions option
+option('lambda', function()
+  set_default(false)
+  set_category('option')
+  set_description('Enable or disable "clang lambda expression"')
+end)
+
+if has_config('lambda') then
+  add_defines('USE_LAMBDA')
   add_cflags('-fblocks')
   if is_plat('linux') then
     add_ldflags('-lBlocksRuntime')
@@ -44,9 +50,6 @@ if has_config('mimalloc') then
   add_requires('mimalloc')
   add_defines('USE_MIMALLOC')
 end
-
---- Private repositories
-add_requires('mimalloc')
 
 --- Project common header file path
 add_includedirs('$(projectdir)/inc')

@@ -155,6 +155,10 @@ typedef _Atomic(uint64_t)            atomic_u64_t;
 #define chr(c)   (as(c, char))
 #define any(p)   (as(p, any_t))
 
+#ifdef USE_LAMBDA
+#  define lm(ret, ...) ^ret(__VA_ARGS__)
+#endif
+
 #define me(v)    (&(struct { typeof(v) _; }){(v)})
 #define as(v, T) ((T)(v))
 #define rs(...)  #__VA_ARGS__
