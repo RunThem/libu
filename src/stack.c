@@ -1,8 +1,4 @@
 #include "stack.h"
-#include "u.h"
-
-#include <stdio.h>
-#include <sys/stat.h>
 
 static size_t __stack_cap(size_t size) {
   if (size < 16) {

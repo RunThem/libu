@@ -1,7 +1,6 @@
 #include "str.h"
 
 #include <stdarg.h>
-#include <string.h>
 
 /* clang-format off */
 size_t __str_char_size(char c)     { return sizeof(char); }

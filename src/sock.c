@@ -1,7 +1,4 @@
 #include "sock.h"
-#include "str.h"
-
-#include <stdlib.h>
 
 struct sock_url {
   int family;

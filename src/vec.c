@@ -1,7 +1,5 @@
 #include "vec.h"
 
-#include <stdlib.h>
-
 static size_t __vec_cap(size_t size) {
   if (size < 16) {
     return 16;
