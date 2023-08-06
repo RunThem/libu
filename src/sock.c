@@ -213,4 +213,3 @@ int sock_open(sock_conf_t* conf) {
 
   return ret;
 }
-
