@@ -141,12 +141,12 @@ ret_t __map_push(any_t _self, any_t key, any_t val) {
     /* add node */
     self->len++;
     __list_push(list, list->tail, hash);
+
+    vec_push_b(&self->hashs, *hash);
   } else {
     /* change node */
     memcpy(__map_val(self, &it->it), val, self->vsize);
   }
-
-  vec_push_b(&self->hashs, *hash);
 
   u_free(hash);
 
