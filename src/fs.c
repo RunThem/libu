@@ -44,6 +44,8 @@ str_t fs_read(c_str filename) {
 
   close(fd);
 
+  str.len = len;
+
   return str;
 
 err:

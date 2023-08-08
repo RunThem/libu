@@ -74,7 +74,7 @@ ret_t __str_init(any_t _self, size_t cap) {
   u_ret_if(_self == nullptr, -1);
 
   self->len = 0;
-  self->cap = __str_cap(cap);
+  self->cap = cap + 1;
 
   self->c_str = u_calloc(self->cap, sizeof(char));
   u_alloc_if(self->c_str);
