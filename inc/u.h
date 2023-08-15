@@ -77,11 +77,11 @@
 #  define __prt(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
 #endif
 
+#define __file__ __FILE__
+#define __line__ __LINE__
+
 #define __inf(fmt, ...)                                                                            \
-  __prt("\x1b[02m[%s $%d %s]\x1b[0m: " fmt,                                                        \
-        __FILE__,                                                                                  \
-        __LINE__,                                                                                  \
-        __FUNCTION__ __VA_OPT__(, ) __VA_ARGS__)
+  __prt("\x1b[02m[%s $%d %s]\x1b[0m: " fmt, __file__, __line__, __func__ __VA_OPT__(, ) __VA_ARGS__)
 
 #define inf(fmt, ...) __inf(fmt "\n", __VA_ARGS__)
 #define err(fmt, ...)                                                                              \
