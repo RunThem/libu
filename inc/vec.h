@@ -47,7 +47,7 @@ void __vec_cleanup(any_t _self);
 #define vec_cleanup(vec)                                                                           \
   do {                                                                                             \
     __vec_cleanup(vec);                                                                            \
-    vec = nullptr;                                                                                 \
+    (vec) = nullptr;                                                                               \
   } while (0)
 
 /*************************************************************************************************
@@ -103,8 +103,8 @@ ret_t __vec_push_b(any_t _self, any_t it);
  * Iterator
  *************************************************************************************************/
 bool __vec_range(any_t _self, size_t idx, any_t it);
-#define vec_for(vec, i)  for (size_t i = 0; __vec_range(vec, i, &(vec)->it); i++)
-#define vec_rfor(vec, i) for (size_t i = __vec_len(vec) - 1; __vec_range(vec, i, &(vec)->it); i--)
+#define vec_for(vec, i)  for (size_t i = 0; __vec_range(vec, i, &(vec)->it); (i)++)
+#define vec_rfor(vec, i) for (size_t i = __vec_len(vec) - 1; __vec_range(vec, i, &(vec)->it); (i)--)
 
 /*************************************************************************************************
  * Utils
