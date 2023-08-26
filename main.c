@@ -8,7 +8,7 @@
 #include "stack.h"
 #include "str.h"
 #include "u.h"
-#include "vec.h"
+// #include "vec.h"
 
 #define _typeof(t) __builtin_classify_type(t)
 
@@ -61,25 +61,20 @@ static inline ret_t _list_next(any_t _self) {
 
 int main(int argc, const char** argv) {
 
-  _list(int) lst = {0};
+  list(int) lst = {0};
 
-  vec(int) v = nullptr;
+  list_init(&lst);
 
-  v = vec_new(int, 10);
+  list_push_b(lst, 1);
+  list_push_b(lst, 12);
+  list_push_b(lst, 13);
+  list_push_b(lst, 14);
+  list_push_b(lst, 15);
+  list_push_b(lst, 2);
 
-  for (size_t i = 0; i < 100; i++) {
-    vec_push_b(v, i);
+  list_for(lst, it) {
+    inf("%d", it->it);
   }
-
-  vec_for(v, i) {
-    inf("%ld, %d", i, v->it);
-  }
-
-  vec_rfor(v, i) {
-    inf("%ld, %d", i, v->it);
-  }
-
-  noused(v);
 
   return 0;
 }

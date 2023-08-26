@@ -1,26 +1,76 @@
 #include "list.h"
 
+/*************************************************************************************************
+ * Private type
+ *************************************************************************************************/
 typedef struct {
   any_t prev;
   any_t next;
 } node_t;
 
-static node_t* __list_node(any_t _self, any_t it, any_t prev, any_t next);
-
-ret_t __list_init(any_t _self, size_t itsize) {
+/*************************************************************************************************
+ * Private function
+ *************************************************************************************************/
+static node_t* __list_node(any_t _self, any_t it, any_t prev, any_t next) {
+  node_t* node = nullptr;
   list_t* self = as(_self, list_t*);
 
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(itsize == 0, -1);
+  u_ret_if(_self == nullptr, nullptr);
+  u_ret_if(it == nullptr, nullptr);
 
-  self->len    = 0;
+  node = u_talloc(sizeof(node_t) + self->itsize, node_t*);
+  u_alloc_if(node);
+
+  memcpy(any(node) + sizeof(node_t), it, self->itsize);
+  node->prev = prev;
+  node->next = next;
+
+  return node;
+
+err:
+  return nullptr;
+}
+
+/*************************************************************************************************
+ * Create
+ *************************************************************************************************/
+any_t __list_new(size_t itsize) {
+  list_t* self = nullptr;
+
+  u_ret_if(itsize == 0, nullptr);
+
+  self = u_talloc(sizeof(list_t) + itsize, list_t*);
+  u_alloc_if(self);
+
   self->itsize = itsize;
+  self->len    = 0;
   self->head   = nullptr;
   self->tail   = nullptr;
 
-  return 0;
+  return self;
+
+err:
+  u_free_if(self);
+
+  return nullptr;
 }
 
+ret_t __list_init(any_t* _self, size_t itsize) {
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(*_self != nullptr, -1);
+
+  *_self = __list_new(itsize);
+  u_goto_if(*_self == nullptr);
+
+  return 0;
+
+err:
+  return -2;
+}
+
+/*************************************************************************************************
+ * Destruction
+ *************************************************************************************************/
 ret_t __list_clear(any_t _self) {
   list_t* self = as(_self, list_t*);
 
@@ -55,24 +105,65 @@ ret_t __list_cleanup(any_t _self) {
   return code;
 }
 
-static node_t* __list_node(any_t _self, any_t it, any_t prev, any_t next) {
-  node_t* node = nullptr;
+/*************************************************************************************************
+ * Interface
+ *************************************************************************************************/
+inline size_t __list_itsize(any_t _self) {
   list_t* self = as(_self, list_t*);
 
-  u_ret_if(_self == nullptr, nullptr);
-  u_ret_if(it == nullptr, nullptr);
+  u_ret_if(_self == nullptr, -1);
 
-  node = u_talloc(sizeof(node_t) + self->itsize, node_t*);
-  u_alloc_if(node);
+  return self->itsize;
+}
 
-  memcpy(any(node) + sizeof(node_t), it, self->itsize);
-  node->prev = prev;
-  node->next = next;
+inline size_t __list_len(any_t _self) {
+  list_t* self = as(_self, list_t*);
 
-  return node;
+  u_ret_if(_self == nullptr, 0);
+
+  return self->len;
+}
+
+inline bool __list_empty(any_t _self) {
+  return __list_len(_self) != 0;
+}
+
+ret_t __list_erase(any_t _self, any_t idx) {
+  node_t* node = nullptr;
+  node_t* prev = nullptr;
+  node_t* next = nullptr;
+  list_t* self = as(_self, list_t*);
+
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(idx == nullptr, -1);
+
+  u_ret_if(self->len == 0, -1);
+
+  for (node = self->head; node != nullptr && node != idx; node = node->next) { }
+  u_goto_if(node == nullptr);
+
+  prev = node->prev;
+  next = node->next;
+
+  if (prev == nullptr) {
+    self->head = next;
+  } else {
+    prev->next = next;
+  }
+
+  if (next == nullptr) {
+    self->tail = prev;
+  } else {
+    next->prev = prev;
+  }
+
+  u_free(node);
+  self->len--;
+
+  return 0;
 
 err:
-  return nullptr;
+  return -2;
 }
 
 ret_t __list_push(any_t _self, any_t idx, any_t it) {
@@ -108,6 +199,18 @@ ret_t __list_push(any_t _self, any_t idx, any_t it) {
 
 err:
   return -2;
+}
+
+inline ret_t __list_push_f(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
+
+  return __list_push(_self, self->head, it);
+}
+
+inline ret_t __list_push_b(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
+
+  return __list_push(_self, self->tail, it);
 }
 
 ret_t __list_pop(any_t _self, any_t idx, any_t it) {
@@ -151,42 +254,16 @@ err:
   return -2;
 }
 
-ret_t __list_erase(any_t _self, any_t idx) {
-  node_t* node = nullptr;
-  node_t* prev = nullptr;
-  node_t* next = nullptr;
+inline ret_t __list_pop_f(any_t _self, any_t it) {
   list_t* self = as(_self, list_t*);
 
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(idx == nullptr, -1);
+  return __list_pop(_self, self->head, it);
+}
 
-  u_ret_if(self->len == 0, -1);
+inline ret_t __list_pop_b(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
 
-  for (node = self->head; node != nullptr && node != idx; node = node->next) { }
-  u_goto_if(node == nullptr);
-
-  prev = node->prev;
-  next = node->next;
-
-  if (prev == nullptr) {
-    self->head = next;
-  } else {
-    prev->next = next;
-  }
-
-  if (next == nullptr) {
-    self->tail = prev;
-  } else {
-    next->prev = prev;
-  }
-
-  u_free(node);
-  self->len--;
-
-  return 0;
-
-err:
-  return -2;
+  return __list_pop(_self, self->tail, it);
 }
 
 any_t __list_find(any_t _self, any_t it, eq_fn fn) {
