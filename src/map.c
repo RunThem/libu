@@ -4,11 +4,31 @@
  *    hash      key + val
  * */
 
-fn_eq_def(map_hash_eq, hash_t, (x == y));
-fn_eq_def(map_node_eq, any_t, (x == y));
+/*************************************************************************************************
+ * Private macro
+ *************************************************************************************************/
+#define __map_key(map, node) (any(node) + sizeof(map_node_t))
+#define __map_val(map, node) (any(node) + sizeof(map_node_t) + (map)->ksize)
 
-#define __map_key(map, node) (any(node) + sizeof(hash_t))
-#define __map_val(map, node) (any(node) + sizeof(hash_t) + (map)->ksize)
+/*************************************************************************************************
+ * Private function
+ *************************************************************************************************/
+static map_node_t* __map_node(any_t _self, any_t key, any_t val) {
+  map_t* self      = as(_self, map_t*);
+  map_node_t* node = nullptr;
+
+  node = u_talloc(sizeof(map_node_t) + self->ksize + self->vsize, map_node_t*);
+  u_alloc_if(node);
+
+  node->hash = self->hash_fn(key, self->ksize);
+  memcpy(__map_key(self, node), key, self->ksize);
+  memcpy(__map_val(self, node), val, self->vsize);
+
+  return node;
+
+err:
+  return nullptr;
+}
 
 /* fnv 64-bit hash function */
 hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
@@ -44,39 +64,68 @@ hash_t map_int_hash(const uint8_t* ptr, size_t len) {
   return hash;
 }
 
-ret_t __map_init(any_t _self, size_t ksize, size_t vsize, map_hash_fn fn) {
-  map_t* self = as(_self, map_t*);
+/*************************************************************************************************
+ * Create & Clone
+ *************************************************************************************************/
+any_t __map_new(size_t ksize, size_t vsize, map_hash_fn hash_fn, map_eq_fn eq_fn) {
+  map_t* self = nullptr;
 
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(ksize == 0, -1);
-  u_ret_if(vsize == 0, -1);
+  u_ret_if(ksize == 0, nullptr);
+  u_ret_if(vsize == 0, nullptr);
+  u_ret_if(hash_fn == nullptr, nullptr);
+  u_ret_if(eq_fn == nullptr, nullptr);
 
-  self->len     = 0;
+  self = u_zalloc(sizeof(map_t) + ksize + vsize);
+  u_alloc_if(self);
+
+  self->hash_fn = hash_fn;
+  self->eq_fn   = eq_fn;
   self->ksize   = ksize;
   self->vsize   = vsize;
-  self->hash_fn = fn != nullptr ? fn : map_mem_hash;
+  self->len     = 0;
+  self->lhead   = nullptr;
+  self->ltail   = nullptr;
 
-  vec_init(&self->hashs);
+  return self;
 
-  arr_for(self->buckets, i) {
-    __list_init(&self->buckets[i], sizeof(hash_t) + ksize + vsize);
-  }
-
-  return 0;
+err:
+  return nullptr;
 }
 
+ret_t __map_init(any_t* _self, size_t ksize, size_t vsize, map_hash_fn hash_fn, map_eq_fn eq_fn) {
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(*_self != nullptr, -1);
+
+  *_self = __map_new(ksize, vsize, hash_fn, eq_fn);
+  u_alloc_if(*_self);
+
+  return 0;
+
+err:
+  return -2;
+}
+
+/*************************************************************************************************
+ * Destruction
+ *************************************************************************************************/
 ret_t __map_clear(any_t _self) {
-  map_t* self = as(_self, map_t*);
+  map_t* self      = as(_self, map_t*);
+  map_node_t* itor = nullptr;
+  map_node_t* list = nullptr;
 
   u_ret_if(_self == nullptr, -1);
 
-  self->len = 0;
-
-  vec_clear(&self->hashs);
-
   arr_for(self->buckets, i) {
-    __list_clear(&self->buckets[i]);
+    list = &self->buckets[i];
+
+    for (itor = list->next; itor != nullptr; itor = list) {
+      list = itor->next;
+
+      u_free(itor);
+    }
   }
+
+  self->len = 0;
 
   return 0;
 }
@@ -86,84 +135,134 @@ ret_t __map_cleanup(any_t _self) {
 
   u_ret_if(_self == nullptr, -1);
 
-  self->len     = 0;
-  self->ksize   = 0;
-  self->vsize   = 0;
-  self->hash_fn = nullptr;
+  __map_clear(self);
 
-  vec_cleanup(&self->hashs);
-
-  arr_for(self->buckets, i) {
-    __list_cleanup(&self->buckets[i]);
-  }
+  u_free(self);
 
   return 0;
 }
 
-static hash_t* __map_node(any_t _self, any_t key, any_t val) {
-  hash_t* hash = nullptr;
-  map_t* self  = as(_self, map_t*);
+/*************************************************************************************************
+ * Interface
+ *************************************************************************************************/
+inline size_t __map_ksize(any_t _self) {
+  map_t* self = as(_self, map_t*);
 
-  u_ret_if(_self == nullptr, nullptr);
-  u_ret_if(key == nullptr, nullptr);
-  u_ret_if(val == nullptr, nullptr);
+  u_ret_if(_self == nullptr, -1);
 
-  hash = u_talloc(sizeof(hash_t) + self->ksize + self->vsize, hash_t*);
-  u_alloc_if(hash);
-
-  memcpy(__map_key(self, hash), key, self->ksize);
-  memcpy(__map_val(self, hash), val, self->vsize);
-  *hash = self->hash_fn(key, self->ksize);
-
-  return hash;
-
-err:
-  return nullptr;
+  return self->ksize;
 }
 
-ret_t __map_push(any_t _self, any_t key, any_t val) {
-  hash_t* hash          = nullptr;
-  list_t* list          = nullptr;
-  map_t* self           = as(_self, map_t*);
-  list_iter(hash_t)* it = nullptr;
+inline size_t __map_vsize(any_t _self) {
+  map_t* self = as(_self, map_t*);
+
+  u_ret_if(_self == nullptr, -1);
+
+  return self->vsize;
+}
+
+inline size_t __map_len(any_t _self) {
+  map_t* self = as(_self, map_t*);
+
+  u_ret_if(_self == nullptr, 0);
+
+  return self->len;
+}
+
+inline bool __map_empty(any_t _self) {
+  return __map_len(_self) != 0;
+}
+
+ret_t __map_at(any_t _self, any_t key, any_t val) {
+  map_t* self      = as(_self, map_t*);
+  map_node_t* list = nullptr;
+  map_node_t* itor = nullptr;
+  hash_t hash      = 0;
 
   u_ret_if(_self == nullptr, -1);
   u_ret_if(key == nullptr, -1);
   u_ret_if(val == nullptr, -1);
 
-  hash = __map_node(_self, key, val);
-  u_alloc_if(hash);
+  hash = self->hash_fn(key, self->ksize);
+  list = &self->buckets[hash % U_MAP_BUCKETS_NUM];
 
-  list = &self->buckets[(*hash) % U_MAP_BUCKETS_NUM];
-  it   = __list_find(list, hash, fn_eq_use(map_hash_eq));
-
-  if (it == nullptr) {
-    /* add node */
-    self->len++;
-    __list_push(list, list->tail, hash);
-
-    vec_push_b(&self->hashs, *hash);
-  } else {
-    /* change node */
-    memcpy(__map_val(self, &it->it), val, self->vsize);
+  for (itor = list->next; itor != nullptr; itor = itor->next) {
+    if (hash == itor->hash && self->eq_fn(__map_key(self, itor), key)) {
+      break;
+    }
   }
 
-  u_free(hash);
+  u_goto_if(itor == nullptr);
+
+  memcpy(key, __map_key(self, itor), self->ksize);
+  memcpy(val, __map_val(self, itor), self->vsize);
 
   return 0;
 
 err:
-  u_free_if(hash);
+  return -2;
+}
+
+ret_t __map_push(any_t _self, any_t key, any_t val) {
+  map_t* self      = as(_self, map_t*);
+  map_node_t* node = nullptr;
+  map_node_t* list = nullptr;
+  map_node_t* itor = nullptr;
+  hash_t hash      = 0;
+
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(key == nullptr, -1);
+  u_ret_if(val == nullptr, -1);
+
+  hash = self->hash_fn(key, self->ksize);
+  list = &self->buckets[hash % U_MAP_BUCKETS_NUM];
+
+  for (itor = list->next; itor != nullptr; itor = itor->next) {
+    if (hash == itor->hash && self->eq_fn(__map_key(self, itor), key)) {
+      break;
+    }
+  }
+
+  /* node already exists */
+  if (itor != nullptr) {
+    memcpy(__map_val(self, itor), val, self->vsize);
+  } else {
+    node = __map_node(_self, key, val);
+    u_alloc_if(node);
+
+    node->next = list->next;
+    list->next = node;
+
+    node->lprev = self->ltail;
+    node->lnext = nullptr;
+
+    if (self->ltail != nullptr) {
+      self->ltail->lnext = node;
+    }
+
+    self->ltail = node;
+
+    if (self->lhead == nullptr) {
+      self->lhead = node;
+    }
+
+    self->len++;
+  }
+
+  return 0;
+
+err:
+  u_free_if(node);
 
   return -2;
 }
 
 ret_t __map_pop(any_t _self, any_t key, any_t val) {
-  size_t idx            = 0;
-  hash_t hash           = {0};
-  list_t* list          = nullptr;
-  map_t* self           = as(_self, map_t*);
-  list_iter(hash_t)* it = nullptr;
+  map_t* self      = as(_self, map_t*);
+  map_node_t* list = nullptr;
+  map_node_t* itor = nullptr;
+  map_node_t* prev = nullptr;
+  hash_t hash      = 0;
 
   u_ret_if(_self == nullptr, -1);
   u_ret_if(key == nullptr, -1);
@@ -171,44 +270,43 @@ ret_t __map_pop(any_t _self, any_t key, any_t val) {
 
   hash = self->hash_fn(key, self->ksize);
   list = &self->buckets[hash % U_MAP_BUCKETS_NUM];
-  u_goto_if(list->len == 0);
 
-  it = __list_find(list, &hash, fn_eq_use(map_hash_eq));
-  u_goto_if(it == nullptr);
+  for (itor = list->next; itor != nullptr; prev = itor, itor = itor->next) {
+    if (hash == itor->hash && self->eq_fn(__map_key(self, itor), key)) {
+      break;
+    }
+  }
 
-  memcpy(val, __map_val(self, &it->it), self->vsize);
+  u_goto_if(itor == nullptr);
 
-  idx = vec_find(&self->hashs, hash, fn_eq_use(map_node_eq));
+  if (itor == list->next) {
+    list->next = itor->next;
+  } else {
+    prev->next = itor->next;
+  }
 
-  vec_erase(&self->hashs, idx);
-  __list_erase(list, it);
+  if (self->lhead == itor) {
+    self->lhead = itor->lnext;
+  }
+
+  if (self->ltail == itor) {
+    self->ltail = itor->lprev;
+  }
+
+  if (itor->lprev != nullptr) {
+    itor->lprev->lnext = itor->lnext;
+  }
+
+  if (itor->lnext != nullptr) {
+    itor->lnext->lprev = itor->lprev;
+  }
 
   self->len--;
 
-  return 0;
+  memcpy(key, __map_key(self, itor), self->ksize);
+  memcpy(val, __map_val(self, itor), self->vsize);
 
-err:
-  return -2;
-}
-
-ret_t __map_at(any_t _self, any_t key, any_t val) {
-  hash_t hash           = {0};
-  list_t* list          = nullptr;
-  map_t* self           = as(_self, map_t*);
-  list_iter(hash_t)* it = nullptr;
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(key == nullptr, -1);
-  u_ret_if(val == nullptr, -1);
-
-  hash = self->hash_fn(key, self->ksize);
-  list = &self->buckets[hash % U_MAP_BUCKETS_NUM];
-  u_goto_if(list->len == 0);
-
-  it = __list_find(list, &hash, fn_eq_use(map_hash_eq));
-  u_goto_if(it == nullptr);
-
-  memcpy(val, __map_val(self, &it->it), self->vsize);
+  u_free(itor);
 
   return 0;
 
@@ -216,30 +314,30 @@ err:
   return -2;
 }
 
-ret_t __map_range(any_t _self, size_t idx, any_t key, any_t val) {
-  hash_t hash           = {0};
-  list_t* list          = nullptr;
-  map_t* self           = as(_self, map_t*);
-  list_iter(hash_t)* it = nullptr;
+/*************************************************************************************************
+ * Iterator
+ *************************************************************************************************/
+ret_t __map_range(any_t _self, any_t key, any_t val) {
+  map_t* self = as(_self, map_t*);
 
   u_ret_if(_self == nullptr, -1);
-  u_ret_if(idx >= vec_len(&self->hashs), -1);
   u_ret_if(key == nullptr, -1);
   u_ret_if(val == nullptr, -1);
 
-  hash = vec_at(&self->hashs, idx);
+  if (self->itor == nullptr) {
+    self->itor = self->lhead;
+  } else {
+    self->itor = self->itor->lnext;
+  }
 
-  list = &self->buckets[hash % U_MAP_BUCKETS_NUM];
-  u_goto_if(list->len == 0);
+  u_goto_if(self->itor == nullptr);
 
-  it = __list_find(list, &hash, fn_eq_use(map_hash_eq));
-  u_goto_if(it == nullptr);
-
-  memcpy(key, __map_key(self, &it->it), self->ksize);
-  memcpy(val, __map_val(self, &it->it), self->vsize);
+  memcpy(key, __map_key(self, self->itor), self->ksize);
+  memcpy(val, __map_val(self, self->itor), self->vsize);
 
   return 0;
 
 err:
+
   return -2;
 }

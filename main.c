@@ -1,79 +1,41 @@
 /* libs */
-#include "buf.h"
-#include "fs.h"
-#include "list.h"
+// #include "buf.h"
+// #include "fs.h"
+// #include "list.h"
 #include "map.h"
-#include "que.h"
-#include "sock.h"
-#include "stack.h"
-#include "str.h"
+// #include "que.h"
+// #include "sock.h"
+// #include "stack.h"
+// #include "str.h"
 #include "u.h"
 // #include "vec.h"
 
 #define _typeof(t) __builtin_classify_type(t)
 
-#define _list(T)                                                                                   \
-  struct {                                                                                         \
-    list_t _;                                                                                      \
-    struct {                                                                                       \
-      any_t prev;                                                                                  \
-      any_t next;                                                                                  \
-    } __;                                                                                          \
-    T it;                                                                                          \
-  }
-
-static inline ret_t _list_head(any_t _self) {
-  list_t* self = as(_self, list_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(self->head == nullptr, -1);
-
-  memcpy(self + 1, self->head, sizeof(struct {
-                                 any_t prev;
-                                 any_t next;
-                               }) + self->itsize);
-
-  return 0;
-}
-
-static inline ret_t _list_tail(any_t _self) {
-  list_t* self = as(_self, list_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(self->tail == nullptr, -1);
-
-  memcpy(self + 1, self->tail, sizeof(struct {
-                                 any_t prev;
-                                 any_t next;
-                               }) + self->itsize);
-
-  return 0;
-}
-
-static inline ret_t _list_next(any_t _self) {
-  list_t* self = as(_self, list_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(self->tail == nullptr, -1);
-
-  return 0;
-}
-
 int main(int argc, const char** argv) {
 
-  list(int) lst = {0};
+  map(int, char) mm = nullptr;
 
-  list_init(&lst);
+  mm = map_new(int, char, fn_eq_use(int32));
 
-  list_push_b(lst, 1);
-  list_push_b(lst, 12);
-  list_push_b(lst, 13);
-  list_push_b(lst, 14);
-  list_push_b(lst, 15);
-  list_push_b(lst, 2);
+  map_push(mm, 12, 'c');
+  map_push(mm, 12, 'b');
+  map_push(mm, 13, '1');
+  map_push(mm, 14, 'i');
+  map_push(mm, 15, 'a');
+  map_push(mm, 16, 'b');
+  map_push(mm, 17, '[');
+  map_push(mm, 18, '.');
 
-  list_for(lst, itor) {
-    inf("%d", lst->it);
+  map_for(mm) {
+    inf("key(%d), val('%c')", mm->key, mm->val);
+  }
+
+  inf("%c", map_at(mm, 18));
+  inf("%c", map_pop(mm, 18));
+
+  map_for(mm) {
+    inf("key(%d), val('%c')", mm->key, mm->val);
   }
 
   return 0;
