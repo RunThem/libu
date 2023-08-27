@@ -1,6 +1,9 @@
 #include "stack.h"
 
-static size_t __stack_cap(size_t size) {
+/*************************************************************************************************
+ * Private function
+ *************************************************************************************************/
+static size_t __stack_expansion(size_t size) {
   if (size < 16) {
     return 16;
   } else if (size < 1024) {
@@ -10,26 +13,47 @@ static size_t __stack_cap(size_t size) {
   return size + 512;
 }
 
-ret_t __stack_init(any_t _self, size_t itsize, size_t cap) {
-  stack_t* self = as(_self, stack_t*);
+/*************************************************************************************************
+ * Create & Clone
+ *************************************************************************************************/
+any_t __stack_new(size_t itsize, size_t cap) {
+  stack_t* self = nullptr;
 
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(itsize == 0, -1);
+  u_ret_if(itsize == 0, nullptr);
+
+  self = u_talloc(sizeof(stack_t) + itsize, stack_t*);
+  u_alloc_if(self);
+
+  self->items = u_zalloc(itsize * cap);
+  u_alloc_if(self->items);
 
   self->itsize = itsize;
-  self->len    = 0;
   self->cap    = cap;
 
-  self->items = u_calloc(self->cap, itsize);
-  u_alloc_if(self->items);
+  return self;
+
+err:
+  u_free_if(self);
+
+  return nullptr;
+}
+
+ret_t __stack_init(any_t* _self, size_t itsize, size_t cap) {
+  u_ret_if(_self == nullptr, -1);
+  u_ret_if(*_self != nullptr, -1);
+
+  *_self = __stack_new(itsize, cap);
+  u_alloc_if(*_self);
 
   return 0;
 
 err:
-  bzero(self, sizeof(stack_t));
   return -2;
 }
 
+/*************************************************************************************************
+ * Expansion & Destruction
+ *************************************************************************************************/
 ret_t __stack_resize(any_t _self, size_t cap) {
   any_t ptr     = nullptr;
   stack_t* self = as(_self, stack_t*);
@@ -74,6 +98,37 @@ ret_t __stack_cleanup(any_t _self) {
   return 0;
 }
 
+/*************************************************************************************************
+ * Interface
+ *************************************************************************************************/
+inline size_t __stack_itsize(any_t _self) {
+  stack_t* self = as(_self, stack_t*);
+
+  u_ret_if(_self == nullptr, -1);
+
+  return self->itsize;
+}
+
+inline size_t __stack_len(any_t _self) {
+  stack_t* self = as(_self, stack_t*);
+
+  u_ret_if(_self == nullptr, 0);
+
+  return self->len;
+}
+
+inline size_t __stack_cap(any_t _self) {
+  stack_t* self = as(_self, stack_t*);
+
+  u_ret_if(_self == nullptr, 0);
+
+  return self->len;
+}
+
+inline bool __stack_empty(any_t _self) {
+  return __stack_len(_self) != 0;
+}
+
 ret_t __stack_push(any_t _self, any_t it) {
   ret_t code    = 0;
   stack_t* self = as(_self, stack_t*);
@@ -82,7 +137,7 @@ ret_t __stack_push(any_t _self, any_t it) {
   u_ret_if(it == nullptr, -1);
 
   if (self->len == self->cap) {
-    code = __stack_resize(_self, __stack_cap(self->cap));
+    code = __stack_resize(_self, __stack_expansion(self->cap));
     u_goto_if(code != 0);
   }
 

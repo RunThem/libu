@@ -31,14 +31,6 @@ typedef struct {
 /*************************************************************************************************
  * Create & Clone
  *************************************************************************************************/
-/* private macro */
-#define ____list_node(list, node)                                                                  \
-  ((struct {                                                                                       \
-    any_t prev;                                                                                    \
-    any_t next;                                                                                    \
-    typeof((list)->it) it;                                                                         \
-  }*)(node))
-
 any_t __list_new(size_t itsize);
 #define list_new(T) __list_new(sizeof(T))
 
