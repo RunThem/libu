@@ -91,6 +91,14 @@ err:
   return -2;
 }
 
+inline void __vec_clear(any_t _self) {
+  vec_t* self = as(_self, vec_t*);
+
+  u_ret_no_if(_self == nullptr);
+
+  self->len = 0;
+}
+
 inline void __vec_cleanup(any_t _self) {
   vec_t* self = as(_self, vec_t*);
 
@@ -129,14 +137,6 @@ inline size_t __vec_cap(any_t _self) {
 
 inline bool __vec_empty(any_t _self) {
   return __vec_len(_self) != 0;
-}
-
-inline void __vec_clear(any_t _self) {
-  vec_t* self = as(_self, vec_t*);
-
-  u_ret_no_if(_self == nullptr);
-
-  self->len = 0;
 }
 
 inline ret_t __vec_erase(any_t _self, size_t idx) {
