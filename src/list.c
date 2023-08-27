@@ -19,7 +19,7 @@ static node_t* __list_node(any_t _self, any_t it, any_t prev, any_t next) {
   u_ret_if(it == nullptr, nullptr);
 
   node = u_talloc(sizeof(node_t) + self->itsize, node_t*);
-  u_alloc_if(node);
+  u_mem_if(node);
 
   memcpy(any(node) + sizeof(node_t), it, self->itsize);
   node->prev = prev;
@@ -40,7 +40,7 @@ any_t __list_new(size_t itsize) {
   u_ret_if(itsize == 0, nullptr);
 
   self = u_talloc(sizeof(list_t) + itsize, list_t*);
-  u_alloc_if(self);
+  u_mem_if(self);
 
   self->itsize = itsize;
   self->len    = 0;
@@ -61,7 +61,7 @@ ret_t __list_init(any_t* _self, size_t itsize) {
   u_ret_if(*_self != nullptr, -1);
 
   *_self = __list_new(itsize);
-  u_goto_if(*_self == nullptr);
+  u_err_if(*_self == nullptr);
 
   return 0;
 
@@ -141,7 +141,7 @@ ret_t __list_erase(any_t _self, any_t idx) {
   u_ret_if(self->len == 0, -1);
 
   for (node = self->head; node != nullptr && node != idx; node = node->next) { }
-  u_goto_if(node == nullptr);
+  u_err_if(node == nullptr);
 
   prev = node->prev;
   next = node->next;
@@ -180,7 +180,7 @@ ret_t __list_push(any_t _self, any_t idx, any_t it) {
   next = (idx == nullptr) ? self->head : as(idx, node_t*)->next;
 
   node = __list_node(_self, it, prev, next);
-  u_alloc_if(node);
+  u_mem_if(node);
 
   if (prev == nullptr) {
     self->head = node;
@@ -227,7 +227,7 @@ ret_t __list_pop(any_t _self, any_t idx, any_t it) {
   u_ret_if(self->len == 0, -1);
 
   for (node = self->head; node != nullptr && node != idx; node = node->next) { }
-  u_goto_if(node == nullptr);
+  u_err_if(node == nullptr);
 
   prev = node->prev;
   next = node->next;
@@ -277,7 +277,7 @@ inline any_t __list_head(any_t _self, any_t it) {
   u_ret_if(it == nullptr, nullptr);
 
   self->itor = self->head;
-  u_goto_if(self->itor == nullptr);
+  u_err_if(self->itor == nullptr);
 
   memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
 
@@ -294,7 +294,7 @@ inline any_t __list_tail(any_t _self, any_t it) {
   u_ret_if(it == nullptr, nullptr);
 
   self->itor = self->tail;
-  u_goto_if(self->itor == nullptr);
+  u_err_if(self->itor == nullptr);
 
   memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
 
@@ -312,7 +312,7 @@ inline any_t __list_next(any_t _self, any_t it) {
   u_ret_if(self->itor == nullptr, nullptr);
 
   self->itor = as(self->itor, node_t*)->next;
-  u_goto_if(self->itor == nullptr);
+  u_err_if(self->itor == nullptr);
 
   memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
 
@@ -330,7 +330,7 @@ inline any_t __list_prev(any_t _self, any_t it) {
   u_ret_if(self->itor == nullptr, nullptr);
 
   self->itor = as(self->itor, node_t*)->prev;
-  u_goto_if(self->itor == nullptr);
+  u_err_if(self->itor == nullptr);
 
   memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
 

@@ -22,10 +22,10 @@ any_t __queue_new(size_t itsize, size_t cap) {
   u_ret_if(itsize == 0, nullptr);
 
   self = u_talloc(sizeof(queue_t) + itsize, queue_t*);
-  u_alloc_if(self);
+  u_mem_if(self);
 
   self->items = u_zalloc(itsize * cap);
-  u_alloc_if(self->items);
+  u_mem_if(self->items);
 
   self->itsize = itsize;
   self->len    = 0;
@@ -47,7 +47,7 @@ ret_t __queue_init(any_t* _self, size_t itsize, size_t cap) {
   u_ret_if(*_self != nullptr, -1);
 
   *_self = __queue_new(itsize, cap);
-  u_alloc_if(*_self);
+  u_mem_if(*_self);
 
   return 0;
 
@@ -66,7 +66,7 @@ ret_t __queue_resize(any_t _self, size_t cap) {
   u_ret_if(self->cap >= cap, -1);
 
   ptr = u_realloc(self->items, self->itsize * cap);
-  u_alloc_if(ptr);
+  u_mem_if(ptr);
 
   self->items = ptr;
   self->cap   = cap;
@@ -146,7 +146,7 @@ ret_t __queue_push(any_t _self, any_t it) {
   if (self->e_idx == self->cap) {
     if (self->s_idx == 0) {
       code = __queue_resize(_self, __queue_expansion(self->cap));
-      u_goto_if(code != 0);
+      u_err_if(code != 0);
     } else {
       memmove(self->items, self->items + self->s_idx * self->itsize, self->len * self->itsize);
       self->e_idx -= self->s_idx;

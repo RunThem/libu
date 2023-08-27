@@ -20,10 +20,10 @@ any_t __buf_new(size_t cap) {
   buf_t self = nullptr;
 
   self = u_talloc(sizeof(struct buf_t), buf_t);
-  u_alloc_if(self);
+  u_mem_if(self);
 
   self->c_buf = u_zalloc(cap);
-  u_alloc_if(self->c_buf);
+  u_mem_if(self->c_buf);
 
   self->cap = cap;
 
@@ -42,7 +42,7 @@ ret_t __buf_init(any_t* _self, size_t cap) {
   u_ret_if(*_self != nullptr, -1);
 
   *_self = __buf_new(cap);
-  u_alloc_if(*_self);
+  u_mem_if(*_self);
 
   return 0;
 
@@ -61,7 +61,7 @@ ret_t __buf_resize(any_t _self, size_t cap) {
   u_ret_if(self->cap >= cap, -2);
 
   ptr = u_realloc(self->c_buf, sizeof(uint8_t) * cap);
-  u_alloc_if(ptr);
+  u_mem_if(ptr);
 
   self->c_buf = ptr;
   self->cap   = cap;
@@ -125,7 +125,7 @@ ret_t __buf_push(any_t _self, any_t mem, size_t len) {
 
   if (self->cap - self->len < len) {
     code = __buf_resize(self, __buf_expansion(self->cap));
-    u_goto_if(code != 0);
+    u_err_if(code != 0);
   }
 
   memcpy(self->c_buf + self->len, mem, len);

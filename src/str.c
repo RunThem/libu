@@ -30,7 +30,7 @@ str_t __str_from(c_str cstr, size_t len) {
   u_ret_if(len == 0, self);
 
   code = __str_init(&self, len);
-  u_goto_if(code != 0);
+  u_err_if(code != 0);
 
   __str_push(&self, 0, cstr, len);
 
@@ -52,7 +52,7 @@ str_t __str_fromf(c_str fmt, ...) {
   u_ret_if(fmt == nullptr, self);
 
   code = __str_init(&self, 0);
-  u_goto_if(code != 0);
+  u_err_if(code != 0);
 
   va_start(ap, fmt);
   len = vsnprintf(buf, sizeof(buf), fmt, ap);
@@ -77,7 +77,7 @@ ret_t __str_init(any_t _self, size_t cap) {
   self->cap = cap + 1;
 
   self->c_str = u_calloc(self->cap, sizeof(char));
-  u_alloc_if(self->c_str);
+  u_mem_if(self->c_str);
 
   return 0;
 
@@ -94,7 +94,7 @@ ret_t __str_resize(any_t _self, size_t cap) {
   u_ret_if(self->cap >= cap, -1);
 
   ptr = u_realloc(self->c_str, sizeof(char) * cap);
-  u_alloc_if(ptr);
+  u_mem_if(ptr);
 
   self->c_str = ptr;
   self->cap   = cap;
@@ -113,7 +113,7 @@ str_t __str_clone(any_t _self) {
   u_ret_if(_self == nullptr, str);
 
   code = __str_init(&str, self->len);
-  u_goto_if(code != 0);
+  u_err_if(code != 0);
 
   memcpy(str.c_str, self->c_str, self->len);
 
@@ -162,7 +162,7 @@ ret_t __str_push(any_t _self, size_t idx, c_str cstr, size_t len) {
 
   if (self->cap - self->len < len) {
     code = __str_resize(self, __str_cap(self->cap + len));
-    u_goto_if(code != 0);
+    u_err_if(code != 0);
   }
 
   if (idx < self->len) {
@@ -195,7 +195,7 @@ ret_t __str_pushf(any_t _self, size_t idx, c_str fmt, ...) {
 
   if (self->cap - self->len < len) {
     code = __str_resize(self, __str_cap(self->cap + len));
-    u_goto_if(code != 0);
+    u_err_if(code != 0);
   }
 
   if (idx < self->len) {
@@ -245,7 +245,7 @@ ssize_t __str_find(any_t _self, c_str cstr, size_t len) {
   u_ret_if(len > self->len, -1);
 
   pos = strstr(self->c_str, cstr);
-  u_goto_if(pos == nullptr);
+  u_err_if(pos == nullptr);
 
   return pos - any(self->c_str);
 
@@ -315,12 +315,12 @@ str_t __str_cut(str_t* str, size_t idx, size_t len) {
 
   if (len == 0) {
     sub_str = __str_new(&_str->c_str[idx], _str->len - idx);
-    u_goto_if(sub_str == nullptr);
+    u_err_if(sub_str == nullptr);
 
     __str_erase(str, idx, -2);
   } else {
     sub_str = __str_new(&_str->c_str[idx], len);
-    u_goto_if(sub_str == nullptr);
+    u_err_if(sub_str == nullptr);
 
     __str_erase(str, idx, (ssize_t)len);
   }
@@ -339,7 +339,7 @@ int __str_repeat(str_t* str, size_t count) {
   u_ret_if(count <= 1, -1);
 
   ret = __str_resize(str, str_cap(_str->len * count));
-  u_goto_if(ret != 0);
+  u_err_if(ret != 0);
 
   for (size_t i = 0; i < count; i++) {
     strncpy(&_str->c_str[i * _str->len], _str->c_str, _str->len);

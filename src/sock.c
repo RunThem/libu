@@ -59,7 +59,7 @@ static bool sock_set_opt(sock_conf_t* conf, int fd) {
     auto opt = &conf->opts[i];
 
     ret = setsockopt(fd, SOL_SOCKET, opt->opt_id, opt->value, opt->value_len);
-    u_goto_if(ret < 0);
+    u_err_if(ret < 0);
   }
 
   return true;
@@ -73,10 +73,10 @@ static int sock_set_nonblock(sock_conf_t* conf) {
   int flags = 0;
 
   ret = fcntl(conf->fd, F_GETFL, 0);
-  u_goto_if(ret < 0);
+  u_err_if(ret < 0);
 
   ret = fcntl(conf->fd, F_SETFL, flags | O_NONBLOCK);
-  u_goto_if(ret < 0);
+  u_err_if(ret < 0);
 
   return 0;
 
@@ -103,7 +103,7 @@ static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
   port = str_fromf("%u", url->port);
 
   ret = getaddrinfo(url->addr.c_str, port.c_str, &hints, &res);
-  u_goto_if(ret != 0, err, "getaddrinfo() -> %d(%s)", ret, gai_strerror(ret));
+  u_err_if(ret != 0, err, "getaddrinfo() -> %d(%s)", ret, gai_strerror(ret));
 
   for (auto ai = res; ai != nullptr; ai = ai->ai_next) {
     fd = socket(url->family, url->type, url->protocol);
@@ -113,16 +113,16 @@ static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
     }
 
     ret = sock_set_opt(conf, fd);
-    u_goto_if(!ret);
+    u_err_if(!ret);
 
     /* server */
     if (conf->listen > 0) {
       ret = bind(fd, res->ai_addr, res->ai_addrlen);
-      u_goto_if(ret == -1);
+      u_err_if(ret == -1);
 
       if (url->type == SOCK_STREAM) {
         ret = listen(fd, conf->listen);
-        u_goto_if(ret != 0);
+        u_err_if(ret != 0);
       }
     } else { /* client */
       ret = connect(fd, ai->ai_addr, ai->ai_addrlen);
@@ -154,25 +154,25 @@ static int sock_open_unix(sock_conf_t* conf, struct sock_url* url) {
   socklen_t addr_len = sizeof(addr);
 
   fd = socket(url->family, url->type, url->protocol);
-  u_goto_if(fd < 0);
+  u_err_if(fd < 0);
 
   ret = sock_set_opt(conf, fd);
-  u_goto_if(!ret);
+  u_err_if(!ret);
 
   addr.sun_family = AF_LOCAL;
   strncpy(addr.sun_path, url->addr.c_str, url->addr.len);
 
   if (conf->listen > 0) {
     ret = bind(fd, (struct sockaddr*)&addr, addr_len);
-    u_goto_if(ret != 0);
+    u_err_if(ret != 0);
 
     if (url->type == SOCK_STREAM) {
       ret = listen(fd, conf->listen);
-      u_goto_if(ret != 0);
+      u_err_if(ret != 0);
     }
   } else {
     ret = connect(fd, (struct sockaddr*)&addr, addr_len);
-    u_goto_if(ret != 0);
+    u_err_if(ret != 0);
   }
 
   conf->fd = fd;

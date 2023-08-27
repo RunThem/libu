@@ -31,16 +31,16 @@ str_t fs_read(c_str filename) {
   u_ret_if(filename == nullptr, str);
 
   size = fs_size(filename);
-  u_goto_if(size == -1);
+  u_err_if(size == -1);
 
   code = str_init(&str, size);
-  u_goto_if(code != 0);
+  u_err_if(code != 0);
 
   fd = open(filename, O_RDONLY);
-  u_goto_if(fd < 0);
+  u_err_if(fd < 0);
 
   len = read(fd, str.c_str, size);
-  u_goto_if(len != size);
+  u_err_if(len != size);
 
   close(fd);
 
@@ -66,10 +66,10 @@ off_t fs_write(c_str filename, c_str buf, size_t len) {
   u_ret_if(buf == nullptr, -1);
 
   fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
-  u_goto_if(fd < 0);
+  u_err_if(fd < 0);
 
   size = write(fd, buf, len);
-  u_goto_if(size != len);
+  u_err_if(size != len);
 
   close(fd);
 
@@ -87,7 +87,7 @@ bool fs_remove(c_str filename) {
   u_ret_if(filename == nullptr, false);
 
   ret = unlink(filename);
-  u_goto_if(ret < 0);
+  u_err_if(ret < 0);
 
   return true;
 

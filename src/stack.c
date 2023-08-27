@@ -22,10 +22,10 @@ any_t __stack_new(size_t itsize, size_t cap) {
   u_ret_if(itsize == 0, nullptr);
 
   self = u_talloc(sizeof(stack_t) + itsize, stack_t*);
-  u_alloc_if(self);
+  u_mem_if(self);
 
   self->items = u_zalloc(itsize * cap);
-  u_alloc_if(self->items);
+  u_mem_if(self->items);
 
   self->itsize = itsize;
   self->cap    = cap;
@@ -43,7 +43,7 @@ ret_t __stack_init(any_t* _self, size_t itsize, size_t cap) {
   u_ret_if(*_self != nullptr, -1);
 
   *_self = __stack_new(itsize, cap);
-  u_alloc_if(*_self);
+  u_mem_if(*_self);
 
   return 0;
 
@@ -62,7 +62,7 @@ ret_t __stack_resize(any_t _self, size_t cap) {
   u_ret_if(self->cap >= cap, -1);
 
   ptr = u_realloc(self->items, self->itsize * cap);
-  u_alloc_if(ptr);
+  u_mem_if(ptr);
 
   self->items = ptr;
   self->cap   = cap;
@@ -138,7 +138,7 @@ ret_t __stack_push(any_t _self, any_t it) {
 
   if (self->len == self->cap) {
     code = __stack_resize(_self, __stack_expansion(self->cap));
-    u_goto_if(code != 0);
+    u_err_if(code != 0);
   }
 
   memcpy(self->items + self->len * self->itsize, it, self->itsize);
