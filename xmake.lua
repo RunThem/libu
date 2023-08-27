@@ -57,8 +57,7 @@ add_includedirs('$(projectdir)/inc')
 --- Main target
 target('u', function()
   set_kind('static')
-  -- add_files('$(projectdir)/src/*.c')
-  add_files('$(projectdir)/src/stack.c')
+  add_files('$(projectdir)/src/*.c')
   add_headerfiles('$(projectdir)/inc/*.h', { prefixdir = 'u' })
 
   if has_config('mimalloc') then
