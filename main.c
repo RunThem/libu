@@ -72,8 +72,8 @@ int main(int argc, const char** argv) {
   list_push_b(lst, 15);
   list_push_b(lst, 2);
 
-  list_for(lst, it) {
-    inf("%d", it->it);
+  list_for(lst, itor) {
+    inf("%d", lst->it);
   }
 
   return 0;

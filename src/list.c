@@ -44,6 +44,7 @@ any_t __list_new(size_t itsize) {
 
   self->itsize = itsize;
   self->len    = 0;
+  self->itor   = nullptr;
   self->head   = nullptr;
   self->tail   = nullptr;
 
@@ -266,6 +267,82 @@ inline ret_t __list_pop_b(any_t _self, any_t it) {
   return __list_pop(_self, self->tail, it);
 }
 
+/*************************************************************************************************
+ * Iterator
+ *************************************************************************************************/
+inline any_t __list_head(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
+
+  u_ret_if(_self == nullptr, nullptr);
+  u_ret_if(it == nullptr, nullptr);
+
+  self->itor = self->head;
+  u_goto_if(self->itor == nullptr);
+
+  memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
+
+  return self->itor;
+
+err:
+  return nullptr;
+}
+
+inline any_t __list_tail(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
+
+  u_ret_if(_self == nullptr, nullptr);
+  u_ret_if(it == nullptr, nullptr);
+
+  self->itor = self->tail;
+  u_goto_if(self->itor == nullptr);
+
+  memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
+
+  return self->itor;
+
+err:
+  return nullptr;
+}
+
+inline any_t __list_next(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
+
+  u_ret_if(_self == nullptr, nullptr);
+  u_ret_if(it == nullptr, nullptr);
+  u_ret_if(self->itor == nullptr, nullptr);
+
+  self->itor = as(self->itor, node_t*)->next;
+  u_goto_if(self->itor == nullptr);
+
+  memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
+
+  return self->itor;
+
+err:
+  return nullptr;
+}
+
+inline any_t __list_prev(any_t _self, any_t it) {
+  list_t* self = as(_self, list_t*);
+
+  u_ret_if(_self == nullptr, nullptr);
+  u_ret_if(it == nullptr, nullptr);
+  u_ret_if(self->itor == nullptr, nullptr);
+
+  self->itor = as(self->itor, node_t*)->prev;
+  u_goto_if(self->itor == nullptr);
+
+  memcpy(it, any(self->itor) + sizeof(node_t), self->itsize);
+
+  return self->itor;
+
+err:
+  return nullptr;
+}
+
+/*************************************************************************************************
+ * Utils
+ *************************************************************************************************/
 any_t __list_find(any_t _self, any_t it, eq_fn fn) {
   node_t* node = nullptr;
   list_t* self = as(_self, list_t*);

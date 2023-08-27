@@ -9,6 +9,8 @@ typedef struct {
   size_t itsize;
   size_t len;
 
+  any_t itor;
+
   any_t head;
   any_t tail;
 } list_t;
@@ -91,12 +93,22 @@ ret_t __list_pop_b(any_t _self, any_t it);
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
-#define list_head(list) ____list_node(list, (list)->_.head)
-#define list_tail(list) ____list_node(list, (list)->_.tail)
+any_t __list_head(any_t _self, any_t it);
+#define list_head(list) __list_head(list, &(list)->it)
 
-#define list_for(list, _it) for (auto(_it) = list_head(list); (_it) != nullptr; (_it) = (_it)->next)
+any_t __list_tail(any_t _self, any_t it);
+#define list_tail(list) __list_tail(list, &(list)->it)
+
+any_t __list_next(any_t _self, any_t it);
+#define list_next(list) __list_next(list, &(list)->it)
+
+any_t __list_prev(any_t _self, any_t it);
+#define list_prev(list) __list_prev(list, &(list)->it)
+
+#define list_for(list, _it)                                                                        \
+  for (any_t(_it) = list_head(list); (_it) != nullptr; (_it) = list_next(list))
 #define list_rfor(list, _it)                                                                       \
-  for (auto(_it) = list_tail(list); (_it) != nullptr; (_it) = (_it)->prev)
+  for (any_t(_it) = list_tail(list); (_it) != nullptr; (_it) = list_prev(list))
 
 /*************************************************************************************************
  * Utils
