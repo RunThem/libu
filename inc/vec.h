@@ -43,6 +43,9 @@ vec_t* __vec_clone(any_t _self);
 ret_t __vec_resize(any_t _self, size_t cap);
 #define vec_resize(vec, cap) __vec_resize(vec, cap)
 
+void __vec_clear(any_t _self);
+#define vec_clear(vec) __vec_clear(vec)
+
 void __vec_cleanup(any_t _self);
 #define vec_cleanup(vec)                                                                           \
   do {                                                                                             \
@@ -64,9 +67,6 @@ size_t __vec_cap(any_t _self);
 
 bool __vec_empty(any_t _self);
 #define vec_empty(vec) __vec_empty(vec)
-
-void __vec_clear(any_t _self);
-#define vec_clear(vec) __vec_clear(vec)
 
 ret_t __vec_erase(any_t _self, size_t idx);
 #define vec_erase(vec, idx) __vec_erase(vec, idx)
