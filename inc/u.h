@@ -112,7 +112,7 @@
 #define u_fclose_if(fp)                 do { if ((fp) != nullptr) { fclose(fd);                                                       } } while (0)
 
 #define u_mem_if(mem, arg...)           u_err_if((mem) == nullptr, err, arg)
-#define u_ret_no_if(expr, arg...)       u_ret_if(expr, , arg)
+#define u_noret_if(expr, arg...)        u_ret_if(expr, , arg)
 
 /* clang-format on */
 
