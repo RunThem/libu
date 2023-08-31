@@ -158,44 +158,13 @@ inline ret_t __vec_erase(any_t _self, size_t idx) {
   return 0;
 }
 
-inline void __vec_at(any_t _self, size_t idx, any_t it) {
+inline any_t __vec_at(any_t _self, size_t idx) {
   vec_t* self = as(_self, vec_t*);
 
   u_assert(self == nullptr);
+  u_assert(idx >= self->len);
 
-  u_ret_no_if(self->len <= idx);
-
-  bzero(it, self->itsize);
-
-  memcpy(it, self->items + self->itsize * idx, self->itsize);
-}
-
-inline void __vec_at_f(any_t _self, any_t it) {
-  return __vec_at(_self, 0, it);
-}
-
-inline void __vec_at_b(any_t _self, any_t it) {
-  return __vec_at(_self, __vec_len(_self), it);
-}
-
-inline ret_t __vec_set(any_t _self, size_t idx, any_t it) {
-  vec_t* self = as(_self, vec_t*);
-
-  u_assert(self == nullptr);
-
-  u_ret_if(self->len <= idx, -1);
-
-  memcpy(self->items + self->itsize * idx, it, self->itsize);
-
-  return 0;
-}
-
-inline ret_t __vec_set_f(any_t _self, any_t it) {
-  return __vec_set(_self, 0, it);
-}
-
-inline ret_t __vec_set_b(any_t _self, any_t it) {
-  return __vec_set(_self, __vec_len(_self), it);
+  return self->items + idx * self->itsize;
 }
 
 void __vec_pop(any_t _self, size_t idx, any_t it) {

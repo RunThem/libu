@@ -71,19 +71,8 @@ bool __vec_empty(any_t _self);
 ret_t __vec_erase(any_t _self, size_t idx);
 #define vec_erase(vec, idx) __vec_erase(vec, idx)
 
-void __vec_at(any_t _self, size_t idx, any_t it);
-void __vec_at_f(any_t _self, any_t it);
-void __vec_at_b(any_t _self, any_t it);
-#define vec_at(vec, idx) (__vec_at(vec, idx, &(vec)->it), (vec)->it)
-#define vec_at_f(vec)    (__vec_at_f(vec, &(vec)->it), (vec)->it)
-#define vec_at_b(vec)    (__vec_at_b(vec, &(vec)->it), (vec)->it)
-
-ret_t __vec_set(any_t _self, size_t idx, any_t it);
-ret_t __vec_set_f(any_t _self, any_t it);
-ret_t __vec_set_b(any_t _self, any_t it);
-#define vec_set(vec, idx, _it) __vec_set(vec, idx, ((vec)->it = (_it), &(vec)->it))
-#define vec_set_f(vec, _it)    __vec_set_f(vec, ((vec)->it = (_it), &(vec)->it))
-#define vec_set_b(vec, _it)    __vec_set_b(vec, ((vec)->it = (_it), &(vec)->it))
+any_t __vec_at(any_t _self, size_t idx);
+#define vec_at(vec, idx) (*(as(__vec_at(vec, idx), typeof((vec)->it)*)))
 
 void __vec_pop(any_t _self, size_t idx, any_t it);
 void __vec_pop_f(any_t _self, any_t it);
