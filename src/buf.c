@@ -75,7 +75,7 @@ err:
 inline void __buf_clear(any_t _self) {
   buf_t self = as(_self, buf_t);
 
-  u_ret_no_if(_self == nullptr);
+  u_noret_if(_self == nullptr);
 
   self->len = 0;
 }

@@ -59,17 +59,14 @@ any_t __vec_at(any_t _self, size_t idx);
 void __vec_pop(any_t _self, size_t idx);
 #define vec_pop(vec, idx)  __vec_pop(vec, idx)
 #define vec_pop_front(vec) __vec_pop(vec, 0)
-#define vec_pop_back(vec)  __vec_pop(vec, vec_len(vec))
+#define vec_pop_back(vec)  __vec_pop(vec, vec_len(vec) - 1)
+
+#define __vec_item(vec) as((vec) + 1, typeof((vec)->item))
 
 ret_t __vec_push(any_t _self, size_t idx);
-#define vec_push(vec, idx, _item)                                                                  \
-  (*as((vec) + 1, typeof((vec)->item)) = (_item), __vec_push(vec, idx))
-
-#define vec_push_front(vec, _item)                                                                 \
-  (*as((vec) + 1, typeof((vec)->item)) = (_item), __vec_push(vec, 0))
-
-#define vec_push_back(vec, _item)                                                                  \
-  (*as((vec) + 1, typeof((vec)->item)) = (_item), __vec_push(vec, vec_len(vec)))
+#define vec_push(vec, idx, _item)  (*__vec_item(vec) = (_item), __vec_push(vec, idx))
+#define vec_push_front(vec, _item) (*__vec_item(vec) = (_item), __vec_push(vec, 0))
+#define vec_push_back(vec, _item)  (*__vec_item(vec) = (_item), __vec_push(vec, vec_len(vec)))
 
 /*************************************************************************************************
  * Iterator

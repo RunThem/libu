@@ -62,9 +62,6 @@ any_t __vec_new(size_t itsize, size_t cap) {
   self->itsize = itsize;
   self->cap    = cap;
 
-  inf_hex(&self, sizeof(vec_t*));
-  inf_hex(self, sizeof(vec_t) + itsize);
-
   return &self->item;
 
 err:
@@ -73,7 +70,6 @@ err:
   return nullptr;
 }
 
-/* Fix: return point error. */
 any_t __vec_clone(any_t _self) {
   vec_t* self = vec_of(_self);
   vec_t* vec  = nullptr;
@@ -86,7 +82,7 @@ any_t __vec_clone(any_t _self) {
   memcpy(vec->items, self->items, self->itsize * self->len);
   vec->len = self->len;
 
-  return vec;
+  return &self->item;
 
 err:
   return nullptr;
@@ -161,7 +157,7 @@ void __vec_pop(any_t _self, size_t idx) {
   any_t point = nullptr;
 
   u_assert(self == nullptr);
-  u_ret_no_if(idx >= self->len);
+  u_noret_if(idx >= self->len);
 
   if (idx != self->len - 1) {
     point = self->items + self->itsize * idx;
