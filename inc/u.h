@@ -96,6 +96,13 @@
  * __debug__
  *************************************************************************************************/
 /* clang-format off */
+#define u_assert(expr)                                                                             \
+  do {                                                                                             \
+    if (expr) {                                                                                    \
+      fprintf(stderr, "Assertion failed: %s (%s: %s: %d)\n", #expr, __file__, __func__, __line__); \
+    }                                                                                              \
+  } while (0)
+
 #define u_if(expr, arg...)              do { if (expr) { err("(%s) " va_0th("", arg), #expr va_slice(1, arg));                        } } while (0)
 #define u_die_if(expr, arg...)          do { if (expr) { err("(%s) " va_0th("", arg), #expr va_slice(1, arg)); exit(EXIT_FAILURE);    } } while (0)
 #define u_ret_if(expr, code, arg...)    do { if (expr) { err("(%s) " va_0th("", arg), #expr va_slice(1, arg)); return  code;          } } while (0)
@@ -107,7 +114,6 @@
 #define u_mem_if(mem, arg...)           u_err_if((mem) == nullptr, err, arg)
 #define u_ret_no_if(expr, arg...)       u_ret_if(expr, , arg)
 
-#define u_assert(expr) assert(expr)
 /* clang-format on */
 
 /*************************************************************************************************
