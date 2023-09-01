@@ -9,8 +9,12 @@
 #  define U_MAP_BUCKETS_NUM 64
 #endif
 
+#ifndef U_MAP_RESIZE_RADIO
+#  define U_MAP_RESIZE_RADIO 1.5
+#endif
+
 enum u_map_hash_fn {
-  MAP_MEM_HASH_FN = 1,
+  MAP_FNV_64_HASH_FN = 1,
   MAP_INT_HASH_FN,
 
   MAP_HASH_FN_MAX,

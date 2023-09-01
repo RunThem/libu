@@ -8,7 +8,7 @@
 // #include "stack.h"
 // #include "str.h"
 #include "u.h"
-#include "vec.h"
+// #include "vec.h"
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -140,19 +140,11 @@ int main(int argc, const char** argv) {
 
   map(int, char) m = nullptr;
 
-  m = map_new(int, char, fn_eq_use(int32), MAP_INT_HASH_FN);
+  m = map_new(int, char, fn_eq_use(int32), MAP_FNV_64_HASH_FN);
 
-  for (size_t i = 1; i < 10000; i++) {
+  for (size_t i = 1; i < 1000000; i++) {
     map_push(m, i, 'a');
   }
-
-  for (size_t i = 1; i < 10000; i++) {
-    map_pop(m, i);
-  }
-
-  // map_for(m) {
-  //   inf("%d, '%c'", m->key, *m->val);
-  // }
 
   map_cleanup(m);
 

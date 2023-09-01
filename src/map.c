@@ -1,7 +1,5 @@
 #include "map.h"
 
-#include <stdbool.h>
-
 /*
  *
  * 0 +---------+
@@ -58,7 +56,7 @@
  * Private
  *************************************************************************************************/
 static size_t bucket_sizes[] = {
-    4,     61,     113,    251,    509,     1021,    2039,    4093,    8191,     16381,    32749,
+    61,    113,    251,    509,    1021,    2039,    4093,    8191,    16381,    32749,
     65521, 126727, 262063, 522713, 1046429, 2090867, 4186067, 8363639, 16777207, 33489353,
 };
 
@@ -158,22 +156,26 @@ err:
   return nullptr;
 }
 
-static map_node_t* __map_next(map_t* self, any_t itor) {
-  map_node_t* node = nullptr;
-  size_t idx       = 0;
+static map_node_t* __map_next(map_t* self, map_node_t* node) {
+  size_t idx = 0;
 
-  if (itor != nullptr) {
-    node = any(itor) - self->ksize - sizeof(map_node_t);
+  inf("%p", node);
+
+  if (node != nullptr) {
     node = node->next;
 
     if (node->next != nullptr) {
       return node;
     }
 
-    idx = node->hash;
+    if (node->hash == 0) {
+      return nullptr;
+    }
+
+    idx  = node->hash;
+    node = nullptr;
   }
 
-  node = nullptr;
   for (size_t i = idx; i < bucket_sizes[self->bs]; i++) {
     if (self->buckets[i].hash != 0) {
       node = self->buckets[i].next;
@@ -182,6 +184,45 @@ static map_node_t* __map_next(map_t* self, any_t itor) {
   }
 
   return node;
+}
+
+static bool __map_resize(map_t* self) {
+  map_node_t* nbuckets = nullptr;
+  map_node_t* node     = nullptr;
+  map_node_t* tmp      = nullptr;
+  map_node_t* list     = nullptr;
+  map_node_t* nlist    = nullptr;
+  size_t bs            = 0;
+
+  bs       = bucket_sizes[self->bs + 1];
+  nbuckets = __map_buckets(bs);
+  u_mem_if(nbuckets);
+
+  for (size_t i = 0; i < bucket_sizes[self->bs]; i++) {
+    if (self->buckets[i].hash == 0) {
+      continue;
+    }
+
+    for (node = self->buckets[i].next, list = node->next; node->next != nullptr;
+         node = list, list = list->next) {
+      nlist = &nbuckets[node->hash % bs];
+
+      node->next  = nlist->next;
+      nlist->next = node;
+
+      nlist->hash++;
+    }
+  }
+
+  self->bs++;
+
+  u_free(self->buckets);
+  self->buckets = nbuckets;
+
+  return true;
+
+err:
+  return false;
 }
 
 /*************************************************************************************************
@@ -207,7 +248,7 @@ any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn 
   self->eq_fn = eq_fn;
   self->bs    = 0;
 
-  if (fn == MAP_MEM_HASH_FN) {
+  if (fn == MAP_FNV_64_HASH_FN) {
     self->hash_fn = map_mem_hash;
   } else if (fn == MAP_INT_HASH_FN) {
     self->hash_fn = map_int_hash;
@@ -363,6 +404,10 @@ ret_t __map_push(any_t _self) {
   key = _self + sizeof(any_t);
   val = key + self->ksize;
 
+  if (self->len >= U_MAP_RESIZE_RADIO * bucket_sizes[self->bs]) {
+    __map_resize(self);
+  }
+
   hash = self->hash_fn(key, self->ksize);
   list = &self->buckets[hash % bucket_sizes[self->bs]];
 
@@ -410,7 +455,7 @@ bool __map_range(any_t _self) {
   key = _self + sizeof(any_t);
   val = _self;
 
-  node = __map_next(self, *val);
+  node = __map_next(self, (*val == nullptr) ? nullptr : (*val) - self->ksize - sizeof(map_node_t));
   if (node == nullptr) {
     bzero(key, self->ksize);
     *val = key + self->ksize;
@@ -453,6 +498,8 @@ void __map_debug(any_t _self) {
             *as(map_key(self, node), int*),
             *as(map_val(self, node), char*));
     }
+
+    __prt("    %p {%p, %zu}\n", node, node->next, node->hash);
   }
 }
 #endif
