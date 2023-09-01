@@ -1,20 +1,79 @@
 #include "vec.h"
 
-/*************************************************************************************************
- * Private function
- *************************************************************************************************/
 /*
  *
  * 0        8        16       32       40       48
  * +--------+--------+--------+--------+--------+--------------+
  * | itsize |  len   |  cap   | items  |  item  |     ....     |
- * +--------+--------+--------+-----------------+--------------+
- *                                     ^   T*       sizeof(T)
- *                                     |
- *                                     +
- *                                   return
+ * +--------+--------+--------+--------+--------+--------------+
+ *                                |    ^   T*       sizeof(T)
+ *                                |    |
+ *                                |    +
+ *                                |  return point
+ *                                |
+ *                                |
+ *                                |
+ *                                |      +-----+-----+-----+
+ *                                +----->+  T  |  T  |  T  |...
+ *                                       +-----+-----+-----+
  *
+ * @param
+ * itsize
+ *      memory size of the element.
+ * len
+ *      number of elements in the vector.
+ * cap
+ *      number of elements the vector can hold.
+ * items
+ *      pointer to the underlying array.
+ * item
+ *      iterator pointer, which can only be used in `vec_for() & vec_rfor()`, is also the only field
+ *      exposed to the outside world(holds the type of the vector element -- C23.typeof()).
+ * item
+ *      buffer used to pass element data when an element is deposited
+ *
+ * @code
+ * ```
+ * int main(int argc, const char** argv) {
+ *   vec(int) vv = nullptr;
+ *
+ *   vv = vec_new(int, 64);
+ *
+ *   for (size_t i = 1; i <= 100; i++) {
+ *     vec_push_back(vv, i);
+ *   }
+ *
+ *   size_t sum = 0;
+ *   vec_for(vv, i) {
+ *     sum += *vv->item;
+ *   }
+ *
+ *   printf("sum is %zu\n", sum);
+ *   // output: sum is 5050
+ *
+ *   vec_for(vv, i) {
+ *     *vv->item = *vv->item * 2;
+ *   }
+ *
+ *   sum = 0;
+ *   vec_for(vv, i) {
+ *     inf("%d", *vv->item);
+ *     sum += *vv->item;
+ *   }
+ *
+ *   printf("sum is %zu\n", sum);
+ *   // output: sum is 10100
+ *
+ *   vec_cleanup(vv);
+ *
+ *   return 0;
+ * }
+ * ```
  * */
+
+/*************************************************************************************************
+ * Private
+ *************************************************************************************************/
 typedef struct {
   size_t itsize;
   size_t len;
