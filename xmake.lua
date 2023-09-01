@@ -1,15 +1,14 @@
 --- Project
 set_project('libu')
 
+--- Project version
+set_version('0.3.0')
+
 --- xmake configure
 set_xmakever('2.6.1')
-add_plugindirs('.plugins')
-
---- Project version
-set_version('0.2.0')
 
 --- Build mode
-add_rules('mode.debug', 'mode.release')
+add_rules('mode.debug', 'mode.valgrind', 'mode.release')
 
 --- Macro definition
 add_defines('_GNU_SOURCE=1')
@@ -18,10 +17,31 @@ add_defines('_GNU_SOURCE=1')
 set_warnings('all', 'error')
 
 --- Language standard
-set_languages('clatest')
+set_languages('clatest', 'cxxlatest')
 
 --- Unused variables and functions
-add_cflags('-Wno-unused-function', '-Wno-unused-variable')
+add_cflags('-Wno-unused-function', '-Wno-unused-variable', '-Wno-unused-but-set-variable')
+
+--- DWARF v4
+add_cflags('-gdwarf-4')
+
+--- Toolchain
+set_toolchains('clang')
+
+--- Task(lsp) generate the project file
+task('lsp', function()
+  set_category('plugin')
+
+  on_run(function()
+    os.exec('xmake project -k cmake build/lsp')
+    os.exec('xmake project -k compile_commands build/lsp')
+  end)
+
+  set_menu({
+    usage = 'xmake lsp',
+    description = 'Generate the project file.',
+  })
+end)
 
 --- Lambda expressions option
 option('lambda', function()
