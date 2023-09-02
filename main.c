@@ -1,4 +1,8 @@
 /* libs */
+#include <sys/mman.h>
+#include <sys/user.h>
+#include <unistd.h>
+
 // #include "buf.h"
 // #include "fs.h"
 // #include "list.h"
@@ -21,155 +25,124 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-#define CLOFN_PHSIZE_MAX      1024
-#define _CLOFN_SCIENCE_NUMBER 0x58ffffbffdffffafULL
+#define __OBJ_MAXPHSIZE 1024
+#define __OBJ_CLOFNNUM  0x58ffffbffdffffafULL
 
-#include <sys/mman.h>
-#include <sys/user.h>
-static inline bool _clofn_active_memory(void* ptr, size_t size) {
+static inline bool obj_active_memory(void* ptr, size_t size) {
   return mprotect((void*)(((size_t)ptr >> PAGE_SHIFT) << PAGE_SHIFT),
                   size,
                   PROT_READ | PROT_EXEC | PROT_WRITE) == 0;
 }
 
-#define def_clofn(result_type,                                                                     \
-                  name,                                                                            \
-                  closure_type /* size equal to machine word */,                                   \
-                  closure_name,                                                                    \
-                  args,                                                                            \
-                  body)                                                                            \
-  static result_type _clofn__##name args {                                                         \
-    volatile closure_type closure_name = (closure_type)_CLOFN_SCIENCE_NUMBER;                      \
-    body                                                                                           \
-  }                                                                                                \
-  static size_t _clofn__##name##__phsize = 0;                                                      \
-  static size_t _clofn__##name##__phhash = 0;
+static any_t obj(any_t prototype, void* data) {
+  uint8_t* code = nullptr;
+  size_t offset = 0;
+  size_t ihsize;
 
-void* _new_clofn(void* prototype, size_t* phsize, void* data) {
-  printf("Clofn: prototype header (%p) { ", prototype);
-
-  size_t offset = *phsize;
-  if (!offset) {
-    for (; offset < CLOFN_PHSIZE_MAX; offset++) {
-      if (*(size_t*)((uintptr_t)prototype + offset) == (size_t)_CLOFN_SCIENCE_NUMBER) {
-        if (!*phsize) {
-          *phsize = offset;
-        }
-
-        printf("} @%zu+%zu\n", offset, sizeof(uintptr_t));
-
-        goto mk;
-      } else
-        printf("%02X ", *(uint8_t*)(prototype + offset));
+  for (; offset < __OBJ_MAXPHSIZE; offset++) {
+    if (*as(prototype + offset, size_t*) == __OBJ_CLOFNNUM) {
+      break;
     }
-    puts("...");
-
-    printf("Clofn: could't find closure declaration at prototype function (%p)!\n", prototype);
-    return NULL;
-  } else {
-    printf("Clofn: prototype header (%p) { ", prototype);
-    for (size_t i = 0; i < (size_t)phsize; i++) {
-      printf("%02X ", *(uint8_t*)(prototype + i));
-    }
-    printf("} @%zu+%lu\n", offset, sizeof(uintptr_t));
   }
 
-mk:;
+  u_err_if(offset == 0);
 
-  size_t ihsize = offset + sizeof(void*) * 2 + 5;
+#pragma pack(push, 1)
+  // push rax
+  // mov  rax, addr
+  // jmp  rax
+  static struct {
+    uintptr_t data;
+    uint8_t push_rax;
+    uint8_t mov_rax[2];
+    uintptr_t addr;
+    uint8_t jmp_rax[2];
+  } asmc = {
+      .push_rax = 0x50,
+      .mov_rax  = {0x48, 0xB8},
+      .jmp_rax  = {0xFF, 0xE0}
+  };
+  // ihsize = offset + sizeof(void *) * 2 + 5;
+#pragma pack(pop)
 
-  void* instance = malloc(ihsize);
-  if (!_clofn_active_memory(instance, ihsize)) {
-    puts("Clofn: could't change memory type of C.malloc allocated!");
-    free(instance);
-    return NULL;
-  }
-  memcpy(instance, prototype, offset);
-  uintptr_t current = (uintptr_t)instance + offset;
-  *(void**)current  = data;
-  current += sizeof(void*);
+  ihsize = offset + sizeof(asmc);
+  code   = u_talloc(ihsize, uint8_t*);
+  u_mem_if(code);
 
-  *(uint8_t*)current = 0x50;
-  current++;
-  *(uint8_t*)current = 0x48;
-  current++;
-  *(uint8_t*)current = 0xB8;
-  current++;
-  *(uintptr_t*)current =
-      (uintptr_t)prototype + offset + sizeof(uintptr_t) - 1;  // 0x58 in _CLOFN_SCIENCE_NUMBER
-  current += sizeof(uintptr_t);
-  *(uint16_t*)current = 0xE0FF;
+  u_err_if(obj_active_memory(code, ihsize) == 0);
 
-  printf("Clofn: instance header (%p) { ", instance);
-  for (size_t i = 0; i < ihsize; i++) {
-    printf("%02X ", *(uint8_t*)(instance + i));
-  }
-  printf("}\n");
+  asmc.addr = (uintptr_t)prototype + offset + sizeof(uintptr_t) - 1;
+  asmc.data = (uintptr_t)data;
 
-  return instance;
+  memcpy(code, prototype, offset);
+  memcpy(code + offset, &asmc, sizeof(asmc));
+
+  return code;
+
+err:
+  inf("could't find closure declaration at prototype function (%p)!", prototype);
+
+  u_free_if(code);
+
+  return nullptr;
 }
+
+#define obj_setup(T, var) volatile typeof(T*)(var) = (void*)__OBJ_CLOFNNUM
 
 typedef struct {
   int a;
-  void (*get_a)(void);
+
+  int (*get)(void);
+  void (*set)(int);
 } st_t;
 
-static void _clofn__foo(void) {
-  volatile size_t data = (size_t)0x58ffffbffdffffafULL;
-  st_t* st             = (void*)data;
+static void st_set(int num) {
+  obj_setup(st_t, self);
 
-  printf("I'm foo, %d\n", st->a);
+  inf("self is %p", self);
+
+  self->a = num;
 }
 
-static size_t _clofn__foo__phsize = 0;
-static size_t _clofn__foo__phhash = 0;
+static int st_get(void) {
+  // volatile st_t* self = any(__OBJ_CLOFNNUM);
+  obj_setup(st_t, self);
 
-bool check_prime(uint64_t num) {
-  for (uint64_t i = 2; i < num / 2; i++) {
-    if (num % i == 0) {
-      return false;
-    }
-  }
+  inf("self is %p", self);
 
-  return true;
+  return self->a;
+}
+
+static st_t* st_new() {
+  st_t* self = u_talloc(sizeof(st_t), st_t*);
+  u_mem_if(self);
+
+  self->get = obj(st_get, self);
+  self->set = obj(st_set, self);
+
+  return self;
+
+err:
+  return nullptr;
 }
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-#if 0
-  st_t* st = malloc(sizeof(st_t));
+  st_t* st = st_new();
+  // inf("st is %p", st);
 
-  st->a = 12;
+  st->get = obj(st_get, nullptr);
 
-  // st->get_a = _new_clofn(_clofn__foo, &_clofn__foo__phsize, st);
-  typeof(st->get_a) fn = _new_clofn(_clofn__foo, &_clofn__foo__phsize, st);
+  st_get();
 
-  fn();
-#endif
+  // st->set(10);
 
-  // map(int, char) m = nullptr;
+  // inf("%d", st->get());
 
-  // m = map_new(int, char, fn_eq_use(int32), MAP_FNV_64_HASH_FN);
+  // st->set(9234);
 
-  // for (size_t i = 1; i < 1000000; i++) {
-  //   map_push(m, i, 'a');
-  // }
-
-  // map_cleanup(m);
-
-  uint64_t start = 64;
-  for (size_t i = 0; i < 35; i++) {
-    size_t j = 0;
-    for (j = start; j > 0; j--) {
-      if (check_prime(j)) {
-        printf("%zu,\n", j);
-        break;
-      }
-    }
-
-    start *= 2;
-  }
+  // inf("%d", st->get());
 
   return 0;
 }
