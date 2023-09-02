@@ -102,7 +102,7 @@ task('demo', function()
   set_category('plugin')
 
   on_run(function()
-    os.exec('xmake f -m demo --mimalloc=y')
+    os.exec('xmake f -m debug --mimalloc=y')
     os.exec('xmake b demo')
     os.exec('xmake r demo')
   end)
