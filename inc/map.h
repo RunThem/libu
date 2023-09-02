@@ -9,9 +9,7 @@
 #  define U_MAP_BUCKETS_NUM 64
 #endif
 
-#ifndef U_MAP_RESIZE_RADIO
-#  define U_MAP_RESIZE_RADIO 1.5
-#endif
+#define U_MAP_RESIZE_RADIO 0.7
 
 enum u_map_hash_fn {
   MAP_FNV_64_HASH_FN = 1,
@@ -50,7 +48,7 @@ ret_t __map_cleanup(any_t _self);
 #define map_cleanup(map)                                                                           \
   do {                                                                                             \
     __map_cleanup(map);                                                                            \
-    map = nullptr;                                                                                 \
+    (map) = nullptr;                                                                               \
   } while (0)
 
 /*************************************************************************************************

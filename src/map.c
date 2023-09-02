@@ -82,7 +82,7 @@ typedef struct {
   map_node_t* buckets;
 } map_t;
 
-#define map_of(self) as(self - sizeof(map_t), map_t*)
+#define map_of(self) as((self) - sizeof(map_t), map_t*)
 
 /* fnv 64-bit hash function */
 static hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
@@ -405,7 +405,7 @@ ret_t __map_push(any_t _self) {
   key = _self + sizeof(any_t);
   val = key + self->ksize;
 
-  if (self->len >= U_MAP_RESIZE_RADIO * bucket_sizes[self->bs]) {
+  if (self->len >= as(U_MAP_RESIZE_RADIO * bucket_sizes[self->bs], size_t)) {
     __map_resize(self);
   }
 
