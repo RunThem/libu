@@ -1,8 +1,4 @@
 /* libs */
-#include <sys/mman.h>
-#include <sys/user.h>
-#include <unistd.h>
-
 // #include "buf.h"
 // #include "fs.h"
 // #include "list.h"
