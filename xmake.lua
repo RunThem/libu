@@ -97,3 +97,33 @@ target('demo', function()
     add_packages('mimalloc')
   end
 end)
+
+task('demo', function()
+  set_category('plugin')
+
+  on_run(function()
+    os.exec('xmake f -m demo --mimalloc=y')
+    os.exec('xmake b demo')
+    os.exec('xmake r demo')
+  end)
+
+  set_menu({
+    usage = 'xmake demo',
+    description = 'Run "demo" target.',
+  })
+end)
+
+task('mem', function()
+  set_category('plugin')
+
+  on_run(function()
+    os.exec('xmake f -m valgrind --mimalloc=n')
+    os.exec('xmake b demo')
+    os.exec('valgrind --tool=memcheck --leak-check=full ./build/linux/x86_64/valgrind/demo')
+  end)
+
+  set_menu({
+    usage = 'xmake mem',
+    description = 'Use Valgrind to test for memory leaks.',
+  })
+end)
