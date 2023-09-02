@@ -124,6 +124,16 @@ static void _clofn__foo(void) {
 static size_t _clofn__foo__phsize = 0;
 static size_t _clofn__foo__phhash = 0;
 
+bool check_prime(uint64_t num) {
+  for (uint64_t i = 2; i < num / 2; i++) {
+    if (num % i == 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
@@ -138,15 +148,28 @@ int main(int argc, const char** argv) {
   fn();
 #endif
 
-  map(int, char) m = nullptr;
+  // map(int, char) m = nullptr;
 
-  m = map_new(int, char, fn_eq_use(int32), MAP_FNV_64_HASH_FN);
+  // m = map_new(int, char, fn_eq_use(int32), MAP_FNV_64_HASH_FN);
 
-  for (size_t i = 1; i < 1000000; i++) {
-    map_push(m, i, 'a');
+  // for (size_t i = 1; i < 1000000; i++) {
+  //   map_push(m, i, 'a');
+  // }
+
+  // map_cleanup(m);
+
+  uint64_t start = 64;
+  for (size_t i = 0; i < 35; i++) {
+    size_t j = 0;
+    for (j = start; j > 0; j--) {
+      if (check_prime(j)) {
+        printf("%zu,\n", j);
+        break;
+      }
+    }
+
+    start *= 2;
   }
-
-  map_cleanup(m);
 
   return 0;
 }
