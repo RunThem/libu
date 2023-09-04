@@ -54,7 +54,7 @@ bool __vec_empty(any_t _self);
 any_t __vec_at(any_t _self, size_t idx);
 #define vec_at(vec, idx)  (*(as(__vec_at(vec, idx), typeof((vec)->item))))
 #define vec_at_front(vec) (*(as(__vec_at(vec, 0), typeof((vec)->item))))
-#define vec_at_back(vec)  (*(as(__vec_at(vec, vec_len(vec)), typeof((vec)->item))))
+#define vec_at_back(vec)  (*(as(__vec_at(vec, vec_len(vec) - 1), typeof((vec)->item))))
 
 void __vec_pop(any_t _self, size_t idx);
 #define vec_pop(vec, idx)  __vec_pop(vec, idx)
