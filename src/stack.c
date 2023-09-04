@@ -126,7 +126,7 @@ inline size_t __stack_cap(any_t _self) {
 }
 
 inline bool __stack_empty(any_t _self) {
-  return __stack_len(_self) != 0;
+  return __stack_len(_self) == 0;
 }
 
 ret_t __stack_push(any_t _self, any_t it) {

@@ -133,7 +133,7 @@ inline size_t __queue_cap(any_t _self) {
 }
 
 inline bool __queue_empty(any_t _self) {
-  return __queue_len(_self) != 0;
+  return __queue_len(_self) == 0;
 }
 
 ret_t __queue_push(any_t _self, any_t it) {

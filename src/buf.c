@@ -111,7 +111,7 @@ inline size_t __buf_cap(any_t _self) {
 }
 
 inline bool __buf_empty(any_t _self) {
-  return __buf_len(_self) != 0;
+  return __buf_len(_self) == 0;
 }
 
 ret_t __buf_push(any_t _self, any_t mem, size_t len) {

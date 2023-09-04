@@ -329,7 +329,7 @@ inline size_t __map_len(any_t _self) {
 }
 
 inline bool __map_empty(any_t _self) {
-  return __map_len(_self) != 0;
+  return __map_len(_self) == 0;
 }
 
 any_t __map_at(any_t _self) {

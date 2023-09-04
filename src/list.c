@@ -126,7 +126,7 @@ inline size_t __list_len(any_t _self) {
 }
 
 inline bool __list_empty(any_t _self) {
-  return __list_len(_self) != 0;
+  return __list_len(_self) == 0;
 }
 
 ret_t __list_erase(any_t _self, any_t idx) {

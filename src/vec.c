@@ -195,11 +195,7 @@ size_t __vec_cap(any_t _self) {
 }
 
 bool __vec_empty(any_t _self) {
-  vec_t* self = vec_of(_self);
-
-  u_assert(self == nullptr);
-
-  return self->itsize != 0;
+  return __vec_len(_self) == 0;
 }
 
 any_t __vec_at(any_t _self, size_t idx) {
