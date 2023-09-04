@@ -262,7 +262,7 @@ static fn_cmp_def(uint64, uint64_t, (x > y));
 
 /* clang-format off */
 #define min(x, y) ({ auto __min_x__ = (x); auto __min_y__ = (y); noused(&__min_x__ == &__min_y__); __min_x__ < __min_y__ ? __min_x__ : __min_y__; })
-#define max(x, y) ({ auto __max_x__ = (x); auto __max_y__ = (y); noused(&__max_x__ == &__max_y__); __max_x__ < __max_y__ ? __max_x__ : __max_y__; })
+#define max(x, y) ({ auto __max_x__ = (x); auto __max_y__ = (y); noused(&__max_x__ == &__max_y__); __max_x__ > __max_y__ ? __max_x__ : __max_y__; })
 /* clang-format on */
 
 /*************************************************************************************************
