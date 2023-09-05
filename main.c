@@ -26,18 +26,18 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-struct st_t {
+typedef struct st_t {
   int a;
   char c;
-};
+} st_t;
 
-int st_cmp(const void* a, const void* b) {
-  struct st_t* _a = as(a, struct st_t*);
-  struct st_t* _b = as(b, struct st_t*);
+fn_cmp_dec(st_t) {
+  st_t* x = as(_x, st_t*);
+  st_t* y = as(_y, st_t*);
 
-  if (_a->a < _b->a) {
+  if (x->a < y->a) {
     return -1;
-  } else if (_a->a > _b->a) {
+  } else if (x->a > y->a) {
     return 1;
   }
 
@@ -47,13 +47,15 @@ int st_cmp(const void* a, const void* b) {
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  avl(struct st_t) t = avl_new(struct st_t, st_cmp);
+  avl(st_t) t = avl_new(st_t, fn_cmp_use(st_t));
 
-  struct st_t st = {.a = 23, .c = 'e'};
+  st_t st = {.a = 23, .c = 'e'};
 
   avl_push(t, st);
 
-  struct st_t s = {.a = 23};
+  st_t s = {.a = 23};
+
+  inf("%zu", avl_len(t));
 
   inf("%c", avl_at(t, s).c);
 
