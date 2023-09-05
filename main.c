@@ -8,9 +8,9 @@
 // #include "stack.h"
 // #include "str.h"
 #include "u.h"
-#include "vec.h"
+// #include "vec.h"
 // #include "obj.h"
-#include "avl.h"
+// #include "avl.h"
 // #include "stack.h"
 
 // #include <backtrace-supported.h>
@@ -26,38 +26,18 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-typedef struct st_t {
-  int a;
-  char c;
-} st_t;
+#define __same_type(a, b)    __builtin_types_compatible_p(typeof(a), typeof(b))
+#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int : -!!(e); }))
+#define __must_be_array(a)   BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
-fn_cmp_dec(st_t) {
-  st_t* x = as(_x, st_t*);
-  st_t* y = as(_y, st_t*);
-
-  if (x->a < y->a) {
-    return -1;
-  } else if (x->a > y->a) {
-    return 1;
-  }
-
-  return 0;
-}
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  avl(st_t) t = avl_new(st_t, fn_cmp_use(st_t));
+  int a[123] = {0};
 
-  st_t st = {.a = 23, .c = 'e'};
-
-  avl_push(t, st);
-
-  st_t s = {.a = 23};
-
-  inf("%zu", avl_len(t));
-
-  inf("%c", avl_at(t, s).c);
+  printf("%zu", ARRAY_SIZE(a));
 
   return 0;
 }
