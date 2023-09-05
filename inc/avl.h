@@ -44,7 +44,7 @@ bool __avl_empty(any_t _self);
 #define avl_empty(avl) __avl_empty(avl)
 
 void __avl_at(any_t _self);
-#define avl_at(avl, _item) ((avl)->item = (_item), __avl_at(avl), (avl->item))
+#define avl_at(avl, _item) ((avl)->item = (_item), __avl_at(avl), ((avl)->item))
 
 void __avl_pop(any_t _self);
 #define avl_pop(avl, _item) ((avl)->item = (_item), __avl_pop(avl))
