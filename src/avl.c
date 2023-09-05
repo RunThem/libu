@@ -306,9 +306,6 @@ any_t __avl_new(size_t itsize, avl_cmp_fn fn) {
 
   self = u_zalloc(sizeof(avl_t) + itsize);
   u_mem_if(self);
-  inf("%p", self);
-
-  inf("%p", any(self) + 8);
 
   self->itsize = itsize;
   self->len    = 0;
