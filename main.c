@@ -1,3 +1,6 @@
+
+#include <threads.h>
+
 /* libs */
 // #include "buf.h"
 // #include "fs.h"
@@ -31,6 +34,24 @@ void boo() {
 #define __must_be_array(a)   BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+
+#include "queue.h"
+
+/* tpool - thread pool */
+typedef fnt(tpool_task_fn, void, any_t);
+typedef any_t tpool_task_arg_t;
+
+typedef struct {
+  tpool_task_fn fn;
+  tpool_task_arg_t args;
+} tpool_task_t;
+
+typedef struct {
+  mtx_t mtx;
+  cnd_t cnd;
+  thrd_t thrd;
+  queue(tpool_task_t) tasks;
+} tpool_worker_t;
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
