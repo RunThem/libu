@@ -245,12 +245,8 @@ bool __vec_range(any_t _self, bool flag) {
   }
 
   /* whether it is out of range */
-  if ((self->item == self->items + self->len * self->itsize) ||
-      (self->item == self->items - self->itsize)) {
-    self->item = self + 1;
-
-    return false;
-  }
+  u_ret_if(self->item == self->items + self->len * self->itsize, false);
+  u_ret_if(self->item == self->items - self->itsize, false);
 
   return true;
 }

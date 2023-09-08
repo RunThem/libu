@@ -14,7 +14,7 @@
     T* item;                                                                                       \
   }*
 
-#define __vec_item(vec) as((vec) + 1, typeof((vec)->item))
+#define __vec_item(vec) *as((vec) + 1, typeof((vec)->item))
 
 /*************************************************************************************************
  * Create & Clone
@@ -64,21 +64,17 @@ void __vec_pop(any_t _self, size_t idx);
 #define vec_pop_back(vec)  __vec_pop(vec, vec_len(vec) - 1)
 
 ret_t __vec_push(any_t _self, size_t idx);
-#define vec_push(vec, idx, _item)  (*__vec_item(vec) = (_item), __vec_push(vec, idx))
-#define vec_push_front(vec, _item) (*__vec_item(vec) = (_item), __vec_push(vec, 0))
-#define vec_push_back(vec, _item)  (*__vec_item(vec) = (_item), __vec_push(vec, vec_len(vec)))
+#define vec_push(vec, idx, _item)  (__vec_item(vec) = (_item), __vec_push(vec, idx))
+#define vec_push_front(vec, _item) (__vec_item(vec) = (_item), __vec_push(vec, 0))
+#define vec_push_back(vec, _item)  (__vec_item(vec) = (_item), __vec_push(vec, vec_len(vec)))
 
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
 bool __vec_range(any_t _self, bool flag);
-#define vec_for(vec, i)                                                                            \
-  (vec)->item = nullptr;                                                                           \
-  for (size_t i = 0; __vec_range(vec, true); (i)++)
-
+#define vec_for(vec, i) for (size_t i = ((vec)->item = nullptr, 0); __vec_range(vec, true); (i)++)
 #define vec_rfor(vec, i)                                                                           \
-  (vec)->item = nullptr;                                                                           \
-  for (size_t i = vec_len(vec) - 1; __vec_range(vec, false); (i)--)
+  for (size_t i = ((vec)->item = nullptr, vec_len(vec) - 1); __vec_range(vec, false); (i)--)
 
 /*************************************************************************************************
  * Utils
