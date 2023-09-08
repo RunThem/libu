@@ -100,6 +100,7 @@
   do {                                                                                             \
     if (expr) {                                                                                    \
       fprintf(stderr, "Assertion failed: %s (%s: %s: %d)\n", #expr, __file__, __func__, __line__); \
+      abort();                                                                                     \
     }                                                                                              \
   } while (0)
 
