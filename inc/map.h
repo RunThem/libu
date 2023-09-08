@@ -5,10 +5,6 @@
 /*************************************************************************************************
  * Macro
  *************************************************************************************************/
-#ifndef U_MAP_BUCKETS_NUM
-#  define U_MAP_BUCKETS_NUM 64
-#endif
-
 #define U_MAP_RESIZE_RADIO 0.7
 
 enum u_map_hash_fn {
@@ -31,6 +27,10 @@ typedef fnt(map_eq_fn, bool, const void*, const void*);
     V* val;                                                                                        \
     K key;                                                                                         \
   }*
+
+#define __map_key(map, _key) (map)->key = (_key)
+#define __map_val(map, _val)                                                                       \
+  *as(any(map) + sizeof((map)->key) + sizeof((map)->val), typeof((map)->val)) = (_val)
 
 /*************************************************************************************************
  * Create & Clone
@@ -67,15 +67,13 @@ bool __map_empty(any_t _self);
 #define map_empty(map) __map_empty(map)
 
 any_t __map_at(any_t _self);
-#define map_at(map, _key) (*(as(((map)->key = (_key), __map_at(map)), typeof((map)->val))))
+#define map_at(map, _key) (*(__map_key(map, _key), as(__map_at(map), typeof((map)->val))))
 
 void __map_pop(any_t _self);
-#define map_pop(map, _key) ((map)->key = (_key), __map_pop(map))
-
-#define __map_val(map) as(any(map) + sizeof((map)->key) + sizeof((map)->val), typeof((map)->val))
+#define map_pop(map, _key) (__map_key(map, _key), __map_pop(map))
 
 ret_t __map_push(any_t _self);
-#define map_push(map, _key, _val) ((map)->key = (_key), *__map_val(map) = (_val), __map_push(map))
+#define map_push(map, _key, _val) (__map_key(map, _key), __map_val(map, _val), __map_push(map))
 
 /*************************************************************************************************
  * Iterator

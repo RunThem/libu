@@ -82,7 +82,7 @@ typedef struct {
   map_node_t* buckets;
 } map_t;
 
-#define map_of(self) as((self) - sizeof(map_t), map_t*)
+#define map_of(self) (assert(self != nullptr), as((self) - sizeof(map_t), map_t*))
 
 /* fnv 64-bit hash function */
 static hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
@@ -159,8 +159,6 @@ err:
 
 static map_node_t* __map_next(map_t* self, map_node_t* node) {
   size_t idx = 0;
-
-  inf("%p", node);
 
   if (node != nullptr) {
     node = node->next;
@@ -271,8 +269,6 @@ ret_t __map_clear(any_t _self) {
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
 
-  u_assert(self == nullptr);
-
   for (size_t i = 0; i < bucket_sizes[self->bs]; i++) {
     list = self->buckets[i].next;
 
@@ -292,8 +288,6 @@ ret_t __map_clear(any_t _self) {
 ret_t __map_cleanup(any_t _self) {
   map_t* self = map_of(_self);
 
-  u_assert(self == nullptr);
-
   __map_clear(_self);
   u_free(self->buckets);
   u_free(self);
@@ -304,32 +298,20 @@ ret_t __map_cleanup(any_t _self) {
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
-inline size_t __map_ksize(any_t _self) {
-  map_t* self = map_of(_self);
-
-  u_assert(self == nullptr);
-
-  return self->ksize;
+size_t __map_ksize(any_t _self) {
+  return map_of(_self)->ksize;
 }
 
-inline size_t __map_vsize(any_t _self) {
-  map_t* self = map_of(_self);
-
-  u_assert(self == nullptr);
-
-  return self->vsize;
+size_t __map_vsize(any_t _self) {
+  return map_of(_self)->vsize;
 }
 
-inline size_t __map_len(any_t _self) {
-  map_t* self = map_of(_self);
-
-  u_assert(_self == nullptr);
-
-  return self->len;
+size_t __map_len(any_t _self) {
+  return map_of(_self)->len;
 }
 
-inline bool __map_empty(any_t _self) {
-  return __map_len(_self) == 0;
+bool __map_empty(any_t _self) {
+  return map_of(_self)->len == 0;
 }
 
 any_t __map_at(any_t _self) {
@@ -338,8 +320,6 @@ any_t __map_at(any_t _self) {
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
   hash_t hash      = 0;
-
-  u_assert(self == nullptr);
 
   key = _self + sizeof(any_t);
 
@@ -367,8 +347,6 @@ void __map_pop(any_t _self) {
   map_node_t* list = nullptr;
   map_node_t* prev = nullptr;
   hash_t hash      = 0;
-
-  u_assert(self == nullptr);
 
   key = _self + sizeof(any_t);
 
@@ -399,8 +377,6 @@ ret_t __map_push(any_t _self) {
   map_node_t* list = nullptr;
   hash_t hash      = 0;
   size_t idx       = 0;
-
-  u_assert(self == nullptr);
 
   key = _self + sizeof(any_t);
   val = key + self->ksize;
@@ -450,7 +426,6 @@ bool __map_range(any_t _self) {
   any_t* val       = nullptr;
   size_t i         = 0;
 
-  u_assert(self == nullptr);
   u_ret_if(self->len == 0, false);
 
   key = _self + sizeof(any_t);
