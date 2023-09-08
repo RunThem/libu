@@ -227,13 +227,13 @@ err:
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn fn) {
+any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn hash_fn) {
   map_t* self = nullptr;
 
   u_assert(ksize == 0);
   u_assert(vsize == 0);
   u_assert(eq_fn == nullptr);
-  u_assert(fn >= MAP_HASH_FN_MAX);
+  u_assert(hash_fn >= MAP_HASH_FN_MAX);
 
   self = u_zalloc(sizeof(map_t) + ksize + sizeof(any_t) + vsize);
   u_mem_if(self);
@@ -247,9 +247,9 @@ any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn 
   self->eq_fn = eq_fn;
   self->bs    = 0;
 
-  if (fn == MAP_FNV_64_HASH_FN) {
+  if (hash_fn == MAP_FNV_64_HASH_FN) {
     self->hash_fn = map_mem_hash;
-  } else if (fn == MAP_INT_HASH_FN) {
+  } else if (hash_fn == MAP_INT_HASH_FN) {
     self->hash_fn = map_int_hash;
   }
 

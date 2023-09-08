@@ -35,8 +35,8 @@ typedef fnt(map_eq_fn, bool, const void*, const void*);
 /*************************************************************************************************
  * Create & Clone
  *************************************************************************************************/
-any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn fn);
-#define map_new(K, V, eq_fn, fn) __map_new(sizeof(K), sizeof(V), eq_fn, fn)
+any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn hash_fn);
+#define map_new(K, V, eq_fn, hash_fn) __map_new(sizeof(K), sizeof(V), eq_fn, hash_fn)
 
 /*************************************************************************************************
  * Destruction
