@@ -12,10 +12,12 @@ typedef fnt(avl_cmp_fn, int, const void*, const void*);
     T item;                                                                                        \
   }*
 
+#define __avl_itor(avl) *as(any(avl) + sizeof((avl)->item), typeof((avl)->item)**)
+
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __avl_new(size_t itsize, avl_cmp_fn fn);
+any_t __avl_new(size_t itsize, avl_cmp_fn cmp_fn);
 #define avl_new(T, fn) __avl_new(sizeof(T), fn)
 
 /*************************************************************************************************
@@ -55,6 +57,9 @@ ret_t __avl_push(any_t _self);
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
+bool __avl_range(any_t _self, bool flag);
+#define avl_for(avl)  for (__avl_itor(avl) = nullptr; __avl_range(avl, true);)
+#define avl_rfor(avl) for (__avl_itor(avl) = nullptr; __avl_range(avl, false);)
 
 #ifndef NDEBUG
 void avl_debug(any_t _self);
