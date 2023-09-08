@@ -14,6 +14,8 @@
     T* item;                                                                                       \
   }*
 
+#define __vec_item(vec) as((vec) + 1, typeof((vec)->item))
+
 /*************************************************************************************************
  * Create & Clone
  *************************************************************************************************/
@@ -61,8 +63,6 @@ void __vec_pop(any_t _self, size_t idx);
 #define vec_pop_front(vec) __vec_pop(vec, 0)
 #define vec_pop_back(vec)  __vec_pop(vec, vec_len(vec) - 1)
 
-#define __vec_item(vec) as((vec) + 1, typeof((vec)->item))
-
 ret_t __vec_push(any_t _self, size_t idx);
 #define vec_push(vec, idx, _item)  (*__vec_item(vec) = (_item), __vec_push(vec, idx))
 #define vec_push_front(vec, _item) (*__vec_item(vec) = (_item), __vec_push(vec, 0))
@@ -86,18 +86,11 @@ bool __vec_range(any_t _self, bool flag);
 void __vec_sort(any_t _self, cmp_fn fn);
 #define vec_sort(vec, fn) __vec_sort(vec, fn)
 
-#if 0
-
-ssize_t __vec_find(any_t _self, any_t it, eq_fn fn);
-#  define vec_find(vec, _it, fn) __vec_find(vec, ((vec)->it = (_it), &(vec)->it), fn)
+ssize_t __vec_find(any_t _self, eq_fn fn);
+#define vec_find(vec, _item, fn) (*__vec_item(vec) = (_item), __vec_find(vec, fn))
 
 ssize_t __vec_min(any_t _self, cmp_fn fn);
-#  define vec_min(vec, fn)       __vec_min(vec, fn)
+#define vec_min(vec, fn) __vec_min(vec, fn)
 
 ssize_t __vec_max(any_t _self, cmp_fn fn);
-#  define vec_max(vec, fn)       __vec_max(vec, fn)
-
-bool __vec_cmp(any_t _self, any_t _cmp);
-#  define vec_cmp(vec1, vec2)    __vec_cmp(vec1, vec2)
-
-#endif
+#define vec_max(vec, fn) __vec_max(vec, fn)
