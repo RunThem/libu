@@ -14,7 +14,7 @@
 // #include "vec.h"
 // #include "obj.h"
 // #include "avl.h"
-// #include "stack.h"
+#include "stack.h"
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -59,6 +59,23 @@ int main(int argc, const char** argv) {
   int a[123] = {0};
 
   printf("%zu", ARRAY_SIZE(a));
+
+  stack(int) s = stack_new(int);
+
+  inf("len %zu, cap %zu", stack_len(s), stack_cap(s));
+
+  for (size_t i = 0; i < 36; i++) {
+    stack_push(s, i);
+  }
+
+  inf("len %zu, cap %zu", stack_len(s), stack_cap(s));
+
+  for (size_t i = 0; i < 36; i++) {
+    inf("%d", stack_peek(s));
+    stack_pop(s);
+  }
+
+  inf("len %zu, cap %zu", stack_len(s), stack_cap(s));
 
   return 0;
 }
