@@ -173,6 +173,8 @@ typedef _Atomic(uint64_t)            atomic_u64_t;
 #define rs(...)          #__VA_ARGS__
 #define me(type, arg...) (&(type){arg})
 
+#define each(i, start, end, step) for (ssize_t i = (start); (i) < (end); (i) += (step))
+
 #define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
