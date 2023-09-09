@@ -1,5 +1,5 @@
 #include "avl.h"
-#include "vec.h"
+#include "queue.h"
 
 /* clang-format off */
 /*
@@ -381,30 +381,31 @@ err:
  * Destruction
  *************************************************************************************************/
 void __avl_clear(any_t _self) {
-  avl_t* self  = self_of(_self);
-  node_t* node = nullptr;
-  vec(any_t) v = nullptr;
+  avl_t* self        = self_of(_self);
+  node_t* node       = nullptr;
+  queue(node_t*) que = nullptr;
 
   u_noret_if(self->len == 0);
 
-  v = vec_new(any_t);
-  vec_push_back(v, self->root);
+  que = queue_new(node_t*);
+  queue_push(que, self->root);
 
-  while (!vec_empty(v)) {
-    node = vec_at_front(v);
+  while (!queue_empty(que)) {
+    node = queue_peek(que);
 
     if (node->left) {
-      vec_push_back(v, node->left);
+      queue_push(que, node->left);
     }
     if (node->right) {
-      vec_push_back(v, node->right);
+      queue_push(que, node->right);
     }
 
     u_free(node);
-    vec_pop_front(v);
+
+    queue_pop(que);
   }
 
-  vec_cleanup(v);
+  queue_cleanup(que);
 
   self->len = 0;
 }

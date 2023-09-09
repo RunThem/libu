@@ -13,9 +13,9 @@
 #include "u.h"
 // #include "vec.h"
 // #include "obj.h"
-// #include "avl.h"
-#include "queue.h"
-#include "stack.h"
+#include "avl.h"
+// #include "queue.h"
+// #include "stack.h"
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -61,22 +61,27 @@ int main(int argc, const char** argv) {
 
   printf("%zu", ARRAY_SIZE(a));
 
-  queue(int) s = queue_new(int);
+  avl(int) t = avl_new(int, fn_cmp_use(int32));
 
-  inf("len %zu, cap %zu", queue_len(s), queue_cap(s));
-
-  for (size_t i = 0; i < 36; i++) {
-    queue_push(s, i);
-  }
-
-  inf("len %zu, cap %zu", queue_len(s), queue_cap(s));
+  inf("len %zu", avl_len(t));
 
   for (size_t i = 0; i < 36; i++) {
-    inf("%d", queue_peek(s));
-    queue_pop(s);
+    avl_push(t, i);
   }
 
-  inf("len %zu, cap %zu", queue_len(s), queue_cap(s));
+  inf("len %zu", avl_len(t));
+
+  avl_for(t) {
+    inf("%d", t->item);
+  }
+
+  for (size_t i = 0; i < 36; i++) {
+    avl_pop(t, i);
+  }
+
+  inf("len %zu", avl_len(t));
+
+  avl_cleanup(t);
 
   return 0;
 }
