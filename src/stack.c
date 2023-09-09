@@ -21,7 +21,8 @@ typedef struct {
   any_t items;
 } stack_t;
 
-#define stack_of(self) (assert((self) != nullptr), as((self) - sizeof(stack_t), stack_t*))
+#undef self_of
+#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(stack_t), stack_t*))
 
 static ret_t __stack_resize(stack_t* self) {
   size_t cap  = 0;
@@ -72,11 +73,11 @@ err:
  * Destruction
  *************************************************************************************************/
 void __stack_clear(any_t _self) {
-  stack_of(_self)->len = 0;
+  self_of(_self)->len = 0;
 }
 
 void __stack_cleanup(any_t _self) {
-  stack_t* self = stack_of(_self);
+  stack_t* self = self_of(_self);
 
   u_free_if(self->items);
   u_free_if(self);
@@ -86,23 +87,23 @@ void __stack_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __stack_itsize(any_t _self) {
-  return stack_of(_self)->itsize;
+  return self_of(_self)->itsize;
 }
 
 size_t __stack_len(any_t _self) {
-  return stack_of(_self)->len;
+  return self_of(_self)->len;
 }
 
 size_t __stack_cap(any_t _self) {
-  return stack_of(_self)->cap;
+  return self_of(_self)->cap;
 }
 
 bool __stack_empty(any_t _self) {
-  return stack_of(_self)->len == 0;
+  return self_of(_self)->len == 0;
 }
 
 void __stack_peek(any_t _self) {
-  stack_t* self = stack_of(_self);
+  stack_t* self = self_of(_self);
   any_t item    = _self;
 
   u_noret_if(self->len == 0);
@@ -111,7 +112,7 @@ void __stack_peek(any_t _self) {
 }
 
 void __stack_pop(any_t _self) {
-  stack_t* self = stack_of(_self);
+  stack_t* self = self_of(_self);
   any_t item    = _self;
 
   u_noret_if(self->len == 0);
@@ -121,7 +122,7 @@ void __stack_pop(any_t _self) {
 }
 
 ret_t __stack_push(any_t _self) {
-  stack_t* self = stack_of(_self);
+  stack_t* self = self_of(_self);
   any_t item    = _self;
   ret_t code    = 0;
 

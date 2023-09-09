@@ -1,5 +1,4 @@
 #include "avl.h"
-
 #include "vec.h"
 
 /* clang-format off */
@@ -74,7 +73,7 @@ struct avl_t {
   node_t* root;
 };
 
-#define avl_of(self) (assert(self != nullptr), as((self) - sizeof(avl_t), avl_t*))
+#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
 
 static node_t* __avl_node(avl_t* self, node_t* parent, any_t item) {
   node_t* node = u_zalloc(sizeof(node_t) + self->itsize);
@@ -382,7 +381,7 @@ err:
  * Destruction
  *************************************************************************************************/
 void __avl_clear(any_t _self) {
-  avl_t* self  = avl_of(_self);
+  avl_t* self  = self_of(_self);
   node_t* node = nullptr;
   vec(any_t) v = nullptr;
 
@@ -411,7 +410,7 @@ void __avl_clear(any_t _self) {
 }
 
 void __avl_cleanup(any_t _self) {
-  avl_t* self = avl_of(_self);
+  avl_t* self = self_of(_self);
 
   __avl_clear(_self);
   u_free(self);
@@ -421,20 +420,20 @@ void __avl_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __avl_itsize(any_t _self) {
-  return avl_of(_self)->itsize;
+  return self_of(_self)->itsize;
 }
 
 size_t __avl_len(any_t _self) {
-  return avl_of(_self)->len;
+  return self_of(_self)->len;
 }
 
 bool __avl_empty(any_t _self) {
-  return avl_of(_self)->len == 0;
+  return self_of(_self)->len == 0;
 }
 
 void __avl_at(any_t _self) {
   ret_t result = 0;
-  avl_t* self  = avl_of(_self);
+  avl_t* self  = self_of(_self);
   node_t* node = self->root;
   any_t item   = _self;
 
@@ -452,7 +451,7 @@ void __avl_at(any_t _self) {
 
 void __avl_pop(any_t _self) {
   ret_t result   = 0;
-  avl_t* self    = avl_of(_self);
+  avl_t* self    = self_of(_self);
   node_t* node   = self->root;
   node_t* parent = nullptr;
   node_t* tmp    = nullptr;
@@ -484,7 +483,7 @@ void __avl_pop(any_t _self) {
 
 ret_t __avl_push(any_t _self) {
   ret_t result   = 0;
-  avl_t* self    = avl_of(_self);
+  avl_t* self    = self_of(_self);
   node_t** link  = &self->root;
   node_t* parent = nullptr;
   node_t* node   = nullptr;
@@ -515,7 +514,7 @@ err:
  * Iterator
  *************************************************************************************************/
 bool __avl_range(any_t _self, bool flag) {
-  avl_t* self   = avl_of(_self);
+  avl_t* self   = self_of(_self);
   any_t item    = _self;
   node_t** itor = _self + self->itsize;
 
@@ -549,7 +548,7 @@ static void __avl_debug(node_t* node, int depth, int flag) {
 }
 
 void avl_debug(any_t _self) {
-  avl_t* self = avl_of(_self);
+  avl_t* self = self_of(_self);
 
   u_assert(self == nullptr);
 

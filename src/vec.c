@@ -82,7 +82,8 @@ typedef struct {
   any_t item;
 } vec_t;
 
-#define vec_of(self) (assert(self != nullptr), as(container_of(self, vec_t, item), vec_t*))
+#undef self_of
+#define self_of(self) (assert((self) != nullptr), as(container_of(self, vec_t, item), vec_t*))
 
 static ret_t __vec_resize(vec_t* self) {
   size_t cap  = 0;
@@ -130,7 +131,7 @@ err:
 }
 
 any_t __vec_clone(any_t _self) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   vec_t* vec  = nullptr;
 
   vec = __vec_new(self->itsize, self->cap);
@@ -151,11 +152,11 @@ err:
  * Destruction
  *************************************************************************************************/
 void __vec_clear(any_t _self) {
-  vec_of(_self)->len = 0;
+  self_of(_self)->len = 0;
 }
 
 void __vec_cleanup(any_t _self) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
 
   u_free_if(self->items);
   u_free_if(self);
@@ -165,23 +166,23 @@ void __vec_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __vec_itsize(any_t _self) {
-  return vec_of(_self)->itsize;
+  return self_of(_self)->itsize;
 }
 
 size_t __vec_len(any_t _self) {
-  return vec_of(_self)->len;
+  return self_of(_self)->len;
 }
 
 size_t __vec_cap(any_t _self) {
-  return vec_of(_self)->cap;
+  return self_of(_self)->cap;
 }
 
 bool __vec_empty(any_t _self) {
-  return vec_of(_self)->len == 0;
+  return self_of(_self)->len == 0;
 }
 
 any_t __vec_at(any_t _self, size_t idx) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
 
   u_assert(idx >= self->len);
 
@@ -189,7 +190,7 @@ any_t __vec_at(any_t _self, size_t idx) {
 }
 
 void __vec_pop(any_t _self, size_t idx) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   any_t point = nullptr;
 
   u_assert(self == nullptr);
@@ -204,7 +205,7 @@ void __vec_pop(any_t _self, size_t idx) {
 }
 
 ret_t __vec_push(any_t _self, size_t idx) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   any_t item  = self + 1;
   any_t items = nullptr;
   ret_t code  = 0;
@@ -234,7 +235,7 @@ err:
  * Iterator
  *************************************************************************************************/
 bool __vec_range(any_t _self, bool flag) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   any_t item  = _self;
 
   /* initialize */
@@ -255,7 +256,7 @@ bool __vec_range(any_t _self, bool flag) {
  * Utils
  *************************************************************************************************/
 void __vec_sort(any_t _self, cmp_fn fn) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
 
   u_assert(fn == nullptr);
 
@@ -263,7 +264,7 @@ void __vec_sort(any_t _self, cmp_fn fn) {
 }
 
 ssize_t __vec_find(any_t _self, eq_fn fn) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   any_t item  = _self;
 
   u_assert(fn == nullptr);
@@ -278,7 +279,7 @@ ssize_t __vec_find(any_t _self, eq_fn fn) {
 }
 
 ssize_t __vec_min(any_t _self, cmp_fn fn) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   ssize_t idx = 0;
 
   u_assert(fn == nullptr);
@@ -293,7 +294,7 @@ ssize_t __vec_min(any_t _self, cmp_fn fn) {
 }
 
 ssize_t __vec_max(any_t _self, cmp_fn fn) {
-  vec_t* self = vec_of(_self);
+  vec_t* self = self_of(_self);
   ssize_t idx = 0;
 
   u_assert(fn == nullptr);

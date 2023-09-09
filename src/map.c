@@ -82,7 +82,8 @@ typedef struct {
   map_node_t* buckets;
 } map_t;
 
-#define map_of(self) (assert(self != nullptr), as((self) - sizeof(map_t), map_t*))
+#undef self_of
+#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(map_t), map_t*))
 
 /* fnv 64-bit hash function */
 static hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
@@ -265,7 +266,7 @@ err:
  * Destruction
  *************************************************************************************************/
 ret_t __map_clear(any_t _self) {
-  map_t* self      = map_of(_self);
+  map_t* self      = self_of(_self);
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
 
@@ -286,7 +287,7 @@ ret_t __map_clear(any_t _self) {
 }
 
 ret_t __map_cleanup(any_t _self) {
-  map_t* self = map_of(_self);
+  map_t* self = self_of(_self);
 
   __map_clear(_self);
   u_free(self->buckets);
@@ -299,23 +300,23 @@ ret_t __map_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __map_ksize(any_t _self) {
-  return map_of(_self)->ksize;
+  return self_of(_self)->ksize;
 }
 
 size_t __map_vsize(any_t _self) {
-  return map_of(_self)->vsize;
+  return self_of(_self)->vsize;
 }
 
 size_t __map_len(any_t _self) {
-  return map_of(_self)->len;
+  return self_of(_self)->len;
 }
 
 bool __map_empty(any_t _self) {
-  return map_of(_self)->len == 0;
+  return self_of(_self)->len == 0;
 }
 
 any_t __map_at(any_t _self) {
-  map_t* self      = map_of(_self);
+  map_t* self      = self_of(_self);
   any_t key        = nullptr;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
@@ -341,7 +342,7 @@ err:
 }
 
 void __map_pop(any_t _self) {
-  map_t* self      = map_of(_self);
+  map_t* self      = self_of(_self);
   any_t key        = nullptr;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
@@ -370,7 +371,7 @@ void __map_pop(any_t _self) {
 }
 
 ret_t __map_push(any_t _self) {
-  map_t* self      = map_of(_self);
+  map_t* self      = self_of(_self);
   any_t key        = nullptr;
   any_t val        = nullptr;
   map_node_t* node = nullptr;
@@ -420,7 +421,7 @@ err:
  * Iterator
  *************************************************************************************************/
 bool __map_range(any_t _self) {
-  map_t* self      = map_of(_self);
+  map_t* self      = self_of(_self);
   map_node_t* node = nullptr;
   any_t key        = nullptr;
   any_t* val       = nullptr;
@@ -447,7 +448,7 @@ bool __map_range(any_t _self) {
 
 #ifndef NDEBUG
 void __map_debug(any_t _self) {
-  map_t* self      = map_of(_self);
+  map_t* self      = self_of(_self);
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
 
