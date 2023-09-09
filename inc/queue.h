@@ -5,51 +5,37 @@
 /*************************************************************************************************
  * Macro
  *************************************************************************************************/
-#ifndef U_QUE_ITEMS_CAP
-#  define U_QUE_ITEMS_CAP 16
+#ifndef U_QUEUE_CAP
+#  define U_QUEUE_CAP 16
 #endif
 
 /*************************************************************************************************
  * Data Structure
  *************************************************************************************************/
-typedef struct {
-  size_t itsize;
-  size_t len;
-  size_t cap;
-
-  size_t s_idx;
-  size_t e_idx;
-
-  any_t items;
-} queue_t;
 
 #define queue(T)                                                                                   \
   struct {                                                                                         \
-    queue_t _;                                                                                     \
-    T it;                                                                                          \
+    T item;                                                                                        \
   }*
 
 /*************************************************************************************************
- * Create & Clone
+ * Create
  *************************************************************************************************/
 any_t __queue_new(size_t itsize, size_t cap);
-#define queue_new(T, arg...) __queue_new(sizeof(T), va_0th(U_QUE_ITEMS_CAP, arg))
-
-ret_t __queue_init(any_t* _self, size_t itsize, size_t cap);
-#define queue_init(queue, arg...)                                                                  \
-  __queue_init(any(queue), sizeof((queue)->it), va_0th(U_QUE_ITEMS_CAP, arg))
+#define queue_new(T, arg...) __queue_new(sizeof(T), va_0th(U_QUEUE_CAP, arg))
 
 /*************************************************************************************************
- * Expansion & Destruction
+ * Destruction
  *************************************************************************************************/
-ret_t __queue_resize(any_t _self, size_t cap);
-#define queue_resize(queue, cap) __queue_resize(queue, cap)
-
-ret_t __queue_clear(any_t _self);
+void __queue_clear(any_t _self);
 #define queue_clear(queue) __queue_clear(queue)
 
-ret_t __queue_cleanup(any_t _self);
-#define queue_cleanup(queue) __queue_cleanup(queue)
+void __queue_cleanup(any_t _self);
+#define queue_cleanup(queue)                                                                       \
+  do {                                                                                             \
+    __queue_cleanup(queue);                                                                        \
+    (queue) = nullptr;                                                                             \
+  } while (0)
 
 /*************************************************************************************************
  * Interface
@@ -66,11 +52,11 @@ size_t __queue_cap(any_t _self);
 bool __queue_empty(any_t _self);
 #define queue_empty(queue) __queue_empty(queue)
 
-ret_t __queue_push(any_t _self, any_t it);
-#define queue_push(queue, _it) __queue_push(queue, ((queue)->it = (_it), &(queue)->it))
+void __queue_peek(any_t _self);
+#define queue_peek(queue) (__queue_peek(queue), (queue)->item)
 
-ret_t __queue_pop(any_t _self, any_t it);
-#define queue_pop(queue) __queue_pop(queue, &(queue)->it)
+void __queue_pop(any_t _self);
+#define queue_pop(queue) __queue_pop(queue)
 
-ret_t __queue_peek(any_t _self, any_t it);
-#define queue_peek(queue) (__queue_peek(queue, (&(queue)->it)), (queue)->it)
+ret_t __queue_push(any_t _self);
+#define queue_push(queue, _item) ((queue)->item = (_item), __queue_push(queue))

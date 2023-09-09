@@ -1,25 +1,57 @@
 #include "queue.h"
 
-/*************************************************************************************************
- * Private function
- *************************************************************************************************/
-static size_t __queue_expansion(size_t size) {
-  if (size < 16) {
-    return 16;
-  } else if (size < 1024) {
-    return size * 2;
-  }
+/*
+ * 0        8        16       24       32       40       48
+ * +--------+--------+--------+--------+--------+--------+------------+
+ * | itsize |  len   |  cap   | s_idx  | e_idx  | items  |    ...     |
+ * +--------+--------+--------+--------+--------+---------------------+
+ *                                                       |  sizeof(T)
+ *                                                       v
+ *                                                  return point
+ *
+ * */
 
-  return size + 512;
+/*************************************************************************************************
+ * Private
+ *************************************************************************************************/
+typedef struct {
+  size_t itsize;
+  size_t len;
+  size_t cap;
+
+  size_t s_idx;
+  size_t e_idx;
+
+  any_t items;
+} queue_t;
+
+#define queue_of(self) (assert((self) != nullptr), as((self) - sizeof(queue_t), queue_t*))
+
+static ret_t __queue_resize(queue_t* self) {
+  size_t cap  = 0;
+  any_t items = nullptr;
+
+  cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
+
+  items = u_realloc(self->items, self->itsize * cap);
+  u_mem_if(items);
+
+  self->items = items;
+  self->cap   = cap;
+
+  return 0;
+
+err:
+  return -1;
 }
 
 /*************************************************************************************************
- * Create & Clone
+ * Create
  *************************************************************************************************/
 any_t __queue_new(size_t itsize, size_t cap) {
   queue_t* self = nullptr;
 
-  u_ret_if(itsize == 0, nullptr);
+  u_assert(itsize == 0);
 
   self = u_talloc(sizeof(queue_t) + itsize, queue_t*);
   u_mem_if(self);
@@ -34,7 +66,7 @@ any_t __queue_new(size_t itsize, size_t cap) {
   self->s_idx = 0;
   self->e_idx = 0;
 
-  return self;
+  return self + 1;
 
 err:
   u_free_if(self);
@@ -42,110 +74,77 @@ err:
   return nullptr;
 }
 
-ret_t __queue_init(any_t* _self, size_t itsize, size_t cap) {
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(*_self != nullptr, -1);
-
-  *_self = __queue_new(itsize, cap);
-  u_mem_if(*_self);
-
-  return 0;
-
-err:
-  return -2;
-}
-
 /*************************************************************************************************
  * Expansion & Destruction
  *************************************************************************************************/
-ret_t __queue_resize(any_t _self, size_t cap) {
-  any_t ptr     = nullptr;
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(self->cap >= cap, -1);
-
-  ptr = u_realloc(self->items, self->itsize * cap);
-  u_mem_if(ptr);
-
-  self->items = ptr;
-  self->cap   = cap;
-
-  return 0;
-
-err:
-  return -2;
-}
-
-ret_t __queue_clear(any_t _self) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
+void __queue_clear(any_t _self) {
+  queue_t* self = queue_of(_self);
 
   self->len   = 0;
   self->s_idx = 0;
   self->e_idx = 0;
-
-  return 0;
 }
 
-ret_t __queue_cleanup(any_t _self) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
-
-  self->itsize = 0;
-  self->len    = 0;
-  self->cap    = 0;
-  self->s_idx  = 0;
-  self->e_idx  = 0;
+void __queue_cleanup(any_t _self) {
+  queue_t* self = queue_of(_self);
 
   u_free_if(self->items);
-
-  return 0;
+  u_free_if(self);
 }
 
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
-inline size_t __queue_itsize(any_t _self) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
-
-  return self->itsize;
+size_t __queue_itsize(any_t _self) {
+  return queue_of(_self)->itsize;
 }
 
-inline size_t __queue_len(any_t _self) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, 0);
-
-  return self->len;
+size_t __queue_len(any_t _self) {
+  return queue_of(_self)->len;
 }
 
-inline size_t __queue_cap(any_t _self) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, 0);
-
-  return self->len;
+size_t __queue_cap(any_t _self) {
+  return queue_of(_self)->cap;
 }
 
-inline bool __queue_empty(any_t _self) {
-  return __queue_len(_self) == 0;
+bool __queue_empty(any_t _self) {
+  return queue_of(_self)->len == 0;
 }
 
-ret_t __queue_push(any_t _self, any_t it) {
+void __queue_peek(any_t _self) {
+  queue_t* self = queue_of(_self);
+  any_t item    = _self;
+
+  u_noret_if(self->len == 0);
+
+  memcpy(item, self->items + self->s_idx * self->itsize, self->itsize);
+}
+
+void __queue_pop(any_t _self) {
+  queue_t* self = queue_of(_self);
+  any_t item    = _self;
+
+  u_noret_if(self->len == 0);
+
+  if (self->s_idx >= self->cap / 2) {
+    memmove(self->items, self->items + self->s_idx * self->itsize, self->len * self->itsize);
+    self->e_idx -= self->s_idx;
+    self->s_idx = 0;
+  }
+
+  memcpy(item, self->items + self->s_idx * self->itsize, self->itsize);
+  self->s_idx++;
+  self->len--;
+}
+
+ret_t __queue_push(any_t _self) {
+  queue_t* self = queue_of(_self);
+  any_t item    = _self;
   ret_t code    = 0;
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(it == nullptr, -1);
 
   if (self->e_idx == self->cap) {
     if (self->s_idx == 0) {
-      code = __queue_resize(_self, __queue_expansion(self->cap));
+      code = __queue_resize(self);
       u_err_if(code != 0);
     } else {
       memmove(self->items, self->items + self->s_idx * self->itsize, self->len * self->itsize);
@@ -154,7 +153,7 @@ ret_t __queue_push(any_t _self, any_t it) {
     }
   }
 
-  memcpy(self->items + self->e_idx * self->itsize, it, self->itsize);
+  memcpy(self->items + self->e_idx * self->itsize, item, self->itsize);
   self->e_idx++;
   self->len++;
 
@@ -162,38 +161,4 @@ ret_t __queue_push(any_t _self, any_t it) {
 
 err:
   return -2;
-}
-
-ret_t __queue_pop(any_t _self, any_t it) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(it == nullptr, -1);
-
-  u_ret_if(self->len == 0, -1);
-
-  if (self->s_idx >= self->cap / 2) {
-    memmove(self->items, self->items + self->s_idx * self->itsize, self->len * self->itsize);
-    self->e_idx -= self->s_idx;
-    self->s_idx = 0;
-  }
-
-  memcpy(it, self->items + self->s_idx * self->itsize, self->itsize);
-  self->s_idx++;
-  self->len--;
-
-  return 0;
-}
-
-ret_t __queue_peek(any_t _self, any_t it) {
-  queue_t* self = as(_self, queue_t*);
-
-  u_ret_if(_self == nullptr, -1);
-  u_ret_if(it == nullptr, -1);
-
-  u_ret_if(self->len == 0, -1);
-
-  memcpy(it, self->items + self->s_idx * self->itsize, self->itsize);
-
-  return 0;
 }
