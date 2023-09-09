@@ -169,9 +169,9 @@ typedef _Atomic(uint64_t)            atomic_u64_t;
 #  define lm(ret, ...) ^ret(__VA_ARGS__)
 #endif
 
-#define me(v)    (&(struct { typeof(v) _; }){(v)})
-#define as(v, T) ((T)(v))
-#define rs(...)  #__VA_ARGS__
+#define as(v, T)         ((T)(v))
+#define rs(...)          #__VA_ARGS__
+#define me(type, arg...) (&(type){arg})
 
 #define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 #define container_of(ptr, type, member)                                                            \
