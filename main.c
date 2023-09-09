@@ -2,20 +2,17 @@
 #include <threads.h>
 
 /* libs */
-// #include "buf.h"
-// #include "fs.h"
-// #include "list.h"
-// #include "map.h"
-// #include "queue.h"
-// #include "sock.h"
-// #include "stack.h"
-// #include "str.h"
-#include "u.h"
-// #include "vec.h"
-// #include "obj.h"
 #include "avl.h"
-// #include "queue.h"
-// #include "stack.h"
+#include "buf.h"
+#include "fs.h"
+#include "map.h"
+#include "obj.h"
+#include "queue.h"
+#include "sock.h"
+#include "stack.h"
+#include "str.h"
+#include "u.h"
+#include "vec.h"
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -36,8 +33,6 @@ void boo() {
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-#include "queue.h"
-
 /* tpool - thread pool */
 typedef fnt(tpool_task_fn, void, any_t);
 typedef any_t tpool_task_arg_t;
@@ -54,34 +49,27 @@ typedef struct {
   queue(tpool_task_t) tasks;
 } tpool_worker_t;
 
+int tpool_worker_start(any_t args) {
+
+  return 0;
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  int a[123] = {0};
+  buf_t b = buf_new(10);
 
-  printf("%zu", ARRAY_SIZE(a));
-
-  avl(int) t = avl_new(int, fn_cmp_use(int32));
-
-  inf("len %zu", avl_len(t));
-
-  for (size_t i = 0; i < 36; i++) {
-    avl_push(t, i);
+  each(i, 0, 10, 1) {
+    buf_push(b, me(int, 32));
   }
 
-  inf("len %zu", avl_len(t));
+  int a = 0;
 
-  avl_for(t) {
-    inf("%d", t->item);
-  }
+  buf_hex(b);
 
-  for (size_t i = 0; i < 36; i++) {
-    avl_pop(t, i);
-  }
+  buf_pop(b, &a);
 
-  inf("len %zu", avl_len(t));
-
-  avl_cleanup(t);
+  buf_hex(b);
 
   return 0;
 }
