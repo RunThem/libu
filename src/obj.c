@@ -19,19 +19,19 @@
  * } st_t;
  *
  * void st_set(int num) {
- *   obj_self(st_t, self);
+ *   obj_self(st_t*, self);
  *
  *   self->num = num;
  * }
  *
  * int st_get(void) {
- *   obj_self(st_t, self);
+ *   obj_self(st_t*, self);
  *
  *   return self->num;
  * }
  *
  * void st_sum(int a, int b, int c, int d, int e, int f, int g, int h, int k) {
- *   obj_self(st_t, self);
+ *   obj_self(st_t*, self);
  *
  *   self->num = a + b + c + d + e + f + g + h + k;
  * }

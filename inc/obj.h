@@ -10,7 +10,7 @@ static void __obj_call_fun(void) {
 
 #define obj_self(T, var)                                                                           \
   volatile uintptr_t __obj_##var = __OBJ_CLOFNNUM;                                                 \
-  typeof(T*)(var)                = any(__obj_##var);                                               \
+  typeof(T)(var)                 = any(__obj_##var);                                               \
   __obj_call_fun();
 
 #define obj_cleanup(method) u_free_if(any(method))
