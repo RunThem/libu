@@ -54,22 +54,46 @@ int tpool_worker_start(any_t args) {
   return 0;
 }
 
+typedef struct {
+  size_t len;
+  size_t cap;
+  c_str c_str;
+
+  void (*push_c_str)(const c_str);
+
+}* s2_t;
+
+void str_push_c_str(const c_str c_str);
+
+s2_t str_new() {
+  s2_t self = nullptr;
+
+  self = u_talloc(sizeof(*self), s2_t);
+
+  self->c_str = u_talloc(sizeof(char) * 16, c_str);
+
+  self->len = 0;
+  self->cap = 16;
+
+  obj_method(self, push_c_str, str_push_c_str);
+
+  return self;
+}
+
+void str_push_c_str(const c_str c_str) {
+  obj_self(s2_t, self);
+
+  inf_hex(self, sizeof(*self));
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  buf_t b = buf_new(10);
+  auto s = str_new();
 
-  each(i, 0, 10, 1) {
-    buf_push(b, me(int, 32));
-  }
+  inf_hex(s, sizeof(*s));
 
-  int a = 0;
-
-  buf_hex(b);
-
-  buf_pop(b, &a);
-
-  buf_hex(b);
+  s->push_c_str("32");
 
   return 0;
 }

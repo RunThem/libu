@@ -2,14 +2,21 @@
 
 #include <stdarg.h>
 
+#if 0
+struct str_t {
+  size_t cap;
+  size_t len;
+  c_str c_str;
+};
+
 /* clang-format off */
 size_t __str_char_size(char c)     { return sizeof(char); }
 size_t __str_c_str_size(c_str s)   { return strlen(s); }
 size_t __str_string_size(str_t s)  { return s.len; }
 
-c_str  __str_char_start(void* c)   { return (c_str)c; }
-c_str  __str_c_str_start(void* s)  { return (c_str)(*(c_str*)s); }
-c_str  __str_string_start(void* s) { return (c_str)((*(str_t*)s).c_str); }
+c_str  __str_char_start(char* s)    { return s; }
+c_str  __str_c_str_start(c_str * s) { return *s; }
+c_str  __str_string_start(str_t* s) { return (*s).c_str; }
 /* clang-format on */
 
 static size_t __str_cap(size_t size) {
@@ -23,23 +30,19 @@ static size_t __str_cap(size_t size) {
 }
 
 str_t __str_from(c_str cstr, size_t len) {
-  ret_t code = 0;
-  str_t self = {0};
+  struct str_t* self = nullptr;
 
-  u_ret_if(cstr == nullptr, self);
-  u_ret_if(len == 0, self);
+  u_assert(cstr == nullptr);
 
-  code = __str_init(&self, len);
-  u_err_if(code != 0);
+  self = u_talloc(sizeof(struct str_t), struct str_t*);
+  u_mem_if(self);
 
   __str_push(&self, 0, cstr, len);
 
-  return self;
+  return as(&self->len, str_t);
 
 err:
-  bzero(&self, sizeof(str_t));
-
-  return self;
+  return nullptr;
 }
 
 str_t __str_fromf(c_str fmt, ...) {
@@ -49,7 +52,7 @@ str_t __str_fromf(c_str fmt, ...) {
   size_t len     = 0;
   va_list ap     = {0};
 
-  u_ret_if(fmt == nullptr, self);
+  u_assert(fmt == nullptr);
 
   code = __str_init(&self, 0);
   u_err_if(code != 0);
@@ -66,24 +69,6 @@ err:
   bzero(&self, sizeof(str_t));
 
   return self;
-}
-
-ret_t __str_init(any_t _self, size_t cap) {
-  str_t* self = as(_self, str_t*);
-
-  u_ret_if(_self == nullptr, -1);
-
-  self->len = 0;
-  self->cap = cap + 1;
-
-  self->c_str = u_calloc(self->cap, sizeof(char));
-  u_mem_if(self->c_str);
-
-  return 0;
-
-err:
-  bzero(self, sizeof(str_t));
-  return -2;
 }
 
 ret_t __str_resize(any_t _self, size_t cap) {
@@ -299,7 +284,7 @@ size_t __str_count(any_t _self, c_str cstr, size_t len) {
   return count;
 }
 
-#if 0
+#  if 0
 
 bool __str_contain(str_t* str, c_str c_string, size_t len) {
   return __str_find(str, c_string, len, 0) != -1;
@@ -430,5 +415,7 @@ int __str_trim(str_t* str, c_str c_string, size_t len) {
 
   return 0;
 }
+
+#  endif
 
 #endif
