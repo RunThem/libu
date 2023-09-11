@@ -4,11 +4,11 @@
 /* libs */
 #include "avl.h"
 #include "buf.h"
-#include "fs.h"
+// #include "fs.h"
 #include "map.h"
 #include "obj.h"
 #include "queue.h"
-#include "sock.h"
+// #include "sock.h"
 #include "stack.h"
 #include "str.h"
 #include "u.h"
@@ -54,46 +54,106 @@ int tpool_worker_start(any_t args) {
   return 0;
 }
 
+/*
+ * string
+ * */
+
+typedef const char* str;
+
 typedef struct {
   size_t len;
   size_t cap;
-  c_str c_str;
+  str str;
+} string_t;
 
-  void (*push_c_str)(const c_str);
+static map(str, string_t) stbl; /* string table */
 
-}* s2_t;
+static fn_eq_def(str, str, x == y);
 
-void str_push_c_str(const c_str c_str);
+void stbl_init() {
+  string_t null = {0, 0, nullptr}; /* nullptr */
 
-s2_t str_new() {
-  s2_t self = nullptr;
+  stbl = map_new(str, string_t, fn_eq_use(str), MAP_INT_HASH_FN);
 
-  self = u_talloc(sizeof(*self), s2_t);
-
-  self->c_str = u_talloc(sizeof(char) * 16, c_str);
-
-  self->len = 0;
-  self->cap = 16;
-
-  obj_method(self, push_c_str, str_push_c_str);
-
-  return self;
+  map_push(stbl, nullptr, null);
 }
 
-void str_push_c_str(const c_str c_str) {
-  obj_self(s2_t, self);
+str string_new(str c_str) {
+  string_t self = {0};
+  size_t len    = 0;
 
-  inf_hex(self, sizeof(*self));
+  self.str = u_talloc(sizeof(char) * 16, str);
+  u_mem_if(self.str);
+
+  self.len = 0;
+  self.cap = 16;
+
+  map_push(stbl, self.str, self);
+
+  return self.str;
+
+err:
+  return nullptr;
+}
+
+#define string_append(str, arg...) __string_append(str, arg, nullptr)
+str __string_append(str self, ...) {
+  return nullptr;
+}
+
+void inf_bit(const uint8_t* buf, size_t size) {
+#define bit(byte, n) (((byte) >> (n)) & 1)
+  uint8_t byte = 0;
+
+  fprintf(stderr, "%p, %zu: \n", buf, size);
+  for (ssize_t i = as(size, ssize_t) - 1; i >= 0; i--) {
+    byte = buf[i];
+
+    fprintf(stderr,
+            "    %u%u%u%u%u%u%u%u",
+            bit(byte, 7),
+            bit(byte, 6),
+            bit(byte, 7),
+            bit(byte, 4),
+            bit(byte, 3),
+            bit(byte, 2),
+            bit(byte, 1),
+            bit(byte, 0));
+
+    if (i != 0 && (i + 1) % 2) {
+      fprintf(stderr, "\n");
+    } else {
+      fprintf(stderr, " ");
+    }
+  }
+
+  fprintf(stderr, "\n");
 }
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  auto s = str_new();
+  stbl_init();
 
-  inf_hex(s, sizeof(*s));
+  str msg = "hello world";
+  inf("msg is %p", msg);
 
-  s->push_c_str("32");
+  inf_bit((uint8_t*)&msg, sizeof(any_t));
+
+  inf("%s", msg);
+
+  // msg = (str)((uintptr_t)msg | 0x8000'0000'0000'0000);
+  inf_bit((uint8_t*)&msg, sizeof(any_t));
+
+  inf("%s", msg);
+
+  // map_debug(stbl);
+
+  auto str = string_new("hello world");
+
+  inf("%s", str);
+
+  string_append(str, "fjei", 'c');
 
   return 0;
 }

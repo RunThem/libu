@@ -30,7 +30,7 @@ typedef fnt(map_eq_fn, bool, const void*, const void*);
 
 #define __map_key(map, _key) (map)->key = (_key)
 #define __map_val(map, _val)                                                                       \
-  *as(any(map) + sizeof((map)->key) + sizeof((map)->val), typeof((map)->val)) = (_val)
+  *as(any(map) + sizeof((map)->key) + sizeof(any_t), typeof((map)->val)) = (_val)
 
 /*************************************************************************************************
  * Create & Clone
