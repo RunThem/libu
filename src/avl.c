@@ -1,4 +1,5 @@
 #include "avl.h"
+
 #include "queue.h"
 
 /* clang-format off */
@@ -432,11 +433,29 @@ bool __avl_empty(any_t _self) {
   return self_of(_self)->len == 0;
 }
 
-void __avl_at(any_t _self) {
-  ret_t result = 0;
+bool __avl_exist(any_t _self) {
   avl_t* self  = self_of(_self);
   node_t* node = self->root;
   any_t item   = _self;
+  ret_t result = 0;
+
+  while (node) {
+    result = self->cmp_fn(item, avl_item(node));
+    if (result == 0) {
+      break;
+    }
+
+    node = (result < 0) ? node->left : node->right;
+  }
+
+  return node != nullptr;
+}
+
+void __avl_at(any_t _self) {
+  avl_t* self  = self_of(_self);
+  node_t* node = self->root;
+  any_t item   = _self;
+  ret_t result = 0;
 
   while (node) {
     result = self->cmp_fn(item, avl_item(node));
@@ -451,12 +470,12 @@ void __avl_at(any_t _self) {
 }
 
 void __avl_pop(any_t _self) {
-  ret_t result   = 0;
   avl_t* self    = self_of(_self);
   node_t* node   = self->root;
   node_t* parent = nullptr;
   node_t* tmp    = nullptr;
   any_t item     = _self;
+  ret_t result   = 0;
 
   while (node) {
     result = self->cmp_fn(item, avl_item(node));
@@ -483,12 +502,12 @@ void __avl_pop(any_t _self) {
 }
 
 ret_t __avl_push(any_t _self) {
-  ret_t result   = 0;
   avl_t* self    = self_of(_self);
   node_t** link  = &self->root;
   node_t* parent = nullptr;
   node_t* node   = nullptr;
   any_t item     = _self;
+  ret_t result   = 0;
 
   while (*link) {
     parent = *link;
@@ -506,6 +525,8 @@ ret_t __avl_push(any_t _self) {
   self->len++;
 
   __avl_push_rebalance(self, node);
+
+  return 0;
 
 err:
   return -1;
@@ -538,7 +559,7 @@ static void __avl_debug(node_t* node, int depth, int flag) {
   }
 
   printf("%c ", (flag == 0) ? '@' : (flag == 1) ? 'L' : 'R');
-  printf("{%p, %zu}, %d\n", node, node->height, *as(avl_item(node), int*));
+  printf("{%p, %zu}, %p\n", node, node->height, *as(avl_item(node), any_t*));
 
   if (node->left) {
     __avl_debug(node->left, depth + 4, 1);
