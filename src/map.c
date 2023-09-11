@@ -315,6 +315,27 @@ bool __map_empty(any_t _self) {
   return self_of(_self)->len == 0;
 }
 
+bool __map_exist(any_t _self) {
+  map_t* self      = self_of(_self);
+  any_t key        = nullptr;
+  map_node_t* node = nullptr;
+  map_node_t* list = nullptr;
+  hash_t hash      = 0;
+
+  key = _self + sizeof(any_t);
+
+  hash = self->hash_fn(key, self->ksize);
+  list = &self->buckets[hash % bucket_sizes[self->bs]];
+
+  for (node = list->next; node->next != nullptr; node = node->next) {
+    if (hash == node->hash && self->eq_fn(map_key(self, node), key)) {
+      break;
+    }
+  }
+
+  return node->next != nullptr;
+}
+
 any_t __map_at(any_t _self) {
   map_t* self      = self_of(_self);
   any_t key        = nullptr;

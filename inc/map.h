@@ -66,6 +66,9 @@ size_t __map_len(any_t _self);
 bool __map_empty(any_t _self);
 #define map_empty(map) __map_empty(map)
 
+bool __map_exist(any_t _self);
+#define map_exist(map, _key) (__map_key(map, _key), __map_exist(map))
+
 any_t __map_at(any_t _self);
 #define map_at(map, _key) (*(__map_key(map, _key), as(__map_at(map), typeof((map)->val))))
 

@@ -278,5 +278,13 @@ int main(int argc, const char** argv) {
   thrd_join(th4, &res);
 #endif
 
+  map(int, char) m = map_new(int, char, fn_eq_use(int32), MAP_FNV_64_HASH_FN);
+
+  inf("%d", map_exist(m, 3));
+
+  map_push(m, 3, 'c');
+
+  inf("%d", map_exist(m, 3));
+
   return 0;
 }
