@@ -14,6 +14,12 @@
 #include "u.h"
 #include "vec.h"
 
+#include <stdatomic.h>
+#include <sys/time.h>
+#include <threads.h>
+#include <time.h>
+#include <unistd.h>
+
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
 #undef inf
@@ -58,6 +64,7 @@ int tpool_worker_start(any_t args) {
  * string
  * */
 
+#if 0
 typedef const char* str;
 
 typedef struct {
@@ -96,10 +103,12 @@ err:
   return nullptr;
 }
 
-#define string_append(str, arg...) __string_append(str, arg, nullptr)
+#  define string_append(str, arg...) __string_append(str, arg, nullptr)
 str __string_append(str self, ...) {
   return nullptr;
 }
+
+#endif
 
 void inf_bit(const uint8_t* buf, size_t size) {
 #define bit(byte, n) (((byte) >> (n)) & 1)
@@ -130,10 +139,45 @@ void inf_bit(const uint8_t* buf, size_t size) {
   fprintf(stderr, "\n");
 }
 
+atomic_flag flag = ATOMIC_FLAG_INIT;
+
+int func(void*) {
+
+  while (atomic_flag_test_and_set(&flag)) {
+    inf("lock");
+  };
+
+  inf("unlock");
+  atomic_flag_clear(&flag);
+
+  return 0;
+}
+
+int test_str(void*) {
+  str s   = nullptr;
+  str tmp = nullptr;
+
+  for (size_t i = 100'0000; i > 0; i--) {
+    if (i % 2 == 0) {
+      s = str_from("hello");
+    } else {
+      s = str_from(s);
+    }
+
+    assert(s != tmp);
+    assert(!strcmp(s, "hello"));
+
+    tmp = s;
+  }
+
+  return 0;
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  stbl_init();
+#if 0
+   stbl_init();
 
   str msg = "hello world";
   inf("msg is %p", msg);
@@ -146,14 +190,93 @@ int main(int argc, const char** argv) {
   inf_bit((uint8_t*)&msg, sizeof(any_t));
 
   inf("%s", msg);
+#endif
 
   // map_debug(stbl);
 
+#if 0
   auto str = string_new("hello world");
 
   inf("%s", str);
 
   string_append(str, "fjei", 'c');
+#endif
+
+#if 0
+  thrd_t th1 = {};
+
+  atomic_flag_test_and_set(&flag);
+
+  thrd_create(&th1, func, nullptr);
+
+  sleep(3);
+
+  atomic_flag_clear(&flag);
+
+  int res;
+
+  thrd_join(th1, &res);
+#endif
+
+  stbl_init();
+
+#if 1
+  auto s2 = str_from("hello world!");
+  inf("s2 is %p, %s", s2, s2);
+
+  auto s3 = str_fromf("<%s>", s2);
+  inf("s3 is %p, %s", s3, s3);
+
+  str_cleanup(s2);
+  str_cleanup(s3);
+
+#endif
+
+  stbl_cleanup();
+#if 0
+  thrd_t th1 = {};
+  thrd_t th2 = {};
+  thrd_t th3 = {};
+  thrd_t th4 = {};
+
+  thrd_create(&th1, test_str, nullptr);
+  thrd_create(&th2, test_str, nullptr);
+  thrd_create(&th3, test_str, nullptr);
+  thrd_create(&th4, test_str, nullptr);
+
+  /*
+   * 1 thread:
+   * ________________________________________________________
+   * Executed in  381.55 millis    fish           external
+   * usr time  344.19 millis    0.00 millis  344.19 millis
+   * sys time   37.66 millis    1.65 millis   36.02 millis
+   *
+   * 2 thread:
+   * ________________________________________________________
+   * Executed in    1.19 secs    fish           external
+   * usr time    2.36 secs    1.26 millis    2.36 secs
+   * sys time    0.00 secs    0.35 millis    0.00 secs
+   *
+   * 3 thread:
+   * ________________________________________________________
+   * Executed in    2.02 secs    fish           external
+   * usr time    5.91 secs    0.00 millis    5.91 secs
+   * sys time    0.01 secs    1.77 millis    0.01 secs
+   *
+   * 4 thread:
+   * ________________________________________________________
+   * Executed in    3.09 secs    fish           external
+   * usr time   12.09 secs    1.28 millis   12.08 secs
+   * sys time    0.03 secs    0.36 millis    0.03 secs
+   * */
+
+  int res;
+
+  thrd_join(th1, &res);
+  thrd_join(th2, &res);
+  thrd_join(th3, &res);
+  thrd_join(th4, &res);
+#endif
 
   return 0;
 }

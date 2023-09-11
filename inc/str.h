@@ -2,12 +2,17 @@
 
 #include "u.h"
 
-typedef char* c_str;
-typedef struct {
-  size_t cap;
-  size_t len;
-  c_str c_str;
-} str_t;
+typedef const char* str;
+typedef char* mut_str;
+
+void stbl_init(void);
+void stbl_cleanup(void);
+
+str str_from(str string);
+
+str str_fromf(str format, ...);
+
+void str_cleanup(str string);
 
 #if 0
 
