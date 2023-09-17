@@ -244,8 +244,8 @@ static node_t* __avl_pop_left_or_right(avl_t* self, node_t* node) {
 static void __avl_pop_rebalance(avl_t* self, node_t* node) {
   int hl;
   int hr;
-  int height;
   int diff;
+  size_t height;
 
   while (node) {
     hl     = avl_lh(node);
@@ -270,10 +270,10 @@ static void __avl_pop_rebalance(avl_t* self, node_t* node) {
 }
 
 static void __avl_push_rebalance(avl_t* self, node_t* node) {
-  int diff   = 0;
-  int height = 0;
-  int hr     = 0;
-  int hl     = 0;
+  int hr        = 0;
+  int hl        = 0;
+  int diff      = 0;
+  size_t height = 0;
 
   for (node = node->parent; node != nullptr; node = node->parent) {
     hl     = avl_lh(node);
