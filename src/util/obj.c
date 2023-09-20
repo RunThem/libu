@@ -37,7 +37,7 @@
  * }
  *
  * st_t* st_new() {
- *   st_t* self = u_talloc(sizeof(st_t), st_t*);
+ *   st_t* self = u_zalloc(sizeof(st_t));
  *   u_mem_if(self);
  *
  *   obj_method(self, sum, st_sum);

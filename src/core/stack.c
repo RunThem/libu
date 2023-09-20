@@ -52,7 +52,7 @@ any_t __stack_new(size_t itsize, size_t cap) {
 
   u_assert(itsize == 0);
 
-  self = u_talloc(sizeof(stack_t) + itsize, stack_t*);
+  self = u_zalloc(sizeof(stack_t) + itsize);
   u_mem_if(self);
 
   self->items = u_zalloc(itsize * cap);

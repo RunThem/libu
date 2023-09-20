@@ -111,7 +111,7 @@ any_t __vec_new(size_t itsize, size_t cap) {
 
   u_assert(itsize == 0);
 
-  self = u_talloc(sizeof(vec_t) + itsize, vec_t*);
+  self = u_zalloc(sizeof(vec_t) + itsize);
   u_mem_if(self);
 
   cap = (cap < U_VEC_CAP) ? U_VEC_CAP : cap;

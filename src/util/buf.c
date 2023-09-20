@@ -35,7 +35,7 @@ err:
 any_t __buf_new(size_t cap) {
   u_buf_t self = nullptr;
 
-  self = u_talloc(sizeof(struct buf_t), u_buf_t);
+  self = u_zalloc(sizeof(struct buf_t));
   u_mem_if(self);
 
   self->c_buf = u_zalloc(cap);

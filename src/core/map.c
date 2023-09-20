@@ -123,7 +123,7 @@ static u_hash_t map_int_hash(const uint8_t* ptr, size_t len) {
 static map_node_t* __map_node(map_t* self, any_t key, any_t val) {
   map_node_t* node = nullptr;
 
-  node = u_talloc(sizeof(map_node_t) + self->ksize + self->vsize, map_node_t*);
+  node = u_zalloc(sizeof(map_node_t) + self->ksize + self->vsize);
   u_mem_if(node);
 
   node->hash = self->hash_fn(key, self->ksize);
@@ -490,14 +490,14 @@ void __map_debug(any_t _self) {
     inf("buckets[%zu] @%zu", i, list->hash);
 
     for (node = list->next; node->next != nullptr; node = node->next) {
-      __prt("    %p {%p, %d, '%c'}\n",
-            node,
-            node->next,
-            *as(map_key(self, node), int*),
-            *as(map_val(self, node), char*));
+      println("    %p {%p, %d, '%c'}",
+              node,
+              node->next,
+              *as(map_key(self, node), int*),
+              *as(map_val(self, node), char*));
     }
 
-    __prt("    %p {%p, %zu}\n", node, node->next, node->hash);
+    println("    %p {%p, %zu}", node, node->next, node->hash);
   }
 }
 #endif

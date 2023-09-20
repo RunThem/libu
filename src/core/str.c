@@ -50,7 +50,7 @@ static str_t* str_new(size_t cap) {
   str_t* self = nullptr;
 
   cap  = cap < 16 ? 16 : cap < 10240 ? cap * 2 : cap + 1024;
-  self = u_talloc(sizeof(str_t) + cap + 1, str_t*);
+  self = u_zalloc(sizeof(str_t) + cap + 1);
   u_mem_if(self);
 
   self->len = 0;

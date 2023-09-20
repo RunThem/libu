@@ -54,7 +54,7 @@ any_t __queue_new(size_t itsize, size_t cap) {
 
   u_assert(itsize == 0);
 
-  self = u_talloc(sizeof(queue_t) + itsize, queue_t*);
+  self = u_zalloc(sizeof(queue_t) + itsize);
   u_mem_if(self);
 
   self->items = u_zalloc(itsize * cap);
