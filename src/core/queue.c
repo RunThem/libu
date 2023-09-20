@@ -116,7 +116,7 @@ void __queue_peek(any_t _self) {
   queue_t* self = self_of(_self);
   any_t item    = _self;
 
-  u_noret_if(self->len == 0);
+  u_nonret_if(self->len == 0);
 
   memcpy(item, self->items + self->s_idx * self->itsize, self->itsize);
 }
@@ -125,7 +125,7 @@ void __queue_pop(any_t _self) {
   queue_t* self = self_of(_self);
   any_t item    = _self;
 
-  u_noret_if(self->len == 0);
+  u_nonret_if(self->len == 0);
 
   if (self->s_idx >= self->cap / 2) {
     memmove(self->items, self->items + self->s_idx * self->itsize, self->len * self->itsize);

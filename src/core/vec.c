@@ -194,7 +194,7 @@ void __vec_pop(any_t _self, size_t idx) {
   any_t point = nullptr;
 
   u_assert(self == nullptr);
-  u_noret_if(idx >= self->len);
+  u_nonret_if(idx >= self->len);
 
   if (idx != self->len - 1) {
     point = self->items + self->itsize * idx;

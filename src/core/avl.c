@@ -386,7 +386,7 @@ void __avl_clear(any_t _self) {
   avl_node_t* node           = nullptr;
   u_queue_t(avl_node_t*) que = nullptr;
 
-  u_noret_if(self->len == 0);
+  u_nonret_if(self->len == 0);
 
   que = u_queue_new(avl_node_t*);
   u_queue_push(que, self->root);
@@ -552,7 +552,7 @@ bool __avl_range(any_t _self, bool flag) {
 
 #ifndef NDEBUG
 static void __avl_debug_dump(avl_node_t* node, int depth, int flag) {
-  u_noret_if(node == nullptr);
+  u_nonret_if(node == nullptr);
 
   for (size_t i = 0; i < depth; i++) {
     printf(" ");

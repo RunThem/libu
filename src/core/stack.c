@@ -106,7 +106,7 @@ void __stack_peek(any_t _self) {
   stack_t* self = self_of(_self);
   any_t item    = _self;
 
-  u_noret_if(self->len == 0);
+  u_nonret_if(self->len == 0);
 
   memcpy(item, self->items + (self->len - 1) * self->itsize, self->itsize);
 }
@@ -115,7 +115,7 @@ void __stack_pop(any_t _self) {
   stack_t* self = self_of(_self);
   any_t item    = _self;
 
-  u_noret_if(self->len == 0);
+  u_nonret_if(self->len == 0);
 
   memcpy(item, self->items + (self->len - 1) * self->itsize, self->itsize);
   self->len--;

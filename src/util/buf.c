@@ -98,8 +98,8 @@ void __buf_peek(any_t _self, any_t mem, size_t len) {
 
   u_assert(mem == nullptr);
 
-  u_noret_if(self->c_buf == nullptr);
-  u_noret_if(self->len < len);
+  u_nonret_if(self->c_buf == nullptr);
+  u_nonret_if(self->len < len);
 
   memcpy(mem, self->c_buf + self->len - len, len);
 }
@@ -109,8 +109,8 @@ void __buf_pop(any_t _self, any_t mem, size_t len) {
 
   u_assert(mem == nullptr);
 
-  u_noret_if(self->c_buf == nullptr);
-  u_noret_if(self->len < len);
+  u_nonret_if(self->c_buf == nullptr);
+  u_nonret_if(self->len < len);
 
   memcpy(mem, self->c_buf + self->len - len, len);
   self->len -= len;
