@@ -2,7 +2,7 @@
 #include <sys/user.h>
 
 /* */
-#include "obj.h"
+#include "util/obj.h"
 
 /*
  * -[clofn](https://github.com/yulon/clofn)
@@ -133,7 +133,7 @@ any_t __obj_method(any_t prototype, any_t data) {
     uintptr_t data;
     uint8_t jmp;
     uintptr_t addr;
-  } asm_code = {.jmp = 0xE9};
+  } asm_code    = {.jmp = 0xE9};
   /* ihsize = offset + sizeof(any_t) * 2 + 1; */
 
 #endif

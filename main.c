@@ -1,5 +1,10 @@
 
+
+#include <stdatomic.h>
+#include <sys/time.h>
 #include <threads.h>
+#include <time.h>
+#include <unistd.h>
 
 /* libs */
 #include "avl.h"
@@ -13,12 +18,6 @@
 #include "str.h"
 #include "u.h"
 #include "vec.h"
-
-#include <stdatomic.h>
-#include <sys/time.h>
-#include <threads.h>
-#include <time.h>
-#include <unistd.h>
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -278,13 +277,7 @@ int main(int argc, const char** argv) {
   thrd_join(th4, &res);
 #endif
 
-  map(int, char) m = map_new(int, char, fn_eq_use(int32), MAP_FNV_64_HASH_FN);
-
-  inf("%d", map_exist(m, 3));
-
-  map_push(m, 3, 'c');
-
-  inf("%d", map_exist(m, 3));
+  mi_stats_print(nullptr);
 
   return 0;
 }

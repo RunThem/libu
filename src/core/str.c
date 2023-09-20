@@ -1,10 +1,10 @@
-#include "str.h"
-
-#include "avl.h"
-
 #include <stdarg.h>
 #include <stdatomic.h>
 #include <threads.h>
+
+/* libs */
+#include "core/avl.h"
+#include "core/str.h"
 
 typedef struct {
   size_t cap;
@@ -113,6 +113,10 @@ err:
   return nullptr;
 }
 
+void str_clear(str string) {
+  u_assert(string == nullptr);
+}
+
 void str_cleanup(str string) {
   u_assert(string == nullptr);
 
@@ -125,6 +129,27 @@ void str_cleanup(str string) {
   }
 
   stbl_unlock();
+}
+
+str str_append(str self, str string) {
+  str_t* nstr = nullptr;
+  size_t cap  = 0;
+  size_t len  = 0;
+  ret_t code  = 0;
+
+  cap = self_of(self)->cap;
+
+  stbl_lock();
+  len = stbl_exist(string) ? self_of(string)->len : strlen(string); /* long time */
+  stbl_unlock();
+
+  if (cap - self_of(self)->len > len) {
+    strncpy((mut_str)self + self_of(self)->len, string, len);
+  } else {
+    nstr = str_new(self_of(self)->len + len);
+  }
+
+  return 0;
 }
 
 #if 0

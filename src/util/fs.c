@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 /* libs */
-#include "fs.h"
+#include "util/fs.h"
 
 off_t fs_size(c_str file) {
   struct stat st = {0};
