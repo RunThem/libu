@@ -56,17 +56,17 @@ bool __vec_empty(any_t _self);
 any_t __vec_at(any_t _self, size_t idx);
 #define u_vec_at(vec, idx)  (*(as(__vec_at(vec, idx), typeof((vec)->item))))
 #define u_vec_at_front(vec) (*(as(__vec_at(vec, 0), typeof((vec)->item))))
-#define u_vec_at_back(vec)  (*(as(__vec_at(vec, vec_len(vec) - 1), typeof((vec)->item))))
+#define u_vec_at_back(vec)  (*(as(__vec_at(vec, __vec_len(vec) - 1), typeof((vec)->item))))
 
 void __vec_pop(any_t _self, size_t idx);
 #define u_vec_pop(vec, idx)  __vec_pop(vec, idx)
 #define u_vec_pop_front(vec) __vec_pop(vec, 0)
-#define u_vec_pop_back(vec)  __vec_pop(vec, vec_len(vec) - 1)
+#define u_vec_pop_back(vec)  __vec_pop(vec, __vec_len(vec) - 1)
 
 ret_t __vec_push(any_t _self, size_t idx);
 #define u_vec_push(vec, idx, _item)  (__vec_item(vec) = (_item), __vec_push(vec, idx))
 #define u_vec_push_front(vec, _item) (__vec_item(vec) = (_item), __vec_push(vec, 0))
-#define u_vec_push_back(vec, _item)  (__vec_item(vec) = (_item), __vec_push(vec, vec_len(vec)))
+#define u_vec_push_back(vec, _item)  (__vec_item(vec) = (_item), __vec_push(vec, __vec_len(vec)))
 
 /*************************************************************************************************
  * Iterator
@@ -74,7 +74,7 @@ ret_t __vec_push(any_t _self, size_t idx);
 bool __vec_range(any_t _self, bool flag);
 #define u_vec_for(vec, i) for (size_t i = ((vec)->item = nullptr, 0); __vec_range(vec, true); (i)++)
 #define u_vec_rfor(vec, i)                                                                         \
-  for (size_t i = ((vec)->item = nullptr, vec_len(vec) - 1); __vec_range(vec, false); (i)--)
+  for (size_t i = ((vec)->item = nullptr, __vec_len(vec) - 1); __vec_range(vec, false); (i)--)
 
 /*************************************************************************************************
  * Utils
