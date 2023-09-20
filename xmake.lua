@@ -79,7 +79,7 @@ target('u', function()
   set_kind('static')
   add_files('$(projectdir)/inc/__macro/func.c')
   add_files('$(projectdir)/src/**.c')
-  add_headerfiles('$(projectdir)/inc/**.h', { prefixdir = 'u' })
+  add_headerfiles('$(projectdir)/inc/(**.h)', { prefixdir = 'u' })
 
   if has_config('mimalloc') then
     add_packages('mimalloc')
