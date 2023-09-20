@@ -18,7 +18,7 @@ typedef struct {
   int opt_id;
   void* value;
   socklen_t value_len;
-} sock_opt;
+} u_sock_opt;
 
 /*
  * socket 配置文件
@@ -31,14 +31,14 @@ typedef struct {
 typedef struct {
   int fd;
 
-  c_str url;
+  u_str_t url;
   int listen;
 
   bool nonblock;
 
-  sock_opt opts[SOCK_MAX_OPTS];
+  u_sock_opt opts[SOCK_MAX_OPTS];
   size_t opts_len;
-} sock_conf_t;
+} u_sock_conf_t;
 
 typedef struct {
   socklen_t alen;
@@ -52,4 +52,4 @@ typedef struct {
 /*
  * 创建一个socket, .fd就是描述符
  * */
-int sock_open(sock_conf_t* conf);
+int u_sock_open(u_sock_conf_t* conf);

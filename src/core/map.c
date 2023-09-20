@@ -64,7 +64,7 @@ static size_t bucket_sizes[] = {
 typedef struct map_node_t map_node_t;
 struct map_node_t {
   map_node_t* next;
-  hash_t hash;
+  u_hash_t hash;
 };
 
 #define map_key(map, node) (any(node) + sizeof(map_node_t))
@@ -75,8 +75,8 @@ typedef struct {
   size_t vsize;
   size_t len;
 
-  map_hash_fn hash_fn;
-  map_eq_fn eq_fn;
+  u_map_hash_fn hash_fn;
+  u_map_eq_fn eq_fn;
 
   size_t bs; /* buckets size */
   map_node_t* buckets;
@@ -86,8 +86,8 @@ typedef struct {
 #define self_of(self) (assert((self) != nullptr), as((self) - sizeof(map_t), map_t*))
 
 /* fnv 64-bit hash function */
-static hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
-  hash_t hash = 14695981039346656037U;
+static u_hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
+  u_hash_t hash = 14695981039346656037U;
 
   for (size_t i = 0; i < len; ++i) {
     hash *= 1099511628211U;
@@ -98,19 +98,19 @@ static hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
 }
 
 /* int hash function */
-static hash_t map_int_hash(const uint8_t* ptr, size_t len) {
-  hash_t hash = 0;
+static u_hash_t map_int_hash(const uint8_t* ptr, size_t len) {
+  u_hash_t hash = 0;
 
   if (len == 1) {
-    hash = (hash_t)(*(uint8_t*)ptr);
+    hash = (u_hash_t)(*(uint8_t*)ptr);
   } else if (len == 2) {
-    hash = (hash_t)(*(uint16_t*)ptr);
+    hash = (u_hash_t)(*(uint16_t*)ptr);
   } else if (len == 4) {
-    hash = (hash_t)(*(uint32_t*)ptr);
+    hash = (u_hash_t)(*(uint32_t*)ptr);
   } else if (len == 8) {
-    hash = (hash_t)(*(uint64_t*)ptr);
+    hash = (u_hash_t)(*(uint64_t*)ptr);
   } else {
-    hash = (hash_t)ptr;
+    hash = (u_hash_t)ptr;
   }
 
   hash = (hash ^ (hash >> 31) ^ (hash >> 62)) * UINT64_C(0x319642b2d24d8ec3);
@@ -228,13 +228,13 @@ err:
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn hash_fn) {
+any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_fn hash_fn) {
   map_t* self = nullptr;
 
   u_assert(ksize == 0);
   u_assert(vsize == 0);
   u_assert(eq_fn == nullptr);
-  u_assert(hash_fn >= MAP_HASH_FN_MAX);
+  u_assert(hash_fn >= U_MAP_HASH_FN_MAX);
 
   self = u_zalloc(sizeof(map_t) + ksize + sizeof(any_t) + vsize);
   u_mem_if(self);
@@ -248,9 +248,9 @@ any_t __map_new(size_t ksize, size_t vsize, map_eq_fn eq_fn, enum u_map_hash_fn 
   self->eq_fn = eq_fn;
   self->bs    = 0;
 
-  if (hash_fn == MAP_FNV_64_HASH_FN) {
+  if (hash_fn == U_MAP_FNV_64_HASH_FN) {
     self->hash_fn = map_mem_hash;
-  } else if (hash_fn == MAP_INT_HASH_FN) {
+  } else if (hash_fn == U_MAP_INT_HASH_FN) {
     self->hash_fn = map_int_hash;
   }
 
@@ -320,7 +320,7 @@ bool __map_exist(any_t _self) {
   any_t key        = nullptr;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
-  hash_t hash      = 0;
+  u_hash_t hash    = 0;
 
   key = _self + sizeof(any_t);
 
@@ -341,7 +341,7 @@ any_t __map_at(any_t _self) {
   any_t key        = nullptr;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
-  hash_t hash      = 0;
+  u_hash_t hash    = 0;
 
   key = _self + sizeof(any_t);
 
@@ -368,7 +368,7 @@ void __map_pop(any_t _self) {
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
   map_node_t* prev = nullptr;
-  hash_t hash      = 0;
+  u_hash_t hash    = 0;
 
   key = _self + sizeof(any_t);
 
@@ -397,7 +397,7 @@ ret_t __map_push(any_t _self) {
   any_t val        = nullptr;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
-  hash_t hash      = 0;
+  u_hash_t hash    = 0;
   size_t idx       = 0;
 
   key = _self + sizeof(any_t);

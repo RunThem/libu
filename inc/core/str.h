@@ -2,17 +2,17 @@
 
 #include "u.h"
 
-typedef const char* str;
-typedef char* mut_str;
+typedef const char* u_str_t;
+typedef char* u_mut_str_t;
 
 void stbl_init(void);
 void stbl_cleanup(void);
 
-str str_from(str string);
+u_str_t str_from(u_str_t str);
 
-str str_fromf(str format, ...);
+u_str_t str_fromf(u_str_t fmt, ...);
 
-void str_cleanup(str string);
+void str_cleanup(u_str_t str);
 
 #if 0
 

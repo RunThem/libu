@@ -46,11 +46,11 @@
 /*************************************************************************************************
  * Private
  *************************************************************************************************/
-typedef struct node_t node_t;
-struct node_t {
-  node_t* left;
-  node_t* right;
-  node_t* parent;
+typedef struct avl_node_t avl_node_t;
+struct avl_node_t {
+  avl_node_t* left;
+  avl_node_t* right;
+  avl_node_t* parent;
   size_t height;
 };
 
@@ -68,15 +68,15 @@ struct avl_t {
   size_t itsize;
   size_t len;
 
-  avl_cmp_fn cmp_fn;
+  u_avl_cmp_fn cmp_fn;
 
-  node_t* root;
+  avl_node_t* root;
 };
 
 #define self_of(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
 
-static node_t* __avl_node(avl_t* self, node_t* parent, any_t item) {
-  node_t* node = u_zalloc(sizeof(node_t) + self->itsize);
+static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t item) {
+  avl_node_t* node = u_zalloc(sizeof(avl_node_t) + self->itsize);
   u_mem_if(node);
 
   node->left   = nullptr;
@@ -92,7 +92,8 @@ err:
   return nullptr;
 }
 
-static void __avl_child_replace(avl_t* self, node_t* parent, node_t* oldnode, node_t* newnode) {
+static void
+    __avl_child_replace(avl_t* self, avl_node_t* parent, avl_node_t* oldnode, avl_node_t* newnode) {
   if (!parent) {
     self->root = newnode;
     return;
@@ -105,9 +106,9 @@ static void __avl_child_replace(avl_t* self, node_t* parent, node_t* oldnode, no
   }
 }
 
-static node_t* __avl_rotate_left(avl_t* self, node_t* node) {
-  node_t* right  = node->right;
-  node_t* parent = node->parent;
+static avl_node_t* __avl_rotate_left(avl_t* self, avl_node_t* node) {
+  avl_node_t* right  = node->right;
+  avl_node_t* parent = node->parent;
 
   node->right = right->left;
   if (right->left) {
@@ -124,9 +125,9 @@ static node_t* __avl_rotate_left(avl_t* self, node_t* node) {
   return right;
 }
 
-static node_t* __avl_rotate_right(avl_t* self, node_t* node) {
-  node_t* left   = node->left;
-  node_t* parent = node->parent;
+static avl_node_t* __avl_rotate_right(avl_t* self, avl_node_t* node) {
+  avl_node_t* left   = node->left;
+  avl_node_t* parent = node->parent;
 
   node->left = left->right;
   if (left->right) {
@@ -142,10 +143,10 @@ static node_t* __avl_rotate_right(avl_t* self, node_t* node) {
   return left;
 }
 
-static node_t* __avl_fix_left(avl_t* self, node_t* node) {
-  int hl        = 0;
-  int hr        = 0;
-  node_t* right = node->right;
+static avl_node_t* __avl_fix_left(avl_t* self, avl_node_t* node) {
+  int hl            = 0;
+  int hr            = 0;
+  avl_node_t* right = node->right;
 
   hl = avl_lh(right);
   hr = avl_rh(right);
@@ -162,10 +163,10 @@ static node_t* __avl_fix_left(avl_t* self, node_t* node) {
   return node;
 }
 
-static node_t* __avl_fix_right(avl_t* self, node_t* node) {
-  int hl       = 0;
-  int hr       = 0;
-  node_t* left = node->left;
+static avl_node_t* __avl_fix_right(avl_t* self, avl_node_t* node) {
+  int hl           = 0;
+  int hr           = 0;
+  avl_node_t* left = node->left;
 
   hl = avl_lh(left);
   hr = avl_rh(left);
@@ -182,11 +183,11 @@ static node_t* __avl_fix_right(avl_t* self, node_t* node) {
   return node;
 }
 
-static node_t* __avl_pop_left_and_right(avl_t* self, node_t* node) {
-  node_t* old    = node;
-  node_t* parent = nullptr;
-  node_t* left   = nullptr;
-  node_t* child  = nullptr;
+static avl_node_t* __avl_pop_left_and_right(avl_t* self, avl_node_t* node) {
+  avl_node_t* old    = node;
+  avl_node_t* parent = nullptr;
+  avl_node_t* left   = nullptr;
+  avl_node_t* child  = nullptr;
 
   node = node->right;
   while ((left = node->left) != nullptr) {
@@ -221,9 +222,9 @@ static node_t* __avl_pop_left_and_right(avl_t* self, node_t* node) {
   return parent;
 }
 
-static node_t* __avl_pop_left_or_right(avl_t* self, node_t* node) {
-  node_t* child  = nullptr;
-  node_t* parent = nullptr;
+static avl_node_t* __avl_pop_left_or_right(avl_t* self, avl_node_t* node) {
+  avl_node_t* child  = nullptr;
+  avl_node_t* parent = nullptr;
 
   child = node->left;
   if (child == nullptr) {
@@ -240,7 +241,7 @@ static node_t* __avl_pop_left_or_right(avl_t* self, node_t* node) {
   return parent;
 }
 
-static void __avl_pop_rebalance(avl_t* self, node_t* node) {
+static void __avl_pop_rebalance(avl_t* self, avl_node_t* node) {
   int hl;
   int hr;
   int diff;
@@ -268,7 +269,7 @@ static void __avl_pop_rebalance(avl_t* self, node_t* node) {
   }
 }
 
-static void __avl_push_rebalance(avl_t* self, node_t* node) {
+static void __avl_push_rebalance(avl_t* self, avl_node_t* node) {
   int hr        = 0;
   int hl        = 0;
   int diff      = 0;
@@ -294,9 +295,9 @@ static void __avl_push_rebalance(avl_t* self, node_t* node) {
   }
 }
 
-static void __avl_next(avl_t* self, node_t** itor) {
-  node_t* node = *itor;
-  node_t* last = nullptr;
+static void __avl_next(avl_t* self, avl_node_t** itor) {
+  avl_node_t* node = *itor;
+  avl_node_t* last = nullptr;
 
   if (node == nullptr) {
     node = self->root;
@@ -324,9 +325,9 @@ static void __avl_next(avl_t* self, node_t** itor) {
   *itor = node;
 }
 
-static void __avl_prev(avl_t* self, node_t** itor) {
-  node_t* node = *itor;
-  node_t* last = nullptr;
+static void __avl_prev(avl_t* self, avl_node_t** itor) {
+  avl_node_t* node = *itor;
+  avl_node_t* last = nullptr;
 
   if (node == nullptr) {
     node = self->root;
@@ -357,7 +358,7 @@ static void __avl_prev(avl_t* self, node_t** itor) {
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __avl_new(size_t itsize, avl_cmp_fn cmp_fn) {
+any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
   u_assert(itsize == 0);
@@ -381,31 +382,31 @@ err:
  * Destruction
  *************************************************************************************************/
 void __avl_clear(any_t _self) {
-  avl_t* self        = self_of(_self);
-  node_t* node       = nullptr;
-  queue(node_t*) que = nullptr;
+  avl_t* self                = self_of(_self);
+  avl_node_t* node           = nullptr;
+  u_queue_t(avl_node_t*) que = nullptr;
 
   u_noret_if(self->len == 0);
 
-  que = queue_new(node_t*);
-  queue_push(que, self->root);
+  que = u_queue_new(avl_node_t*);
+  u_queue_push(que, self->root);
 
-  while (!queue_empty(que)) {
-    node = queue_peek(que);
+  while (!u_queue_empty(que)) {
+    node = u_queue_peek(que);
 
     if (node->left) {
-      queue_push(que, node->left);
+      u_queue_push(que, node->left);
     }
     if (node->right) {
-      queue_push(que, node->right);
+      u_queue_push(que, node->right);
     }
 
     u_free(node);
 
-    queue_pop(que);
+    u_queue_pop(que);
   }
 
-  queue_cleanup(que);
+  u_queue_cleanup(que);
 
   self->len = 0;
 }
@@ -433,10 +434,10 @@ bool __avl_empty(any_t _self) {
 }
 
 bool __avl_exist(any_t _self) {
-  avl_t* self  = self_of(_self);
-  node_t* node = self->root;
-  any_t item   = _self;
-  ret_t result = 0;
+  avl_t* self      = self_of(_self);
+  avl_node_t* node = self->root;
+  any_t item       = _self;
+  ret_t result     = 0;
 
   while (node) {
     result = self->cmp_fn(item, avl_item(node));
@@ -451,10 +452,10 @@ bool __avl_exist(any_t _self) {
 }
 
 void __avl_at(any_t _self) {
-  avl_t* self  = self_of(_self);
-  node_t* node = self->root;
-  any_t item   = _self;
-  ret_t result = 0;
+  avl_t* self      = self_of(_self);
+  avl_node_t* node = self->root;
+  any_t item       = _self;
+  ret_t result     = 0;
 
   while (node) {
     result = self->cmp_fn(item, avl_item(node));
@@ -469,12 +470,12 @@ void __avl_at(any_t _self) {
 }
 
 void __avl_pop(any_t _self) {
-  avl_t* self    = self_of(_self);
-  node_t* node   = self->root;
-  node_t* parent = nullptr;
-  node_t* tmp    = nullptr;
-  any_t item     = _self;
-  ret_t result   = 0;
+  avl_t* self        = self_of(_self);
+  avl_node_t* node   = self->root;
+  avl_node_t* parent = nullptr;
+  avl_node_t* tmp    = nullptr;
+  any_t item         = _self;
+  ret_t result       = 0;
 
   while (node) {
     result = self->cmp_fn(item, avl_item(node));
@@ -501,12 +502,12 @@ void __avl_pop(any_t _self) {
 }
 
 ret_t __avl_push(any_t _self) {
-  avl_t* self    = self_of(_self);
-  node_t** link  = &self->root;
-  node_t* parent = nullptr;
-  node_t* node   = nullptr;
-  any_t item     = _self;
-  ret_t result   = 0;
+  avl_t* self        = self_of(_self);
+  avl_node_t** link  = &self->root;
+  avl_node_t* parent = nullptr;
+  avl_node_t* node   = nullptr;
+  any_t item         = _self;
+  ret_t result       = 0;
 
   while (*link) {
     parent = *link;
@@ -535,9 +536,9 @@ err:
  * Iterator
  *************************************************************************************************/
 bool __avl_range(any_t _self, bool flag) {
-  avl_t* self   = self_of(_self);
-  any_t item    = _self;
-  node_t** itor = _self + self->itsize;
+  avl_t* self       = self_of(_self);
+  any_t item        = _self;
+  avl_node_t** itor = _self + self->itsize;
 
   u_ret_if(self->len == 0, false);
 
@@ -550,7 +551,7 @@ bool __avl_range(any_t _self, bool flag) {
 }
 
 #ifndef NDEBUG
-static void __avl_debug(node_t* node, int depth, int flag) {
+static void __avl_debug_dump(avl_node_t* node, int depth, int flag) {
   u_noret_if(node == nullptr);
 
   for (size_t i = 0; i < depth; i++) {
@@ -561,21 +562,21 @@ static void __avl_debug(node_t* node, int depth, int flag) {
   printf("{%p, %zu}, %p\n", node, node->height, *as(avl_item(node), any_t*));
 
   if (node->left) {
-    __avl_debug(node->left, depth + 4, 1);
+    __avl_debug_dump(node->left, depth + 4, 1);
   }
   if (node->right) {
-    __avl_debug(node->right, depth + 4, 2);
+    __avl_debug_dump(node->right, depth + 4, 2);
   }
 }
 
-void avl_debug(any_t _self) {
+void __avl_debug(any_t _self) {
   avl_t* self = self_of(_self);
 
   u_assert(self == nullptr);
 
   printf("avl is %p, nodes is %zu\n", self, self->len);
 
-  __avl_debug(self->root, 0, 0);
+  __avl_debug_dump(self->root, 0, 0);
   printf("\n");
 }
 #endif

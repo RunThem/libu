@@ -5,19 +5,20 @@ struct sock_url {
   int type;
   int protocol;
 
-  str_t addr;
+  u_str_t addr;
 
   in_port_t port;
 };
 
-static void sock_pack_url(c_str url, struct sock_url* url_res);
-static bool sock_set_opt(sock_conf_t* conf, int fd);
-static int sock_set_nonblock(sock_conf_t* conf);
-static int sock_open_ip(sock_conf_t* conf, struct sock_url* url);
-static int sock_open_unix(sock_conf_t* conf, struct sock_url* url);
+static void sock_pack_url(u_str_t url, struct sock_url* url_res);
+static bool sock_set_opt(u_sock_conf_t* conf, int fd);
+static int sock_set_nonblock(u_sock_conf_t* conf);
+static int sock_open_ip(u_sock_conf_t* conf, struct sock_url* url);
+static int sock_open_unix(u_sock_conf_t* conf, struct sock_url* url);
 
-static void sock_pack_url(c_str url, struct sock_url* url_res) {
-  c_str tmp = nullptr;
+static void sock_pack_url(u_str_t url, struct sock_url* url_res) {
+#if 0
+  u_str_t tmp = nullptr;
   if (strncmp(url, "tcp", 3) == 0) {
     url_res->type     = SOCK_STREAM;
     url_res->protocol = IPPROTO_TCP;
@@ -50,9 +51,10 @@ static void sock_pack_url(c_str url, struct sock_url* url_res) {
   } else {
     url_res->addr = str_from(url);
   }
+#endif
 }
 
-static bool sock_set_opt(sock_conf_t* conf, int fd) {
+static bool sock_set_opt(u_sock_conf_t* conf, int fd) {
   int ret = 0;
 
   for (size_t i = 0; i < conf->opts_len; i++) {
@@ -68,7 +70,7 @@ err:
   return false;
 }
 
-static int sock_set_nonblock(sock_conf_t* conf) {
+static int sock_set_nonblock(u_sock_conf_t* conf) {
   int ret   = 0;
   int flags = 0;
 
@@ -84,10 +86,10 @@ err:
   return ret;
 }
 
-static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
+static int sock_open_ip(u_sock_conf_t* conf, struct sock_url* url) {
   int fd                = -1;
   int ret               = 0;
-  str_t port            = {0};
+  u_str_t port          = {0};
   struct addrinfo hints = {0};
   struct addrinfo* res  = nullptr;
 
@@ -102,7 +104,7 @@ static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
 
   port = str_fromf("%u", url->port);
 
-  ret = getaddrinfo(url->addr.c_str, port.c_str, &hints, &res);
+  ret = getaddrinfo(url->addr, port, &hints, &res);
   u_err_if(ret != 0, err, "getaddrinfo() -> %d(%s)", ret, gai_strerror(ret));
 
   for (auto ai = res; ai != nullptr; ai = ai->ai_next) {
@@ -133,22 +135,23 @@ static int sock_open_ip(sock_conf_t* conf, struct sock_url* url) {
     }
   }
 
-  str_cleanup(&port);
+  str_cleanup(port);
   freeaddrinfo(res);
 
   conf->fd = fd;
   return 0;
 
 err:
-  str_cleanup(&port);
+  str_cleanup(port);
   freeaddrinfo(res);
 
   return ret;
 }
 
-static int sock_open_unix(sock_conf_t* conf, struct sock_url* url) {
+static int sock_open_unix(u_sock_conf_t* conf, struct sock_url* url) {
   int fd  = 0;
   int ret = 0;
+#if 0
 
   struct sockaddr_un addr;
   socklen_t addr_len = sizeof(addr);
@@ -182,30 +185,32 @@ static int sock_open_unix(sock_conf_t* conf, struct sock_url* url) {
 err:
   u_close_if(fd);
 
+#endif
+
   return ret;
 }
 
-int sock_open(sock_conf_t* conf) {
+int u_sock_open(u_sock_conf_t* conf) {
   int ret             = 0;
   struct sock_url url = {0};
 
   sock_pack_url(conf->url, &url);
 
   if (url.family == AF_LOCAL) {
-    inf("domain(AF_LOCAL), protocol(%d), addr(%s)", url.protocol, url.addr.c_str);
+    inf("domain(AF_LOCAL), protocol(%d), addr(%s)", url.protocol, url.addr);
 
     ret = sock_open_unix(conf, &url);
   } else {
     inf("domain(%d), protocol(%d), addr(%s), port(%d)",
         url.family,
         url.protocol,
-        url.addr.c_str,
+        url.addr,
         url.port);
 
     ret = sock_open_ip(conf, &url);
   }
 
-  str_cleanup(&url.addr);
+  str_cleanup(url.addr);
 
   if (ret == 0 && conf->nonblock) {
     ret = sock_set_nonblock(conf);

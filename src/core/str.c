@@ -14,8 +14,8 @@ typedef struct {
 
 #define self_of(self) (assert((self) != nullptr), as(container_of(self, str_t, str), str_t*))
 
+static u_avl_t(u_str_t) stbl  = nullptr;
 static atomic_flag flag       = ATOMIC_FLAG_INIT;
-static avl(str) stbl          = nullptr;
 static once_flag call_init    = ONCE_FLAG_INIT;
 static once_flag call_cleanup = ONCE_FLAG_INIT;
 
@@ -23,19 +23,19 @@ static once_flag call_cleanup = ONCE_FLAG_INIT;
   while (atomic_flag_test_and_set(&flag)) { }
 #define stbl_unlock() atomic_flag_clear(&flag)
 
-#define stbl_exist(str) avl_exist(stbl, str)
-#define stbl_add(str)   avl_push(stbl, str);
-#define stbl_del(str)   avl_pop(stbl, str);
+#define stbl_exist(str) u_avl_exist(stbl, str)
+#define stbl_add(str)   u_avl_push(stbl, str);
+#define stbl_del(str)   u_avl_pop(stbl, str);
 
-fn_eq_def(stbl_str, str, x == y);
-fn_cmp_def(stbl_str, str, x > y);
+fn_eq_def(stbl_str, u_str_t, x == y);
+fn_cmp_def(stbl_str, u_str_t, x > y);
 
 static void __stbl_init(void) {
-  stbl = avl_new(str, fn_cmp_use(stbl_str));
+  stbl = u_avl_new(u_str_t, fn_cmp_use(stbl_str));
 }
 
 static void __stbl_cleanup(void) {
-  avl_cleanup(stbl);
+  u_avl_cleanup(stbl);
 }
 
 void stbl_init(void) {
@@ -66,21 +66,21 @@ err:
   return nullptr;
 }
 
-str str_from(str string) {
+u_str_t str_from(u_str_t str) {
   str_t* self = nullptr;
   size_t len  = 0;
 
-  u_assert(string == nullptr);
+  u_assert(str == nullptr);
 
   stbl_lock();
-  len = stbl_exist(string) ? self_of(string)->len : strlen(string); /* long time */
+  len = stbl_exist(str) ? self_of(str)->len : strlen(str); /* long time */
   stbl_unlock();
 
   self = str_new(len);
   u_mem_if(self);
 
   self->len = len;
-  strncpy(self->str, string, len);
+  strncpy(self->str, str, len);
 
   return self->str;
 
@@ -88,17 +88,17 @@ err:
   return nullptr;
 }
 
-str str_fromf(str format, ...) {
+u_str_t str_fromf(u_str_t fmt, ...) {
   str_t* self    = nullptr;
   char buf[4096] = {0};
   va_list ap     = {0};
   size_t len     = 0;
   ret_t code     = 0;
 
-  u_assert(format == nullptr);
+  u_assert(fmt == nullptr);
 
   va_start(ap, format);
-  len = vsnprintf(buf, sizeof(buf), format, ap);
+  len = vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
 
   self = str_new(len);
@@ -113,25 +113,25 @@ err:
   return nullptr;
 }
 
-void str_clear(str string) {
-  u_assert(string == nullptr);
+void str_clear(u_str_t str) {
+  u_assert(str == nullptr);
 }
 
-void str_cleanup(str string) {
-  u_assert(string == nullptr);
+void str_cleanup(u_str_t str) {
+  u_assert(str == nullptr);
 
   stbl_lock();
 
-  if (stbl_exist(string)) {
-    stbl_del(string);
+  if (stbl_exist(str)) {
+    stbl_del(str);
 
-    u_free_if(self_of(string));
+    u_free_if(self_of(str));
   }
 
   stbl_unlock();
 }
 
-str str_append(str self, str string) {
+u_str_t str_append(u_str_t self, u_str_t str) {
   str_t* nstr = nullptr;
   size_t cap  = 0;
   size_t len  = 0;
@@ -140,11 +140,11 @@ str str_append(str self, str string) {
   cap = self_of(self)->cap;
 
   stbl_lock();
-  len = stbl_exist(string) ? self_of(string)->len : strlen(string); /* long time */
+  len = stbl_exist(str) ? self_of(str)->len : strlen(str); /* long time */
   stbl_unlock();
 
   if (cap - self_of(self)->len > len) {
-    strncpy((mut_str)self + self_of(self)->len, string, len);
+    strncpy((u_mut_str_t)self + self_of(self)->len, str, len);
   } else {
     nstr = str_new(self_of(self)->len + len);
   }

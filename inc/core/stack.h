@@ -9,7 +9,7 @@
 #  define U_STACK_CAP 16
 #endif
 
-#define stack(T)                                                                                   \
+#define u_stack_t(T)                                                                               \
   struct {                                                                                         \
     T item;                                                                                        \
   }*
@@ -18,16 +18,16 @@
  * Create & Clone
  *************************************************************************************************/
 any_t __stack_new(size_t itsize, size_t cap);
-#define stack_new(T, arg...) __stack_new(sizeof(T), va_0th(U_STACK_CAP, arg))
+#define u_stack_new(T, arg...) __stack_new(sizeof(T), va_0th(U_STACK_CAP, arg))
 
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
 void __stack_clear(any_t _self);
-#define stack_clear(stack) __stack_clear(stack)
+#define u_stack_clear(stack) __stack_clear(stack)
 
 void __stack_cleanup(any_t _self);
-#define stack_cleanup(stack)                                                                       \
+#define u_stack_cleanup(stack)                                                                     \
   do {                                                                                             \
     __stack_cleanup(stack);                                                                        \
     (stack) = nullptr;                                                                             \
@@ -37,22 +37,22 @@ void __stack_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __stack_itsize(any_t _self);
-#define stack_itsize(stack) __stack_itsize(stack)
+#define u_stack_itsize(stack) __stack_itsize(stack)
 
 size_t __stack_len(any_t _self);
-#define stack_len(stack) __stack_len(stack)
+#define u_stack_len(stack) __stack_len(stack)
 
 size_t __stack_cap(any_t _self);
-#define stack_cap(stack) __stack_cap(stack)
+#define u_stack_cap(stack) __stack_cap(stack)
 
 bool __stack_empty(any_t _self);
-#define stack_empty(stack) __stack_empty(stack)
+#define u_stack_empty(stack) __stack_empty(stack)
 
 void __stack_peek(any_t _self);
-#define stack_peek(stack) (__stack_peek(stack), (stack)->item)
+#define u_stack_peek(stack) (__stack_peek(stack), (stack)->item)
 
 void __stack_pop(any_t _self);
-#define stack_pop(stack) __stack_pop(stack)
+#define u_stack_pop(stack) __stack_pop(stack)
 
 ret_t __stack_push(any_t _self);
-#define stack_push(stack, _item) ((stack)->item = (_item), __stack_push(stack))
+#define u_stack_push(stack, _item) ((stack)->item = (_item), __stack_push(stack))

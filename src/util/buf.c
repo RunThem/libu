@@ -9,9 +9,9 @@ struct buf_t {
   uint8_t* c_buf;
 };
 
-#define self_of(self) (assert((self) != nullptr), as(self, buf_t))
+#define self_of(self) (assert((self) != nullptr), as(self, u_buf_t))
 
-static ret_t __buf_resize(buf_t self) {
+static ret_t __buf_resize(u_buf_t self) {
   size_t cap   = 0;
   uint8_t* buf = nullptr;
 
@@ -33,9 +33,9 @@ err:
  * Create
  *************************************************************************************************/
 any_t __buf_new(size_t cap) {
-  buf_t self = nullptr;
+  u_buf_t self = nullptr;
 
-  self = u_talloc(sizeof(struct buf_t), buf_t);
+  self = u_talloc(sizeof(struct buf_t), u_buf_t);
   u_mem_if(self);
 
   self->c_buf = u_zalloc(cap);
@@ -60,7 +60,7 @@ void __buf_clear(any_t _self) {
 }
 
 void __buf_cleanup(any_t _self) {
-  buf_t self = self_of(_self);
+  u_buf_t self = self_of(_self);
 
   u_free(self->c_buf);
   u_free(self);
@@ -86,7 +86,7 @@ bool __buf_empty(any_t _self) {
 }
 
 void __buf_slen(any_t _self, size_t len) {
-  buf_t self = self_of(_self);
+  u_buf_t self = self_of(_self);
 
   u_assert(self->cap < len);
 
@@ -94,7 +94,7 @@ void __buf_slen(any_t _self, size_t len) {
 }
 
 void __buf_peek(any_t _self, any_t mem, size_t len) {
-  buf_t self = self_of(_self);
+  u_buf_t self = self_of(_self);
 
   u_assert(mem == nullptr);
 
@@ -105,7 +105,7 @@ void __buf_peek(any_t _self, any_t mem, size_t len) {
 }
 
 void __buf_pop(any_t _self, any_t mem, size_t len) {
-  buf_t self = self_of(_self);
+  u_buf_t self = self_of(_self);
 
   u_assert(mem == nullptr);
 
@@ -117,8 +117,8 @@ void __buf_pop(any_t _self, any_t mem, size_t len) {
 }
 
 ret_t __buf_push(any_t _self, any_t mem, size_t len) {
-  buf_t self = self_of(_self);
-  ret_t code = 0;
+  u_buf_t self = self_of(_self);
+  ret_t code   = 0;
 
   u_assert(mem == nullptr);
 

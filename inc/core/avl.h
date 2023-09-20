@@ -5,9 +5,9 @@
 /*************************************************************************************************
  * Data Structure
  *************************************************************************************************/
-typedef fnt(avl_cmp_fn, int, const void*, const void*);
+typedef fnt(u_avl_cmp_fn, int, const void*, const void*);
 
-#define avl(T)                                                                                     \
+#define u_avl_t(T)                                                                                 \
   struct {                                                                                         \
     T item;                                                                                        \
   }*
@@ -17,17 +17,17 @@ typedef fnt(avl_cmp_fn, int, const void*, const void*);
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __avl_new(size_t itsize, avl_cmp_fn cmp_fn);
-#define avl_new(T, fn) __avl_new(sizeof(T), fn)
+any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn);
+#define u_avl_new(T, fn) __avl_new(sizeof(T), fn)
 
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
 void __avl_clear(any_t _self);
-#define avl_clear(avl) __avl_clear(avl)
+#define u_avl_clear(avl) __avl_clear(avl)
 
 void __avl_cleanup(any_t _self);
-#define avl_cleanup(avl)                                                                           \
+#define u_avl_cleanup(avl)                                                                         \
   do {                                                                                             \
     __avl_cleanup(avl);                                                                            \
     (avl) = nullptr;                                                                               \
@@ -37,33 +37,34 @@ void __avl_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __avl_itsize(any_t _self);
-#define avl_itsize(avl) __avl_itsize(avl)
+#define u_avl_itsize(avl) __avl_itsize(avl)
 
 size_t __avl_len(any_t _self);
-#define avl_len(avl) __avl_len(avl)
+#define u_avl_len(avl) __avl_len(avl)
 
 bool __avl_empty(any_t _self);
-#define avl_empty(avl) __avl_empty(avl)
+#define u_avl_empty(avl) __avl_empty(avl)
 
 bool __avl_exist(any_t _self);
-#define avl_exist(avl, _item) ((avl)->item = (_item), __avl_exist(avl))
+#define u_avl_exist(avl, _item) ((avl)->item = (_item), __avl_exist(avl))
 
 void __avl_at(any_t _self);
-#define avl_at(avl, _item) ((avl)->item = (_item), __avl_at(avl), ((avl)->item))
+#define u_avl_at(avl, _item) ((avl)->item = (_item), __avl_at(avl), ((avl)->item))
 
 void __avl_pop(any_t _self);
-#define avl_pop(avl, _item) ((avl)->item = (_item), __avl_pop(avl))
+#define u_avl_pop(avl, _item) ((avl)->item = (_item), __avl_pop(avl))
 
 ret_t __avl_push(any_t _self);
-#define avl_push(avl, _item) ((avl)->item = (_item), __avl_push(avl))
+#define u_avl_push(avl, _item) ((avl)->item = (_item), __avl_push(avl))
 
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
 bool __avl_range(any_t _self, bool flag);
-#define avl_for(avl)  for (__avl_itor(avl) = nullptr; __avl_range(avl, true);)
-#define avl_rfor(avl) for (__avl_itor(avl) = nullptr; __avl_range(avl, false);)
+#define u_avl_for(avl)  for (__avl_itor(avl) = nullptr; __avl_range(avl, true);)
+#define u_avl_rfor(avl) for (__avl_itor(avl) = nullptr; __avl_range(avl, false);)
 
 #ifndef NDEBUG
-void avl_debug(any_t _self);
+extern void __avl_debug(any_t _self);
+#  define u_avl_debug(map) __avl_debug(map)
 #endif

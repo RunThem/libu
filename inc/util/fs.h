@@ -2,12 +2,12 @@
 
 #include "core/str.h"
 
-off_t fs_size(c_str file);
+off_t u_fs_size(u_str_t file);
 
-bool fs_exists(c_str file);
+bool u_fs_exist(u_str_t file);
 
-str_t fs_read(c_str file);
+u_str_t u_fs_read(u_str_t file);
 
-off_t fs_write(c_str file, c_str buf, size_t len);
+off_t u_fs_write(u_str_t file, u_str_t buf, size_t len);
 
-bool fs_remove(c_str file);
+bool u_fs_remove(u_str_t file);

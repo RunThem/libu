@@ -1,5 +1,3 @@
-
-
 #include <stdatomic.h>
 #include <sys/time.h>
 #include <threads.h>
@@ -7,17 +5,18 @@
 #include <unistd.h>
 
 /* libs */
-#include "avl.h"
-#include "buf.h"
-// #include "fs.h"
-#include "map.h"
-#include "obj.h"
-#include "queue.h"
-// #include "sock.h"
-#include "stack.h"
-#include "str.h"
+#include "core/avl.h"
+#include "core/map.h"
+#include "core/queue.h"
+#include "core/stack.h"
+#include "core/str.h"
+#include "core/vec.h"
 #include "u.h"
-#include "vec.h"
+#include "util/buf.h"
+#include "util/obj.h"
+
+// #include "fs.h"
+// #include "sock.h"
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -51,7 +50,7 @@ typedef struct {
   mtx_t mtx;
   cnd_t cnd;
   thrd_t thrd;
-  queue(tpool_task_t) tasks;
+  u_queue_t(tpool_task_t) tasks;
 } tpool_worker_t;
 
 int tpool_worker_start(any_t args) {
@@ -153,8 +152,8 @@ int func(void*) {
 }
 
 int test_str(void*) {
-  str s   = nullptr;
-  str tmp = nullptr;
+  u_str_t s   = nullptr;
+  u_str_t tmp = nullptr;
 
   for (size_t i = 100'0000; i > 0; i--) {
     if (i % 2 == 0) {
