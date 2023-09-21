@@ -31,19 +31,21 @@
   do {                                                                                             \
     struct timespec var(begin) = {0};                                                              \
     struct timespec var(end)   = {0};                                                              \
-    uint64_t var(diff)         = 0;                                                                \
+    uint64_t var(diff)         =  0;                                                               \
+    uint64_t N                 =  n;                                                               \
                                                                                                    \
-    fprintf(stderr, "[%s: %d] benchmark start (%s):\n", __FILE__, __LINE__, msg);                  \
+    fprintf(stderr, "[%s: %d] benchmark (%s):\n", __FILE__, __LINE__, msg);                        \
                                                                                                    \
     clock_gettime(CLOCK_REALTIME, &var(begin));                                                    \
                                                                                                    \
-    for (size_t var(i) = 0; var(i) < (n); var(i)++)                                                \
+    do                                                                                             \
       code                                                                                         \
+    while (0);                                                                                     \
                                                                                                    \
     clock_gettime(CLOCK_REALTIME, &var(end));                                                      \
     var(diff) = nsec_diff(var(end), var(begin));                                                   \
                                                                                                    \
-    fprintf(stderr, "[%s: %d] benchmark end { %zu/%zu  => %s }\n", __FILE__, __LINE__,             \
+    fprintf(stderr, "[%s: %d] benchmark { %zu/%zu  => %s }\n", __FILE__, __LINE__,                 \
                     var(diff), as(n, uint64_t),                                                    \
                     time_fmt(var(diff) / n));                                                      \
   } while (0)

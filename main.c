@@ -31,7 +31,11 @@ void boo() {
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  benchmark("sleep", 2, { sleep(1); });
+  benchmark("sleep", 2, {
+    for (size_t i = 0; i < N; i++) {
+      sleep(1);
+    }
+  });
 
   return 0;
 }
