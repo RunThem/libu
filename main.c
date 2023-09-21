@@ -1,19 +1,15 @@
-#include <stdatomic.h>
-#include <sys/time.h>
-#include <threads.h>
-#include <time.h>
 #include <unistd.h>
 
 /* libs */
-#include "core/avl.h"
-#include "core/map.h"
-#include "core/queue.h"
-#include "core/stack.h"
-#include "core/str.h"
-#include "core/vec.h"
-#include "u.h"
-#include "util/buf.h"
-#include "util/obj.h"
+#include <u/core/avl.h>
+#include <u/core/map.h>
+#include <u/core/queue.h>
+#include <u/core/stack.h>
+#include <u/core/str.h>
+#include <u/core/vec.h>
+#include <u/u.h>
+#include <u/util/buf.h>
+#include <u/util/obj.h>
 
 // #include "fs.h"
 // #include "sock.h"
@@ -34,6 +30,8 @@ void boo() {
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
+
+  benchmark("sleep", 2, { sleep(1); });
 
   return 0;
 }

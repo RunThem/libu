@@ -23,6 +23,32 @@
     (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
   })
 
+/* clang-format off */
+#define nsec_of(tv)         ((tv).tv_sec * 1000000000 + (tv).tv_nsec) /* timespec */
+#define nsec_diff(tv1, tv2) (nsec_of(tv1) - nsec_of(tv2))
+#define var(name)           va_eval(defer(1, va_cat)(_##name##_, __LINE__))
+#define benchmark(msg, n, code)                                                                    \
+  do {                                                                                             \
+    struct timespec var(begin) = {0};                                                              \
+    struct timespec var(end)   = {0};                                                              \
+    uint64_t var(diff)         = 0;                                                                \
+                                                                                                   \
+    fprintf(stderr, "[%s: %d] benchmark start (%s):\n", __FILE__, __LINE__, msg);                  \
+                                                                                                   \
+    clock_gettime(CLOCK_REALTIME, &var(begin));                                                    \
+                                                                                                   \
+    for (size_t var(i) = 0; var(i) < (n); var(i)++)                                                \
+      code                                                                                         \
+                                                                                                   \
+    clock_gettime(CLOCK_REALTIME, &var(end));                                                      \
+    var(diff) = nsec_diff(var(end), var(begin));                                                   \
+                                                                                                   \
+    fprintf(stderr, "[%s: %d] benchmark end { %zu/%zu  => %s }\n", __FILE__, __LINE__,             \
+                    var(diff), as(n, uint64_t),                                                    \
+                    time_fmt(var(diff) / n));                                                      \
+  } while (0)
+/* clang-format on */
+
 #define swap(a, b)                                                                                 \
   do {                                                                                             \
     auto _swap__tmp = a;                                                                           \
@@ -81,6 +107,8 @@
                                                                                                    \
     return (code) ? 1 : -1;                                                                        \
   }
+
+extern char* time_fmt(uint64_t);
 
 extern fn_eq_dec(bool);
 extern fn_eq_dec(char);
