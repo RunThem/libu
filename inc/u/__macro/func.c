@@ -1,5 +1,32 @@
 #include <u/u.h>
 
+static thread_local char time_fmt_buf[10] = {0};
+
+char* time_fmt(uint64_t t) {
+
+#define time_fmt_h()  ((uint64_t)60 * 60 * 1000 * 1000 * 1000)
+#define time_fmt_m()  ((uint64_t)60 * 1000 * 1000 * 1000)
+#define time_fmt_s()  ((uint64_t)1000 * 1000 * 1000)
+#define time_fmt_ms() ((uint64_t)1000 * 1000)
+#define time_fmt_us() ((uint64_t)1000)
+
+  if (t > time_fmt_h()) {
+    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f h", (f64_t)t / time_fmt_h());
+  } else if (t > time_fmt_m()) {
+    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f m", (f64_t)t / time_fmt_m());
+  } else if (t > time_fmt_s()) {
+    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f s", (f64_t)t / time_fmt_s());
+  } else if (t > time_fmt_ms()) {
+    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f ms", (f64_t)t / time_fmt_ms());
+  } else if (t > time_fmt_us()) {
+    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f us", (f64_t)t / time_fmt_us());
+  } else {
+    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6zu ns", t);
+  }
+
+  return (char*)time_fmt_buf;
+}
+
 fn_eq_def(bool, bool, (x == y));
 fn_eq_def(char, char, (x == y));
 fn_eq_def(int, int, (x == y));
