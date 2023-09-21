@@ -1,9 +1,15 @@
 #pragma once
 
-#define u_if(expr, arg...)                                                                         \
-  if (expr && (errln("(%s) " va_0th("", arg) " ", #expr va_opt(1, arg) va_slice(1, arg)), true))
+#ifdef NDEBUG
+#  define u_if(expr, arg...) if (expr)
 
-#define u_assert(expr) (expr && (__assert_fail(#expr, __file__, __line__, __func__), 1))
+#  define u_assert(expr) (void)0
+#else
+#  define u_if(expr, arg...)                                                                       \
+    if (expr && (errln("(%s) " va_0th("", arg) " ", #expr va_opt(1, arg) va_slice(1, arg)), true))
+
+#  define u_assert(expr) (expr && (__assert_fail(#  expr, __file__, __line__, __func__), 1))
+#endif
 
 #define u_die_if(expr, arg...)                                                                     \
   u_if(expr, arg) {                                                                                \
@@ -25,7 +31,10 @@
     goto va_0th(err, arg);                                                                         \
   }
 
-#define u_mem_if(mem, arg...) u_err_if((mem) == nullptr, err, arg)
+#define u_mem_if(mem, arg...)                                                                      \
+  u_if((mem) == nullptr, arg) {                                                                    \
+    goto err;                                                                                      \
+  }
 
 /*
  * free up resources
