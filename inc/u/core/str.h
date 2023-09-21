@@ -1,6 +1,6 @@
 #pragma once
 
-#include "u.h"
+#include <u/u.h>
 
 typedef const char* u_str_t;
 typedef char* u_mut_str_t;

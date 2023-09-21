@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 /* libs */
-#include "core/str.h"
+#include <u/core/str.h>
 
 #define SOCK_MAX_OPTS 4
 

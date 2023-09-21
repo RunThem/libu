@@ -3,8 +3,8 @@
 #include <threads.h>
 
 /* libs */
-#include "core/avl.h"
-#include "core/str.h"
+#include <u/core/avl.h>
+#include <u/core/str.h>
 
 typedef struct {
   size_t cap;

@@ -1,4 +1,4 @@
-#include "u.h"
+#include <u/u.h>
 
 fn_eq_def(bool, bool, (x == y));
 fn_eq_def(char, char, (x == y));

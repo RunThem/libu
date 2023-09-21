@@ -12,11 +12,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* libs */
+/* clang-format off */
+#include "__macro/va.h"
+#include "__macro/keyword.h"
+#include "__macro/type.h"
 #include "__macro/alloc.h"
 #include "__macro/debug.h"
-#include "__macro/keyword.h"
-#include "__macro/misc.h"
 #include "__macro/print.h"
-#include "__macro/type.h"
-#include "__macro/va.h"
+#include "__macro/misc.h"

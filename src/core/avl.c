@@ -1,6 +1,5 @@
-#include "core/avl.h"
-
-#include "core/queue.h"
+#include <u/core/avl.h>
+#include <u/core/queue.h>
 
 /* clang-format off */
 /*

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "u.h"
+#include <u/u.h>
 
 #define __OBJ_MAXPHSIZE 1024
 #define __OBJ_CLOFNNUM  0x58ffffbffdffffafULL

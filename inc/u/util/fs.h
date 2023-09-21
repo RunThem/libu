@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/str.h"
+#include <u/core/str.h>
 
 off_t u_fs_size(u_str_t file);
 

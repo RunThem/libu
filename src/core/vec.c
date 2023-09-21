@@ -1,4 +1,4 @@
-#include "core/vec.h"
+#include <u/core/vec.h>
 
 /*
  *
