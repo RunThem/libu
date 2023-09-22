@@ -1,38 +1,38 @@
 #pragma once
 
 #ifdef NDEBUG
-#  define u_if(expr, arg...) if (expr)
+#  define u_if(expr, ...) if (expr)
 
 #  define u_assert(expr) (void)0
 #else
-#  define u_if(expr, arg...)                                                                       \
-    if (expr && (errln("(%s) " va_0th("", arg) " ", #expr va_opt(1, arg) va_slice(1, arg)), true))
+#  define u_if(expr, ...)                                                                          \
+    if (expr && (errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__)), true))
 
-#  define u_assert(expr) (expr && (__assert_fail(#  expr, __file__, __line__, __func__), 1))
+#  define u_assert(expr) (expr && (__assert_fail(#expr, __file__, __line__, __func__), 1))
 #endif
 
-#define u_die_if(expr, arg...)                                                                     \
-  u_if(expr, arg) {                                                                                \
+#define u_die_if(expr, ...)                                                                        \
+  u_if(expr, __VA_ARGS__) {                                                                        \
     exit(EXIT_FAILURE);                                                                            \
   }
 
-#define u_ret_if(expr, code, arg...)                                                               \
-  u_if(expr, arg) {                                                                                \
+#define u_ret_if(expr, code, ...)                                                                  \
+  u_if(expr, __VA_ARGS__) {                                                                        \
     return code;                                                                                   \
   }
 
-#define u_nonret_if(expr, arg...)                                                                  \
-  u_if(expr, arg) {                                                                                \
+#define u_nonret_if(expr, ...)                                                                     \
+  u_if(expr, __VA_ARGS__) {                                                                        \
     return;                                                                                        \
   }
 
-#define u_err_if(expr, arg...)                                                                     \
-  u_if(expr, va_slice(1, arg)) {                                                                   \
-    goto va_0th(err, arg);                                                                         \
+#define u_err_if(expr, ...)                                                                        \
+  u_if(expr, va_slice(1, __VA_ARGS__)) {                                                           \
+    goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
-#define u_mem_if(mem, arg...)                                                                      \
-  u_if((mem) == nullptr, arg) {                                                                    \
+#define u_mem_if(mem, ...)                                                                         \
+  u_if((mem) == nullptr, __VA_ARGS__) {                                                            \
     goto err;                                                                                      \
   }
 

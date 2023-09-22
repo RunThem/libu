@@ -45,12 +45,12 @@ void __buf_slen(any_t _self, size_t len);
 #define u_buf_slen(buf, len) __buf_slen(buf, len)
 
 void __buf_peek(any_t _self, any_t mem, size_t len);
-#define u_buf_peek(buf, mem, arg...) __buf_peek(buf, mem, va_0th(sizeof(*(mem)), arg))
+#define u_buf_peek(buf, mem, ...) __buf_peek(buf, mem, va_0th(sizeof(*(mem)), __VA_ARGS__))
 
 void __buf_pop(any_t _self, any_t mem, size_t len);
-#define u_buf_pop(buf, mem, arg...) __buf_pop(buf, mem, va_0th(sizeof(*(mem)), arg))
+#define u_buf_pop(buf, mem, ...) __buf_pop(buf, mem, va_0th(sizeof(*(mem)), __VA_ARGS__))
 
 ret_t __buf_push(any_t _self, any_t mem, size_t len);
-#define u_buf_push(buf, mem, arg...) __buf_push(buf, mem, va_0th(sizeof(*(mem)), arg))
+#define u_buf_push(buf, mem, ...) __buf_push(buf, mem, va_0th(sizeof(*(mem)), __VA_ARGS__))
 
 #define u_buf_hex(buf) inf_hex(buf_data(buf), buf_len(buf))

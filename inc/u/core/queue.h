@@ -22,7 +22,7 @@
  * Create
  *************************************************************************************************/
 any_t __queue_new(size_t itsize, size_t cap);
-#define u_queue_new(T, arg...) __queue_new(sizeof(T), va_0th(U_QUEUE_CAP, arg))
+#define u_queue_new(T, ...) __queue_new(sizeof(T), va_0th(U_QUEUE_CAP, __VA_ARGS__))
 
 /*************************************************************************************************
  * Destruction

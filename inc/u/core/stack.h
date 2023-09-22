@@ -18,7 +18,7 @@
  * Create & Clone
  *************************************************************************************************/
 any_t __stack_new(size_t itsize, size_t cap);
-#define u_stack_new(T, arg...) __stack_new(sizeof(T), va_0th(U_STACK_CAP, arg))
+#define u_stack_new(T, ...) __stack_new(sizeof(T), va_0th(U_STACK_CAP, __VA_ARGS__))
 
 /*************************************************************************************************
  * Destruction

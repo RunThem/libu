@@ -20,7 +20,7 @@
  * Create & Clone
  *************************************************************************************************/
 any_t __vec_new(size_t itsize, size_t cap);
-#define u_vec_new(T, arg...) __vec_new(sizeof(T), va_0th(U_VEC_CAP, arg))
+#define u_vec_new(T, ...) __vec_new(sizeof(T), va_0th(U_VEC_CAP, __VA_ARGS__))
 
 any_t __vec_clone(any_t _self);
 #define u_vec_clone(vec) ((typeof(vec))__vec_clone(vec))
