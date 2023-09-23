@@ -2,13 +2,13 @@
 set_project('libu')
 
 --- Project version
-set_version('0.4.0')
+set_version('0.5.0')
 
 --- xmake configure
 set_xmakever('2.6.1')
 
 --- Build mode
-add_rules('mode.debug', 'mode.valgrind', 'mode.release')
+add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.release')
 
 --- Macro definition
 add_defines('_GNU_SOURCE=1')
@@ -31,16 +31,15 @@ set_toolchains('clang')
 --- Task(lsp) generate the project file
 task('lsp', function()
   set_category('plugin')
+  set_menu({
+    usage = 'xmake lsp',
+    description = 'Generate the project file.',
+  })
 
   on_run(function()
     os.exec('xmake project -k cmake build/lsp')
     os.exec('xmake project -k compile_commands build/lsp')
   end)
-
-  set_menu({
-    usage = 'xmake lsp',
-    description = 'Generate the project file.',
-  })
 end)
 
 --- Lambda expressions option
@@ -53,6 +52,7 @@ end)
 if has_config('lambda') then
   add_defines('USE_LAMBDA')
   add_cflags('-fblocks')
+
   if is_plat('linux') then
     add_ldflags('-lBlocksRuntime')
     add_defines('__linux__=1')
@@ -86,45 +86,5 @@ target('u', function()
   end
 end)
 
---- Demo target
-target('demo', function()
-  set_kind('binary')
-  add_files('main.c')
-  set_default('false')
-
-  add_deps('u')
-
-  if has_config('mimalloc') then
-    add_packages('mimalloc')
-  end
-end)
-
-task('demo', function()
-  set_category('plugin')
-
-  on_run(function()
-    os.exec('xmake f -m debug --mimalloc=y')
-    os.exec('xmake b demo')
-    os.exec('xmake r demo')
-  end)
-
-  set_menu({
-    usage = 'xmake demo',
-    description = 'Run "demo" target.',
-  })
-end)
-
-task('mem', function()
-  set_category('plugin')
-
-  on_run(function()
-    os.exec('xmake f -m valgrind --mimalloc=n')
-    os.exec('xmake b demo')
-    os.exec('valgrind --tool=memcheck --leak-check=full ./build/linux/x86_64/valgrind/demo')
-  end)
-
-  set_menu({
-    usage = 'xmake mem',
-    description = 'Use Valgrind to test for memory leaks.',
-  })
-end)
+--- Dev mode
+includes('dev')
