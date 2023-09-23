@@ -23,32 +23,30 @@
     (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
   })
 
-#define var(name) va_eval(defer(1, va_cat)(_##name##_, __LINE__))
-
 /* clang-format off */
 #define nsec_of(tv)         ((tv).tv_sec * 1000000000 + (tv).tv_nsec) /* timespec */
 #define nsec_diff(tv1, tv2) (nsec_of(tv1) - nsec_of(tv2))
 #define benchmark(msg, n, code)                                                                    \
   do {                                                                                             \
-    struct timespec var(begin) = {0};                                                              \
-    struct timespec var(end)   = {0};                                                              \
-    uint64_t var(diff)         =  0;                                                               \
+    struct timespec va_let(begin) = {0};                                                           \
+    struct timespec va_let(end)   = {0};                                                           \
+    uint64_t va_let(diff)         =  0;                                                            \
     uint64_t N                 =  n;                                                               \
                                                                                                    \
     fprintf(stderr, "[%s: %d] benchmark (%s):\n", __FILE__, __LINE__, msg);                        \
                                                                                                    \
-    clock_gettime(CLOCK_REALTIME, &var(begin));                                                    \
+    clock_gettime(CLOCK_REALTIME, &va_let(begin));                                                 \
                                                                                                    \
     do                                                                                             \
       code                                                                                         \
     while (0);                                                                                     \
                                                                                                    \
-    clock_gettime(CLOCK_REALTIME, &var(end));                                                      \
-    var(diff) = nsec_diff(var(end), var(begin));                                                   \
+    clock_gettime(CLOCK_REALTIME, &va_let(end));                                                   \
+    va_let(diff) = nsec_diff(va_let(end), va_let(begin));                                          \
                                                                                                    \
     fprintf(stderr, "[%s: %d] benchmark { %zu/%zu  => %s }\n", __FILE__, __LINE__,                 \
-                    var(diff), as(n, uint64_t),                                                    \
-                    time_fmt(var(diff) / n));                                                      \
+                    va_let(diff), as(n, uint64_t),                                                 \
+                    time_fmt(va_let(diff) / n));                                                   \
   } while (0)
 /* clang-format on */
 

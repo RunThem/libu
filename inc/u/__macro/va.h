@@ -1,7 +1,10 @@
 #pragma once
 
+/*
+ * gcc/clang -P -E -Dva_debug va.h
+ * */
 #ifdef va_debug
-#  define echo(arg) >>>>>>>>> va_##arg
+#  define echo(arg) >>>>>>>>>>>>>>>>>>>>>>>>>>> va_##arg
 #endif
 
 /*
@@ -13,10 +16,6 @@
  **/
 
 /* clang-format off */
-#ifdef va_debug
-#  define echo(arg) >>>>>>>>> va_##arg
-#endif
-
 
 /*
  * cat
@@ -57,6 +56,18 @@ va_cat(hello_, the_, world)       /* : hello_the_world */
 #define __va_defer_6(macro) macro space space space space space space()()()()()()
 #define __va_defer_7(macro) macro space space space space space space space()()()()()()()
 #define __va_defer_8(macro) macro space space space space space space space space()()()()()()()()
+
+
+/*
+ * let
+ **/
+#define va_let(name) va_eval(va_defer(1, va_cat)(_##name##_, __LINE__))
+
+#ifdef va_debug
+echo(let)
+#line 100
+va_let(a)       /* : _a_100 */
+#endif
 
 
 /*
@@ -344,8 +355,6 @@ va_dec(1)         /* : 0  */
 va_dec(15)        /* : 14 */
 va_dec(16)        /* : 15 */
 #endif
-
-
 
 
 /*
