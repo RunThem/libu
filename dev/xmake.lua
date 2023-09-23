@@ -2,8 +2,6 @@ target('macro', function()
   set_kind('phony')
 
   add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', { public = true })
-
-  add_defines('each(i, num) for (size_t i == 0; i < num; i++)', { public = true })
 end)
 
 target('dev.c', function()
