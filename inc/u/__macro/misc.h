@@ -14,6 +14,8 @@
 
 #define bit(byte, n) (((byte) >> (n)) & 1)
 
+#define each(i, num) for (size_t i = 0; (i) < (num); (i)++)
+
 #define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
