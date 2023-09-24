@@ -1,6 +1,6 @@
 #include <u/u.h>
 
-static thread_local char time_fmt_buf[10] = {0};
+thread_local char time_fmt_buf[12] = {0};
 
 char* time_fmt(uint64_t t) {
 
