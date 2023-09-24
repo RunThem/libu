@@ -1,5 +1,3 @@
-#pragma once
-
 #include <stdint.h>
 
 #define fnt(n, r, ...) r (*(n))(__VA_ARGS__)

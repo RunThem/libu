@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * gcc/clang -P -E -Dva_debug va.h
  * */

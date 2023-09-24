@@ -1,5 +1,3 @@
-#pragma once
-
 #define noused(x) ((void)(x))
 #define chr(c)    (as(c, char))
 #define any(p)    (as(p, any_t))
@@ -8,9 +6,9 @@
 #  define lm(ret, ...) ^ret(__VA_ARGS__)
 #endif
 
-#define as(v, T)              ((T)(v))
-#define rs(...)               #__VA_ARGS__
-#define me(type, __VA_ARGS__) (&(type){__VA_ARGS__})
+#define as(v, type)   ((type)(v))
+#define rs(...)       #__VA_ARGS__
+#define me(type, ...) (&(type){__VA_ARGS__})
 
 #define bit(byte, n) (((byte) >> (n)) & 1)
 

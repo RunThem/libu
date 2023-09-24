@@ -1,5 +1,3 @@
-#pragma once
-
 #ifdef USE_MIMALLOC
 #  include <mimalloc.h>
 

@@ -1,5 +1,3 @@
-#pragma once
-
 #define __file__ __FILE__
 #define __line__ __LINE__
 

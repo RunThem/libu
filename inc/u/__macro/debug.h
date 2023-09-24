@@ -1,12 +1,10 @@
-#pragma once
-
 #ifdef NDEBUG
 #  define u_if(expr, ...) if (expr)
 
 #  define u_assert(expr) (void)0
 #else
 #  define u_if(expr, ...)                                                                          \
-    if (expr && (errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__)), true))
+    if ((expr) && (errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__)), true))
 
 #  define u_assert(expr) (expr && (__assert_fail(#expr, __file__, __line__, __func__), 1))
 #endif
