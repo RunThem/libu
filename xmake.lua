@@ -22,6 +22,9 @@ set_languages('clatest', 'cxxlatest')
 --- Unused variables and functions
 add_cflags('-Wno-unused-function', '-Wno-unused-variable', '-Wno-unused-but-set-variable')
 
+--- Use reserved identifier
+add_cflags('-Wno-reserved-macro-identifier', '-Wno-reserved-identifier')
+
 --- Disable VLA extensons
 add_cflags('-Werror=vla')
 
