@@ -22,6 +22,9 @@ set_languages('clatest', 'cxxlatest')
 --- Unused variables and functions
 add_cflags('-Wno-unused-function', '-Wno-unused-variable', '-Wno-unused-but-set-variable')
 
+--- Disable VLA extensons
+add_cflags('-Werror=vla')
+
 --- DWARF v4
 add_cflags('-gdwarf-4')
 
