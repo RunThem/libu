@@ -113,9 +113,9 @@ err:
   return nullptr;
 }
 
-void str_clear(u_str_t str) {
-  u_assert(str == nullptr);
-}
+// void str_clear(u_str_t str) {
+//   u_assert(str == nullptr);
+// }
 
 void str_cleanup(u_str_t str) {
   u_assert(str == nullptr);
@@ -129,6 +129,24 @@ void str_cleanup(u_str_t str) {
   }
 
   stbl_unlock();
+}
+
+size_t str_len(u_str_t str) {
+  size_t len = 0;
+
+  u_assert(str == nullptr);
+
+  stbl_lock();
+
+  if (stbl_exist(str)) {
+    len = container_of(str, str_t, str)->len;
+  } else {
+    len = strlen(str);
+  }
+
+  stbl_unlock();
+
+  return len;
 }
 
 u_str_t str_append(u_str_t self, u_str_t str) {

@@ -8,6 +8,8 @@ typedef char* u_mut_str_t;
 void stbl_init(void);
 void stbl_cleanup(void);
 
+size_t str_len(u_str_t str);
+
 u_str_t str_from(u_str_t str);
 
 u_str_t str_fromf(u_str_t fmt, ...);
