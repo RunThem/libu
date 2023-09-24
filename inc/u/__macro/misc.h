@@ -88,8 +88,8 @@
 #define fn_eq_dec(name) bool fn_eq_##name(const void* _x, const void* _y)
 #define fn_eq_def(name, type, code)                                                                \
   fn_eq_dec(name) {                                                                                \
-    auto x = *(type*)_x;                                                                           \
-    auto y = *(type*)_y;                                                                           \
+    type x = *(type*)_x;                                                                           \
+    type y = *(type*)_y;                                                                           \
                                                                                                    \
     return (code);                                                                                 \
   }
@@ -98,8 +98,8 @@
 #define fn_cmp_dec(name) int fn_cmp_##name(const void* _x, const void* _y)
 #define fn_cmp_def(name, type, code)                                                               \
   fn_cmp_dec(name) {                                                                               \
-    auto x = *(type*)_x;                                                                           \
-    auto y = *(type*)_y;                                                                           \
+    type x = *(type*)_x;                                                                           \
+    type y = *(type*)_y;                                                                           \
     if (fn_eq_use(name)(_x, _y)) {                                                                 \
       return 0;                                                                                    \
     }                                                                                              \
