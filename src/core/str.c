@@ -97,7 +97,7 @@ u_str_t str_fromf(u_str_t fmt, ...) {
 
   u_assert(fmt == nullptr);
 
-  va_start(ap, format);
+  va_start(ap, fmt);
   len = vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
 
