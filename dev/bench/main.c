@@ -6,21 +6,54 @@
 #include <u/core/vec.h>
 #include <u/u.h>
 
-int main(int argc, const char** argv) {
-
+void bench_vec(size_t N) {
   u_vec_t(int) v = u_vec_new(int);
 
-  each(i, N10W) {
+  /* push */
+  each(i, N) {
     u_vec_push_back(v, i);
   }
 
-  for (size_t i = 0; i < 10'0000; i++) {
+  each(i, N) {
     u_vec_push_front(v, i);
   }
 
-  for (size_t i = 0; i < 10'0000; i++) {
-    u_vec_push(v, 10'0000, i);
+  each(i, N) {
+    u_vec_push(v, N, i);
   }
+
+  /* at */
+  each(i, 3 * N) {
+    u_vec_at_back(v);
+  }
+
+  each(i, 3 * N) {
+    u_vec_at_front(v);
+  }
+
+  each(i, 3 * N) {
+    u_vec_at(v, i);
+  }
+
+  /* pop */
+  each(i, 3 * N) {
+    u_vec_pop_back(v);
+  }
+
+  each(i, 3 * N) {
+    u_vec_pop_front(v);
+  }
+
+  each(i, 3 * N) {
+    u_vec_pop(v, i);
+  }
+
+  u_vec_cleanup(v);
+}
+
+int main(int argc, const char** argv) {
+
+  bench_vec(N1W);
 
   return 0;
 }
