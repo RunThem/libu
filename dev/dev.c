@@ -25,5 +25,21 @@ int main(int argc, const char** argv) {
 
   infln("hello libu!");
 
+  u_vec_t(int) v = u_vec_new(int);
+
+  each(i, 30) {
+    u_vec_push_back(v, i);
+  }
+
+  each(i, 30) {
+    u_vec_push_front(v, i);
+  }
+
+  u_vec_for(v, i) {
+    infln("[%d] = %d", i, *v->item);
+  }
+
+  u_vec_cleanup(v);
+
   return 0;
 }
