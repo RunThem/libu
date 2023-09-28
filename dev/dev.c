@@ -1,4 +1,5 @@
 #include <u/core/avl.h>
+#include <u/core/list.h>
 #include <u/core/map.h>
 #include <u/core/queue.h>
 #include <u/core/stack.h>
@@ -49,6 +50,21 @@ void fun(u_timer_arg_t arg) {
 }
 #endif
 
+typedef struct st_t st_t;
+struct st_t {
+  int n;
+
+  u_lnode_t(st_t) field;
+};
+
+st_t* new(int n) {
+  st_t* node = u_zalloc(sizeof(st_t));
+
+  node->n = n;
+
+  return node;
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
@@ -67,6 +83,54 @@ int main(int argc, const char** argv) {
     tm.tick++;
   }
 #endif
+
+  u_list_t(st_t) lst = u_list_new(st_t, field);
+
+  st_t* a = new (1);
+  st_t* b = new (3);
+  st_t* c = new (0);
+  st_t* d = new (5);
+  st_t* f = new (10);
+
+  u_list_push_back(lst, a);
+  u_list_push_back(lst, b);
+  u_list_push_back(lst, c);
+  u_list_push_back(lst, d);
+
+  infln("size is %zu", u_list_len(lst));
+  list_for(lst) {
+    infln("%d", lst->item->n);
+  }
+
+  u_list_push_front(lst, f);
+
+  infln("size is %zu", u_list_len(lst));
+  list_for(lst) {
+    infln("%d", lst->item->n);
+  }
+
+  u_list_pop_front(lst);
+
+  infln("size is %zu", u_list_len(lst));
+  list_for(lst) {
+    infln("%d", lst->item->n);
+  }
+
+  u_list_pop_back(lst);
+
+  infln("size is %zu", u_list_len(lst));
+  list_for(lst) {
+    infln("%d", lst->item->n);
+  }
+
+  u_list_pop(lst, b);
+
+  infln("size is %zu", u_list_len(lst));
+  list_for(lst) {
+    infln("%d", lst->item->n);
+  }
+
+  list_cleanup(lst);
 
   return 0;
 }
