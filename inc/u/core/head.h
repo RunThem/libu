@@ -16,22 +16,24 @@ enum u_head_attr {
 
 typedef fnt(u_head_cmp_fn, int, const void*, const void*);
 
-#define u_head_t(K, V)                                                                             \
+#define u_head_t(T)                                                                                \
   struct {                                                                                         \
-    V* val;                                                                                        \
-    K key;                                                                                         \
+    T item;                                                                                        \
   }*
 
-#define __head_key(head, _key) (head)->key = (_key)
-#define __head_val(head, _val)                                                                     \
-  *as(any(head) + sizeof((head)->key) + sizeof(any_t), typeof((head)->val)) = (_val)
+#define __head_item(head, _item) (head)->item = (_item)
 
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __head_new(size_t ksize, size_t vsize, u_head_cmp_fn cmp_fn, enum u_head_attr attr);
-#define head_new(K, V, cmp_fn, attr) __head_new(sizeof(K), sizeof(V), cmp_fn, attr)
+any_t __head_new(size_t itsize, u_head_cmp_fn cmp_fn, enum u_head_attr attr);
+#define head_new(T, cmp_fn, attr) __head_new(sizeof(T), cmp_fn, attr)
+
+size_t __head_len(any_t _self);
+#define head_len(head) __head_len(head)
+
+size_t __head_cap(any_t _self);
+#define head_cap(head) __head_cap(head)
 
 ret_t __head_push(any_t _self);
-#define head_push(head, _key, _val)                                                                \
-  (__head_key(head, _key), __head_val(head, _val), __head_push(head))
+#define head_push(head, _item) (__head_item(head, _item), __head_push(head))
