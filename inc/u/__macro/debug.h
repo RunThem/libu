@@ -6,7 +6,7 @@
 #  define u_if(expr, ...)                                                                          \
     if ((expr) && (errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__)), true))
 
-#  define u_assert(expr) (expr && (__assert_fail(#expr, __file__, __line__, __func__), 1))
+#  define u_assert(expr) ((expr) && (__assert_fail(#expr, __file__, __line__, __func__), 1))
 #endif
 
 #define u_die_if(expr, ...)                                                                        \
@@ -37,6 +37,6 @@
 /*
  * free up resources
  * */
-#define u_free_if(mem)  ((mem != nullptr) && (u_free(mem), 1))
-#define u_close_if(fd)  ((fd != 0) && (close(fd), 1))
-#define u_fclose_if(fp) ((fp != nullptr) && (fclose(fp), 1))
+#define u_free_if(mem)  (((mem) != nullptr) && (u_free(mem), 1))
+#define u_close_if(fd)  (((fd) != 0) && (close(fd), 1))
+#define u_fclose_if(fp) (((fp) != nullptr) && (fclose(fp), 1))
