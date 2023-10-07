@@ -14,7 +14,7 @@ end)
 task('tests', function()
   set_menu({
     usage = 'xmake check',
-    description = 'Run check',
+    description = 'Run unit test',
   })
 
   on_run(function()
@@ -24,15 +24,14 @@ task('tests', function()
 
     os.exec('xmake f -m debug --mimalloc=n')
     os.exec('xmake build -v check')
-
-    os.exec(bin_path)
+    os.exec('xmake run -v check')
   end)
 end)
 
 task('check', function()
   set_menu({
     usage = 'xmake check',
-    description = 'Run check',
+    description = 'Run mem check',
   })
 
   on_run(function()
