@@ -11,7 +11,7 @@
 
 #define u_vec_t(T)                                                                                 \
   struct {                                                                                         \
-    T* item;                                                                                       \
+    T item;                                                                                        \
   }*
 
 #define __vec_item(vec) *as((vec) + 1, typeof((vec)->item))
@@ -53,28 +53,40 @@ size_t __vec_cap(any_t _self);
 bool __vec_empty(any_t _self);
 #define u_vec_empty(vec) __vec_empty(vec)
 
-any_t __vec_at(any_t _self, size_t idx);
-#define u_vec_at(vec, idx)  (*(as(__vec_at(vec, idx), typeof((vec)->item))))
-#define u_vec_at_front(vec) (*(as(__vec_at(vec, 0), typeof((vec)->item))))
-#define u_vec_at_back(vec)  (*(as(__vec_at(vec, __vec_len(vec) - 1), typeof((vec)->item))))
+void __vec_at(any_t _self, size_t idx);
+void __vec_at_front(any_t _self);
+void __vec_at_back(any_t _self);
+#define u_vec_at(vec, idx)  (__vec_at(vec, idx), (vec)->item)
+#define u_vec_at_front(vec) (__vec_at_front(vec), (vec)->item)
+#define u_vec_at_back(vec)  (__vec_at_back(vec), (vec)->item)
 
 void __vec_pop(any_t _self, size_t idx);
-#define u_vec_pop(vec, idx)  __vec_pop(vec, idx)
-#define u_vec_pop_front(vec) __vec_pop(vec, 0)
-#define u_vec_pop_back(vec)  __vec_pop(vec, __vec_len(vec) - 1)
+void __vec_pop_front(any_t _self);
+void __vec_pop_back(any_t _self);
+#define u_vec_pop(vec, idx)  (__vec_pop(vec, idx), (vec)->item)
+#define u_vec_pop_front(vec) (__vec_pop_front(vec), (vec)->item)
+#define u_vec_pop_back(vec)  (__vec_pop_back(vec), (vec)->item)
 
 ret_t __vec_push(any_t _self, size_t idx);
-#define u_vec_push(vec, idx, _item)  (__vec_item(vec) = (_item), __vec_push(vec, idx))
-#define u_vec_push_front(vec, _item) (__vec_item(vec) = (_item), __vec_push(vec, 0))
-#define u_vec_push_back(vec, _item)  (__vec_item(vec) = (_item), __vec_push(vec, __vec_len(vec)))
+ret_t __vec_push_front(any_t _self);
+ret_t __vec_push_back(any_t _self);
+#define u_vec_push(vec, idx, _item)  ((vec)->item = (_item), __vec_push(vec, idx))
+#define u_vec_push_front(vec, _item) ((vec)->item = (_item), __vec_push_front(vec))
+#define u_vec_push_back(vec, _item)  ((vec)->item = (_item), __vec_push_back(vec))
+
+void __vec_re(any_t _self, size_t idx);
+void __vec_re_front(any_t _self);
+void __vec_re_back(any_t _self);
+#define u_vec_re(vec, idx, _item)  ((vec)->item = (_item), __vec_re(vec, idx))
+#define u_vec_re_front(vec, _item) ((vec)->item = (_item), __vec_re_front(vec))
+#define u_vec_re_back(vec, _item)  ((vec)->item = (_item), __vec_re_back(vec))
 
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
-bool __vec_range(any_t _self, bool flag);
-#define u_vec_for(vec, i) for (size_t i = ((vec)->item = nullptr, 0); __vec_range(vec, true); (i)++)
-#define u_vec_rfor(vec, i)                                                                         \
-  for (size_t i = ((vec)->item = nullptr, __vec_len(vec) - 1); __vec_range(vec, false); (i)--)
+bool __vec_range(any_t _self, ssize_t* idx, bool flag);
+#define u_vec_for(vec, i)  for (ssize_t i = -2; __vec_range(vec, &(i), true); (i)++)
+#define u_vec_rfor(vec, i) for (ssize_t i = -2; __vec_range(vec, &(i), false); (i)--)
 
 /*************************************************************************************************
  * Utils

@@ -1,12 +1,11 @@
 #include <u/core/vec.h>
 
 /*
- *
- * 0        8        16       24       32       40
- * +--------+--------+--------+--------+--------+--------------+
- * | itsize |  len   |  cap   | items  |  item  |     ....     |
- * +--------+--------+--------+--------+--------+--------------+
- *                                |    ^   T*       sizeof(T)
+ * 0        8        16       24       32
+ * +--------+--------+--------+--------+--------------+
+ * | itsize |  len   |  cap   | items  |     ....     |
+ * +--------+--------+--------+--------+--------------+
+ *                                |    ^   sizeof(T)
  *                                |    |
  *                                |    +
  *                                |  return point
@@ -26,11 +25,6 @@
  *      number of elements the vector can hold.
  * items
  *      pointer to the underlying array.
- * item
- *      iterator pointer, which can only be used in `vec_for() & vec_rfor()`, is also the only field
- *      exposed to the outside world(holds the type of the vector element -- C23.typeof()).
- * item
- *      buffer used to pass element data when an element is deposited
  *
  * */
 
@@ -42,11 +36,13 @@ typedef struct {
   size_t len;
   size_t cap;
   any_t items;
-  any_t item;
 } vec_t;
 
+#undef at
+#define at(idx) (self->items + self->itsize * (idx))
+
 #undef self_of
-#define self_of(self) (assert((self) != nullptr), as(container_of(self, vec_t, item), vec_t*))
+#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(vec_t), vec_t*))
 
 static ret_t __vec_resize(vec_t* self) {
   size_t cap  = 0;
@@ -85,7 +81,7 @@ any_t __vec_new(size_t itsize, size_t cap) {
   self->itsize = itsize;
   self->cap    = cap;
 
-  return &self->item;
+  return self + 1;
 
 err:
   u_free_if(self);
@@ -100,12 +96,12 @@ any_t __vec_clone(any_t _self) {
   vec = __vec_new(self->itsize, self->cap);
   u_mem_if(vec);
 
-  vec = container_of(vec, vec_t, item);
+  vec = as((vec) - sizeof(vec_t), vec_t*);
 
   memcpy(vec->items, self->items, self->itsize * self->len);
   vec->len = self->len;
 
-  return &vec->item;
+  return vec + 1;
 
 err:
   return nullptr;
@@ -144,33 +140,77 @@ bool __vec_empty(any_t _self) {
   return self_of(_self)->len == 0;
 }
 
-any_t __vec_at(any_t _self, size_t idx) {
+/*
+ * re
+ * */
+void __vec_re(any_t _self, size_t idx) {
   vec_t* self = self_of(_self);
+  any_t item  = _self;
 
   u_assert(idx >= self->len);
 
-  return self->items + idx * self->itsize;
+  memcpy(at(idx), item, self->itsize);
 }
 
+void __vec_re_front(any_t _self) {
+  __vec_re(_self, 0);
+}
+
+void __vec_re_back(any_t _self) {
+  __vec_re(_self, self_of(_self)->len - 1);
+}
+
+/*
+ * at
+ * */
+void __vec_at(any_t _self, size_t idx) {
+  vec_t* self = self_of(_self);
+  any_t item  = _self;
+
+  u_assert(idx >= self->len);
+
+  memcpy(item, at(idx), self->itsize);
+}
+
+void __vec_at_front(any_t _self) {
+  __vec_at(_self, 0);
+}
+
+void __vec_at_back(any_t _self) {
+  __vec_at(_self, self_of(_self)->len - 1);
+}
+
+/*
+ * pop
+ * */
 void __vec_pop(any_t _self, size_t idx) {
   vec_t* self = self_of(_self);
-  any_t point = nullptr;
+  any_t item  = _self;
 
-  u_assert(self == nullptr);
-  u_nonret_if(idx >= self->len);
+  u_assert(idx >= self->len);
 
+  memcpy(item, at(idx), self->itsize);
   if (idx != self->len - 1) {
-    point = self->items + self->itsize * idx;
-    memmove(point, point + self->itsize, self->itsize * (self->len - idx - 1));
+    memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
   }
 
   self->len--;
 }
 
+void __vec_pop_front(any_t _self) {
+  __vec_pop(_self, 0);
+}
+
+void __vec_pop_back(any_t _self) {
+  __vec_pop(_self, self_of(_self)->len - 1);
+}
+
+/*
+ * push
+ * */
 ret_t __vec_push(any_t _self, size_t idx) {
   vec_t* self = self_of(_self);
-  any_t item  = self + 1;
-  any_t items = nullptr;
+  any_t item  = _self;
   ret_t code  = 0;
 
   u_ret_if(idx > self->len, -1);
@@ -180,12 +220,12 @@ ret_t __vec_push(any_t _self, size_t idx) {
     u_err_if(code != 0);
   }
 
-  items = self->items + self->itsize * idx;
   if (idx != self->len) {
-    memmove(items + self->itsize, items, self->itsize * (self->len - idx));
+    memmove(at(idx + 1), at(idx), (self->len - idx) * self->itsize);
   }
 
-  memcpy(items, item, self->itsize);
+  memcpy(at(idx), item, self->itsize);
+
   self->len++;
 
   return 0;
@@ -194,23 +234,31 @@ err:
   return -2;
 }
 
+ret_t __vec_push_front(any_t _self) {
+  return __vec_push(_self, 0);
+}
+
+ret_t __vec_push_back(any_t _self) {
+  return __vec_push(_self, self_of(_self)->len);
+}
+
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
-bool __vec_range(any_t _self, bool flag) {
+bool __vec_range(any_t _self, ssize_t* idx, bool flag) {
   vec_t* self = self_of(_self);
   any_t item  = _self;
 
-  /* initialize */
-  if (self->item == nullptr) {
-    self->item = flag ? self->items : self->items + (self->len - 1) * self->itsize;
-  } else { /* iteration */
-    self->item += flag ? self->itsize : -self->itsize;
+  if (*idx == -1 || *idx == self->len) {
+    return false;
   }
 
-  /* whether it is out of range */
-  u_ret_if(self->item == self->items + self->len * self->itsize, false);
-  u_ret_if(self->item == self->items - self->itsize, false);
+  /* initialize */
+  if (*idx == -2) {
+    *idx = flag ? 0 : as(self->len - 1, ssize_t);
+  }
+
+  memcpy(item, at(*idx), self->itsize);
 
   return true;
 }
@@ -233,7 +281,7 @@ ssize_t __vec_find(any_t _self, eq_fn fn) {
   u_assert(fn == nullptr);
 
   for (ssize_t i = 0; i < self->len; i++) {
-    if (fn(self->items + self->itsize * i, item)) {
+    if (fn(at(i), item)) {
       return i;
     }
   }
@@ -248,7 +296,7 @@ ssize_t __vec_min(any_t _self, cmp_fn fn) {
   u_assert(fn == nullptr);
 
   for (ssize_t i = 0; i < self->len; i++) {
-    if (fn(self->items + self->itsize * idx, self->items + self->itsize * i) == 1) {
+    if (fn(at(idx), at(i)) == 1) {
       idx = i;
     }
   }
@@ -263,7 +311,7 @@ ssize_t __vec_max(any_t _self, cmp_fn fn) {
   u_assert(fn == nullptr);
 
   for (ssize_t i = 0; i < self->len; i++) {
-    if (fn(self->items + self->itsize * idx, self->items + self->itsize * i) == -1) {
+    if (fn(at(idx), at(i)) == -1) {
       idx = i;
     }
   }
