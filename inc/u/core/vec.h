@@ -14,8 +14,6 @@
     T item;                                                                                        \
   }*
 
-#define __vec_item(vec) *as((vec) + 1, typeof((vec)->item))
-
 /*************************************************************************************************
  * Create & Clone
  *************************************************************************************************/
@@ -95,7 +93,7 @@ void __vec_sort(any_t _self, cmp_fn fn);
 #define u_vec_sort(vec, fn) __vec_sort(vec, fn)
 
 ssize_t __vec_find(any_t _self, eq_fn fn);
-#define u_vec_find(vec, _item, fn) (*__vec_item(vec) = (_item), __vec_find(vec, fn))
+#define u_vec_find(vec, _item, fn) ((vec)->item = (_item), __vec_find(vec, fn))
 
 ssize_t __vec_min(any_t _self, cmp_fn fn);
 #define u_vec_min(vec, fn) __vec_min(vec, fn)
