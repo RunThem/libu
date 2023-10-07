@@ -35,5 +35,8 @@ size_t __head_len(any_t _self);
 size_t __head_cap(any_t _self);
 #define head_cap(head) __head_cap(head)
 
+void __head_pop(any_t _self);
+#define head_pop(head) (__head_pop(head), (head)->item)
+
 ret_t __head_push(any_t _self);
 #define head_push(head, _item) (__head_item(head, _item), __head_push(head))

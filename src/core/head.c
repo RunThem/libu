@@ -78,62 +78,58 @@ size_t __head_cap(any_t _self) {
 }
 
 void __head_pop(any_t _self) {
-  head_t* self = self_of(_self);
-  any_t item   = _self;
-  ssize_t i    = 0;
-  ssize_t k    = 0;
-  ret_t code   = 0;
+  head_t* self      = self_of(_self);
+  any_t item        = _self;
+  ssize_t i         = 0;
+  ssize_t child_idx = 0;
+  ret_t code        = 0;
 
   u_assert(self->len == 0);
 
   memcpy(item, self->items, self->itsize);
-  memcpy(self->items, head_item(self, self->len - 1), self->itsize);
+  self->len--;
+  // memcpy(self->items, head_item(self, self->len - 1), self->itsize);
 
-  for (i = 0; i < self->len;) {
-    k = i * 2 + 1;
-    if (k < self->len - 1) {
-      if (self->cmp_fn(head_item(self, k), head_item(self, k + 1))) {
-        k++;
-      }
-    }
-  }
-  for (i = 0, k = i * 2 + 1; k < self->len; i = k) {
-    if (k < self->len < 1) {
-      if (self->cmp_fn(head_item(self, k), head_item(self, k + 1)) == 1) {
-        k++;
+  for (i = 0; child_idx < self->len; i = child_idx) {
+    child_idx = i * 2 + 1; /* child index */
+
+    /* Takes the smaller value in the child node. */
+    if (child_idx < self->len) {
+      if (self->cmp_fn(head_item(self, child_idx), head_item(self, child_idx + 1)) == 1) {
+        child_idx++;
       }
     }
 
-    if (self->cmp_fn(item, head_item(self, (i - 1) / 2)) != -1) {
+    if (self->cmp_fn(head_item(self, self->len), head_item(self, child_idx)) != 1) {
       break;
     }
 
-    /*     child               parent */
-    memcpy(head_item(self, i), head_item(self, (i - 1) / 2), self->itsize);
+    memcpy(head_item(self, i), head_item(self, child_idx), self->itsize);
   }
 
-  memcpy(head_item(self, i), item, self->itsize);
-  self->len--;
+  memcpy(head_item(self, i), head_item(self, self->len), self->itsize);
 }
 
 ret_t __head_push(any_t _self) {
-  head_t* self = self_of(_self);
-  any_t item   = _self;
-  ssize_t i    = 0;
-  ret_t code   = 0;
+  head_t* self      = self_of(_self);
+  any_t item        = _self;
+  size_t i          = 0;
+  size_t parent_idx = 0;
+  ret_t code        = 0;
 
   if (self->len == self->cap) {
     code = __head_resize(self);
     u_err_if(code != 0);
   }
 
-  for (i = as(self->len, ssize_t); i >= 0; i = (i - 1) / 2) {
-    if (self->cmp_fn(item, head_item(self, (i - 1) / 2)) != -1) {
+  for (i = self->len; i > 0; i = parent_idx) {
+    parent_idx = (i - 1) / 2; /* parent index */
+
+    if (self->cmp_fn(item, head_item(self, parent_idx)) != -1) {
       break;
     }
 
-    /*     child               parent */
-    memcpy(head_item(self, i), head_item(self, (i - 1) / 2), self->itsize);
+    memcpy(head_item(self, i), head_item(self, parent_idx), self->itsize);
   }
 
   memcpy(head_item(self, i), item, self->itsize);

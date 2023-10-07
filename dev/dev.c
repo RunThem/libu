@@ -72,11 +72,19 @@ int main(int argc, const char** argv) {
 
   u_head_t(int) h = head_new(int, fn_cmp_use(int), U_HEAD_MIN);
 
-  for (size_t i = 100; i > 0; i--) {
-    head_push(h, i);
-  }
+  head_push(h, 4);
+  head_push(h, 2);
+  head_push(h, 7);
+  head_push(h, 9);
+  head_push(h, 1);
+  head_push(h, 5);
+  head_push(h, 10);
+  head_push(h, 3);
+  head_push(h, 2);
 
-  infln("%zu", head_len(h));
+  for (size_t i = 0; i < 9; i++) {
+    infln("%d", head_pop(h));
+  }
 
   return 0;
 }
