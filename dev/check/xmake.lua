@@ -1,9 +1,32 @@
+add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
+add_requires('mini-unit-test')
+
 target('check', function()
   set_kind('binary')
   add_files('*.c')
   set_default('false')
 
+  add_packages('mini-unit-test')
+
   add_deps('u', 'macro')
+end)
+
+task('tests', function()
+  set_menu({
+    usage = 'xmake check',
+    description = 'Run check',
+  })
+
+  on_run(function()
+    import('core.project.project')
+    local target = project.target('check')
+    local bin_path = target:targetdir() .. '/debug/' .. target:name()
+
+    os.exec('xmake f -m debug --mimalloc=n')
+    os.exec('xmake build -v check')
+
+    os.exec(bin_path)
+  end)
 end)
 
 task('check', function()
