@@ -24,8 +24,8 @@ typedef fnt(u_map_eq_fn, bool, const void*, const void*);
 
 #define u_map_t(K, V)                                                                              \
   struct {                                                                                         \
-    V* val;                                                                                        \
     K key;                                                                                         \
+    V val;                                                                                         \
   }*
 
 #define __map_key(map, _key) (map)->key = (_key)
@@ -35,8 +35,22 @@ typedef fnt(u_map_eq_fn, bool, const void*, const void*);
 /*************************************************************************************************
  * Create & Clone
  *************************************************************************************************/
-any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_fn hash_fn);
-#define u_map_new(K, V, eq_fn, hash_fn) __map_new(sizeof(K), sizeof(V), eq_fn, hash_fn)
+any_t __map_new(size_t ksize,
+                size_t vsize,
+                u_map_eq_fn eq_fn,
+                enum u_map_hash_fn hash_fn,
+                size_t voff);
+#define u_map_new(K, V, eq_fn, hash_fn)                                                            \
+  __map_new(sizeof(K),                                                                             \
+            sizeof(V),                                                                             \
+            eq_fn,                                                                                 \
+            hash_fn,                                                                               \
+            offsetof(                                                                              \
+                struct {                                                                           \
+                  K k;                                                                             \
+                  V v;                                                                             \
+                },                                                                                 \
+                v))
 
 /*************************************************************************************************
  * Destruction
@@ -69,14 +83,14 @@ bool __map_empty(any_t _self);
 bool __map_exist(any_t _self);
 #define u_map_exist(map, _key) (__map_key(map, _key), __map_exist(map))
 
-any_t __map_at(any_t _self);
-#define u_map_at(map, _key) (*(__map_key(map, _key), as(__map_at(map), typeof((map)->val))))
+void __map_at(any_t _self);
+#define u_map_at(map, _key) ((map)->key = (_key), __map_at(map), (map)->val)
 
 void __map_pop(any_t _self);
-#define u_map_pop(map, _key) (__map_key(map, _key), __map_pop(map))
+#define u_map_pop(map, _key) ((map)->key = (_key), __map_pop(map), (map)->val)
 
 ret_t __map_push(any_t _self);
-#define u_map_push(map, _key, _val) (__map_key(map, _key), __map_val(map, _val), __map_push(map))
+#define u_map_push(map, _key, _val) ((map)->key = (_key), (map)->val = (_val), __map_push(map))
 
 /*************************************************************************************************
  * Iterator

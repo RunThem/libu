@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <u/core/avl.h>
 #include <u/core/head.h>
 #include <u/core/list.h>
@@ -70,21 +71,19 @@ int main(int argc, const char** argv) {
   }
 #endif
 
-  u_head_t(int) h = head_new(int, fn_cmp_use(int), U_HEAD_MIN);
+  u_map_t(char, int) m = u_map_new(char, int, fn_eq_use(char), U_MAP_FNV_64_HASH_FN);
 
-  head_push(h, 4);
-  head_push(h, 2);
-  head_push(h, 7);
-  head_push(h, 9);
-  head_push(h, 1);
-  head_push(h, 5);
-  head_push(h, 10);
-  head_push(h, 3);
-  head_push(h, 2);
-
-  for (size_t i = 0; i < 9; i++) {
-    infln("%d", head_pop(h));
+  for (size_t i = 'a'; i <= 'z'; i++) {
+    u_map_push(m, i, i);
   }
+
+  infln("%lu", u_map_len(m));
+
+  for (size_t i = 'a'; i <= 'z'; i++) {
+    infln("%d", u_map_pop(m, i));
+  }
+
+  infln("%lu", u_map_len(m));
 
   return 0;
 }
