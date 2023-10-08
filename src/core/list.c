@@ -1,10 +1,6 @@
 #include <u/core/list.h>
 
-typedef struct list_node_t list_node_t;
-struct list_node_t {
-  list_node_t* prev;
-  list_node_t* next;
-};
+typedef struct u_list_node_t list_node_t;
 
 typedef struct list_t list_t;
 struct list_t {
@@ -17,8 +13,8 @@ struct list_t {
   list_node_t* itor;
 };
 
-#undef self_of
-#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(list_t), list_t*))
+#undef selfof
+#define selfof(self) (assert((self) != nullptr), as((self) - sizeof(list_t), list_t*))
 
 /*************************************************************************************************
  * Create
@@ -44,7 +40,7 @@ err:
  * Destruction
  *************************************************************************************************/
 void __list_cleanup(any_t _self) {
-  list_t* self = self_of(_self);
+  list_t* self = selfof(_self);
 
   u_free_if(self);
 }
@@ -53,15 +49,15 @@ void __list_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __list_len(any_t _self) {
-  return self_of(_self)->len;
+  return selfof(_self)->len;
 }
 
 bool __list_empty(any_t _self) {
-  return self_of(_self)->len == 0;
+  return selfof(_self)->len == 0;
 }
 
 void __list_pop(any_t _self, any_t idx) {
-  list_t* self          = self_of(_self);
+  list_t* self          = selfof(_self);
   list_node_t* node     = nullptr;
   list_node_t* idx_node = nullptr;
 
@@ -104,7 +100,7 @@ void __list_pop(any_t _self, any_t idx) {
 }
 
 void __list_pop_front(any_t _self) {
-  list_t* self = self_of(_self);
+  list_t* self = selfof(_self);
 
   u_assert(self->len == 0);
 
@@ -112,7 +108,7 @@ void __list_pop_front(any_t _self) {
 }
 
 void __list_pop_back(any_t _self) {
-  list_t* self = self_of(_self);
+  list_t* self = selfof(_self);
 
   u_assert(self->len == 0);
 
@@ -120,35 +116,36 @@ void __list_pop_back(any_t _self) {
 }
 
 void __list_push(any_t _self, any_t idx, any_t item) {
-  list_t* self           = self_of(_self);
+  list_t* self           = selfof(_self);
   list_node_t* idx_node  = nullptr;
   list_node_t* item_node = nullptr;
+  list_node_t* prev_node = nullptr;
+  list_node_t* next_node = nullptr;
 
   u_assert(item == nullptr);
 
   item_node = item + self->off;
+  idx_node  = idx + self->off;
 
-  if (idx == nullptr) {
-    item_node->prev = nullptr;
-    item_node->next = self->head;
-
-    self->head = item_node;
-  } else {
-    idx_node = idx + self->off;
-    u_assert(self->len == 0);
-
-    item_node->prev = idx_node;
-    item_node->next = idx_node->next;
-
-    idx_node->next = item_node;
+  if (idx != nullptr) {
+    prev_node = idx + self->off;
   }
 
-  if (item_node->next == nullptr) {
-    self->tail = item_node;
+  next_node = (prev_node != nullptr) ? prev_node->next : self->head;
+
+  item_node->prev = prev_node;
+  item_node->next = next_node;
+
+  if (prev_node != nullptr) {
+    prev_node->next = item_node;
   } else {
-    if (idx != nullptr) {
-      idx_node->next->prev = idx_node;
-    }
+    self->head = item_node;
+  }
+
+  if (next_node != nullptr) {
+    next_node->prev = item_node;
+  } else {
+    self->tail = item_node;
   }
 
   self->len++;
@@ -159,7 +156,7 @@ void __list_push_front(any_t _self, any_t item) {
 }
 
 void __list_push_back(any_t _self, any_t item) {
-  list_t* self = self_of(_self);
+  list_t* self = selfof(_self);
 
   if (self->len == 0) {
     __list_push(_self, nullptr, item);
@@ -171,16 +168,20 @@ void __list_push_back(any_t _self, any_t item) {
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
+void __list_range_init(any_t _self) {
+  selfof(_self)->itor = nullptr;
+}
+
 bool __list_range(any_t _self, bool flag) {
-  list_t* self       = self_of(_self);
-  list_node_t** item = _self;
+  list_t* self = selfof(_self);
+  any_t* item  = _self;
 
   u_ret_if(self->len == 0, false);
 
-  if (*item == nullptr) {
-    self->itor = (flag ? self->head : self->tail);
+  if (self->itor == nullptr) {
+    self->itor = flag ? self->head : self->tail;
   } else {
-    self->itor = (flag ? self->itor->next : self->itor->prev);
+    self->itor = flag ? self->itor->next : self->itor->prev;
   }
 
   if (self->itor == nullptr) {

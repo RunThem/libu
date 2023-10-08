@@ -101,26 +101,75 @@ int main(int argc, const char** argv) {
 
   typedef struct {
     int a;
-    char c;
+    u_list_node_t lnode;
   } st_t;
 
-  u_avl_t(st_t) t = u_avl_new(st_t, fn_cmp_use(int));
+  st_t a = {.a = 1};
+  st_t b = {.a = 2};
+  st_t c = {.a = 3};
+  st_t d = {.a = 4};
+  st_t e = {.a = 5};
 
-  u_avl_push(t, *(me(st_t, .a = 1, .c = '3')));
+  u_list_t(st_t) l = u_list_new(st_t, lnode);
 
-  infln("%zu", u_avl_len(t));
-  u_avl_rfor(t) {
-    infln("'%c'", t->item.c);
+  u_list_push_back(l, &a);
+  u_list_push_back(l, &b);
+
+  u_list_push_front(l, &c);
+
+  u_list_push(l, &c, &d);
+  u_list_push(l, &a, &e);
+
+  /*
+   * c, d, a, e, b
+   * 3, 4, 1, 5, 2
+   * */
+
+  infln("%zu", u_list_len(l));
+
+  u_list_for(l) {
+    infln("%d", l->item->a);
   }
 
-  u_avl_re(t, *(me(st_t, .a = 1, .c = 'a')));
+  infln();
 
-  infln("%zu", u_avl_len(t));
-  u_avl_rfor(t) {
-    infln("'%c'", t->item.c);
+  u_list_rfor(l) {
+    infln("%d", l->item->a);
   }
 
-  u_avl_cleanup(t);
+  u_list_pop_back(l);
+
+  infln();
+
+  u_list_for(l) {
+    infln("%d", l->item->a);
+  }
+
+  u_list_pop_front(l);
+
+  infln();
+
+  u_list_for(l) {
+    infln("%d", l->item->a);
+  }
+
+  u_list_pop(l, &a);
+
+  infln();
+
+  u_list_for(l) {
+    infln("%d", l->item->a);
+  }
+
+  u_list_pop(l, &d);
+
+  infln();
+
+  u_list_for(l) {
+    infln("%d", l->item->a);
+  }
+
+  infln("%zu", u_list_len(l));
 
   return 0;
 }
