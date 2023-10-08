@@ -21,6 +21,7 @@ set_languages('clatest', 'cxxlatest')
 
 --- Unused variables and functions
 add_cflags('-Wno-unused-function', '-Wno-unused-variable', '-Wno-unused-but-set-variable')
+add_cflags('-Wno-address-of-packed-member')
 
 --- Use reserved identifier
 add_cflags('-Wno-reserved-macro-identifier', '-Wno-reserved-identifier')
