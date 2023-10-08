@@ -14,23 +14,26 @@
 /*************************************************************************************************
  * Private
  *************************************************************************************************/
-typedef struct {
+typedef struct stack_t stack_t;
+struct stack_t {
   size_t itsize;
   size_t len;
   size_t cap;
-  any_t items;
-} stack_t;
 
-#undef self_of
-#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(stack_t), stack_t*))
+  any_t items;
+};
+
+#undef at
+#define at(idx) (self->items + self->itsize * (idx))
+
+#undef selfof
+#define selfof(self) (assert((self) != nullptr), as((self) - sizeof(stack_t), stack_t*))
 
 static ret_t __stack_resize(stack_t* self) {
   size_t cap  = 0;
   any_t items = nullptr;
 
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
-
-  inf("resize %zu", cap);
 
   items = u_realloc(self->items, self->itsize * cap);
   u_mem_if(items);
@@ -73,11 +76,11 @@ err:
  * Destruction
  *************************************************************************************************/
 void __stack_clear(any_t _self) {
-  self_of(_self)->len = 0;
+  selfof(_self)->len = 0;
 }
 
 void __stack_cleanup(any_t _self) {
-  stack_t* self = self_of(_self);
+  stack_t* self = selfof(_self);
 
   u_free_if(self->items);
   u_free_if(self);
@@ -87,42 +90,43 @@ void __stack_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __stack_itsize(any_t _self) {
-  return self_of(_self)->itsize;
+  return selfof(_self)->itsize;
 }
 
 size_t __stack_len(any_t _self) {
-  return self_of(_self)->len;
+  return selfof(_self)->len;
 }
 
 size_t __stack_cap(any_t _self) {
-  return self_of(_self)->cap;
+  return selfof(_self)->cap;
 }
 
 bool __stack_empty(any_t _self) {
-  return self_of(_self)->len == 0;
+  return selfof(_self)->len == 0;
 }
 
 void __stack_peek(any_t _self) {
-  stack_t* self = self_of(_self);
+  stack_t* self = selfof(_self);
   any_t item    = _self;
 
-  u_nonret_if(self->len == 0);
+  u_assert(self->len == 0);
 
-  memcpy(item, self->items + (self->len - 1) * self->itsize, self->itsize);
+  memcpy(item, at(self->len - 1), self->itsize);
 }
 
 void __stack_pop(any_t _self) {
-  stack_t* self = self_of(_self);
+  stack_t* self = selfof(_self);
   any_t item    = _self;
 
-  u_nonret_if(self->len == 0);
+  u_assert(self->len == 0);
 
-  memcpy(item, self->items + (self->len - 1) * self->itsize, self->itsize);
+  memcpy(item, at(self->len - 1), self->itsize);
+
   self->len--;
 }
 
 ret_t __stack_push(any_t _self) {
-  stack_t* self = self_of(_self);
+  stack_t* self = selfof(_self);
   any_t item    = _self;
   ret_t code    = 0;
 
@@ -131,7 +135,8 @@ ret_t __stack_push(any_t _self) {
     u_err_if(code != 0);
   }
 
-  memcpy(self->items + self->len * self->itsize, item, self->itsize);
+  memcpy(at(self->len), item, self->itsize);
+
   self->len++;
 
   return 0;

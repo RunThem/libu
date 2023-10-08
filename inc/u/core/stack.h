@@ -52,7 +52,7 @@ void __stack_peek(any_t _self);
 #define u_stack_peek(stack) (__stack_peek(stack), (stack)->item)
 
 void __stack_pop(any_t _self);
-#define u_stack_pop(stack) __stack_pop(stack)
+#define u_stack_pop(stack) (__stack_pop(stack), (stack)->item)
 
 ret_t __stack_push(any_t _self);
 #define u_stack_push(stack, _item) ((stack)->item = (_item), __stack_push(stack))

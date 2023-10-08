@@ -56,7 +56,7 @@ void __queue_peek(any_t _self);
 #define u_queue_peek(queue) (__queue_peek(queue), (queue)->item)
 
 void __queue_pop(any_t _self);
-#define u_queue_pop(queue) __queue_pop(queue)
+#define u_queue_pop(queue) (__queue_pop(queue), (queue)->itme)
 
 ret_t __queue_push(any_t _self);
 #define u_queue_push(queue, _item) ((queue)->item = (_item), __queue_push(queue))
