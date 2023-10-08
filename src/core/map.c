@@ -13,20 +13,22 @@
  * 32+---------+
  *   |  eq_fn  |
  * 40+---------+
- *   |   bs    |                     0      8      16     24     32     40     48
- * 48+---------+                     +------+------+------+------+------+------+   +------+------+
+ *   |  itor   |
+ * 48+---------+
+ *   |  b_idx  |                     0      8      16     24     32     40     48
+ * 56+---------+                     +------+------+------+------+------+------+   +------+------+
  *   | buckets | ------------------> | next | cnt  | next | cnt  | next | cnt  |...| next | cnt  |
- * 56+---------+ -----------+        +------+------+------+------+------+------+   +------+------+
+ * 64+---------+ -----------+        +------+------+------+------+------+------+   +------+------+
  *   |         |            |           |
  *   |   key   |sizeof(K)   |           v
  *   |         |            v        +------+------+----------------+
  *   +---------+      return point   | next | hash |      ...       |
- *   |  *val   |sizeof(V*)           +------+------+----------+-----+
- *   +---------+                        |            sizeof(k + V)
+ *   |         |                     +------+------+----------+-----+
+ *   |   val   |sizeof(V)               |            sizeof(k + V)
  *   |         |                        v
- *   |   val   |sizeof(V)            +------+------+----------------+
- *   |         |                     | next | hash |      ...       |
- *   +---------+                     +------+------+----------+-----+
+ *   +---------+                     +------+------+----------------+
+ *                                   | next | hash |      ...       |
+ *                                   +------+------+----------+-----+
  *                                      |            sizeof(k + V)
  *                                      v
  *                                   +------+------+----------------+
@@ -71,24 +73,25 @@ struct map_node_t {
 #define key(node) (any(node) + sizeof(map_node_t))
 
 #undef val
-#define val(node) (any(node) + sizeof(map_node_t) + self->voff)
+#define val(node) (any(node) + sizeof(map_node_t) + self->ksize)
 
 typedef struct map_t map_t;
 struct map_t {
   size_t ksize;
   size_t vsize;
-  size_t voff; /* value offset */
   size_t len;
 
   u_map_hash_fn hash_fn;
   u_map_eq_fn eq_fn;
 
-  size_t bs; /* buckets size */
+  map_node_t* itor;
+
+  size_t bucket_idx;
   map_node_t* buckets;
 };
 
-#undef self_of
-#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(map_t), map_t*))
+#undef selfof
+#define selfof(self) (assert((self) != nullptr), as((self) - sizeof(map_t), map_t*))
 
 /* fnv 64-bit hash function */
 static u_hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
@@ -128,7 +131,7 @@ static u_hash_t map_int_hash(const uint8_t* ptr, size_t len) {
 static map_node_t* __map_node(map_t* self, any_t key, any_t val) {
   map_node_t* node = nullptr;
 
-  node = u_zalloc(sizeof(map_node_t) + self->voff + self->vsize);
+  node = u_zalloc(sizeof(map_node_t) + self->ksize + self->vsize);
   u_mem_if(node);
 
   node->hash = self->hash_fn(key, self->ksize);
@@ -146,7 +149,7 @@ static map_node_t* __map_find(map_t* self, map_node_t** list, map_node_t** prev,
   map_node_t* node = nullptr;
 
   hash  = self->hash_fn(key, self->ksize);
-  *list = &self->buckets[hash % bucket_sizes[self->bs]];
+  *list = &self->buckets[hash % bucket_sizes[self->bucket_idx]];
 
   for (*prev = *list, node = (*list)->next; node->next != nullptr;
        *prev = node, node = node->next) {
@@ -181,32 +184,31 @@ err:
   return nullptr;
 }
 
-static map_node_t* __map_next(map_t* self, map_node_t* node) {
+static void __map_next(map_t* self) {
   size_t idx = 0;
 
-  if (node != nullptr) {
-    node = node->next;
+  if (self->itor != nullptr) {
+    self->itor = self->itor->next;
 
-    if (node->next != nullptr) {
-      return node;
+    /* ok */
+    u_nonret_if(self->itor->next != nullptr);
+
+    /* end */
+    u_if(self->itor->hash == 0) {
+      self->itor = nullptr;
+      return;
     }
 
-    if (node->hash == 0) {
-      return nullptr;
-    }
-
-    idx  = node->hash;
-    node = nullptr;
+    idx        = self->itor->hash;
+    self->itor = nullptr;
   }
 
-  for (size_t i = idx; i < bucket_sizes[self->bs]; i++) {
+  for (size_t i = idx; i < bucket_sizes[self->bucket_idx]; i++) {
     if (self->buckets[i].hash != 0) {
-      node = self->buckets[i].next;
+      self->itor = self->buckets[i].next;
       break;
     }
   }
-
-  return node;
 }
 
 static bool __map_resize(map_t* self) {
@@ -215,20 +217,20 @@ static bool __map_resize(map_t* self) {
   map_node_t* tmp      = nullptr;
   map_node_t* list     = nullptr;
   map_node_t* nlist    = nullptr;
-  size_t bs            = 0;
+  size_t bucket_idx    = 0;
 
-  bs       = bucket_sizes[self->bs + 1];
-  nbuckets = __map_buckets(bs);
+  bucket_idx = bucket_sizes[self->bucket_idx + 1];
+  nbuckets   = __map_buckets(bucket_idx);
   u_mem_if(nbuckets);
 
-  for (size_t i = 0; i < bucket_sizes[self->bs]; i++) {
+  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     if (self->buckets[i].hash == 0) {
       continue;
     }
 
     for (node = self->buckets[i].next, list = node->next; node->next != nullptr;
          node = list, list = list->next) {
-      nlist = &nbuckets[node->hash % bs];
+      nlist = &nbuckets[node->hash % bucket_idx];
 
       node->next  = nlist->next;
       nlist->next = node;
@@ -237,7 +239,7 @@ static bool __map_resize(map_t* self) {
     }
   }
 
-  self->bs++;
+  self->bucket_idx++;
 
   u_free(self->buckets);
   self->buckets = nbuckets;
@@ -251,31 +253,25 @@ err:
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __map_new(size_t ksize,
-                size_t vsize,
-                u_map_eq_fn eq_fn,
-                enum u_map_hash_fn hash_fn,
-                size_t voff) {
+any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_fn hash_fn) {
   map_t* self = nullptr;
 
   u_assert(ksize == 0);
   u_assert(vsize == 0);
-  u_assert(voff < ksize);
   u_assert(eq_fn == nullptr);
   u_assert(hash_fn >= U_MAP_HASH_FN_MAX);
 
-  self = u_zalloc(sizeof(map_t) + voff + vsize);
+  self = u_zalloc(sizeof(map_t) + ksize + vsize);
   u_mem_if(self);
 
   self->buckets = __map_buckets(bucket_sizes[0]);
   u_mem_if(self->buckets);
 
-  self->ksize = ksize;
-  self->vsize = vsize;
-  self->voff  = voff;
-  self->len   = 0;
-  self->eq_fn = eq_fn;
-  self->bs    = 0;
+  self->ksize      = ksize;
+  self->vsize      = vsize;
+  self->len        = 0;
+  self->eq_fn      = eq_fn;
+  self->bucket_idx = 0;
 
   if (hash_fn == U_MAP_FNV_64_HASH_FN) {
     self->hash_fn = map_mem_hash;
@@ -295,11 +291,11 @@ err:
  * Destruction
  *************************************************************************************************/
 ret_t __map_clear(any_t _self) {
-  map_t* self      = self_of(_self);
+  map_t* self      = selfof(_self);
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
 
-  for (size_t i = 0; i < bucket_sizes[self->bs]; i++) {
+  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     list = self->buckets[i].next;
 
     for (node = list, list = list->next; node->next != nullptr; node = list, list = list->next) {
@@ -316,7 +312,7 @@ ret_t __map_clear(any_t _self) {
 }
 
 ret_t __map_cleanup(any_t _self) {
-  map_t* self = self_of(_self);
+  map_t* self = selfof(_self);
 
   __map_clear(_self);
   u_free(self->buckets);
@@ -329,23 +325,23 @@ ret_t __map_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __map_ksize(any_t _self) {
-  return self_of(_self)->ksize;
+  return selfof(_self)->ksize;
 }
 
 size_t __map_vsize(any_t _self) {
-  return self_of(_self)->vsize;
+  return selfof(_self)->vsize;
 }
 
 size_t __map_len(any_t _self) {
-  return self_of(_self)->len;
+  return selfof(_self)->len;
 }
 
 bool __map_empty(any_t _self) {
-  return self_of(_self)->len == 0;
+  return selfof(_self)->len == 0;
 }
 
 bool __map_exist(any_t _self) {
-  map_t* self      = self_of(_self);
+  map_t* self      = selfof(_self);
   any_t key        = _self;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
@@ -358,10 +354,27 @@ bool __map_exist(any_t _self) {
   return node->next != nullptr;
 }
 
-void __map_at(any_t _self) {
-  map_t* self      = self_of(_self);
+void __map_re(any_t _self) {
+  map_t* self      = selfof(_self);
   any_t key        = _self;
-  any_t val        = _self + self->voff;
+  any_t val        = _self + self->ksize;
+  map_node_t* node = nullptr;
+  map_node_t* list = nullptr;
+  map_node_t* prev = nullptr;
+  u_hash_t hash    = 0;
+
+  node = __map_find(self, &list, &prev, key);
+  noused(prev);
+
+  u_nonret_if(node->next == nullptr);
+
+  memcpy(val(node), val, self->vsize);
+}
+
+void __map_at(any_t _self) {
+  map_t* self      = selfof(_self);
+  any_t key        = _self;
+  any_t val        = _self + self->ksize;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
   map_node_t* prev = nullptr;
@@ -376,9 +389,9 @@ void __map_at(any_t _self) {
 }
 
 void __map_pop(any_t _self) {
-  map_t* self      = self_of(_self);
+  map_t* self      = selfof(_self);
   any_t key        = _self;
-  any_t val        = _self + self->voff;
+  any_t val        = _self + self->ksize;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
   map_node_t* prev = nullptr;
@@ -401,16 +414,16 @@ void __map_pop(any_t _self) {
 }
 
 ret_t __map_push(any_t _self) {
-  map_t* self      = self_of(_self);
+  map_t* self      = selfof(_self);
   any_t key        = _self;
-  any_t val        = _self + self->voff;
+  any_t val        = _self + self->ksize;
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
   map_node_t* prev = nullptr;
   u_hash_t hash    = 0;
   size_t idx       = 0;
 
-  if (self->len >= as(U_MAP_RESIZE_RADIO * bucket_sizes[self->bs], size_t)) {
+  if (self->len >= as(U_MAP_RESIZE_RADIO * bucket_sizes[self->bucket_idx], size_t)) {
     __map_resize(self);
   }
 
@@ -442,63 +455,62 @@ err:
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
+void __map_range_init(any_t _self) {
+  selfof(_self)->itor = nullptr;
+}
+
 bool __map_range(any_t _self) {
-  map_t* self      = self_of(_self);
-  map_node_t* node = nullptr;
-  any_t key        = nullptr;
-  any_t* val       = nullptr;
-  size_t i         = 0;
+  map_t* self = selfof(_self);
+  any_t key   = _self;
+  any_t val   = _self + self->ksize;
 
   u_ret_if(self->len == 0, false);
 
-  key = _self + sizeof(any_t);
-  val = _self;
-
-  node = __map_next(self, (*val == nullptr) ? nullptr : (*val) - self->ksize - sizeof(map_node_t));
-  if (node == nullptr) {
-    bzero(key, self->ksize);
-    *val = key + self->ksize;
+  __map_next(self);
+  if (self->itor == nullptr) {
+    bzero(key, self->ksize + self->vsize);
 
     return false;
   }
 
-  memcpy(key, key(node), self->ksize);
-  *val = val(node);
+  memcpy(key, key(self->itor), self->ksize + self->vsize);
 
   return true;
 }
 
 #ifndef NDEBUG
 void __map_debug(any_t _self) {
-  map_t* self      = self_of(_self);
+  map_t* self      = selfof(_self);
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
 
-  inf("map %p {ksize(%zu), vsize(%zu), len(%zu), buckets_size(%zu)}",
-      self,
-      self->ksize,
-      self->vsize,
-      self->len,
-      bucket_sizes[self->bs]);
+  fprintf(stderr,
+          "map %p {ksize(%zu), vsize(%zu), len(%zu), buckets_size(%zu)}\n",
+          self,
+          self->ksize,
+          self->vsize,
+          self->len,
+          bucket_sizes[self->bucket_idx]);
 
-  for (size_t i = 0; i < bucket_sizes[self->bs]; i++) {
+  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     list = &self->buckets[i];
 
     if (list->hash == 0) {
       continue;
     }
 
-    inf("buckets[%zu] @%zu", i, list->hash);
+    fprintf(stderr, "buckets[%zu] @%zu", i, list->hash);
 
     for (node = list->next; node->next != nullptr; node = node->next) {
-      println("    %p {%p, %d, '%c'}",
+      fprintf(stderr,
+              "    %p {%p, %d, '%c'}\n",
               node,
               node->next,
               *as(key(node), int*),
               *as(val(node), char*));
     }
 
-    println("    %p {%p, %zu}", node, node->next, node->hash);
+    fprintf(stderr, "    %p {%p, %zu}\n", node, node->next, node->hash);
   }
 }
 #endif

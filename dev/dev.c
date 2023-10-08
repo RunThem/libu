@@ -1,4 +1,3 @@
-#include <stddef.h>
 #include <u/core/avl.h>
 #include <u/core/head.h>
 #include <u/core/list.h>
@@ -15,6 +14,7 @@
 
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
+// #include <stdalign.h>
 #include <threads.h>
 
 #define _typeof(t) __builtin_classify_type(t)
@@ -71,19 +71,54 @@ int main(int argc, const char** argv) {
   }
 #endif
 
+#if 0
+  struct [[gnu::packed]] st {
+    char c;
+    int n;
+  }* s;
+
+  infln("%lu", offsetof(struct st, n));
+
+  typedef struct {
+    uint64_t a;
+    uint64_t b;
+    uint64_t c;
+    uint64_t d;
+    uint64_t e;
+    uint64_t f;
+  } st;
+
+  struct [[gnu::packed, gnu::aligned(16)]] ll {
+    char c;
+    st s;
+  };
+
+  struct ll llll = {0};
+  struct ll* s   = &llll;
+
+  infln("%p, %p", &s->c, &s->s);
+#endif
+
   u_map_t(char, int) m = u_map_new(char, int, fn_eq_use(char), U_MAP_FNV_64_HASH_FN);
 
-  for (size_t i = 'a'; i <= 'z'; i++) {
-    u_map_push(m, i, i);
-  }
+  infln("%p", m);
+  infln("aligned is %p, %p", &m->key, &m->val);
+
+  u_map_push(m, 'a', 1);
 
   infln("%lu", u_map_len(m));
-
-  for (size_t i = 'a'; i <= 'z'; i++) {
-    infln("%d", u_map_pop(m, i));
+  u_map_for(m) {
+    infln("'%c', %d", m->key, m->val);
   }
 
+  u_map_re(m, 'z', 32);
+
   infln("%lu", u_map_len(m));
+  u_map_for(m) {
+    infln("'%c', %d", m->key, m->val);
+  }
+
+  u_map_cleanup(m);
 
   return 0;
 }

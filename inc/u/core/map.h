@@ -5,7 +5,7 @@
 /*************************************************************************************************
  * Macro
  *************************************************************************************************/
-#define U_MAP_RESIZE_RADIO 0.7
+#define U_MAP_RESIZE_RADIO 0.75
 
 enum u_map_hash_fn {
   U_MAP_FNV_64_HASH_FN = 1,
@@ -23,34 +23,16 @@ typedef fnt(u_map_hash_fn, u_hash_t, const uint8_t*, size_t);
 typedef fnt(u_map_eq_fn, bool, const void*, const void*);
 
 #define u_map_t(K, V)                                                                              \
-  struct {                                                                                         \
+  struct [[gnu::packed]] {                                                                         \
     K key;                                                                                         \
     V val;                                                                                         \
   }*
 
-#define __map_key(map, _key) (map)->key = (_key)
-#define __map_val(map, _val)                                                                       \
-  *as(any(map) + sizeof((map)->key) + sizeof(any_t), typeof((map)->val)) = (_val)
-
 /*************************************************************************************************
- * Create & Clone
+ * Create
  *************************************************************************************************/
-any_t __map_new(size_t ksize,
-                size_t vsize,
-                u_map_eq_fn eq_fn,
-                enum u_map_hash_fn hash_fn,
-                size_t voff);
-#define u_map_new(K, V, eq_fn, hash_fn)                                                            \
-  __map_new(sizeof(K),                                                                             \
-            sizeof(V),                                                                             \
-            eq_fn,                                                                                 \
-            hash_fn,                                                                               \
-            offsetof(                                                                              \
-                struct {                                                                           \
-                  K k;                                                                             \
-                  V v;                                                                             \
-                },                                                                                 \
-                v))
+any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_fn hash_fn);
+#define u_map_new(K, V, eq_fn, hash_fn) __map_new(sizeof(K), sizeof(V), eq_fn, hash_fn)
 
 /*************************************************************************************************
  * Destruction
@@ -81,7 +63,10 @@ bool __map_empty(any_t _self);
 #define u_map_empty(map) __map_empty(map)
 
 bool __map_exist(any_t _self);
-#define u_map_exist(map, _key) (__map_key(map, _key), __map_exist(map))
+#define u_map_exist(map, _key) ((map)->key = (_key), __map_exist(map))
+
+void __map_re(any_t _self);
+#define u_map_re(map, _key, _val) ((map)->key = (_key), (map)->val = (_val), __map_re(map))
 
 void __map_at(any_t _self);
 #define u_map_at(map, _key) ((map)->key = (_key), __map_at(map), (map)->val)
@@ -95,9 +80,13 @@ ret_t __map_push(any_t _self);
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
+void __map_range_init(any_t _self);
 bool __map_range(any_t _self);
-#define u_map_for(map) for ((map)->val = nullptr; __map_range(map);)
+#define u_map_for(map) for (__map_range_init(map); __map_range(map);)
 
+/*************************************************************************************************
+ * debug
+ *************************************************************************************************/
 #ifndef NDEBUG
 extern void __map_debug(any_t _self);
 #  define u_map_debug(map) __map_debug(map)
