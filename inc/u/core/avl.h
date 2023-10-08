@@ -12,8 +12,6 @@ typedef fnt(u_avl_cmp_fn, int, const void*, const void*);
     T item;                                                                                        \
   }*
 
-#define __avl_itor(avl) *as(any(avl) + sizeof((avl)->item), typeof((avl)->item)**)
-
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
@@ -48,11 +46,14 @@ bool __avl_empty(any_t _self);
 bool __avl_exist(any_t _self);
 #define u_avl_exist(avl, _item) ((avl)->item = (_item), __avl_exist(avl))
 
+void __avl_re(any_t _self);
+#define u_avl_re(avl, _item) ((avl)->item = (_item), __avl_re(avl))
+
 void __avl_at(any_t _self);
 #define u_avl_at(avl, _item) ((avl)->item = (_item), __avl_at(avl), ((avl)->item))
 
 void __avl_pop(any_t _self);
-#define u_avl_pop(avl, _item) ((avl)->item = (_item), __avl_pop(avl))
+#define u_avl_pop(avl, _item) ((avl)->item = (_item), __avl_pop(avl), ((avl)->item))
 
 ret_t __avl_push(any_t _self);
 #define u_avl_push(avl, _item) ((avl)->item = (_item), __avl_push(avl))
@@ -60,9 +61,10 @@ ret_t __avl_push(any_t _self);
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
+void __avl_range_init(any_t _self);
 bool __avl_range(any_t _self, bool flag);
-#define u_avl_for(avl)  for (__avl_itor(avl) = nullptr; __avl_range(avl, true);)
-#define u_avl_rfor(avl) for (__avl_itor(avl) = nullptr; __avl_range(avl, false);)
+#define u_avl_for(avl)  for (__avl_range_init(avl); __avl_range(avl, true);)
+#define u_avl_rfor(avl) for (__avl_range_init(avl); __avl_range(avl, false);)
 
 #ifndef NDEBUG
 extern void __avl_debug(any_t _self);

@@ -3,15 +3,15 @@
 
 /* clang-format off */
 /*
- *                                    return point
- *                                         +
- *                                         |
- *                                         v
- *     0        8        16       24       32
- *     +--------+--------+--------+--------+----------------+--------+
- *     | itsize |  len   | cmp_fn |  root  |       ...      |  itor  |
- *     +--------+--------+--------+--------+----------------+--------+
- *                                    |         sizeof(T)        NULL
+ *                                             return point
+ *                                                  +
+ *                                                  |
+ *                                                  v
+ *     0        8        16       24       32       38
+ *     +--------+--------+--------+--------+--------+----------------+
+ *     | itsize |  len   | cmp_fn |  root  |  itor  |       ...      |
+ *     +--------+--------+--------+--------+--------+----------------+
+ *                                    |                sizeof(T)  NULL
  *                                    |                           ^
  *                                    |     0        8        16  |    24       32
  *                                    |     +--------+--------+--------+--------+
@@ -54,13 +54,19 @@ struct avl_node_t {
   size_t height;
 };
 
-#define avl_lh(node)   (((node)->left) ? ((node)->left)->height : 0)
-#define avl_rh(node)   (((node)->right) ? ((node)->right)->height : 0)
-#define avl_item(node) ((node) + 1)
+#undef at
+#define at(node) (any(node) + sizeof(avl_node_t))
 
-#define avl_height(node)                                                                           \
+#undef lh
+#define lh(node) (((node)->left) ? ((node)->left)->height : 0)
+
+#undef rh
+#define rh(node) (((node)->right) ? ((node)->right)->height : 0)
+
+#undef height
+#define height(node)                                                                               \
   do {                                                                                             \
-    (node)->height = max(avl_lh(node), avl_rh(node)) + 1;                                          \
+    (node)->height = max(lh(node), rh(node)) + 1;                                                  \
   } while (0)
 
 typedef struct avl_t avl_t;
@@ -71,9 +77,10 @@ struct avl_t {
   u_avl_cmp_fn cmp_fn;
 
   avl_node_t* root;
+  avl_node_t* itor;
 };
 
-#define self_of(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
+#define selfof(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
 
 static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t item) {
   avl_node_t* node = u_zalloc(sizeof(avl_node_t) + self->itsize);
@@ -84,7 +91,7 @@ static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t item) {
   node->parent = parent;
   node->height = 1;
 
-  memcpy(node + 1, item, self->itsize);
+  memcpy(at(node), item, self->itsize);
 
   return node;
 
@@ -144,41 +151,41 @@ static avl_node_t* __avl_rotate_right(avl_t* self, avl_node_t* node) {
 }
 
 static avl_node_t* __avl_fix_left(avl_t* self, avl_node_t* node) {
-  int hl            = 0;
-  int hr            = 0;
+  int lh            = 0;
+  int rh            = 0;
   avl_node_t* right = node->right;
 
-  hl = avl_lh(right);
-  hr = avl_rh(right);
-  if (hl > hr) {
+  lh = lh(right);
+  rh = rh(right);
+  if (lh > rh) {
     right = __avl_rotate_right(self, right);
-    avl_height(right->right);
-    avl_height(right);
+    height(right->right);
+    height(right);
   }
 
   node = __avl_rotate_left(self, node);
-  avl_height(node->left);
-  avl_height(node);
+  height(node->left);
+  height(node);
 
   return node;
 }
 
 static avl_node_t* __avl_fix_right(avl_t* self, avl_node_t* node) {
-  int hl           = 0;
-  int hr           = 0;
+  int lh           = 0;
+  int rh           = 0;
   avl_node_t* left = node->left;
 
-  hl = avl_lh(left);
-  hr = avl_rh(left);
-  if (hl < hr) {
+  lh = lh(left);
+  rh = rh(left);
+  if (lh < rh) {
     left = __avl_rotate_left(self, left);
-    avl_height(left->left);
-    avl_height(left);
+    height(left->left);
+    height(left);
   }
 
   node = __avl_rotate_right(self, node);
-  avl_height(node->right);
-  avl_height(node);
+  height(node->right);
+  height(node);
 
   return node;
 }
@@ -242,16 +249,16 @@ static avl_node_t* __avl_pop_left_or_right(avl_t* self, avl_node_t* node) {
 }
 
 static void __avl_pop_rebalance(avl_t* self, avl_node_t* node) {
-  int hl;
-  int hr;
+  int lh;
+  int rh;
   int diff;
   size_t height;
 
   while (node) {
-    hl     = avl_lh(node);
-    hr     = avl_rh(node);
-    height = max(hl, hr) + 1;
-    diff   = hl - hr;
+    lh     = lh(node);
+    rh     = rh(node);
+    height = max(lh, rh) + 1;
+    diff   = lh - rh;
 
     if (node->height != height) {
       node->height = height;
@@ -270,16 +277,16 @@ static void __avl_pop_rebalance(avl_t* self, avl_node_t* node) {
 }
 
 static void __avl_push_rebalance(avl_t* self, avl_node_t* node) {
-  int hr        = 0;
-  int hl        = 0;
+  int lh        = 0;
+  int rh        = 0;
   int diff      = 0;
   size_t height = 0;
 
   for (node = node->parent; node != nullptr; node = node->parent) {
-    hl     = avl_lh(node);
-    hr     = avl_rh(node);
-    height = max(hl, hr) + 1;
-    diff   = hl - hr;
+    lh     = lh(node);
+    rh     = rh(node);
+    height = max(lh, rh) + 1;
+    diff   = lh - rh;
 
     if (node->height == height) {
       break;
@@ -295,8 +302,8 @@ static void __avl_push_rebalance(avl_t* self, avl_node_t* node) {
   }
 }
 
-static void __avl_next(avl_t* self, avl_node_t** itor) {
-  avl_node_t* node = *itor;
+static void __avl_next(avl_t* self) {
+  avl_node_t* node = self->itor;
   avl_node_t* last = nullptr;
 
   if (node == nullptr) {
@@ -322,11 +329,11 @@ static void __avl_next(avl_t* self, avl_node_t** itor) {
     }
   }
 
-  *itor = node;
+  self->itor = node;
 }
 
-static void __avl_prev(avl_t* self, avl_node_t** itor) {
-  avl_node_t* node = *itor;
+static void __avl_prev(avl_t* self) {
+  avl_node_t* node = self->itor;
   avl_node_t* last = nullptr;
 
   if (node == nullptr) {
@@ -352,7 +359,7 @@ static void __avl_prev(avl_t* self, avl_node_t** itor) {
     }
   }
 
-  *itor = node;
+  self->itor = node;
 }
 
 /*************************************************************************************************
@@ -382,7 +389,7 @@ err:
  * Destruction
  *************************************************************************************************/
 void __avl_clear(any_t _self) {
-  avl_t* self                = self_of(_self);
+  avl_t* self                = selfof(_self);
   avl_node_t* node           = nullptr;
   u_queue_t(avl_node_t*) que = nullptr;
 
@@ -412,7 +419,7 @@ void __avl_clear(any_t _self) {
 }
 
 void __avl_cleanup(any_t _self) {
-  avl_t* self = self_of(_self);
+  avl_t* self = selfof(_self);
 
   __avl_clear(_self);
   u_free(self);
@@ -422,25 +429,25 @@ void __avl_cleanup(any_t _self) {
  * Interface
  *************************************************************************************************/
 size_t __avl_itsize(any_t _self) {
-  return self_of(_self)->itsize;
+  return selfof(_self)->itsize;
 }
 
 size_t __avl_len(any_t _self) {
-  return self_of(_self)->len;
+  return selfof(_self)->len;
 }
 
 bool __avl_empty(any_t _self) {
-  return self_of(_self)->len == 0;
+  return selfof(_self)->len == 0;
 }
 
 bool __avl_exist(any_t _self) {
-  avl_t* self      = self_of(_self);
+  avl_t* self      = selfof(_self);
   avl_node_t* node = self->root;
   any_t item       = _self;
   ret_t result     = 0;
 
   while (node) {
-    result = self->cmp_fn(item, avl_item(node));
+    result = self->cmp_fn(item, at(node));
     if (result == 0) {
       break;
     }
@@ -451,14 +458,14 @@ bool __avl_exist(any_t _self) {
   return node != nullptr;
 }
 
-void __avl_at(any_t _self) {
-  avl_t* self      = self_of(_self);
+void __avl_re(any_t _self) {
+  avl_t* self      = selfof(_self);
   avl_node_t* node = self->root;
   any_t item       = _self;
   ret_t result     = 0;
 
   while (node) {
-    result = self->cmp_fn(item, avl_item(node));
+    result = self->cmp_fn(item, at(node));
     if (result == 0) {
       break;
     }
@@ -466,19 +473,36 @@ void __avl_at(any_t _self) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  memcpy(item, avl_item(node), self->itsize);
+  memcpy(at(node), item, self->itsize);
+}
+
+void __avl_at(any_t _self) {
+  avl_t* self      = selfof(_self);
+  avl_node_t* node = self->root;
+  any_t item       = _self;
+  ret_t result     = 0;
+
+  while (node) {
+    result = self->cmp_fn(item, at(node));
+    if (result == 0) {
+      break;
+    }
+
+    node = (result < 0) ? node->left : node->right;
+  }
+
+  memcpy(item, at(node), self->itsize);
 }
 
 void __avl_pop(any_t _self) {
-  avl_t* self        = self_of(_self);
+  avl_t* self        = selfof(_self);
   avl_node_t* node   = self->root;
   avl_node_t* parent = nullptr;
-  avl_node_t* tmp    = nullptr;
   any_t item         = _self;
   ret_t result       = 0;
 
   while (node) {
-    result = self->cmp_fn(item, avl_item(node));
+    result = self->cmp_fn(item, at(node));
     if (result == 0) {
       break;
     }
@@ -486,14 +510,15 @@ void __avl_pop(any_t _self) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  tmp = node;
   if (node->left && node->right) {
     parent = __avl_pop_left_and_right(self, node);
   } else {
     parent = __avl_pop_left_or_right(self, node);
   }
 
-  u_free_if(tmp);
+  memcpy(item, at(node), self->itsize);
+
+  u_free_if(node);
   self->len--;
 
   if (parent) {
@@ -502,7 +527,7 @@ void __avl_pop(any_t _self) {
 }
 
 ret_t __avl_push(any_t _self) {
-  avl_t* self        = self_of(_self);
+  avl_t* self        = selfof(_self);
   avl_node_t** link  = &self->root;
   avl_node_t* parent = nullptr;
   avl_node_t* node   = nullptr;
@@ -512,7 +537,7 @@ ret_t __avl_push(any_t _self) {
   while (*link) {
     parent = *link;
 
-    result = self->cmp_fn(item, avl_item(parent));
+    result = self->cmp_fn(item, at(parent));
     u_err_if(result == 0);
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
@@ -535,17 +560,20 @@ err:
 /*************************************************************************************************
  * Iterator
  *************************************************************************************************/
+void __avl_range_init(any_t _self) {
+  selfof(_self)->itor = nullptr;
+}
+
 bool __avl_range(any_t _self, bool flag) {
-  avl_t* self       = self_of(_self);
-  any_t item        = _self;
-  avl_node_t** itor = _self + self->itsize;
+  avl_t* self = selfof(_self);
+  any_t item  = _self;
 
   u_ret_if(self->len == 0, false);
 
-  ((flag == 1) ? __avl_next : __avl_prev)(self, itor);
-  u_ret_if(*itor == nullptr, false);
+  ((flag == 1) ? __avl_next : __avl_prev)(self);
+  u_ret_if(self->itor == nullptr, false);
 
-  memcpy(item, avl_item(*itor), self->itsize);
+  memcpy(item, at(self->itor), self->itsize);
 
   return true;
 }
@@ -555,11 +583,11 @@ static void __avl_debug_dump(avl_node_t* node, int depth, int flag) {
   u_nonret_if(node == nullptr);
 
   for (size_t i = 0; i < depth; i++) {
-    printf(" ");
+    fprintf(stderr, " ");
   }
 
-  printf("%c ", (flag == 0) ? '@' : (flag == 1) ? 'L' : 'R');
-  printf("{%p, %zu}, %p\n", node, node->height, *as(avl_item(node), any_t*));
+  fprintf(stderr, "%c ", (flag == 0) ? '@' : (flag == 1) ? 'L' : 'R');
+  fprintf(stderr, "{%p, %zu}, %p\n", node, node->height, *as(at(node), any_t*));
 
   if (node->left) {
     __avl_debug_dump(node->left, depth + 4, 1);
@@ -570,13 +598,13 @@ static void __avl_debug_dump(avl_node_t* node, int depth, int flag) {
 }
 
 void __avl_debug(any_t _self) {
-  avl_t* self = self_of(_self);
+  avl_t* self = selfof(_self);
 
   u_assert(self == nullptr);
 
-  printf("avl is %p, nodes is %zu\n", self, self->len);
+  fprintf(stderr, "avl is %p, nodes is %zu\n", self, self->len);
 
   __avl_debug_dump(self->root, 0, 0);
-  printf("\n");
+  fprintf(stderr, "\n");
 }
 #endif

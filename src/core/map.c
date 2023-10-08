@@ -467,11 +467,7 @@ bool __map_range(any_t _self) {
   u_ret_if(self->len == 0, false);
 
   __map_next(self);
-  if (self->itor == nullptr) {
-    bzero(key, self->ksize + self->vsize);
-
-    return false;
-  }
+  u_ret_if(self->itor == nullptr, false);
 
   memcpy(key, key(self->itor), self->ksize + self->vsize);
 

@@ -99,26 +99,28 @@ int main(int argc, const char** argv) {
   infln("%p, %p", &s->c, &s->s);
 #endif
 
-  u_map_t(char, int) m = u_map_new(char, int, fn_eq_use(char), U_MAP_FNV_64_HASH_FN);
+  typedef struct {
+    int a;
+    char c;
+  } st_t;
 
-  infln("%p", m);
-  infln("aligned is %p, %p", &m->key, &m->val);
+  u_avl_t(st_t) t = u_avl_new(st_t, fn_cmp_use(int));
 
-  u_map_push(m, 'a', 1);
+  u_avl_push(t, *(me(st_t, .a = 1, .c = '3')));
 
-  infln("%lu", u_map_len(m));
-  u_map_for(m) {
-    infln("'%c', %d", m->key, m->val);
+  infln("%zu", u_avl_len(t));
+  u_avl_rfor(t) {
+    infln("'%c'", t->item.c);
   }
 
-  u_map_re(m, 'z', 32);
+  u_avl_re(t, *(me(st_t, .a = 1, .c = 'a')));
 
-  infln("%lu", u_map_len(m));
-  u_map_for(m) {
-    infln("'%c', %d", m->key, m->val);
+  infln("%zu", u_avl_len(t));
+  u_avl_rfor(t) {
+    infln("'%c'", t->item.c);
   }
 
-  u_map_cleanup(m);
+  u_avl_cleanup(t);
 
   return 0;
 }
