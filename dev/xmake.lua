@@ -10,6 +10,7 @@ target('dev.c', function()
   add_files('dev.c')
 
   add_deps('u', 'macro')
+  add_links('net')
 end)
 
 task('dev', function()

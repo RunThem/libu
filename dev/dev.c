@@ -15,6 +15,14 @@
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
 // #include <stdalign.h>
+#include <arpa/inet.h>
+#include <libnet.h>
+#include <linux/if_ether.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
+#include <sys/socket.h>
 #include <threads.h>
 
 #define _typeof(t) __builtin_classify_type(t)
@@ -99,29 +107,65 @@ int main(int argc, const char** argv) {
   infln("%p, %p", &s->c, &s->s);
 #endif
 
-  u_heap_t(int) h = u_heap_new(int, fn_cmp_use(int), U_HEAP_MIN);
-
-  each(i, 45) {
-    u_heap_push(h, i);
+  int eth_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+  u_if(eth_fd < 0) {
   }
 
-  infln("%zu", u_heap_len(h));
-
-  each(i, 45) {
-    infln("%d", u_heap_pop(h));
+  int arp_fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_ARP));
+  u_if(arp_fd < 0) {
   }
 
-  u_heap_t(int) l = u_heap_new(int, fn_cmp_use(int), U_HEAP_MAX);
-
-  each(i, 45) {
-    u_heap_push(l, i);
+  int ipv4_fd = socket(AF_INET, SOCK_DGRAM, htons(ETH_P_IP));
+  u_if(ipv4_fd < 0) {
   }
 
-  infln("%zu", u_heap_len(l));
-
-  each(i, 45) {
-    infln("%d", u_heap_pop(l));
+  int icmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+  u_if(icmp_fd < 0) {
   }
 
-  return 0;
+  int igmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_IGMP);
+  u_if(igmp_fd < 0) {
+  }
+
+  libnet_t* n                      = nullptr;
+  char err_buf[LIBNET_ERRBUF_SIZE] = {0};
+
+  n = libnet_init(LIBNET_LINK_ADV, nullptr, err_buf);
+  u_err_if(n == nullptr);
+
+  uint8_t target_mac[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
+  uint8_t sender_mac[] = {0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb};
+  uint8_t target_ip[]  = {192, 168, 1, 1};
+  uint8_t sender_ip[]  = {192, 168, 1, 2};
+
+  libnet_ptag_t ptag;
+  ptag = libnet_build_arp(ARPHRD_ETHER,
+                          ETHERTYPE_IP,
+                          6,
+                          4,
+                          ARPOP_REQUEST,
+                          sender_mac,
+                          sender_ip,
+                          target_mac,
+                          target_ip,
+                          NULL,
+                          0,
+                          n,
+                          0);
+  u_err_if(ptag == -1);
+
+  uint8_t dst_mac[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
+  ptag = libnet_build_ethernet(dst_mac, sender_mac, ETHERTYPE_ARP, NULL, 0, n, 0);
+  u_err_if(ptag == -1);
+
+  int bytes_sent = libnet_write(n);
+  u_err_if(bytes_sent == -1);
+
+  libnet_destroy(n);
+
+  return EXIT_SUCCESS;
+
+err:
+  return EXIT_FAILURE;
 }
