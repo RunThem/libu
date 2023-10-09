@@ -11,27 +11,10 @@ target('check', function()
   add_deps('u', 'macro')
 end)
 
-task('tests', function()
-  set_menu({
-    usage = 'xmake check',
-    description = 'Run unit test',
-  })
-
-  on_run(function()
-    import('core.project.project')
-    local target = project.target('check')
-    local bin_path = target:targetdir() .. '/debug/' .. target:name()
-
-    os.exec('xmake f -m debug --mimalloc=n')
-    os.exec('xmake build -v check')
-    os.exec('xmake run -v check')
-  end)
-end)
-
 task('check', function()
   set_menu({
     usage = 'xmake check',
-    description = 'Run mem check',
+    description = 'Run check',
   })
 
   on_run(function()
