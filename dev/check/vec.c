@@ -81,7 +81,6 @@ mut_test(vec_interface) {
 
   mut_assert(N - 1 == u_vec_at_front(v));
   mut_assert(N - 1 == u_vec_at_back(v));
-  printf("%d", u_vec_at_back(v));
 
   each(i, N) {
     mut_assert(N - 1 - i == u_vec_at(v, i));
