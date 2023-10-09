@@ -1,5 +1,5 @@
 #include <u/core/avl.h>
-#include <u/core/head.h>
+#include <u/core/heap.h>
 #include <u/core/list.h>
 #include <u/core/map.h>
 #include <u/core/queue.h>
@@ -99,77 +99,29 @@ int main(int argc, const char** argv) {
   infln("%p, %p", &s->c, &s->s);
 #endif
 
-  typedef struct {
-    int a;
-    u_list_node_t lnode;
-  } st_t;
+  u_heap_t(int) h = u_heap_new(int, fn_cmp_use(int), U_HEAP_MIN);
 
-  st_t a = {.a = 1};
-  st_t b = {.a = 2};
-  st_t c = {.a = 3};
-  st_t d = {.a = 4};
-  st_t e = {.a = 5};
-
-  u_list_t(st_t) l = u_list_new(st_t, lnode);
-
-  u_list_push_back(l, &a);
-  u_list_push_back(l, &b);
-
-  u_list_push_front(l, &c);
-
-  u_list_push(l, &c, &d);
-  u_list_push(l, &a, &e);
-
-  /*
-   * c, d, a, e, b
-   * 3, 4, 1, 5, 2
-   * */
-
-  infln("%zu", u_list_len(l));
-
-  u_list_for(l) {
-    infln("%d", l->item->a);
+  each(i, 45) {
+    u_heap_push(h, i);
   }
 
-  infln();
+  infln("%zu", u_heap_len(h));
 
-  u_list_rfor(l) {
-    infln("%d", l->item->a);
+  each(i, 45) {
+    infln("%d", u_heap_pop(h));
   }
 
-  u_list_pop_back(l);
+  u_heap_t(int) l = u_heap_new(int, fn_cmp_use(int), U_HEAP_MAX);
 
-  infln();
-
-  u_list_for(l) {
-    infln("%d", l->item->a);
+  each(i, 45) {
+    u_heap_push(l, i);
   }
 
-  u_list_pop_front(l);
+  infln("%zu", u_heap_len(l));
 
-  infln();
-
-  u_list_for(l) {
-    infln("%d", l->item->a);
+  each(i, 45) {
+    infln("%d", u_heap_pop(l));
   }
-
-  u_list_pop(l, &a);
-
-  infln();
-
-  u_list_for(l) {
-    infln("%d", l->item->a);
-  }
-
-  u_list_pop(l, &d);
-
-  infln();
-
-  u_list_for(l) {
-    infln("%d", l->item->a);
-  }
-
-  infln("%zu", u_list_len(l));
 
   return 0;
 }
