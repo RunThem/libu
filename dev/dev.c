@@ -16,6 +16,7 @@
 // #include <backtrace.h>
 // #include <stdalign.h>
 #include <arpa/inet.h>
+#include <dirent.h>
 #include <libnet.h>
 #include <linux/if_ether.h>
 #include <net/if.h>
@@ -172,36 +173,6 @@ err:
   return EXIT_FAILURE;
 
 #endif
-
-  u_vec_t(u_vec_t(int)) vv = u_vec_new(u_vec_t(int));
-
-  u_vec_t(int) v_1 = u_vec_new(int);
-  u_vec_t(int) v_2 = u_vec_new(int);
-  u_vec_t(int) v_3 = u_vec_new(int);
-
-  u_vec_push_back(v_1, 1);
-  u_vec_push_back(v_1, 2);
-  u_vec_push_back(v_1, 3);
-
-  u_vec_push_back(v_2, 4);
-  u_vec_push_back(v_2, 5);
-  u_vec_push_back(v_2, 6);
-
-  u_vec_push_back(v_3, 7);
-  u_vec_push_back(v_3, 8);
-  u_vec_push_back(v_3, 9);
-
-  u_vec_push_back(vv, any(v_1));
-  u_vec_push_back(vv, any(v_2));
-  u_vec_push_back(vv, any(v_3));
-
-  u_vec_for(vv, i) {
-    u_vec_for(vv->item, j) {
-      infln("[%zu][%zu] is %d", i, j, vv->item->item);
-    }
-  }
-
-  infln("%d", u_vec_at(u_vec_at(vv, 1), 1));
 
   return EXIT_SUCCESS;
 }
