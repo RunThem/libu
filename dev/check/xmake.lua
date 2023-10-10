@@ -19,13 +19,19 @@ task('check', function()
 
   on_run(function()
     import('core.project.project')
+    import('lib.detect.find_program')
+
     local target = project.target('check')
     local bin_path = target:targetdir() .. '/valgrind/' .. target:name()
 
     os.exec('xmake f -m valgrind --mimalloc=n')
     os.exec('xmake build -v check')
 
-    local cmd = format('valgrind --tool=memcheck --leak-check=full %s', bin_path)
-    os.exec(cmd)
+    if find_program('valgrind') ~= nil then
+      local cmd = format('valgrind --tool=memcheck --leak-check=full %s', bin_path)
+      os.exec(cmd)
+    else
+      os.exec('xmake run -v check')
+    end
   end)
 end)
