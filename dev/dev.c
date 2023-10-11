@@ -1,3 +1,4 @@
+/* local libs */
 #include <u/core/avl.h>
 #include <u/core/heap.h>
 #include <u/core/list.h>
@@ -10,11 +11,8 @@
 #include <u/util/buf.h>
 #include <u/util/fs.h>
 #include <u/util/obj.h>
-#include <u/util/sock.h>
 
-// #include <backtrace-supported.h>
-// #include <backtrace.h>
-// #include <stdalign.h>
+/* system libs */
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <net/ethernet.h>
@@ -24,11 +22,17 @@
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
 #include <netpacket/packet.h>
+#include <stdalign.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <threads.h>
 #include <unistd.h>
+
+/* third libs */
+#include <libsock.h>
+// #include <backtrace-supported.h>
+// #include <backtrace.h>
 
 #define _typeof(t) __builtin_classify_type(t)
 
@@ -309,6 +313,16 @@ err:
   u_str_erase(&s, 5, 6);
   infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 #endif
+
+  sock_conf_t conf = {
+      .type = SOCK_TYPE_INET4_TCP,
+
+      .host = "baidu.com",
+      .port = 443,
+  };
+
+  auto ret = sock_open(&conf);
+  infln("ret is %d, fd is %d", ret, conf.fd);
 
   return EXIT_SUCCESS;
 }
