@@ -85,6 +85,7 @@ struct map_t {
   u_map_eq_fn eq_fn;
 
   map_node_t* itor;
+  map_node_t* free;
 
   size_t bucket_idx;
   map_node_t* buckets;
@@ -131,8 +132,13 @@ static u_hash_t map_int_hash(const uint8_t* ptr, size_t len) {
 static map_node_t* __map_node(map_t* self, any_t key, any_t val) {
   map_node_t* node = nullptr;
 
-  node = u_zalloc(sizeof(map_node_t) + self->ksize + self->vsize);
-  u_mem_if(node);
+  if (self->free != nullptr) {
+    node       = self->free;
+    self->free = node->next;
+  } else {
+    node = u_zalloc(sizeof(map_node_t) + self->ksize + self->vsize);
+    u_mem_if(node);
+  }
 
   node->hash = self->hash_fn(key, self->ksize);
   memcpy(key(node), key, self->ksize);
@@ -306,6 +312,13 @@ ret_t __map_clear(any_t _self) {
     self->buckets[i].hash = 0;
   }
 
+  while (self->free != nullptr) {
+    node       = self->free;
+    self->free = node->next;
+
+    u_free(node);
+  }
+
   self->len = 0;
 
   return 0;
@@ -409,7 +422,8 @@ void __map_pop(any_t _self) {
 
     memcpy(val, val(node), self->vsize);
 
-    u_free(node);
+    node->next = self->free;
+    self->free = node;
   }
 }
 

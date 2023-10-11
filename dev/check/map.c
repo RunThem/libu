@@ -52,6 +52,42 @@ mut_test(map_interface) {
   mut_assert(0 == u_map_len(m));
 
   u_map_cleanup(m);
+
+  m = u_map_new(int, char, fn_eq_use(int), U_MAP_INT_HASH_FN);
+
+  each(i, N) {
+    u_map_push(m, i, 'a' + i);
+  }
+
+  each(i, N) {
+    u_map_pop(m, i);
+  }
+
+  each(i, N) {
+    u_map_push(m, i, 'a' + i);
+  }
+
+  each(i, N) {
+    u_map_pop(m, i);
+  }
+
+  each(i, N) {
+    u_map_push(m, i, 'a' + i);
+  }
+
+  each(i, N) {
+    u_map_pop(m, i);
+  }
+
+  each(i, N) {
+    u_map_push(m, i, 'a' + i);
+  }
+
+  u_map_push(m, 1000, '0');
+
+  mut_assert(N + 1 == u_map_len(m));
+
+  u_map_cleanup(m);
 }
 
 mut_group(map) {
