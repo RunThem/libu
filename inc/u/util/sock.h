@@ -1,18 +1,19 @@
 #pragma once
 
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/un.h>
-#include <unistd.h>
+#if 0
+#  include <arpa/inet.h>
+#  include <fcntl.h>
+#  include <netdb.h>
+#  include <netinet/in.h>
+#  include <sys/socket.h>
+#  include <sys/types.h>
+#  include <sys/un.h>
+#  include <unistd.h>
 
 /* libs */
-#include <u/core/str.h>
+#  include <u/core/str.h>
 
-#define SOCK_MAX_OPTS 4
+#  define SOCK_MAX_OPTS 4
 
 typedef struct {
   int opt_id;
@@ -53,3 +54,4 @@ typedef struct {
  * 创建一个socket, .fd就是描述符
  * */
 int u_sock_open(u_sock_conf_t* conf);
+#endif

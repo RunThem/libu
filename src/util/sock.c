@@ -1,5 +1,6 @@
 #include <u/util/sock.h>
 
+#if 0
 struct sock_url {
   int family;
   int type;
@@ -17,7 +18,7 @@ static int sock_open_ip(u_sock_conf_t* conf, struct sock_url* url);
 static int sock_open_unix(u_sock_conf_t* conf, struct sock_url* url);
 
 static void sock_pack_url(u_str_t url, struct sock_url* url_res) {
-#if 0
+#  if 0
   u_str_t tmp = nullptr;
   if (strncmp(url, "tcp", 3) == 0) {
     url_res->type     = SOCK_STREAM;
@@ -51,7 +52,7 @@ static void sock_pack_url(u_str_t url, struct sock_url* url_res) {
   } else {
     url_res->addr = str_from(url);
   }
-#endif
+#  endif
 }
 
 static bool sock_set_opt(u_sock_conf_t* conf, int fd) {
@@ -151,7 +152,7 @@ err:
 static int sock_open_unix(u_sock_conf_t* conf, struct sock_url* url) {
   int fd  = 0;
   int ret = 0;
-#if 0
+#  if 0
 
   struct sockaddr_un addr;
   socklen_t addr_len = sizeof(addr);
@@ -185,7 +186,7 @@ static int sock_open_unix(u_sock_conf_t* conf, struct sock_url* url) {
 err:
   u_close_if(fd);
 
-#endif
+#  endif
 
   return ret;
 }
@@ -218,3 +219,4 @@ int u_sock_open(u_sock_conf_t* conf) {
 
   return ret;
 }
+#endif
