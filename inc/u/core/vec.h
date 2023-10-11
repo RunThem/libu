@@ -18,7 +18,7 @@
  * Create & Clone
  *************************************************************************************************/
 any_t __vec_new(size_t itsize, size_t cap);
-#define u_vec_new(T, ...) __vec_new(sizeof(T), va_0th(U_VEC_CAP, __VA_ARGS__))
+#define u_vec_new(T, ...) (__vec_new(sizeof(T), va_0th(U_VEC_CAP, __VA_ARGS__)))
 
 any_t __vec_clone(any_t _self);
 #define u_vec_clone(vec) ((typeof(vec))__vec_clone(vec))
@@ -27,7 +27,7 @@ any_t __vec_clone(any_t _self);
  * Destruction
  *************************************************************************************************/
 void __vec_clear(any_t _self);
-#define u_vec_clear(vec) __vec_clear(vec)
+#define u_vec_clear(vec) (__vec_clear(vec))
 
 void __vec_cleanup(any_t _self);
 #define u_vec_cleanup(vec)                                                                         \
@@ -40,16 +40,16 @@ void __vec_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __vec_itsize(any_t _self);
-#define u_vec_itsize(vec) __vec_itsize(vec)
+#define u_vec_itsize(vec) (__vec_itsize(vec))
 
 size_t __vec_len(any_t _self);
-#define u_vec_len(vec) __vec_len(vec)
+#define u_vec_len(vec) (__vec_len(vec))
 
 size_t __vec_cap(any_t _self);
-#define u_vec_cap(vec) __vec_cap(vec)
+#define u_vec_cap(vec) (__vec_cap(vec))
 
 bool __vec_empty(any_t _self);
-#define u_vec_empty(vec) __vec_empty(vec)
+#define u_vec_empty(vec) (__vec_empty(vec))
 
 void __vec_at(any_t _self, size_t idx);
 void __vec_at_front(any_t _self);
@@ -90,13 +90,13 @@ bool __vec_range(any_t _self, ssize_t* idx, bool flag);
  * Utils
  *************************************************************************************************/
 void __vec_sort(any_t _self, cmp_fn fn);
-#define u_vec_sort(vec, fn) __vec_sort(vec, fn)
+#define u_vec_sort(vec, fn) (__vec_sort(vec, fn))
 
 ssize_t __vec_find(any_t _self, eq_fn fn);
-#define u_vec_find(vec, _item, fn) ((vec)->item = (_item), __vec_find(vec, fn))
+#define u_vec_find(vec, _item, fn) (((vec)->item = (_item), __vec_find(vec, fn)))
 
 ssize_t __vec_min(any_t _self, cmp_fn fn);
-#define u_vec_min(vec, fn) __vec_min(vec, fn)
+#define u_vec_min(vec, fn) (__vec_min(vec, fn))
 
 ssize_t __vec_max(any_t _self, cmp_fn fn);
-#define u_vec_max(vec, fn) __vec_max(vec, fn)
+#define u_vec_max(vec, fn) (__vec_max(vec, fn))

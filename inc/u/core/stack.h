@@ -18,13 +18,13 @@
  * Create & Clone
  *************************************************************************************************/
 any_t __stack_new(size_t itsize, size_t cap);
-#define u_stack_new(T, ...) __stack_new(sizeof(T), va_0th(U_STACK_CAP, __VA_ARGS__))
+#define u_stack_new(T, ...) (__stack_new(sizeof(T), va_0th(U_STACK_CAP, __VA_ARGS__)))
 
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
 void __stack_clear(any_t _self);
-#define u_stack_clear(stack) __stack_clear(stack)
+#define u_stack_clear(stack) (__stack_clear(stack))
 
 void __stack_cleanup(any_t _self);
 #define u_stack_cleanup(stack)                                                                     \
@@ -37,16 +37,16 @@ void __stack_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __stack_itsize(any_t _self);
-#define u_stack_itsize(stack) __stack_itsize(stack)
+#define u_stack_itsize(stack) (__stack_itsize(stack))
 
 size_t __stack_len(any_t _self);
-#define u_stack_len(stack) __stack_len(stack)
+#define u_stack_len(stack) (__stack_len(stack))
 
 size_t __stack_cap(any_t _self);
-#define u_stack_cap(stack) __stack_cap(stack)
+#define u_stack_cap(stack) (__stack_cap(stack))
 
 bool __stack_empty(any_t _self);
-#define u_stack_empty(stack) __stack_empty(stack)
+#define u_stack_empty(stack) (__stack_empty(stack))
 
 void __stack_peek(any_t _self);
 #define u_stack_peek(stack) (__stack_peek(stack), (stack)->item)

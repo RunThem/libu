@@ -22,13 +22,13 @@
  * Create
  *************************************************************************************************/
 any_t __queue_new(size_t itsize, size_t cap);
-#define u_queue_new(T, ...) __queue_new(sizeof(T), va_0th(U_QUEUE_CAP, __VA_ARGS__))
+#define u_queue_new(T, ...) (__queue_new(sizeof(T), va_0th(U_QUEUE_CAP, __VA_ARGS__)))
 
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
 void __queue_clear(any_t _self);
-#define u_queue_clear(queue) __queue_clear(queue)
+#define u_queue_clear(queue) (__queue_clear(queue))
 
 void __queue_cleanup(any_t _self);
 #define u_queue_cleanup(queue)                                                                     \
@@ -41,16 +41,16 @@ void __queue_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __queue_itsize(any_t _self);
-#define u_queue_itsize(queue) __queue_itsize(queue)
+#define u_queue_itsize(queue) (__queue_itsize(queue))
 
 size_t __queue_len(any_t _self);
-#define queue_len(queue) __queue_len(queue)
+#define queue_len(queue) (__queue_len(queue))
 
 size_t __queue_cap(any_t _self);
-#define u_queue_cap(queue) __queue_cap(queue)
+#define u_queue_cap(queue) (__queue_cap(queue))
 
 bool __queue_empty(any_t _self);
-#define u_queue_empty(queue) __queue_empty(queue)
+#define u_queue_empty(queue) (__queue_empty(queue))
 
 void __queue_peek(any_t _self);
 #define u_queue_peek(queue) (__queue_peek(queue), (queue)->item)

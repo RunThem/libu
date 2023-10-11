@@ -16,13 +16,13 @@ typedef fnt(u_avl_cmp_fn, int, const void*, const void*);
  * Create
  *************************************************************************************************/
 any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn);
-#define u_avl_new(T, fn) __avl_new(sizeof(T), fn)
+#define u_avl_new(T, fn) (__avl_new(sizeof(T), fn))
 
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
 void __avl_clear(any_t _self);
-#define u_avl_clear(avl) __avl_clear(avl)
+#define u_avl_clear(avl) (__avl_clear(avl))
 
 void __avl_cleanup(any_t _self);
 #define u_avl_cleanup(avl)                                                                         \
@@ -35,13 +35,13 @@ void __avl_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __avl_itsize(any_t _self);
-#define u_avl_itsize(avl) __avl_itsize(avl)
+#define u_avl_itsize(avl) (__avl_itsize(avl))
 
 size_t __avl_len(any_t _self);
-#define u_avl_len(avl) __avl_len(avl)
+#define u_avl_len(avl) (__avl_len(avl))
 
 bool __avl_empty(any_t _self);
-#define u_avl_empty(avl) __avl_empty(avl)
+#define u_avl_empty(avl) (__avl_empty(avl))
 
 bool __avl_exist(any_t _self);
 #define u_avl_exist(avl, _item) ((avl)->item = (_item), __avl_exist(avl))
@@ -66,7 +66,10 @@ bool __avl_range(any_t _self, bool flag);
 #define u_avl_for(avl)  for (__avl_range_init(avl); __avl_range(avl, true);)
 #define u_avl_rfor(avl) for (__avl_range_init(avl); __avl_range(avl, false);)
 
+/*************************************************************************************************
+ * Debug
+ *************************************************************************************************/
 #ifndef NDEBUG
 extern void __avl_debug(any_t _self);
-#  define u_avl_debug(map) __avl_debug(map)
+#  define u_avl_debug(map) (__avl_debug(map))
 #endif

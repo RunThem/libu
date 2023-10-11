@@ -25,22 +25,22 @@ typedef fnt(u_heap_cmp_fn, int, const void*, const void*);
  * Create
  *************************************************************************************************/
 any_t __heap_new(size_t itsize, u_heap_cmp_fn cmp_fn, enum u_heap_attr attr);
-#define u_heap_new(T, cmp_fn, attr) __heap_new(sizeof(T), cmp_fn, attr)
+#define u_heap_new(T, cmp_fn, attr) (__heap_new(sizeof(T), cmp_fn, attr))
 
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
 size_t __heap_itsize(any_t _self);
-#define u_heap_itsize(heap) __heap_itsize(heap)
+#define u_heap_itsize(heap) (__heap_itsize(heap))
 
 size_t __heap_len(any_t _self);
-#define u_heap_len(heap) __heap_len(heap)
+#define u_heap_len(heap) (__heap_len(heap))
 
 size_t __heap_cap(any_t _self);
-#define u_heap_cap(heap) __heap_cap(heap)
+#define u_heap_cap(heap) (__heap_cap(heap))
 
 bool __heap_empty(any_t _self);
-#define u_heap_empty(stack) __heap_empty(stack)
+#define u_heap_empty(stack) (__heap_empty(stack))
 
 void __heap_peek(any_t _self);
 #define u_heap_peek(heap) (__heap_peed(heap), (heap)->item)

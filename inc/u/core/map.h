@@ -32,13 +32,13 @@ typedef fnt(u_map_eq_fn, bool, const void*, const void*);
  * Create
  *************************************************************************************************/
 any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_fn hash_fn);
-#define u_map_new(K, V, eq_fn, hash_fn) __map_new(sizeof(K), sizeof(V), eq_fn, hash_fn)
+#define u_map_new(K, V, eq_fn, hash_fn) (__map_new(sizeof(K), sizeof(V), eq_fn, hash_fn))
 
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
 ret_t __map_clear(any_t _self);
-#define u_map_clear(map) __map_clear(map)
+#define u_map_clear(map) (__map_clear(map))
 
 ret_t __map_cleanup(any_t _self);
 #define u_map_cleanup(map)                                                                         \
@@ -51,16 +51,16 @@ ret_t __map_cleanup(any_t _self);
  * Interface
  *************************************************************************************************/
 size_t __map_ksize(any_t _self);
-#define u_map_ksize(map) __map_ksize(map)
+#define u_map_ksize(map) (__map_ksize(map))
 
 size_t __map_vsize(any_t _self);
-#define u_map_vsize(map) __map_vsize(map)
+#define u_map_vsize(map) (__map_vsize(map))
 
 size_t __map_len(any_t _self);
-#define u_map_len(map) __map_len(map)
+#define u_map_len(map) (__map_len(map))
 
 bool __map_empty(any_t _self);
-#define u_map_empty(map) __map_empty(map)
+#define u_map_empty(map) (__map_empty(map))
 
 bool __map_exist(any_t _self);
 #define u_map_exist(map, _key) ((map)->key = (_key), __map_exist(map))
@@ -85,7 +85,7 @@ bool __map_range(any_t _self);
 #define u_map_for(map) for (__map_range_init(map); __map_range(map);)
 
 /*************************************************************************************************
- * debug
+ * Debug
  *************************************************************************************************/
 #ifndef NDEBUG
 extern void __map_debug(any_t _self);
