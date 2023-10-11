@@ -8,8 +8,6 @@ typedef const char* u_not_use_the_type_;
 typedef char* const u_not_use_the_type__;
 typedef const char* const u_not_use_the_type___;
 
-#define u_str_len(str) (*(as(any(str) - sizeof(size_t), size_t*)))
-#define u_str_cap(str) (*(as(any(str) - 2 * sizeof(size_t), size_t*)))
 #define s(_str)                                                                                    \
   (((struct {                                                                                      \
      size_t cap;                                                                                   \
@@ -18,6 +16,9 @@ typedef const char* const u_not_use_the_type___;
    }){.len = sizeof(_str) - 1, .data = (_str)})                                                    \
        .data)
 
+/*************************************************************************************************
+ * Create
+ *************************************************************************************************/
 u_str_t __str_new(size_t cap, u_str_t fmt, ...);
 #define u_str_new(any, ...)                                                                        \
   __str_new(_Generic(any, u_str_t: 0, default: any),                                               \
@@ -38,6 +39,15 @@ void __str_cleanup(u_str_t* _self);
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
+size_t __str_len(u_str_t* _self);
+#define u_str_len(str) __str_len(str)
+
+size_t __str_cap(u_str_t* _self);
+#define u_str_cap(str) __str_cap(str)
+
+bool __str_empty(u_str_t* _self);
+#define u_str_empty(str) __str_empty(str)
+
 ret_t __str_append(u_str_t* _self, u_str_t fmt, ...);
 #define u_str_append(str, fmt, ...) __str_append(str, fmt __VA_OPT__(, ) __VA_ARGS__)
 

@@ -11,10 +11,10 @@ struct str_t {
   char data[];
 };
 
-#define self_of(self) (assert((self) != nullptr), as(container_of(self, str_t, data), str_t*))
+#define selfof(self) (assert((self) != nullptr), as(container_of(self, str_t, data), str_t*))
 
 static ret_t __str_resize(u_str_t* _self, size_t cap) {
-  str_t* self = self_of(*_self);
+  str_t* self = selfof(*_self);
   str_t* str  = nullptr;
 
   cap += (cap < 102400) ? cap : 10240;
@@ -31,7 +31,7 @@ err:
 }
 
 /*************************************************************************************************
- * Create & Clone
+ * Create
  *************************************************************************************************/
 u_str_t __str_new(size_t cap, u_str_t fmt, ...) {
   str_t* self    = nullptr;
@@ -69,7 +69,7 @@ err:
  * Destruction
  *************************************************************************************************/
 void __str_clear(u_str_t* _self) {
-  str_t* self = self_of(*_self);
+  str_t* self = selfof(*_self);
 
   /* static string */
   u_assert(self->cap == 0);
@@ -79,7 +79,7 @@ void __str_clear(u_str_t* _self) {
 }
 
 void __str_cleanup(u_str_t* _self) {
-  str_t* self = self_of(*_self);
+  str_t* self = selfof(*_self);
 
   /* static string */
   u_assert(self->cap == 0);
@@ -88,8 +88,23 @@ void __str_cleanup(u_str_t* _self) {
   *_self = nullptr;
 }
 
+/*************************************************************************************************
+ * Interface
+ *************************************************************************************************/
+size_t __str_len(u_str_t* _self) {
+  return selfof(*_self)->len;
+}
+
+size_t __str_cap(u_str_t* _self) {
+  return selfof(*_self)->cap;
+}
+
+bool __str_empty(u_str_t* _self) {
+  return selfof(*_self)->len == 0;
+}
+
 ret_t __str_append(u_str_t* _self, u_str_t fmt, ...) {
-  str_t* self    = self_of(*_self);
+  str_t* self    = selfof(*_self);
   va_list ap     = {0};
   char buf[4096] = {0};
   size_t len     = 0;
@@ -108,7 +123,7 @@ ret_t __str_append(u_str_t* _self, u_str_t fmt, ...) {
     code = __str_resize(_self, self->len + self->len);
     u_err_if(code != 0);
 
-    self = self_of(*_self);
+    self = selfof(*_self);
   }
 
   strncpy(&self->data[self->len], buf, len);
@@ -123,7 +138,7 @@ err:
 }
 
 ret_t __str_erase(u_str_t* _self, size_t idx, size_t len) {
-  str_t* self = self_of(*_self);
+  str_t* self = selfof(*_self);
 
   u_assert(idx + len > self->len);
   u_assert(len == 0);

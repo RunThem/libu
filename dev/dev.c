@@ -294,19 +294,19 @@ err:
   u_str_t s = nullptr;
 
   s = u_str_new(120);
-  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+  infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 
   s = u_str_new("hello world");
-  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+  infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 
   s = u_str_new("hello %s!", "world");
-  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+  infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 
   u_str_append(&s, " I love you!");
-  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+  infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 
   u_str_erase(&s, 5, 6);
-  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+  infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 
   return EXIT_SUCCESS;
 }
