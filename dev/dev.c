@@ -268,16 +268,17 @@ err:
 
 #endif
 
-#define u_str_len(str) (*(as(any(str) - sizeof(size_t), size_t*)))
-#define s(_str)                                                                                    \
-  (((struct {                                                                                      \
-     size_t cap;                                                                                   \
-     size_t len;                                                                                   \
-     char data[sizeof(_str)];                                                                      \
-   }){.len = sizeof(_str) - 1, .data = (_str)})                                                    \
-       .data)
+#if 0
+#  define u_str_len(str) (*(as(any(str) - sizeof(size_t), size_t*)))
+#  define s(_str)                                                                                  \
+    (((struct {                                                                                    \
+       size_t cap;                                                                                 \
+       size_t len;                                                                                 \
+       char data[sizeof(_str)];                                                                    \
+     }){.len = sizeof(_str) - 1, .data = (_str)})                                                  \
+         .data)
 
-  auto s = s("hello");
+  u_str_t s = s("hello");
 
   infln("%s", s);
   infln("%zu", u_str_len(s));
@@ -288,6 +289,24 @@ err:
   infln("%zu", u_str_len(s));
 
   inf_hex(s - 16, (size_t)8 + 8 + 5 + 1);
+#endif
+
+  u_str_t s = nullptr;
+
+  s = u_str_new(120);
+  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+
+  s = u_str_new("hello world");
+  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+
+  s = u_str_new("hello %s!", "world");
+  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+
+  u_str_append(&s, " I love you!");
+  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
+
+  u_str_erase(&s, 5, 6);
+  infln("%zu, %zu, %s", u_str_len(s), u_str_cap(s), s);
 
   return EXIT_SUCCESS;
 }
