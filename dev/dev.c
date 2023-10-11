@@ -159,6 +159,7 @@ err:
 
 #endif
 
+#if 0
   /*
    * ping baidu.com
    * */
@@ -255,7 +256,7 @@ err:
     sleep(3);
   }
 
-#if 0
+#  if 0
   int arp_fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
   u_if(arp_fd < 0) {
   }
@@ -263,7 +264,30 @@ err:
   int igmp_fd = socket(AF_INET, SOCK_RAW, IPPROTO_IGMP);
   u_if(igmp_fd < 0) {
   }
+#  endif
+
 #endif
+
+#define u_str_len(str) (*(as(any(str) - sizeof(size_t), size_t*)))
+#define s(_str)                                                                                    \
+  (((struct {                                                                                      \
+     size_t cap;                                                                                   \
+     size_t len;                                                                                   \
+     char data[sizeof(_str)];                                                                      \
+   }){.len = sizeof(_str) - 1, .data = (_str)})                                                    \
+       .data)
+
+  auto s = s("hello");
+
+  infln("%s", s);
+  infln("%zu", u_str_len(s));
+
+  s[0] = '4';
+
+  infln("%s", s);
+  infln("%zu", u_str_len(s));
+
+  inf_hex(s - 16, (size_t)8 + 8 + 5 + 1);
 
   return EXIT_SUCCESS;
 }
