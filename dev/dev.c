@@ -291,6 +291,7 @@ err:
   inf_hex(s - 16, (size_t)8 + 8 + 5 + 1);
 #endif
 
+#if 0
   u_str_t s = nullptr;
 
   s = u_str_new(120);
@@ -307,6 +308,7 @@ err:
 
   u_str_erase(&s, 5, 6);
   infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
+#endif
 
   return EXIT_SUCCESS;
 }
