@@ -35,6 +35,9 @@ add_cflags('-gdwarf-4')
 --- Toolchain
 set_toolchains('clang')
 
+--- Repositories
+add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
+
 --- Task(lsp) generate the project file
 task('lsp', function()
   set_category('plugin')

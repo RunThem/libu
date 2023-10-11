@@ -1,4 +1,3 @@
-add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
 add_requires('mini-unit-test')
 
 target('check', function()
