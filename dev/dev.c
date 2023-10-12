@@ -314,6 +314,7 @@ err:
   infln("%zu, %zu, %s", u_str_len(&s), u_str_cap(&s), s);
 #endif
 
+#if 0
   sock_conf_t conf = {
       .type = SOCK_TYPE_INET4_TCP,
 
@@ -323,6 +324,12 @@ err:
 
   auto ret = sock_open(&conf);
   infln("ret is %d, fd is %d", ret, conf.fd);
+#endif
+
+#if 0
+#  define is_cite(var, ...)                                                                        \
+    va_elseif(va_has(__VA_ARGS__))(var, va_at(0, __VA_ARGS__))(&(var), sizeof(var))
+#endif
 
   return EXIT_SUCCESS;
 }
