@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   formatting-check:
     name: Formatting Check
-    runs-os: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
