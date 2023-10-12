@@ -36,16 +36,16 @@ void bench_vec(size_t N) {
   }
 
   /* pop */
-  each(i, 3 * N) {
+  each(i, N) {
     u_vec_pop_back(v);
   }
 
-  each(i, 3 * N) {
+  each(i, N) {
     u_vec_pop_front(v);
   }
 
-  each(i, 3 * N) {
-    u_vec_pop(v, i);
+  each(i, N) {
+    u_vec_pop(v, 0);
   }
 
   u_vec_cleanup(v);
