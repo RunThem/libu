@@ -8,7 +8,6 @@
 #include <u/core/str.h>
 #include <u/core/vec.h>
 #include <u/u.h>
-#include <u/util/buf.h>
 #include <u/util/fs.h>
 #include <u/util/obj.h>
 
