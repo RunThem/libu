@@ -92,7 +92,7 @@
 #endif
 
 any_t __obj_method(any_t prototype, any_t data) {
-  uint8_t* code = nullptr;
+  u8_t* code    = nullptr;
   size_t offset = 0;
   size_t ihsize = 0;
 
@@ -114,10 +114,10 @@ any_t __obj_method(any_t prototype, any_t data) {
    * */
   static struct {
     uintptr_t data;
-    uint8_t push_rax;
-    uint8_t mov_rax[2];
+    u8_t push_rax;
+    u8_t mov_rax[2];
     uintptr_t addr;
-    uint8_t jmp_rax[2];
+    u8_t jmp_rax[2];
   } asm_code = {
       .push_rax = 0x50,
       .mov_rax  = {0x48, 0xB8},
@@ -131,16 +131,16 @@ any_t __obj_method(any_t prototype, any_t data) {
    * */
   static struct {
     uintptr_t data;
-    uint8_t jmp;
+    u8_t jmp;
     uintptr_t addr;
-  } asm_code = {.jmp = 0xE9};
+  } asm_code    = {.jmp = 0xE9};
   /* ihsize = offset + sizeof(any_t) * 2 + 1; */
 
 #endif
 #pragma pack(pop)
 
   ihsize = offset + sizeof(asm_code);
-  code   = u_calloc(ihsize, sizeof(uint8_t));
+  code   = u_calloc(ihsize, sizeof(u8_t));
   u_mem_if(code);
 
   if (mprotect(any(((uintptr_t)code >> PAGE_SHIFT) << PAGE_SHIFT),

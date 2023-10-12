@@ -17,9 +17,9 @@ enum u_map_hash_fn {
 /*************************************************************************************************
  * Data Structure
  *************************************************************************************************/
-typedef uint64_t u_hash_t;
+typedef u64_t u_hash_t;
 
-typedef fnt(u_map_hash_fn, u_hash_t, const uint8_t*, size_t);
+typedef fnt(u_map_hash_fn, u_hash_t, const u8_t*, size_t);
 typedef fnt(u_map_eq_fn, bool, const void*, const void*);
 
 #define u_map_t(K, V)                                                                              \

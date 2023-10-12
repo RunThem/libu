@@ -95,29 +95,29 @@ struct map_t {
 #define selfof(self) (assert((self) != nullptr), as((self) - sizeof(map_t), map_t*))
 
 /* fnv 64-bit hash function */
-static u_hash_t map_mem_hash(const uint8_t* ptr, size_t len) {
+static u_hash_t map_mem_hash(const u8_t* ptr, size_t len) {
   u_hash_t hash = 14695981039346656037U;
 
   for (size_t i = 0; i < len; ++i) {
     hash *= 1099511628211U;
-    hash ^= (uint64_t)ptr[i];
+    hash ^= (u64_t)ptr[i];
   }
 
   return hash;
 }
 
 /* int hash function */
-static u_hash_t map_int_hash(const uint8_t* ptr, size_t len) {
+static u_hash_t map_int_hash(const u8_t* ptr, size_t len) {
   u_hash_t hash = 0;
 
   if (len == 1) {
-    hash = (u_hash_t)(*(uint8_t*)ptr);
+    hash = (u_hash_t)(*(u8_t*)ptr);
   } else if (len == 2) {
-    hash = (u_hash_t)(*(uint16_t*)ptr);
+    hash = (u_hash_t)(*(u16_t*)ptr);
   } else if (len == 4) {
-    hash = (u_hash_t)(*(uint32_t*)ptr);
+    hash = (u_hash_t)(*(u32_t*)ptr);
   } else if (len == 8) {
-    hash = (u_hash_t)(*(uint64_t*)ptr);
+    hash = (u_hash_t)(*(u64_t*)ptr);
   } else {
     hash = (u_hash_t)ptr;
   }

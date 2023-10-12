@@ -28,8 +28,8 @@
   do {                                                                                             \
     struct timespec va_let(begin) = {0};                                                           \
     struct timespec va_let(end)   = {0};                                                           \
-    uint64_t va_let(diff)         =  0;                                                            \
-    uint64_t N                 =  n;                                                               \
+    u64_t va_let(diff)            =  0;                                                            \
+    u64_t N                       =  n;                                                            \
                                                                                                    \
     fprintf(stderr, "[%s: %d] benchmark (%s):\n", __FILE__, __LINE__, msg);                        \
                                                                                                    \
@@ -43,7 +43,7 @@
     va_let(diff) = nsec_diff(va_let(end), va_let(begin));                                          \
                                                                                                    \
     fprintf(stderr, "[%s: %d] benchmark { %zu/%zu  => %s }\n", __FILE__, __LINE__,                 \
-                    va_let(diff), as(n, uint64_t),                                                 \
+                    va_let(diff), as(n, u64_t),                                                    \
                     time_fmt(va_let(diff) / n));                                                   \
   } while (0)
 /* clang-format on */
@@ -107,28 +107,30 @@
     return (code) ? 1 : -1;                                                                        \
   }
 
-extern char* time_fmt(uint64_t);
+extern char* time_fmt(u64_t);
 
 extern fn_eq_dec(bool);
 extern fn_eq_dec(char);
 extern fn_eq_dec(int);
-extern fn_eq_dec(int8);
-extern fn_eq_dec(int16);
-extern fn_eq_dec(int32);
-extern fn_eq_dec(int64);
-extern fn_eq_dec(uint8);
-extern fn_eq_dec(uint16);
-extern fn_eq_dec(uint32);
-extern fn_eq_dec(uint64);
+
+extern fn_eq_dec(i8);
+extern fn_eq_dec(u8);
+extern fn_eq_dec(i16);
+extern fn_eq_dec(u16);
+extern fn_eq_dec(i32);
+extern fn_eq_dec(u32);
+extern fn_eq_dec(i64);
+extern fn_eq_dec(u64);
 
 extern fn_cmp_dec(bool);
 extern fn_cmp_dec(char);
 extern fn_cmp_dec(int);
-extern fn_cmp_dec(int8);
-extern fn_cmp_dec(int16);
-extern fn_cmp_dec(int32);
-extern fn_cmp_dec(int64);
-extern fn_cmp_dec(uint8);
-extern fn_cmp_dec(uint16);
-extern fn_cmp_dec(uint32);
-extern fn_cmp_dec(uint64);
+
+extern fn_cmp_dec(i8);
+extern fn_cmp_dec(u8);
+extern fn_cmp_dec(i16);
+extern fn_cmp_dec(u16);
+extern fn_cmp_dec(i32);
+extern fn_cmp_dec(u32);
+extern fn_cmp_dec(i64);
+extern fn_cmp_dec(u64);

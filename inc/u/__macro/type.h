@@ -15,17 +15,36 @@ typedef fnt(eq_fn, bool, const void*, const void*);
 typedef int   ret_t;
 typedef void* any_t;
 
+typedef int8_t   i8_t;
+typedef uint8_t  u8_t;
+typedef int16_t  i16_t;
+typedef uint16_t u16_t;
+typedef int32_t  i32_t;
+typedef uint32_t u32_t;
+typedef int64_t  i64_t;
+typedef uint64_t u64_t;
+
 typedef float       f32_t;
 typedef double      f64_t;
 typedef long double f128_t;
 
-typedef _Atomic(int8_t)   atomic_i8_t;
-typedef _Atomic(uint8_t)  atomic_u8_t;
-typedef _Atomic(int16_t)  atomic_i16_t;
-typedef _Atomic(uint16_t) atomic_u16_t;
-typedef _Atomic(int32_t)  atomic_i32_t;
-typedef _Atomic(uint32_t) atomic_u32_t;
-typedef _Atomic(int64_t)  atomic_i64_t;
-typedef _Atomic(uint64_t) atomic_u64_t;
+typedef _Atomic(i8_t)  atomic_i8_t;
+typedef _Atomic(u8_t)  atomic_u8_t;
+typedef _Atomic(i16_t) atomic_i16_t;
+typedef _Atomic(u16_t) atomic_u16_t;
+typedef _Atomic(i32_t) atomic_i32_t;
+typedef _Atomic(u32_t) atomic_u32_t;
+typedef _Atomic(i64_t) atomic_i64_t;
+typedef _Atomic(u64_t) atomic_u64_t;
+
+#ifdef __SIZEOF_INT128__
+#  define USE_INT128
+
+typedef __int128_t  i128_t;
+typedef __uint128_t u128_t;
+
+typedef _Atomic(i128_t) atomic_i128_t;
+typedef _Atomic(u128_t) atomic_u128_t;
+#endif
 
 /* clang-format on */
