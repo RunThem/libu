@@ -6,37 +6,47 @@
 -->
 
   <h3 align="center">libu</h3>
-  <p align="center">基于C23标准&语言表达式扩展的基础库!</p>
+  <p align="center">基于C23标准 & 逗号表达式的基础容器库!</p>
 </p>
 <br />
 
-`C` 在 `C23` 标准之前, 缺少抽象能力, 很难写出好用的容器, 但在C23标准后就不一样了, 它提供了 `typeof` 和 `auto`, 再加上`语句表达式扩展`, 就可以利用宏来实现好用的容器了. 当然, 缺点也是有的, 就是代码会急速的膨胀起来.
+使用 `C23` 标准的特性与逗号表达式, 再使用宏进行封装, 实现的比较好用的泛型容器,
+缺点那就还是老生常谈的问题了, 此处就不过多介绍了.
  
 ## 目录
 
 - [上手指南](#上手指南)
-  - [开发前的配置要求](#配置要求)
+  - [配置要求](#配置要求)
   - [安装步骤](#安装步骤)
+  - [容器](#容器)
 - [作者](#作者)
 - [鸣谢](#鸣谢)
 
 ### 上手指南
 
-###### 配置要求
+#### 配置要求
 
 1. [xmake](https://github.com/xmake-io/xmake) 项目构建工具
-2. [c2x compiler](https://zh.cppreference.com/w/c/23) 支持 `c2x` 标准的C编译器(默认为Clang 16.0)
+2. [c2x compiler](https://zh.cppreference.com/w/c/23) 仅支持Clang 16以上的版本, 暂不支持Gcc
 
-###### **安装步骤**
+#### **安装步骤**
 
 ```shell
 git clone https://github.com/RunThem/libu.git
 cd libu
-
-xmake f -m debug --toolchain=clang && xmake
-
-xmake lsp
+xmake lsp && xmake
 ```
+
+#### 容器
+
+目前实现的容器:
+- vec
+- map
+- avl
+- list
+- stack
+- queue
+- head
 
 ### 作者
 
@@ -49,7 +59,5 @@ xmake lsp
 ### 鸣谢
 
 - [xmake](https://github.com/xmake-io/xmake)
-- [cc](https://github.com/JacksonAllan/CC)
-- [sds](https://github.com/antirez/sds)
+- [koanlogic/libu](https://github.com/koanlogic/libu)
 - [mimalloc](https://github.com/microsoft/mimalloc)
-- [dbg-macro](https://github.com/eerimoq/dbg-macro)
