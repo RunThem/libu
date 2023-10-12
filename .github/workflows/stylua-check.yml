@@ -8,7 +8,8 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Run styLua style check for lua programs.
-        uses: JohnnyMorganz/stylua-action@v1.1.2
+        uses: JohnnyMorganz/stylua-action@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
           args: --check .
