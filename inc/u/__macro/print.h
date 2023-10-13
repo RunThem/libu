@@ -12,12 +12,12 @@
 #  define __display(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
 #endif
 
-#define __INF_FMT       "\x1b[02m[%s $%d %s]\x1b[0m: "
+#define __INF_FMT       "[INF]\x1b[02m[%s $%d %s]\x1b[0m: "
 #define __inf_args()    __file__, __line__, __func__
 #define inf(fmt, ...)   __display(__INF_FMT fmt, __inf_args() __VA_OPT__(, ) __VA_ARGS__)
 #define infln(fmt, ...) __display(__INF_FMT fmt "\n", __inf_args() __VA_OPT__(, ) __VA_ARGS__)
 
-#define __ERR_FMT       "\x1b[02m[%s $%d %s]\x1b[0m {%s}: "
+#define __ERR_FMT       "[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: "
 #define __err_args()    __file__, __line__, __func__, strerror(errno)
 #define err(fmt, ...)   __display(__ERR_FMT fmt, __err_args() __VA_OPT__(, ) __VA_ARGS__)
 #define errln(fmt, ...) __display(__ERR_FMT fmt "\n", __err_args() __VA_OPT__(, ) __VA_ARGS__)

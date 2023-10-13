@@ -54,6 +54,8 @@ static ret_t __vec_resize(vec_t* self) {
   items = u_realloc(self->items, self->itsize * cap);
   u_mem_if(items);
 
+  infln("vec resize(cap(%zu -> %zu))", self->cap, cap);
+
   self->items = items;
   self->cap   = cap;
 
@@ -69,7 +71,7 @@ err:
 any_t __vec_new(size_t itsize, size_t cap) {
   vec_t* self = nullptr;
 
-  u_assert(itsize == 0);
+  u_check_ret(itsize == 0, nullptr);
 
   self = u_zalloc(sizeof(vec_t) + itsize);
   u_mem_if(self);
@@ -81,6 +83,8 @@ any_t __vec_new(size_t itsize, size_t cap) {
 
   self->itsize = itsize;
   self->cap    = cap;
+
+  infln("vec new(itsize(%zu), cap(%zu))", itsize, cap);
 
   return self + 1;
 
@@ -97,10 +101,12 @@ any_t __vec_clone(any_t _self) {
   vec = __vec_new(self->itsize, self->cap);
   u_mem_if(vec);
 
-  vec = as((vec) - sizeof(vec_t), vec_t*);
+  vec = selfof(vec);
 
   memcpy(vec->items, self->items, self->itsize * self->len);
   vec->len = self->len;
+
+  infln("vec clone(itsize(%zu), len(%zu), cap(%zu))", self->itsize, self->len, self->cap);
 
   return vec + 1;
 
@@ -118,8 +124,8 @@ void __vec_clear(any_t _self) {
 void __vec_cleanup(any_t _self) {
   vec_t* self = selfof(_self);
 
-  u_free_if(self->items);
-  u_free_if(self);
+  u_free(self->items);
+  u_free(self);
 }
 
 /*************************************************************************************************
@@ -148,7 +154,7 @@ void __vec_re(any_t _self, size_t idx) {
   vec_t* self = selfof(_self);
   any_t item  = _self;
 
-  u_assert(idx >= self->len);
+  u_check_nret(idx >= self->len, "vec re(idx(%zu), self.len(%zu))", idx, self->len);
 
   memcpy(at(idx), item, self->itsize);
 }
@@ -168,7 +174,7 @@ void __vec_at(any_t _self, size_t idx) {
   vec_t* self = selfof(_self);
   any_t item  = _self;
 
-  u_assert(idx >= self->len);
+  u_check_nret(idx >= self->len, "vec at(idx(%zu), self.len(%zu))", idx, self->len);
 
   memcpy(item, at(idx), self->itsize);
 }
@@ -188,7 +194,7 @@ void __vec_pop(any_t _self, size_t idx) {
   vec_t* self = selfof(_self);
   any_t item  = _self;
 
-  u_assert(idx >= self->len);
+  u_check_nret(idx >= self->len, "vec pop(idx(%zu), self.len(%zu))", idx, self->len);
 
   memcpy(item, at(idx), self->itsize);
   if (idx != self->len - 1) {
@@ -214,11 +220,11 @@ ret_t __vec_push(any_t _self, size_t idx) {
   any_t item  = _self;
   ret_t code  = 0;
 
-  u_ret_if(idx > self->len, -1);
+  u_check_ret(idx > self->len, -1, "vec push(idx(%zu), self.len(%zu))", idx, self->len);
 
   if (self->len == self->cap) {
     code = __vec_resize(self);
-    u_err_if(code != 0);
+    u_err_if(code != 0, "vec push() resize failed.");
   }
 
   if (idx != self->len) {
@@ -250,9 +256,7 @@ bool __vec_range(any_t _self, ssize_t* idx, bool flag) {
   vec_t* self = selfof(_self);
   any_t item  = _self;
 
-  if (*idx == -1 || *idx == self->len) {
-    return false;
-  }
+  u_check_ret(*idx == -1 || *idx == self->len, false);
 
   /* initialize */
   if (*idx == -2) {
@@ -270,7 +274,7 @@ bool __vec_range(any_t _self, ssize_t* idx, bool flag) {
 void __vec_sort(any_t _self, cmp_fn fn) {
   vec_t* self = selfof(_self);
 
-  u_assert(fn == nullptr);
+  u_check_nret(fn == nullptr);
 
   qsort(self->items, self->len, self->itsize, fn);
 }
@@ -279,7 +283,7 @@ ssize_t __vec_find(any_t _self, eq_fn fn) {
   vec_t* self = selfof(_self);
   any_t item  = _self;
 
-  u_assert(fn == nullptr);
+  u_check_ret(fn == nullptr, -1);
 
   for (ssize_t i = 0; i < self->len; i++) {
     if (fn(at(i), item)) {
@@ -294,7 +298,7 @@ ssize_t __vec_min(any_t _self, cmp_fn fn) {
   vec_t* self = selfof(_self);
   ssize_t idx = 0;
 
-  u_assert(fn == nullptr);
+  u_check_ret(fn == nullptr, -1);
 
   for (ssize_t i = 0; i < self->len; i++) {
     if (fn(at(idx), at(i)) == 1) {
@@ -309,7 +313,7 @@ ssize_t __vec_max(any_t _self, cmp_fn fn) {
   vec_t* self = selfof(_self);
   ssize_t idx = 0;
 
-  u_assert(fn == nullptr);
+  u_check_ret(fn == nullptr, -1);
 
   for (ssize_t i = 0; i < self->len; i++) {
     if (fn(at(idx), at(i)) == -1) {

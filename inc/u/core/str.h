@@ -21,8 +21,11 @@ typedef const char* const u_not_use_the_type___;
  *************************************************************************************************/
 u_str_t __str_new(size_t cap, u_str_t fmt, ...);
 #define u_str_new(any, ...)                                                                        \
-  (__str_new(_Generic(any, u_str_t: 0, default: any),                                              \
-             _Generic(any, u_str_t: any, default: nullptr) __VA_OPT__(, ) __VA_ARGS__))
+  (__str_new(_Generic(any, u_str_t: 0, default                                                     \
+                      : any),                                                                      \
+             _Generic(any, u_str_t                                                                 \
+                      : any, default                                                               \
+                      : nullptr) __VA_OPT__(, ) __VA_ARGS__))
 
 /*************************************************************************************************
  * Destruction
@@ -31,7 +34,7 @@ void __str_clear(u_str_t* _self);
 #define u_str_clear(str) (__str_clear(str))
 
 void __str_cleanup(u_str_t* _self);
-#define u_str_cleanup()                                                                            \
+#define u_str_cleanup(str)                                                                         \
   do {                                                                                             \
     __str_cleanup(str);                                                                            \
   } while (0)
@@ -39,6 +42,9 @@ void __str_cleanup(u_str_t* _self);
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
+void __str_slen(u_str_t* _self, size_t nlen);
+#define u_str_slen(str, nlen) (__str_slen(str, nlen))
+
 size_t __str_len(u_str_t* _self);
 #define u_str_len(str) (__str_len(str))
 

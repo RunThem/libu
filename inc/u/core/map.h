@@ -37,10 +37,10 @@ any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_f
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
-ret_t __map_clear(any_t _self);
+void __map_clear(any_t _self);
 #define u_map_clear(map) (__map_clear(map))
 
-ret_t __map_cleanup(any_t _self);
+void __map_cleanup(any_t _self);
 #define u_map_cleanup(map)                                                                         \
   do {                                                                                             \
     __map_cleanup(map);                                                                            \

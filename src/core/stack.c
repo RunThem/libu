@@ -38,6 +38,8 @@ static ret_t __stack_resize(stack_t* self) {
   items = u_realloc(self->items, self->itsize * cap);
   u_mem_if(items);
 
+  infln("stack resize(cap(%zu -> %zu))", self->cap, cap);
+
   self->items = items;
   self->cap   = cap;
 
@@ -53,13 +55,15 @@ err:
 any_t __stack_new(size_t itsize, size_t cap) {
   stack_t* self = nullptr;
 
-  u_assert(itsize == 0);
+  u_check_ret(itsize == 0, nullptr);
 
   self = u_zalloc(sizeof(stack_t) + itsize);
   u_mem_if(self);
 
   self->items = u_zalloc(itsize * cap);
   u_mem_if(self->items);
+
+  infln("stack new(itsize(%zu), cap(%zu))", itsize, cap);
 
   self->itsize = itsize;
   self->cap    = cap;
@@ -82,8 +86,8 @@ void __stack_clear(any_t _self) {
 void __stack_cleanup(any_t _self) {
   stack_t* self = selfof(_self);
 
-  u_free_if(self->items);
-  u_free_if(self);
+  u_free(self->items);
+  u_free(self);
 }
 
 /*************************************************************************************************
@@ -109,7 +113,7 @@ void __stack_peek(any_t _self) {
   stack_t* self = selfof(_self);
   any_t item    = _self;
 
-  u_assert(self->len == 0);
+  u_check_nret(self->len == 0);
 
   memcpy(item, at(self->len - 1), self->itsize);
 }
@@ -118,7 +122,7 @@ void __stack_pop(any_t _self) {
   stack_t* self = selfof(_self);
   any_t item    = _self;
 
-  u_assert(self->len == 0);
+  u_check_nret(self->len == 0);
 
   memcpy(item, at(self->len - 1), self->itsize);
 
@@ -132,7 +136,7 @@ ret_t __stack_push(any_t _self) {
 
   if (self->len == self->cap) {
     code = __stack_resize(self);
-    u_err_if(code != 0);
+    u_err_if(code != 0, "stack push() resize failed.");
   }
 
   memcpy(at(self->len), item, self->itsize);

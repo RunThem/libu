@@ -6,8 +6,18 @@
 #  define u_if(expr, ...)                                                                          \
     if ((expr) && (errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__)), true))
 
-#  define u_assert(expr) ((expr) && (__assert_fail(#expr, __file__, __line__, __func__), 1))
+#  define u_assert(expr) ((expr) && (__assert_fail(#  expr, __file__, __line__, __func__), true))
 #endif
+
+#define u_check_ret(expr, code, ...)                                                               \
+  u_if(expr, __VA_ARGS__) {                                                                        \
+    return code;                                                                                   \
+  }
+
+#define u_check_nret(expr, ...)                                                                    \
+  u_if(expr, __VA_ARGS__) {                                                                        \
+    return;                                                                                        \
+  }
 
 #define u_die_if(expr, ...)                                                                        \
   u_if(expr, __VA_ARGS__) {                                                                        \
@@ -19,19 +29,24 @@
     return code;                                                                                   \
   }
 
-#define u_nonret_if(expr, ...)                                                                     \
+#define u_nret_if(expr, ...)                                                                       \
   u_if(expr, __VA_ARGS__) {                                                                        \
     return;                                                                                        \
   }
 
 #define u_err_if(expr, ...)                                                                        \
+  u_if(expr, __VA_ARGS__) {                                                                        \
+    goto err;                                                                                      \
+  }
+
+#define u_errs_if(expr, ...)                                                                       \
   u_if(expr, va_slice(1, __VA_ARGS__)) {                                                           \
     goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
 #define u_mem_if(mem, ...)                                                                         \
-  u_if((mem) == nullptr, __VA_ARGS__) {                                                            \
-    goto err;                                                                                      \
+  u_if((mem) == nullptr) {                                                                         \
+    goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
 /*

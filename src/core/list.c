@@ -30,6 +30,8 @@ any_t __list_new(size_t off) {
   self->head = nullptr;
   self->tail = nullptr;
 
+  infln("list new(off(%zu))", off);
+
   return self + 1;
 
 err:
@@ -42,7 +44,7 @@ err:
 void __list_cleanup(any_t _self) {
   list_t* self = selfof(_self);
 
-  u_free_if(self);
+  u_free(self);
 }
 
 /*************************************************************************************************
@@ -61,12 +63,13 @@ void __list_pop(any_t _self, any_t idx) {
   list_node_t* node     = nullptr;
   list_node_t* idx_node = nullptr;
 
-  u_assert(idx == nullptr);
-  u_assert(self->len == 0);
+  u_check_nret(idx == nullptr);
+  u_check_nret(self->len == 0);
 
   idx_node = idx + self->off;
 
-  u_assert(idx_node->next == nullptr && self->tail != idx_node);
+  u_check_nret(idx_node->next == nullptr && self->tail != idx_node,
+               "node is not in a linked list.");
 
   for (node = self->head; node != nullptr; node = node->next) {
     if (node == idx_node) {
@@ -74,7 +77,7 @@ void __list_pop(any_t _self, any_t idx) {
     }
   }
 
-  u_assert(node == nullptr);
+  u_check_nret(node == nullptr, "node is not in a linked list.");
 
   if (self->head == idx_node) {
     self->head = idx_node->next;
@@ -102,7 +105,7 @@ void __list_pop(any_t _self, any_t idx) {
 void __list_pop_front(any_t _self) {
   list_t* self = selfof(_self);
 
-  u_assert(self->len == 0);
+  u_check_nret(self->head == nullptr);
 
   __list_pop(_self, as(self->head, any_t) - self->off);
 }
@@ -110,7 +113,7 @@ void __list_pop_front(any_t _self) {
 void __list_pop_back(any_t _self) {
   list_t* self = selfof(_self);
 
-  u_assert(self->len == 0);
+  u_check_nret(self->tail == nullptr);
 
   __list_pop(_self, as(self->tail, any_t) - self->off);
 }
@@ -122,7 +125,7 @@ void __list_push(any_t _self, any_t idx, any_t item) {
   list_node_t* prev_node = nullptr;
   list_node_t* next_node = nullptr;
 
-  u_assert(item == nullptr);
+  u_check_nret(item == nullptr);
 
   item_node = item + self->off;
   idx_node  = idx + self->off;
@@ -184,9 +187,7 @@ bool __list_range(any_t _self, bool flag) {
     self->itor = flag ? self->itor->next : self->itor->prev;
   }
 
-  if (self->itor == nullptr) {
-    return false;
-  }
+  u_ret_if(self->itor == nullptr, false);
 
   *item = as(self->itor, any_t) - self->off;
 

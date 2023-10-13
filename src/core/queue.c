@@ -40,6 +40,8 @@ static ret_t __queue_resize(queue_t* self) {
   items = u_realloc(self->items, self->itsize * cap);
   u_mem_if(items);
 
+  infln("queue resize(cap(%zu ->%zu))", self->cap, cap);
+
   self->items = items;
   self->cap   = cap;
 
@@ -55,7 +57,7 @@ err:
 any_t __queue_new(size_t itsize, size_t cap) {
   queue_t* self = nullptr;
 
-  u_assert(itsize == 0);
+  u_check_ret(itsize == 0, nullptr);
 
   self = u_zalloc(sizeof(queue_t) + itsize);
   u_mem_if(self);
@@ -69,6 +71,8 @@ any_t __queue_new(size_t itsize, size_t cap) {
 
   self->s_idx = 0;
   self->e_idx = 0;
+
+  infln("queue new(itsize(%zu), cap(%zu))", itsize, cap);
 
   return self + 1;
 
@@ -92,8 +96,8 @@ void __queue_clear(any_t _self) {
 void __queue_cleanup(any_t _self) {
   queue_t* self = selfof(_self);
 
-  u_free_if(self->items);
-  u_free_if(self);
+  u_free(self->items);
+  u_free(self);
 }
 
 /*************************************************************************************************
@@ -119,7 +123,7 @@ void __queue_peek(any_t _self) {
   queue_t* self = selfof(_self);
   any_t item    = _self;
 
-  u_nonret_if(self->len == 0);
+  u_check_nret(self->len == 0);
 
   memcpy(item, at(self->s_idx), self->itsize);
 }
@@ -128,7 +132,7 @@ void __queue_pop(any_t _self) {
   queue_t* self = selfof(_self);
   any_t item    = _self;
 
-  u_nonret_if(self->len == 0);
+  u_check_nret(self->len == 0);
 
   if (self->s_idx >= self->cap / 2) {
     memmove(self->items, at(self->s_idx), self->len * self->itsize);
@@ -150,7 +154,7 @@ ret_t __queue_push(any_t _self) {
   if (self->e_idx == self->cap) {
     if (self->s_idx == 0) {
       code = __queue_resize(self);
-      u_err_if(code != 0);
+      u_err_if(code != 0, "queue push() resize failed.");
     } else {
       memmove(self->items, at(self->s_idx), self->len * self->itsize);
       self->e_idx -= self->s_idx;

@@ -32,6 +32,8 @@ static ret_t __heap_resize(heap_t* self) {
   items = u_realloc(self->items, self->itsize * cap);
   u_mem_if(items);
 
+  infln("heap resize(cap(%zu -> %zu))", self->cap, cap);
+
   self->items = items;
   self->cap   = cap;
 
@@ -47,8 +49,9 @@ err:
 any_t __heap_new(size_t itsize, u_heap_cmp_fn cmp_fn, enum u_heap_attr attr) {
   heap_t* self = nullptr;
 
-  u_assert(itsize == 0);
-  u_assert(cmp_fn == nullptr);
+  u_check_ret(itsize == 0, nullptr);
+  u_check_ret(cmp_fn == nullptr, nullptr);
+  u_check_ret(attr != U_HEAP_MIN || attr != U_HEAP_MAX, nullptr);
 
   self = u_zalloc(sizeof(heap_t) + itsize);
   u_mem_if(self);
@@ -61,6 +64,11 @@ any_t __heap_new(size_t itsize, u_heap_cmp_fn cmp_fn, enum u_heap_attr attr) {
   self->cap    = U_HEAP_CAP;
   self->attr   = attr;
   self->cmp_fn = cmp_fn;
+
+  infln("heap new(itsize(%zu), cmp_fn(%p), attr(%s))",
+        itsize,
+        cmp_fn,
+        attr == U_HEAP_MIN ? "min" : "max");
 
   return self + 1;
 
@@ -93,7 +101,7 @@ void __heap_peek(any_t _self) {
   heap_t* self = selfof(_self);
   any_t item   = _self;
 
-  u_assert(self->len == 0);
+  u_check_nret(self->len == 0);
 
   memcpy(item, self->items, self->itsize);
 }
@@ -104,7 +112,7 @@ void __heap_pop(any_t _self) {
   ssize_t i         = 0;
   ssize_t child_idx = 0;
 
-  u_assert(self->len == 0);
+  u_check_nret(self->len == 0);
 
   memcpy(item, self->items, self->itsize);
   self->len--;
@@ -136,7 +144,7 @@ ret_t __heap_push(any_t _self) {
 
   if (self->len == self->cap) {
     code = __heap_resize(self);
-    u_err_if(code != 0);
+    u_err_if(code != 0, "heap push() resize failed.");
   }
 
   for (i = self->len; i > 0; i = parent_idx) {

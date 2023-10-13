@@ -18,10 +18,12 @@ static ret_t __str_resize(u_str_t* _self, size_t cap) {
   str_t* str  = nullptr;
 
   cap += (cap < 102400) ? cap : 10240;
-  str = u_realloc(self, cap);
+
+  str = u_realloc(self, cap + 1);
   u_mem_if(str);
 
-  str->cap = cap;
+  str->cap       = cap;
+  str->data[cap] = '\0';
 
   *_self = str->data;
 
@@ -39,8 +41,12 @@ u_str_t __str_new(size_t cap, u_str_t fmt, ...) {
   char buf[4096] = {0};
   size_t len     = 0;
 
-  u_assert(cap == 0 && fmt == nullptr);
-  u_assert(cap != 0 && fmt != nullptr);
+  u_check_ret(cap == 0 && fmt == nullptr,
+              nullptr,
+              "cap and fmt parameters are not empty at the same time.");
+  u_check_ret(cap != 0 && fmt != nullptr,
+              nullptr,
+              "cap and fmt parameters are empty at the same time.");
 
   if (cap == 0) {
     va_start(ap, fmt);
@@ -56,8 +62,15 @@ u_str_t __str_new(size_t cap, u_str_t fmt, ...) {
 
   strncpy(self->data, buf, len);
 
-  self->len = len;
-  self->cap = cap;
+  self->len       = len;
+  self->cap       = cap;
+  self->data[cap] = '\0';
+
+  if (cap != 0) {
+    infln("str new() create an empty string of length cap.");
+  } else {
+    infln("str new() create a string with the content '%s'", buf);
+  }
 
   return self->data;
 
@@ -72,7 +85,7 @@ void __str_clear(u_str_t* _self) {
   str_t* self = selfof(*_self);
 
   /* static string */
-  u_assert(self->cap == 0);
+  u_check_nret(self->cap == 0, "string is static string");
 
   self->len     = 0;
   self->data[0] = '\0';
@@ -82,15 +95,24 @@ void __str_cleanup(u_str_t* _self) {
   str_t* self = selfof(*_self);
 
   /* static string */
-  u_assert(self->cap == 0);
+  u_check_nret(self->cap == 0, "string is static string");
 
-  u_free_if(self);
+  u_free(self);
   *_self = nullptr;
 }
 
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
+void __str_slen(u_str_t* _self, size_t nlen) {
+  str_t* self = selfof(*_self);
+
+  u_check_nret(nlen > self->cap, "str slen(len(%zu), self.cap(%zu))", nlen, self->cap);
+
+  self->len        = nlen;
+  self->data[nlen] = '\0';
+}
+
 size_t __str_len(u_str_t* _self) {
   return selfof(*_self)->len;
 }
@@ -111,17 +133,17 @@ ret_t __str_append(u_str_t* _self, u_str_t fmt, ...) {
   ret_t code     = 0;
 
   /* static string */
-  u_assert(self->cap == 0);
-  u_assert(fmt == nullptr);
+  u_check_ret(self->cap == 0, -1, "string is static string");
+
+  u_check_ret(fmt == nullptr, -1);
 
   va_start(ap, fmt);
   len = vsnprintf(buf, arr_len(buf), fmt, ap);
   va_end(ap);
 
   if (self->cap - self->len <= len) {
-    /* resize */
     code = __str_resize(_self, self->len + self->len);
-    u_err_if(code != 0);
+    u_err_if(code != 0, "str append() resize failed.");
 
     self = selfof(*_self);
   }
@@ -134,14 +156,14 @@ ret_t __str_append(u_str_t* _self, u_str_t fmt, ...) {
   return 0;
 
 err:
-  return -1;
+  return -2;
 }
 
 ret_t __str_erase(u_str_t* _self, size_t idx, size_t len) {
   str_t* self = selfof(*_self);
 
-  u_assert(idx + len > self->len);
-  u_assert(len == 0);
+  u_check_ret(idx + len > self->len, -1);
+  u_check_ret(len == 0, -1);
 
   /*
    * "hello world!"

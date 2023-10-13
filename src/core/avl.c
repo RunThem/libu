@@ -376,8 +376,8 @@ static void __avl_prev(avl_t* self) {
 any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
-  u_assert(itsize == 0);
-  u_assert(cmp_fn == nullptr);
+  u_check_ret(itsize == 0, nullptr);
+  u_check_ret(cmp_fn == nullptr, nullptr);
 
   self = u_zalloc(sizeof(avl_t) + itsize + sizeof(any_t));
   u_mem_if(self);
@@ -386,6 +386,8 @@ any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn) {
   self->len    = 0;
   self->cmp_fn = cmp_fn;
   self->root   = nullptr;
+
+  infln("avl new(itsize(%zu), cmp_fn(%p))", itsize, cmp_fn);
 
   return self + 1;
 
@@ -401,7 +403,7 @@ void __avl_clear(any_t _self) {
   avl_node_t* node           = nullptr;
   u_queue_t(avl_node_t*) que = nullptr;
 
-  u_nonret_if(self->len == 0);
+  u_check_nret(self->len == 0);
 
   que = u_queue_new(avl_node_t*);
   u_queue_push(que, self->root);
@@ -557,7 +559,7 @@ ret_t __avl_push(any_t _self) {
     parent = *link;
 
     result = self->cmp_fn(item, at(parent));
-    u_err_if(result == 0);
+    u_err_if(result == 0, "avl push node already exists.");
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
@@ -599,7 +601,7 @@ bool __avl_range(any_t _self, bool flag) {
 
 #ifndef NDEBUG
 static void __avl_debug_dump(avl_node_t* node, int depth, int flag) {
-  u_nonret_if(node == nullptr);
+  u_nret_if(node == nullptr);
 
   for (size_t i = 0; i < depth; i++) {
     fprintf(stderr, " ");

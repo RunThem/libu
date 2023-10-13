@@ -197,7 +197,7 @@ static void __map_next(map_t* self) {
     self->itor = self->itor->next;
 
     /* ok */
-    u_nonret_if(self->itor->next != nullptr);
+    u_nret_if(self->itor->next != nullptr);
 
     /* end */
     u_if(self->itor->hash == 0) {
@@ -262,10 +262,10 @@ err:
 any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_fn hash_fn) {
   map_t* self = nullptr;
 
-  u_assert(ksize == 0);
-  u_assert(vsize == 0);
-  u_assert(eq_fn == nullptr);
-  u_assert(hash_fn >= U_MAP_HASH_FN_MAX);
+  u_check_ret(ksize == 0, nullptr);
+  u_check_ret(vsize == 0, nullptr);
+  u_check_ret(eq_fn == nullptr, nullptr);
+  u_check_ret(hash_fn >= U_MAP_HASH_FN_MAX, nullptr);
 
   self = u_zalloc(sizeof(map_t) + ksize + vsize);
   u_mem_if(self);
@@ -285,6 +285,8 @@ any_t __map_new(size_t ksize, size_t vsize, u_map_eq_fn eq_fn, enum u_map_hash_f
     self->hash_fn = map_int_hash;
   }
 
+  infln("map new(ksize(%zu), vsize(%zu), eq_fn(%p), hash_fn(%u))", ksize, vsize, eq_fn, hash_fn);
+
   return self + 1;
 
 err:
@@ -296,7 +298,7 @@ err:
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
-ret_t __map_clear(any_t _self) {
+void __map_clear(any_t _self) {
   map_t* self      = selfof(_self);
   map_node_t* node = nullptr;
   map_node_t* list = nullptr;
@@ -320,18 +322,15 @@ ret_t __map_clear(any_t _self) {
   }
 
   self->len = 0;
-
-  return 0;
 }
 
-ret_t __map_cleanup(any_t _self) {
+void __map_cleanup(any_t _self) {
   map_t* self = selfof(_self);
 
   __map_clear(_self);
+
   u_free(self->buckets);
   u_free(self);
-
-  return 0;
 }
 
 /*************************************************************************************************
@@ -379,7 +378,7 @@ void __map_re(any_t _self) {
   node = __map_find(self, &list, &prev, key);
   noused(prev);
 
-  u_nonret_if(node->next == nullptr);
+  u_nret_if(node->next == nullptr, "node not exists.");
 
   memcpy(val(node), val, self->vsize);
 }
@@ -396,7 +395,7 @@ void __map_at(any_t _self) {
   node = __map_find(self, &list, &prev, key);
   noused(prev);
 
-  u_nonret_if(node->next == nullptr);
+  u_nret_if(node->next == nullptr, "node not exists");
 
   memcpy(val, val(node), self->vsize);
 }
