@@ -196,10 +196,5 @@ int main(int argc, const char** argv) {
 
 #endif
 
-#if 0
-#  define is_cite(var, ...)                                                                        \
-    va_elseif(va_has(__VA_ARGS__))(var, va_at(0, __VA_ARGS__))(&(var), sizeof(var))
-#endif
-
   return EXIT_SUCCESS;
 }
