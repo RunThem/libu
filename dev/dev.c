@@ -40,33 +40,106 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-#if 0
-typedef any_t u_timer_arg_t;
-typedef fnt(u_timer_fn, void, u_timer_arg_t);
+#if 1
+typedef any_t u_tack_arg_t;
+typedef fnt(u_tack_fn, void, u_tack_arg_t);
 
-typedef struct u_timer_node_t u_timer_node_t;
-struct u_timer_node_t {
+typedef struct u_tack_t u_tack_t;
+struct u_tack_t {
   u64_t tick;
   u64_t period;
-  u_timer_fn fun;
-  u_timer_arg_t arg;
+  u_tack_fn fu;
+  u_tack_arg_t arg;
+};
 
-  u_timer_node_t* parent;
-  u_timer_node_t* left;
-  u_timer_node_t* right;
+typedef struct iheap_t iheap_t;
+struct iheap_t {
+  size_t len;
+  size_t cap;
+
+  u_tack_t* items;
 };
 
 typedef struct u_timer_t u_timer_t;
 struct u_timer_t {
   u64_t tick;
 
-  u_timer_node_t* root;
+  u_tack_t* root;
 };
 
-void fun(u_timer_arg_t arg) {
+void fun(u_tack_arg_t arg) {
   printf("%s\n", "hello");
 }
 #endif
+
+iheap_t* iheap_new(size_t cap) {
+  iheap_t* self = nullptr;
+
+  self = u_zalloc(sizeof(iheap_t));
+  u_mem_if(self);
+
+  self->items = u_zalloc(sizeof(int) * cap);
+  u_mem_if(self->items);
+
+  self->len = 0;
+  self->cap = cap;
+
+  return self;
+
+err:
+  u_free_if(self);
+
+  return nullptr;
+}
+
+void iheap_push(iheap_t* self, u_tack_t it) {
+  ssize_t pidx = 0; /* parent index */
+  ssize_t idx  = (ssize_t)self->len;
+
+  /* TODO: resize */
+  self->items[self->len] = it;
+
+  for (pidx = (idx - 1) / 2; pidx >= 0; idx = pidx, pidx = (idx - 1) / 2) {
+    if (self->items[idx].tick >= self->items[pidx].tick) {
+      break;
+    }
+
+    swap(self->items[idx], self->items[pidx]);
+  }
+
+  self->len++;
+}
+
+u_tack_t iheap_pop(iheap_t* self) {
+  u_tack_t it  = {0};
+  ssize_t cidx = 0; /* child index */
+  ssize_t idx  = 0;
+
+  it             = self->items[0];
+  self->items[0] = self->items[--self->len];
+
+  for (cidx = idx * 2 + 1; cidx < self->len; idx = cidx, cidx = idx * 2 + 1) {
+    if ((cidx < self->len) && (self->items[cidx].tick > self->items[cidx + 1].tick)) {
+      cidx++;
+    }
+
+    if (self->items[idx].tick <= self->items[cidx].tick) {
+      break;
+    }
+
+    swap(self->items[idx], self->items[cidx]);
+  }
+
+  return it;
+}
+
+u_tack_t ihead_peek(iheap_t* self) {
+  return self->items[0];
+}
+
+bool ihead_empty(iheap_t* self) {
+  return self->len == 0;
+}
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
@@ -86,6 +159,13 @@ int main(int argc, const char** argv) {
     tm.tick++;
   }
 #endif
+
+  iheap_t* h = iheap_new(20);
+
+  struct {
+    int a;
+    int b;
+  } s = {0};
 
   return EXIT_SUCCESS;
 }
