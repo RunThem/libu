@@ -1,6 +1,6 @@
 #pragma once
 
-#if !defined(__clang__) || __clang_major__ < 16
+#if !defined(__clang__) && __clang_major__ < 16
 #  error "Please use the Clang v16 or above toolchain, do not use the GCC toolchain"
 #endif
 
