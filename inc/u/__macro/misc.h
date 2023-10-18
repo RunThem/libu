@@ -8,7 +8,7 @@
 
 #define as(v, type)   ((type)(v))
 #define rs(...)       #__VA_ARGS__
-#define me(type, ...) (&(type){__VA_ARGS__})
+#define me(type, ...) ((type){__VA_ARGS__})
 
 #define bit(byte, n) (((byte) >> (n)) & 1)
 
@@ -46,6 +46,8 @@
                     va_let(diff), as(n, u64_t),                                                    \
                     time_fmt(va_let(diff) / n));                                                   \
   } while (0)
+
+extern char* time_fmt(u64_t);
 /* clang-format on */
 
 #define swap(a, b)                                                                                 \
@@ -107,30 +109,30 @@
     return (code) ? 1 : -1;                                                                        \
   }
 
-extern char* time_fmt(u64_t);
+/*
+ * cmp & eq func from base type
+ * */
+static inline fn_eq_def(bool, bool, (x == y));
+static inline fn_eq_def(char, char, (x == y));
+static inline fn_eq_def(int, int, (x == y));
 
-extern fn_eq_dec(bool);
-extern fn_eq_dec(char);
-extern fn_eq_dec(int);
+static inline fn_eq_def(i8, i8_t, (x == y));
+static inline fn_eq_def(u8, u8_t, (x == y));
+static inline fn_eq_def(i16, i16_t, (x == y));
+static inline fn_eq_def(u16, u16_t, (x == y));
+static inline fn_eq_def(i32, i32_t, (x == y));
+static inline fn_eq_def(u32, u32_t, (x == y));
+static inline fn_eq_def(i64, i64_t, (x == y));
+static inline fn_eq_def(u64, u64_t, (x == y));
 
-extern fn_eq_dec(i8);
-extern fn_eq_dec(u8);
-extern fn_eq_dec(i16);
-extern fn_eq_dec(u16);
-extern fn_eq_dec(i32);
-extern fn_eq_dec(u32);
-extern fn_eq_dec(i64);
-extern fn_eq_dec(u64);
+static inline fn_cmp_def(char, char, (x > y));
+static inline fn_cmp_def(int, int, (x > y));
 
-extern fn_cmp_dec(bool);
-extern fn_cmp_dec(char);
-extern fn_cmp_dec(int);
-
-extern fn_cmp_dec(i8);
-extern fn_cmp_dec(u8);
-extern fn_cmp_dec(i16);
-extern fn_cmp_dec(u16);
-extern fn_cmp_dec(i32);
-extern fn_cmp_dec(u32);
-extern fn_cmp_dec(i64);
-extern fn_cmp_dec(u64);
+static inline fn_cmp_def(i8, i8_t, (x > y));
+static inline fn_cmp_def(u8, u8_t, (x > y));
+static inline fn_cmp_def(i16, i16_t, (x > y));
+static inline fn_cmp_def(u16, u16_t, (x > y));
+static inline fn_cmp_def(i32, i32_t, (x > y));
+static inline fn_cmp_def(u32, u32_t, (x > y));
+static inline fn_cmp_def(i64, i64_t, (x > y));
+static inline fn_cmp_def(u64, u64_t, (x > y));

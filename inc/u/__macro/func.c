@@ -30,35 +30,6 @@ char* time_fmt(u64_t t) {
 }
 
 /*
- * cmp & eq func from base type
- * */
-fn_eq_def(bool, bool, (x == y));
-fn_eq_def(char, char, (x == y));
-fn_eq_def(int, int, (x == y));
-
-fn_eq_def(i8, i8_t, (x == y));
-fn_eq_def(u8, u8_t, (x == y));
-fn_eq_def(i16, i16_t, (x == y));
-fn_eq_def(u16, u16_t, (x == y));
-fn_eq_def(i32, i32_t, (x == y));
-fn_eq_def(u32, u32_t, (x == y));
-fn_eq_def(i64, i64_t, (x == y));
-fn_eq_def(u64, u64_t, (x == y));
-
-fn_cmp_def(bool, bool, (x > y));
-fn_cmp_def(char, char, (x > y));
-fn_cmp_def(int, int, (x > y));
-
-fn_cmp_def(i8, i8_t, (x > y));
-fn_cmp_def(u8, u8_t, (x > y));
-fn_cmp_def(i16, i16_t, (x > y));
-fn_cmp_def(u16, u16_t, (x > y));
-fn_cmp_def(i32, i32_t, (x > y));
-fn_cmp_def(u32, u32_t, (x > y));
-fn_cmp_def(i64, i64_t, (x > y));
-fn_cmp_def(u64, u64_t, (x > y));
-
-/*
  * format print
  * */
 void __inf_hex(const u8_t* arr, size_t size) {
