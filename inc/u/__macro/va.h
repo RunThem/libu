@@ -1,17 +1,41 @@
-/*
- * gcc/clang -P -E -Dva_debug va.h
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * doc:
+ *    [](https://github.com/notfoundry/ppstep)
+ *    [](https://github.com/swansontec/map-macro)
+ *    [](http://jhnet.co.uk/articles/cpp_magic)
+ *    [](https://disenone.github.io/2021/03/31/cpp-preprocess)
+ *    [](https://github.com/pfultz2/Cloak/wiki/C-Preprocessor-tricks,-tips,-and-idioms#deferred-expression)
+ *
+ * run:
+ *    gcc/clang -P -E -Dva_debug va.h
+ *
  * */
-#ifdef va_debug
-#  define echo(arg) >>>>>>>>>>>>>>>>>>>>>>>>>>> va_##arg
-#endif
 
-/*
- * [](https://github.com/notfoundry/ppstep)
- * [](https://github.com/swansontec/map-macro)
- * [](http://jhnet.co.uk/articles/cpp_magic)
- * [](https://disenone.github.io/2021/03/31/cpp-preprocess)
- * [](https://github.com/pfultz2/Cloak/wiki/C-Preprocessor-tricks,-tips,-and-idioms#deferred-expression)
- **/
+#ifdef va_debug
+#  define echo(arg) <><><><><><><><><><><><><><><><><><><><><><><> va_##arg
+#endif
 
 /* clang-format off */
 
