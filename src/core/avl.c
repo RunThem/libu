@@ -525,7 +525,12 @@ void __avl_at(any_t _self) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  memcpy(val, val(node), self->vsize);
+  u_if(node == nullptr, "node not exists.") {
+    bzero(val, self->vsize);
+  }
+  else {
+    memcpy(val, val(node), self->vsize);
+  }
 }
 
 void __avl_pop(any_t _self) {

@@ -395,9 +395,12 @@ void __map_at(any_t _self) {
   node = __map_find(self, &list, &prev, key);
   noused(prev);
 
-  u_nret_if(node->next == nullptr, "node not exists");
-
-  memcpy(val, val(node), self->vsize);
+  u_if(node->next == nullptr, "node not exists") {
+    bzero(val, self->vsize);
+  }
+  else {
+    memcpy(val, val(node), self->vsize);
+  }
 }
 
 void __map_pop(any_t _self) {
