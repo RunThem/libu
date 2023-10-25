@@ -1,32 +1,35 @@
 #include <u/u.h>
 
 /*
- * format time string
+ * benchmark
  * */
-thread_local char time_fmt_buf[12] = {0};
+inline bool __benchmark(__tack_t* tack) {
+  char buf[32] = {0};
 
-#define time_fmt_h()  ((u64_t)60 * 60 * 1000 * 1000 * 1000)
-#define time_fmt_m()  ((u64_t)60 * 1000 * 1000 * 1000)
-#define time_fmt_s()  ((u64_t)1000 * 1000 * 1000)
-#define time_fmt_ms() ((u64_t)1000 * 1000)
-#define time_fmt_us() ((u64_t)1000)
-
-char* time_fmt(u64_t t) {
-  if (t > time_fmt_h()) {
-    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f h", (f64_t)t / time_fmt_h());
-  } else if (t > time_fmt_m()) {
-    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f m", (f64_t)t / time_fmt_m());
-  } else if (t > time_fmt_s()) {
-    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f s", (f64_t)t / time_fmt_s());
-  } else if (t > time_fmt_ms()) {
-    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f ms", (f64_t)t / time_fmt_ms());
-  } else if (t > time_fmt_us()) {
-    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6.2f us", (f64_t)t / time_fmt_us());
-  } else {
-    snprintf(time_fmt_buf, sizeof(time_fmt_buf), "%6zu ns", t);
+  if (tack->i == 0) {
+    clock_gettime(CLOCK_REALTIME, &tack->begin);
+    return true;
   }
 
-  return time_fmt_buf;
+  clock_gettime(CLOCK_REALTIME, &tack->end);
+  tack->diff = ((tack->end.tv_sec * 1000000000 + tack->end.tv_nsec) -
+                (tack->begin.tv_sec * 1000000000 + tack->begin.tv_nsec)) /
+               tack->n;
+
+  if (tack->diff > 1000 * 1000 * 1000) {
+    snprintf(buf, sizeof(buf), "%6.2f\x1b[35ms\x1b[0m", (f64_t)tack->diff / 1000 * 1000 * 1000);
+  } else if (tack->diff > 1000 * 1000) {
+    snprintf(buf, sizeof(buf), "%6.2f\x1b[34mms\x1b[0m", (f64_t)tack->diff / 1000 * 1000);
+  } else if (tack->diff > 1000) {
+    snprintf(buf, sizeof(buf), "%6.2f\x1b[33mus\x1b[0m", (f64_t)tack->diff / 1000);
+  } else {
+    snprintf(buf, sizeof(buf), "%6zu\x1b[32mns\x1b[0m", tack->diff);
+  }
+
+  // #define __INF_FMT       "[INF]\x1b[02m[%s $%d %s]\x1b[0m: "
+  fprintf(stderr, "{ \x1b[31m%lu\x1b[0m, %s } bench @%s\n", tack->n, buf, tack->msg);
+
+  return false;
 }
 
 /*

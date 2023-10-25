@@ -24,30 +24,19 @@
 /* clang-format off */
 #define nsec_of(tv)         ((tv).tv_sec * 1000000000 + (tv).tv_nsec) /* timespec */
 #define nsec_diff(tv1, tv2) (nsec_of(tv1) - nsec_of(tv2))
-#define benchmark(msg, n, code)                                                                    \
-  do {                                                                                             \
-    struct timespec va_let(begin) = {0};                                                           \
-    struct timespec va_let(end)   = {0};                                                           \
-    u64_t va_let(diff)            =  0;                                                            \
-    u64_t N                       =  n;                                                            \
-                                                                                                   \
-    fprintf(stderr, "[%s: %d] benchmark (%s):\n", __FILE__, __LINE__, msg);                        \
-                                                                                                   \
-    clock_gettime(CLOCK_REALTIME, &va_let(begin));                                                 \
-                                                                                                   \
-    do                                                                                             \
-      code                                                                                         \
-    while (0);                                                                                     \
-                                                                                                   \
-    clock_gettime(CLOCK_REALTIME, &va_let(end));                                                   \
-    va_let(diff) = nsec_diff(va_let(end), va_let(begin));                                          \
-                                                                                                   \
-    fprintf(stderr, "[%s: %d] benchmark { %zu/%zu  => %s }\n", __FILE__, __LINE__,                 \
-                    va_let(diff), as(n, u64_t),                                                    \
-                    time_fmt(va_let(diff) / n));                                                   \
-  } while (0)
+typedef struct {
+  char* msg;
+  struct timespec begin;
+  struct timespec end;
+  size_t diff;
 
-extern char* time_fmt(u64_t);
+  size_t i;
+  size_t n;
+} __tack_t;
+
+extern bool __benchmark(__tack_t* tack);
+#define benchmark(...)                                                                                 \
+  for (__tack_t T = {__VA_ARGS__}; (T.i != 0 && T.i != T.n) || __benchmark(&T); T.i++)
 /* clang-format on */
 
 #define swap(a, b)                                                                                 \
