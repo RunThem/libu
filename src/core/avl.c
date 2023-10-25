@@ -54,8 +54,11 @@ struct avl_node_t {
   size_t height;
 };
 
-#undef at
-#define at(node) (any(node) + sizeof(avl_node_t))
+#undef key
+#define key(node) (any(node) + sizeof(avl_node_t))
+
+#undef val
+#define val(node) (any(node) + sizeof(avl_node_t) + self->ksize)
 
 #undef lh
 #define lh(node) (((node)->left) ? ((node)->left)->height : 0)
@@ -71,7 +74,8 @@ struct avl_node_t {
 
 typedef struct avl_t avl_t;
 struct avl_t {
-  size_t itsize;
+  size_t ksize;
+  size_t vsize;
   size_t len;
 
   u_avl_cmp_fn cmp_fn;
@@ -83,14 +87,14 @@ struct avl_t {
 
 #define selfof(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
 
-static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t item) {
+static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t key, any_t val) {
   avl_node_t* node = nullptr;
 
   if (self->free != nullptr) {
     node       = self->free;
     self->free = node->parent;
   } else {
-    node = u_zalloc(sizeof(avl_node_t) + self->itsize);
+    node = u_zalloc(sizeof(avl_node_t) + self->ksize + self->vsize);
     u_mem_if(node);
   }
 
@@ -99,7 +103,8 @@ static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t item) {
   node->parent = parent;
   node->height = 1;
 
-  memcpy(at(node), item, self->itsize);
+  memcpy(key(node), key, self->ksize);
+  memcpy(val(node), val, self->vsize);
 
   return node;
 
@@ -373,21 +378,23 @@ static void __avl_prev(avl_t* self) {
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn) {
+any_t __avl_new(size_t ksize, size_t vsize, u_avl_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
-  u_check_ret(itsize == 0, nullptr);
+  u_check_ret(ksize == 0, nullptr);
+  u_check_ret(vsize == 0, nullptr);
   u_check_ret(cmp_fn == nullptr, nullptr);
 
-  self = u_zalloc(sizeof(avl_t) + itsize + sizeof(any_t));
+  self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
   u_mem_if(self);
 
-  self->itsize = itsize;
+  self->ksize  = ksize;
+  self->vsize  = vsize;
   self->len    = 0;
   self->cmp_fn = cmp_fn;
   self->root   = nullptr;
 
-  infln("avl new(itsize(%zu), cmp_fn(%p))", itsize, cmp_fn);
+  infln("avl new(ksize(%zu), vsize(%zu), cmp_fn(%p))", ksize, vsize, cmp_fn);
 
   return self + 1;
 
@@ -436,7 +443,7 @@ void __avl_cleanup(any_t _self) {
 
   while (self->free != nullptr) {
     node       = self->free;
-    self->free = node;
+    self->free = node->parent;
 
     u_free(node);
   }
@@ -447,8 +454,12 @@ void __avl_cleanup(any_t _self) {
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
-size_t __avl_itsize(any_t _self) {
-  return selfof(_self)->itsize;
+size_t __avl_ksize(any_t _self) {
+  return selfof(_self)->ksize;
+}
+
+size_t __avl_vsize(any_t _self) {
+  return selfof(_self)->vsize;
 }
 
 size_t __avl_len(any_t _self) {
@@ -462,11 +473,11 @@ bool __avl_empty(any_t _self) {
 bool __avl_exist(any_t _self) {
   avl_t* self      = selfof(_self);
   avl_node_t* node = self->root;
-  any_t item       = _self;
+  any_t key        = _self;
   ret_t result     = 0;
 
   while (node) {
-    result = self->cmp_fn(item, at(node));
+    result = self->cmp_fn(key, key(node));
     if (result == 0) {
       break;
     }
@@ -480,11 +491,12 @@ bool __avl_exist(any_t _self) {
 void __avl_re(any_t _self) {
   avl_t* self      = selfof(_self);
   avl_node_t* node = self->root;
-  any_t item       = _self;
+  any_t key        = _self;
+  any_t val        = _self + self->ksize;
   ret_t result     = 0;
 
   while (node) {
-    result = self->cmp_fn(item, at(node));
+    result = self->cmp_fn(key, key(node));
     if (result == 0) {
       break;
     }
@@ -492,17 +504,20 @@ void __avl_re(any_t _self) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  memcpy(at(node), item, self->itsize);
+  u_nret_if(node == nullptr, "node not exists.");
+
+  memcpy(val(node), val, self->vsize);
 }
 
 void __avl_at(any_t _self) {
   avl_t* self      = selfof(_self);
   avl_node_t* node = self->root;
-  any_t item       = _self;
+  any_t key        = _self;
+  any_t val        = _self + self->ksize;
   ret_t result     = 0;
 
   while (node) {
-    result = self->cmp_fn(item, at(node));
+    result = self->cmp_fn(key, key(node));
     if (result == 0) {
       break;
     }
@@ -510,18 +525,19 @@ void __avl_at(any_t _self) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  memcpy(item, at(node), self->itsize);
+  memcpy(val, val(node), self->vsize);
 }
 
 void __avl_pop(any_t _self) {
   avl_t* self        = selfof(_self);
   avl_node_t* node   = self->root;
   avl_node_t* parent = nullptr;
-  any_t item         = _self;
+  any_t key          = _self;
+  any_t val          = _self + self->ksize;
   ret_t result       = 0;
 
   while (node) {
-    result = self->cmp_fn(item, at(node));
+    result = self->cmp_fn(key, key(node));
     if (result == 0) {
       break;
     }
@@ -535,7 +551,7 @@ void __avl_pop(any_t _self) {
     parent = __avl_pop_left_or_right(self, node);
   }
 
-  memcpy(item, at(node), self->itsize);
+  memcpy(val, val(node), self->vsize);
 
   node->parent = self->free;
   self->free   = node;
@@ -552,19 +568,20 @@ ret_t __avl_push(any_t _self) {
   avl_node_t** link  = &self->root;
   avl_node_t* parent = nullptr;
   avl_node_t* node   = nullptr;
-  any_t item         = _self;
+  any_t key          = _self;
+  any_t val          = _self + self->ksize;
   ret_t result       = 0;
 
   while (*link) {
     parent = *link;
 
-    result = self->cmp_fn(item, at(parent));
+    result = self->cmp_fn(key, key(parent));
     u_err_if(result == 0, "avl push node already exists.");
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
 
-  node = __avl_node(self, parent, item);
+  node = __avl_node(self, parent, key, val);
   u_mem_if(node);
 
   *link = node;
@@ -587,45 +604,16 @@ void __avl_range_init(any_t _self) {
 
 bool __avl_range(any_t _self, bool flag) {
   avl_t* self = selfof(_self);
-  any_t item  = _self;
+  any_t key   = _self;
+  any_t val   = _self + self->ksize;
 
   u_ret_if(self->len == 0, false);
 
   ((flag == 1) ? __avl_next : __avl_prev)(self);
   u_ret_if(self->itor == nullptr, false);
 
-  memcpy(item, at(self->itor), self->itsize);
+  memcpy(key, key(self->itor), self->ksize);
+  memcpy(val, val(self->itor), self->vsize);
 
   return true;
 }
-
-#ifndef NDEBUG
-static void __avl_debug_dump(avl_node_t* node, int depth, int flag) {
-  u_nret_if(node == nullptr);
-
-  for (size_t i = 0; i < depth; i++) {
-    fprintf(stderr, " ");
-  }
-
-  fprintf(stderr, "%c ", (flag == 0) ? '@' : (flag == 1) ? 'L' : 'R');
-  fprintf(stderr, "{%p, %zu}, %p\n", node, node->height, *as(at(node), any_t*));
-
-  if (node->left) {
-    __avl_debug_dump(node->left, depth + 4, 1);
-  }
-  if (node->right) {
-    __avl_debug_dump(node->right, depth + 4, 2);
-  }
-}
-
-void __avl_debug(any_t _self) {
-  avl_t* self = selfof(_self);
-
-  u_assert(self == nullptr);
-
-  fprintf(stderr, "avl is %p, nodes is %zu\n", self, self->len);
-
-  __avl_debug_dump(self->root, 0, 0);
-  fprintf(stderr, "\n");
-}
-#endif

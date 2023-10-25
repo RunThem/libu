@@ -7,16 +7,17 @@
  *************************************************************************************************/
 typedef fnt(u_avl_cmp_fn, int, const void*, const void*);
 
-#define u_avl_t(T)                                                                                 \
-  struct {                                                                                         \
-    T item;                                                                                        \
+#define u_avl_t(K, V)                                                                              \
+  struct [[gnu::packed]] {                                                                         \
+    K key;                                                                                         \
+    V val;                                                                                         \
   }*
 
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-any_t __avl_new(size_t itsize, u_avl_cmp_fn cmp_fn);
-#define u_avl_new(T, fn) (__avl_new(sizeof(T), fn))
+any_t __avl_new(size_t ksize, size_t vsize, u_avl_cmp_fn cmp_fn);
+#define u_avl_new(K, V, fn) (__avl_new(sizeof(K), sizeof(V), fn))
 
 /*************************************************************************************************
  * Destruction
@@ -34,8 +35,11 @@ void __avl_cleanup(any_t _self);
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
-size_t __avl_itsize(any_t _self);
-#define u_avl_itsize(avl) (__avl_itsize(avl))
+size_t __avl_ksize(any_t _self);
+#define u_avl_ksize(avl) (__avl_ksize(avl))
+
+size_t __avl_vsize(any_t _self);
+#define u_avl_vsize(avl) (__avl_vsize(avl))
 
 size_t __avl_len(any_t _self);
 #define u_avl_len(avl) (__avl_len(avl))
@@ -44,19 +48,19 @@ bool __avl_empty(any_t _self);
 #define u_avl_empty(avl) (__avl_empty(avl))
 
 bool __avl_exist(any_t _self);
-#define u_avl_exist(avl, _item) ((avl)->item = (_item), __avl_exist(avl))
+#define u_avl_exist(avl, _key) ((avl)->key = (_key), __avl_exist(avl))
 
 void __avl_re(any_t _self);
-#define u_avl_re(avl, _item) ((avl)->item = (_item), __avl_re(avl))
+#define u_avl_re(avl, _key, _val) ((avl)->key = (_key), (avl)->val = (_val), __avl_re(avl))
 
 void __avl_at(any_t _self);
-#define u_avl_at(avl, _item) ((avl)->item = (_item), __avl_at(avl), ((avl)->item))
+#define u_avl_at(avl, _key) ((avl)->key = (_key), __avl_at(avl), ((avl)->val))
 
 void __avl_pop(any_t _self);
-#define u_avl_pop(avl, _item) ((avl)->item = (_item), __avl_pop(avl), ((avl)->item))
+#define u_avl_pop(avl, _key) ((avl)->key = (_key), __avl_pop(avl), ((avl)->val))
 
 ret_t __avl_push(any_t _self);
-#define u_avl_push(avl, _item) ((avl)->item = (_item), __avl_push(avl))
+#define u_avl_push(avl, _key, _val) ((avl)->key = (_key), (avl)->val = (_val), __avl_push(avl))
 
 /*************************************************************************************************
  * Iterator
