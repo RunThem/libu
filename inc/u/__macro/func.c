@@ -27,7 +27,7 @@ inline bool __benchmark(__tack_t* tack) {
   }
 
   // #define __INF_FMT       "[INF]\x1b[02m[%s $%d %s]\x1b[0m: "
-  fprintf(stderr, "{ \x1b[31m%lu\x1b[0m, %s } bench @%s\n", tack->n, buf, tack->msg);
+  fprintf(stderr, "    { %s }[\x1b[31m%lu\x1b[0m] bench @%s\n", buf, tack->n, tack->msg);
 
   return false;
 }
