@@ -4,6 +4,8 @@ target('bench', function()
   set_default('false')
 
   add_deps('u', 'macro')
+
+  add_packages('mimalloc')
 end)
 
 task('bench', function()
@@ -13,6 +15,7 @@ task('bench', function()
   })
 
   on_run(function()
+    --[[
     import('core.project.project')
     local target = project.target('bench')
     local bin = target:targetdir() .. '/profile/' .. target:name()
@@ -26,5 +29,10 @@ task('bench', function()
       local cmd = format('gprof -b %s %s', bin, gmon)
       os.exec(cmd)
     end
+    --]]
+
+    os.exec('xmake f -m release --mimalloc=y --lambda=n')
+    os.exec('xmake build -v bench')
+    os.exec('xmake run bench')
   end)
 end)
