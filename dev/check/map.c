@@ -92,7 +92,7 @@ mut_test(map_interface) {
 
 mut_group(map) {
 
-  mut_add_test(map_create, "create vec instance.");
+  mut_add_test(map_create, "create map instance.");
 
   mut_add_test(map_interface, "map interface.");
 }
