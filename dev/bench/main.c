@@ -24,6 +24,9 @@ int main(int argc, const char** argv) {
   println();
 
   map(N100W);
+  println();
+
+  map(N1000W);
   println("}\n");
 
   /* avl tree */
@@ -35,6 +38,9 @@ int main(int argc, const char** argv) {
   println();
 
   avl(N100W);
+  println();
+
+  avl(N1000W);
   println("}");
 
   return 0;

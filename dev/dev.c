@@ -13,6 +13,7 @@
 
 /* system libs */
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <dirent.h>
 #include <net/ethernet.h>
 #include <net/if.h>
@@ -23,6 +24,7 @@
 #include <netpacket/packet.h>
 #include <regex.h>
 #include <stdalign.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
@@ -181,28 +183,6 @@ int main(int argc, const char** argv) {
   ret_t ret = regexec(&regex, msg, 1, &match, 0);
 
   regfree(&regex);
-
-  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp_use(int));
-
-  each(i, 10) {
-    u_avl_push(t, i, i * 2);
-  }
-
-  infln("len %zu", u_avl_len(t));
-
-  u_avl_for(t) {
-    infln("%d -> %d", t->key, t->val);
-  }
-
-  each(i, 10) {
-    u_avl_re(t, i, i * 3);
-  }
-
-  u_avl_for(t) {
-    infln("%d -> %d", t->key, t->val);
-  }
-
-  u_avl_cleanup(t);
 
   return EXIT_SUCCESS;
 }
