@@ -21,11 +21,8 @@ typedef const char* const u_not_use_the_type___;
  *************************************************************************************************/
 u_str_t __str_new(size_t cap, u_str_t fmt, ...);
 #define u_str_new(any, ...)                                                                        \
-  (__str_new(_Generic(any, u_str_t: 0, default                                                     \
-                      : any),                                                                      \
-             _Generic(any, u_str_t                                                                 \
-                      : any, default                                                               \
-                      : nullptr) __VA_OPT__(, ) __VA_ARGS__))
+  (__str_new(_Generic(any, u_str_t: 0, default: any),                                              \
+             _Generic(any, u_str_t: any, default: nullptr) __VA_OPT__(, ) __VA_ARGS__))
 
 /*************************************************************************************************
  * Destruction
