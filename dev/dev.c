@@ -4,6 +4,7 @@
 #include <u/core/list.h>
 #include <u/core/map.h>
 #include <u/core/queue.h>
+#include <u/core/set.h>
 #include <u/core/stack.h>
 #include <u/core/str.h>
 #include <u/core/vec.h>
@@ -24,6 +25,8 @@
 #include <netpacket/packet.h>
 #include <regex.h>
 #include <stdalign.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
