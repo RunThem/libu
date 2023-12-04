@@ -506,6 +506,7 @@ void __avl_re(any_t _self) {
 
   u_nret_if(node == nullptr, "node not exists.");
 
+  memcpy(key(node), key, self->ksize);
   memcpy(val(node), val, self->vsize);
 }
 
@@ -526,9 +527,11 @@ void __avl_at(any_t _self) {
   }
 
   u_if(node == nullptr, "node not exists.") {
+    bzero(key, self->ksize);
     bzero(val, self->vsize);
   }
   else {
+    memcpy(key, key(node), self->ksize);
     memcpy(val, val(node), self->vsize);
   }
 }
@@ -556,6 +559,7 @@ void __avl_pop(any_t _self) {
     parent = __avl_pop_left_or_right(self, node);
   }
 
+  memcpy(key, key(node), self->ksize);
   memcpy(val, val(node), self->vsize);
 
   node->parent = self->free;
