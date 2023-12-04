@@ -2,7 +2,7 @@
 set_project('libu')
 
 --- Project version
-set_version('0.6.0')
+set_version('1.0.0')
 
 --- xmake configure
 set_xmakever('2.6.1')
