@@ -1,7 +1,7 @@
 #include <u/core/map.h>
 
 void map(size_t N) {
-  u_map_t(int, int) m = u_map_new(int, int, fn_eq_use(int), U_MAP_INT_HASH_FN);
+  u_map_t(int, int) m = u_map_new(int, int, fn_eq(int), U_MAP_INT_HASH_FN);
 
   /* push */
   benchmark(.n = N, .msg = "map_push()") {

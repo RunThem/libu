@@ -75,53 +75,51 @@ extern bool __benchmark(__tack_t* tack);
     __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                                 \
   })
 
-#define fn_eq_use(name) (fn_eq_##name)
-#define fn_eq_dec(name) bool fn_eq_##name(const void* _x, const void* _y)
-#define fn_eq_def(name, type, code)                                                                \
-  fn_eq_dec(name) {                                                                                \
-    type x = *(type*)_x;                                                                           \
-    type y = *(type*)_y;                                                                           \
-                                                                                                   \
-    return (code);                                                                                 \
-  }
+/*
+ * '==' => true
+ * '!=' => false
+ * */
+#define fn_eq(type) fn_eq_##type
 
-#define fn_cmp_use(name) (fn_cmp_##name)
-#define fn_cmp_dec(name) int fn_cmp_##name(const void* _x, const void* _y)
-#define fn_cmp_def(name, type, code)                                                               \
-  fn_cmp_dec(name) {                                                                               \
-    type x = *(type*)_x;                                                                           \
-    type y = *(type*)_y;                                                                           \
-    if (fn_eq_use(name)(_x, _y)) {                                                                 \
-      return 0;                                                                                    \
-    }                                                                                              \
-                                                                                                   \
-    return (code) ? 1 : -1;                                                                        \
+/*
+ * '>'  => 1
+ * '==' => 0
+ * '<'  => -1*/
+#define fn_cmp(type) (fn_cmp_##type)
+
+#define fn_compe_dec(type)                                                                         \
+  extern bool fn_eq_##type(const void*, const void*);                                              \
+  extern int fn_cmp_##type(const void*, const void*);
+
+#define fn_compe_def(type, eq, cmp)                                                                \
+  bool fn_eq_##type(const void* _x, const void* _y) {                                              \
+    type x = *(type*)_x, y = *(type*)_y;                                                           \
+    return (eq);                                                                                   \
+  }                                                                                                \
+  int fn_cmp_##type(const void* _x, const void* _y) {                                              \
+    type x = *(type*)_x, y = *(type*)_y;                                                           \
+    return (eq) ? 0 : ((cmp) ? 1 : -1);                                                            \
   }
 
 /*
  * cmp & eq func from base type
  * */
-static inline fn_eq_def(bool, bool, (x == y));
-static inline fn_eq_def(char, char, (x == y));
-static inline fn_eq_def(int, int, (x == y));
+fn_compe_def(char, (x == y), (x > y));
+fn_compe_def(int, (x == y), (x > y));
 
-static inline fn_eq_def(i8, i8_t, (x == y));
-static inline fn_eq_def(u8, u8_t, (x == y));
-static inline fn_eq_def(i16, i16_t, (x == y));
-static inline fn_eq_def(u16, u16_t, (x == y));
-static inline fn_eq_def(i32, i32_t, (x == y));
-static inline fn_eq_def(u32, u32_t, (x == y));
-static inline fn_eq_def(i64, i64_t, (x == y));
-static inline fn_eq_def(u64, u64_t, (x == y));
+fn_compe_def(i8_t, (x == y), (x > y));
+fn_compe_def(u8_t, (x == y), (x > y));
+fn_compe_def(i16_t, (x == y), (x > y));
+fn_compe_def(u16_t, (x == y), (x > y));
+fn_compe_def(i32_t, (x == y), (x > y));
+fn_compe_def(u32_t, (x == y), (x > y));
+fn_compe_def(i64_t, (x == y), (x > y));
+fn_compe_def(u64_t, (x == y), (x > y));
 
-static inline fn_cmp_def(char, char, (x > y));
-static inline fn_cmp_def(int, int, (x > y));
+fn_compe_def(size_t, (x == y), (x > y));
+fn_compe_def(ssize_t, (x == y), (x > y));
 
-static inline fn_cmp_def(i8, i8_t, (x > y));
-static inline fn_cmp_def(u8, u8_t, (x > y));
-static inline fn_cmp_def(i16, i16_t, (x > y));
-static inline fn_cmp_def(u16, u16_t, (x > y));
-static inline fn_cmp_def(i32, i32_t, (x > y));
-static inline fn_cmp_def(u32, u32_t, (x > y));
-static inline fn_cmp_def(i64, i64_t, (x > y));
-static inline fn_cmp_def(u64, u64_t, (x > y));
+#ifdef __SIZEOF_INT128__
+fn_compe_def(i128_t, (x == y), (x > y));
+fn_compe_def(u128_t, (x == y), (x > y));
+#endif

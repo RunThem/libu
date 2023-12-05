@@ -38,8 +38,6 @@ typedef _Atomic(i64_t) atomic_i64_t;
 typedef _Atomic(u64_t) atomic_u64_t;
 
 #ifdef __SIZEOF_INT128__
-#  define USE_INT128
-
 typedef __int128_t  i128_t;
 typedef __uint128_t u128_t;
 

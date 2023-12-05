@@ -48,6 +48,13 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
+typedef struct {
+  int a;
+  char c;
+} st_t;
+
+fn_compe_def(st_t, (x.a == y.a), (x.a > y.a));
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 

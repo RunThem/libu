@@ -4,7 +4,7 @@
 #define N 20
 
 mut_test(avl_create) {
-  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp_use(int));
+  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp(int));
 
   mut_assert(t != nullptr);
   mut_assert(0 == u_avl_len(t));
@@ -15,7 +15,7 @@ mut_test(avl_create) {
 }
 
 mut_test(avl_interface) {
-  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp_use(int));
+  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp(int));
 
   mut_assert(true == u_avl_empty(t));
 
@@ -41,7 +41,7 @@ mut_test(avl_interface) {
 
   u_avl_cleanup(t);
 
-  t = u_avl_new(int, int, fn_cmp_use(int));
+  t = u_avl_new(int, int, fn_cmp(int));
 
   mut_assert(0 == u_avl_len(t));
 

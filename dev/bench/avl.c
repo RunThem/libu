@@ -1,7 +1,7 @@
 #include <u/core/avl.h>
 
 void avl(size_t N) {
-  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp_use(int));
+  u_avl_t(int, int) t = u_avl_new(int, int, fn_cmp(int));
 
   /* push */
   benchmark(.n = N, .msg = "avl_push()") {

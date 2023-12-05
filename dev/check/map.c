@@ -4,7 +4,7 @@
 #define N 26
 
 mut_test(map_create) {
-  u_map_t(int, char) m = u_map_new(int, char, fn_eq_use(int), U_MAP_INT_HASH_FN);
+  u_map_t(int, char) m = u_map_new(int, char, fn_eq(int), U_MAP_INT_HASH_FN);
 
   mut_assert(m != nullptr);
   mut_assert(0 == u_map_len(m));
@@ -15,7 +15,7 @@ mut_test(map_create) {
 }
 
 mut_test(map_interface) {
-  u_map_t(int, char) m = u_map_new(int, char, fn_eq_use(int), U_MAP_INT_HASH_FN);
+  u_map_t(int, char) m = u_map_new(int, char, fn_eq(int), U_MAP_INT_HASH_FN);
 
   mut_assert(true == u_map_empty(m));
 
@@ -41,7 +41,7 @@ mut_test(map_interface) {
 
   u_map_cleanup(m);
 
-  m = u_map_new(int, char, fn_eq_use(int), U_MAP_INT_HASH_FN);
+  m = u_map_new(int, char, fn_eq(int), U_MAP_INT_HASH_FN);
 
   mut_assert(0 == u_map_len(m));
 
@@ -53,7 +53,7 @@ mut_test(map_interface) {
 
   u_map_cleanup(m);
 
-  m = u_map_new(int, char, fn_eq_use(int), U_MAP_INT_HASH_FN);
+  m = u_map_new(int, char, fn_eq(int), U_MAP_INT_HASH_FN);
 
   each(i, N) {
     u_map_push(m, i, 'a' + i);
