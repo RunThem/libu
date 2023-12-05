@@ -79,7 +79,7 @@ extern bool __benchmark(__tack_t* tack);
  * '==' => true
  * '!=' => false
  * */
-#define fn_eq(type) fn_eq_##type
+#define fn_eq(type) (fn_eq_##type)
 
 /*
  * '>'  => 1
@@ -104,22 +104,22 @@ extern bool __benchmark(__tack_t* tack);
 /*
  * cmp & eq func from base type
  * */
-fn_compe_def(char, (x == y), (x > y));
-fn_compe_def(int, (x == y), (x > y));
+fn_compe_dec(char);
+fn_compe_dec(int);
 
-fn_compe_def(i8_t, (x == y), (x > y));
-fn_compe_def(u8_t, (x == y), (x > y));
-fn_compe_def(i16_t, (x == y), (x > y));
-fn_compe_def(u16_t, (x == y), (x > y));
-fn_compe_def(i32_t, (x == y), (x > y));
-fn_compe_def(u32_t, (x == y), (x > y));
-fn_compe_def(i64_t, (x == y), (x > y));
-fn_compe_def(u64_t, (x == y), (x > y));
+fn_compe_dec(i8_t);
+fn_compe_dec(u8_t);
+fn_compe_dec(i16_t);
+fn_compe_dec(u16_t);
+fn_compe_dec(i32_t);
+fn_compe_dec(u32_t);
+fn_compe_dec(i64_t);
+fn_compe_dec(u64_t);
 
-fn_compe_def(size_t, (x == y), (x > y));
-fn_compe_def(ssize_t, (x == y), (x > y));
+fn_compe_dec(size_t);
+fn_compe_dec(ssize_t);
 
 #ifdef __SIZEOF_INT128__
-fn_compe_def(i128_t, (x == y), (x > y));
-fn_compe_def(u128_t, (x == y), (x > y));
+fn_compe_dec(i128_t);
+fn_compe_dec(u128_t);
 #endif

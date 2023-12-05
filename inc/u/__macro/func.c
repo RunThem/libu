@@ -94,3 +94,26 @@ void __inf_bit(const u8_t* buf, size_t size) {
 
   println();
 }
+
+/*
+ * cmp & eq func from base type
+ * */
+fn_compe_def(char, (x == y), (x > y));
+fn_compe_def(int, (x == y), (x > y));
+
+fn_compe_def(i8_t, (x == y), (x > y));
+fn_compe_def(u8_t, (x == y), (x > y));
+fn_compe_def(i16_t, (x == y), (x > y));
+fn_compe_def(u16_t, (x == y), (x > y));
+fn_compe_def(i32_t, (x == y), (x > y));
+fn_compe_def(u32_t, (x == y), (x > y));
+fn_compe_def(i64_t, (x == y), (x > y));
+fn_compe_def(u64_t, (x == y), (x > y));
+
+fn_compe_def(size_t, (x == y), (x > y));
+fn_compe_def(ssize_t, (x == y), (x > y));
+
+#ifdef __SIZEOF_INT128__
+fn_compe_def(i128_t, (x == y), (x > y));
+fn_compe_def(u128_t, (x == y), (x > y));
+#endif
