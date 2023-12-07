@@ -76,16 +76,28 @@ extern bool __benchmark(__tack_t* tack);
   })
 
 /*
+ * clang-format off
  * '==' => true
  * '!=' => false
  * */
-#define fn_eq(type) (fn_eq_##type)
+#define fn_eq(type, ...)                                                                           \
+  va_elseif(va_has(__VA_ARGS__)) (                                                                 \
+    fn_eq_##type(__VA_ARGS__)                                                                      \
+  )(                                                                                               \
+    fn_eq_##type                                                                                   \
+  )
 
 /*
  * '>'  => 1
  * '==' => 0
  * '<'  => -1*/
-#define fn_cmp(type) (fn_cmp_##type)
+#define fn_cmp(type, ...)                                                                          \
+  va_elseif(va_has(__VA_ARGS__)) (                                                                 \
+    fn_cmp_##type(__VA_ARGS__)                                                                     \
+  )(                                                                                               \
+    fn_cmp_##type                                                                                  \
+  )
+/* clang-format on */
 
 #define fn_compe_dec(type)                                                                         \
   extern bool fn_eq_##type(const void*, const void*);                                              \
