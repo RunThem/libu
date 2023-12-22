@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <u/core/str.h>
+#include <unistd.h>
 
 /*************************************************************************************************
  * Private
@@ -178,4 +179,48 @@ ret_t __str_erase(u_str_t* _self, size_t idx, size_t len) {
   self->data[self->len] = '\0';
 
   return 0;
+}
+
+/*
+ * api:
+ *   u_str_t __str_read_fd(u_str_t* _self, int fd, size_t size);
+ *   u_str_t __str_read_str(u_str_t* _self, u_str_t fmt, ...);
+ *
+ *   ssize_t __str_write_fd(u_str_t* _self, int fd, size_t size);
+ *   ssize_t __str_write_str(u_str_t* _self, u_str_t buf, size_t size);
+ * */
+
+ssize_t __str_read_fd(u_str_t* _self, int fd, size_t size) {
+  str_t* self      = selfof(*_self);
+  ret_t code       = 0;
+  size_t rsize     = 0;
+  size_t rsize_sum = 0;
+
+  u_check_ret(self->cap == 0, -1, "string is static string");
+
+  u_check_ret(fd < 0, -1);
+
+  if (self->cap - self->len <= size) {
+    code = __str_resize(_self, self->cap + size);
+    u_err_if(code != 0, "str read() resize failed.");
+
+    self = selfof(*_self);
+  }
+
+  if (size != 0) {
+    rsize = read(fd, &self->data[self->len], size);
+  } else {
+    while (true) {
+      rsize = read(fd, &self->data[self->len + rsize_sum], size - rsize_sum);
+      u_err_if(rsize == -1);
+      u_brk_if(rsize == 0);
+
+      rsize_sum += rsize;
+    }
+  }
+
+  return as(rsize_sum, ssize_t);
+err:
+
+  return -2;
 }

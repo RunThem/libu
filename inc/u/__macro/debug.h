@@ -6,7 +6,7 @@
 #  define u_if(expr, ...)                                                                          \
     if ((expr) && (errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__)), true))
 
-#  define u_assert(expr) ((expr) && (__assert_fail(#  expr, __file__, __line__, __func__), true))
+#  define u_assert(expr) ((expr) && (__assert_fail(#expr, __file__, __line__, __func__), true))
 #endif
 
 #define u_check_ret(expr, code, ...)                                                               \
@@ -32,6 +32,16 @@
 #define u_nret_if(expr, ...)                                                                       \
   u_if(expr, __VA_ARGS__) {                                                                        \
     return;                                                                                        \
+  }
+
+#define u_brk_if(expr)                                                                             \
+  u_if(expr) {                                                                                     \
+    break;                                                                                         \
+  }
+
+#define u_ctu_if(expr)                                                                             \
+  u_if(expr) {                                                                                     \
+    continue;                                                                                      \
   }
 
 #define u_err_if(expr, ...)                                                                        \
