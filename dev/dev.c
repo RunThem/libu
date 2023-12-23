@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/if_ether.h>
@@ -41,8 +42,6 @@
 #include <libsock.h>
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
-
-#include "miniz.h"
 
 #define _typeof(t) __builtin_classify_type(t)
 
@@ -273,11 +272,38 @@ int main(int argc, const char** argv) {
 
 #endif
 
-  u_str_t str = s("hello");
+// #undef s
+#define u_str_t(_str)                                                                              \
+  (((struct {                                                                                      \
+     size_t cap;                                                                                   \
+     size_t len;                                                                                   \
+     char data[sizeof(_str)];                                                                      \
+   }){.len = sizeof(_str) - 1, .data = (_str)})                                                    \
+       .data)
+
+  u_str_t str = u_str_t("hello");
 
   str[4] = ' ';
 
   infln("'%s'", str);
+
+#define key(k, v) k
+#define val(k, v) v
+#define l(a, ...) key a, val a
+
+  // l((1, 2));
+
+  // u_str_t file = u_fs_read("test_1.txt");
+
+  int fd       = open("test.txt", O_RDONLY);
+  u_str_t file = u_str_new("hello");
+
+  size_t size = u_str_read(&file, fd, 0);
+
+  infln("size is %zu", size);
+  infln("%zu", u_str_len(&file));
+
+  infln("file size is %zu", u_str_len(&file));
 
   return EXIT_SUCCESS;
 err:

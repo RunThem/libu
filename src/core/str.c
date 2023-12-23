@@ -200,20 +200,30 @@ ssize_t __str_read_fd(u_str_t* _self, int fd, size_t size) {
 
   u_check_ret(fd < 0, -1);
 
-  if (self->cap - self->len <= size) {
-    code = __str_resize(_self, self->cap + size);
-    u_err_if(code != 0, "str read() resize failed.");
-
-    self = selfof(*_self);
-  }
-
   if (size != 0) {
-    rsize = read(fd, &self->data[self->len], size);
+    if (self->cap - self->len <= size) {
+      code = __str_resize(_self, self->cap + size);
+      u_err_if(code != 0, "str read() resize failed.");
+
+      self = selfof(*_self);
+    }
+
+    rsize     = read(fd, &self->data[self->len], size);
+    rsize_sum = rsize;
   } else {
     while (true) {
-      rsize = read(fd, &self->data[self->len + rsize_sum], size - rsize_sum);
+      if (self->cap - self->len <= 4096) {
+        code = __str_resize(_self, self->cap + 4096);
+        u_err_if(code != 0, "str read() resize failed.");
+
+        self = selfof(*_self);
+      }
+
+      rsize = read(fd, &self->data[self->len], 4096);
       u_err_if(rsize == -1);
       u_brk_if(rsize == 0);
+
+      self->len += rsize;
 
       rsize_sum += rsize;
     }

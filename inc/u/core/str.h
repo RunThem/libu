@@ -56,3 +56,7 @@ ret_t __str_append(u_str_t* _self, u_str_t fmt, ...);
 
 ret_t __str_erase(u_str_t* _self, size_t idx, size_t len);
 #define u_str_erase(str, idx, ...) (__str_erase(str, idx, va_0th(1, __VA_ARGS__)))
+
+ssize_t __str_read_fd(u_str_t* _self, int fd, size_t size);
+#define u_str_read(str, var, ...)                                                                  \
+  (_Generic(var, int: __str_read_fd, default: nullptr)(str, var, __VA_ARGS__))
