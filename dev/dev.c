@@ -1,4 +1,5 @@
 /* local libs */
+#include <math.h>
 #include <u/core/avl.h>
 #include <u/core/heap.h>
 #include <u/core/list.h>
@@ -96,37 +97,10 @@ ret_t code = 0;
 import(std::vector);
 import(std::table);
 
-#define let auto
-
-static inline int int_cmp(const void* a, const void* b) {
-  if (*(int*)a == *(int*)b) {
-    return 0;
-  }
-
-  return (*(int*)a > *(int*)b) ? 1 : -1;
-}
-
-int arr[] = {2, 3, 4, 5, 6, 1, 3, 3, 3};
-
-#define impl(...) __VA_ARGS__
-
-impl(
-    static inline int _cmp(const void* a, const void* b) {
-      if (*(typeof(arr[0])*)a == *(typeof(arr[0])*)b) {
-        return 0;
-      }
-
-      return (*(typeof(arr[0])*)a > *(typeof(arr[0])*)b) ? 1 : -1;
-    }
-
-    static inline int _eq(const void* a, const void* b) {
-      return (*(typeof(arr[0])*)a == *(typeof(arr[0])*)b) ? 1 : 0;
-    });
-
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-#if 0
+#if 1
   infln("hello libu!");
 
   int a = {};
@@ -137,8 +111,6 @@ int main(int argc, const char** argv) {
   //   }
   //   return (*a > *b) ? 1 : -1;
   // });
-
-  qsort(arr, sizeof(typeof(arr[0])), sizeof(typeof(arr)) / sizeof(arr[0]), _cmp);
 
   $(Debug, Clone)
   struct {
@@ -177,21 +149,21 @@ int main(int argc, const char** argv) {
 
 #  define u_new(...) u_new_st_t(__VA_ARGS__)
 
-  let e = u_new(1, 'c');
+  auto e = u_new(1, 'c');
 
   u_push(v, 1, 2, 3, 4, 5);
 
   // u_map(v, [int a, void c] { return a * 2; });
 
   // int a;
-  // u_filter(v, [int a, &l] bool { return a % l == 0 : true : false; });
+  // u_filter(v, [int a, &l] bool { return a % l == 0; });
 
   u_str_t s = "print";
   /* clang-format off */
   $((cat main.c - c,n,e | grep "%s" | %s), s, s);
   /* clang-format on */
 
-  int $$     = 0;
+  int $$ = 0;
 
   char buf[1024] = {0};
 
@@ -229,49 +201,6 @@ int main(int argc, const char** argv) {
   infln("status is %d, size is %zu", cmp_status, in_size);
 #endif
 
-#if 0
-
-  int fd[2]      = {0};
-  pid_t pid      = 0;
-  char buf[4096] = {0};
-  int status     = 0;
-
-  u_err_if(pipe(fd) == -1);
-
-  pid = fork();
-  u_err_if(pid < 0);
-
-  if (pid == 0) {
-    close(fd[0]);
-    dup2(fd[1], STDOUT_FILENO);
-    system("rg --no-heading --trim -nH .");
-    close(fd[1]);
-    exit(0);
-  }
-
-  // usleep(100 * 1000);
-
-  close(fd[1]);
-
-  while (true) {
-    ssize_t count = read(fd[0], buf, sizeof(buf) - 1);
-    u_err_if(count == -1);
-
-    if (count == 0) {
-      break;
-    }
-
-    infln("count is %zd", count);
-    usleep(1000);
-  }
-
-  close(fd[0]);
-  waitpid(pid, &status, 0);
-
-  infln("status is %d", status);
-
-#endif
-
 // #undef s
 #define u_str_t(_str)                                                                              \
   (((struct {                                                                                      \
@@ -293,66 +222,37 @@ int main(int argc, const char** argv) {
 
   // l((1, 2));
 
-  // u_str_t file = u_fs_read("test_1.txt");
-
-  int fd       = open("test.txt", O_RDONLY);
-  u_str_t file = u_str_new("hello");
-
-  size_t size = u_str_read(&file, fd, 0);
-
-  infln("size is %zu", size);
-  infln("%zu", u_str_len(&file));
-
-  infln("file size is %zu", u_str_len(&file));
-
   return EXIT_SUCCESS;
 err:
   return EXIT_FAILURE;
 }
 
-int __exec() {
-  int fd[2]      = {0};
-  pid_t pid      = 0;
-  char buf[4096] = {0};
-  int status     = 0;
+/*
+ * ncat -l -p 8080 -e /bin/cat
+ * */
+int sopen(const char* program) {
+  int fds[2];
+  pid_t pid;
 
-  u_err_if(pipe(fd) == -1);
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
+    return -1;
 
-  pid = fork();
-  u_err_if(pid < 0);
-
-  if (pid == 0) {
-    close(fd[0]);
-
-    dup2(fd[1], STDOUT_FILENO);
-
-    execl("/bin/sleep", "sleep", "5", nullptr);
-
-    exit(0);
-  } else {
-
-    close(fd[1]);
-
-    while (true) {
-      ssize_t count = read(fd[0], buf, sizeof(buf) - 1);
-      u_err_if(count == -1);
-
-      if (count == 0) {
-        break;
-      }
-
-      buf[count] = '\0';
-
-      infln("'%s'", buf);
-    }
+  switch (pid = vfork()) {
+    case -1: /* Error */
+      close(fds[0]);
+      close(fds[1]);
+      return -1;
+    case 0: /* child */
+      close(fds[0]);
+      dup2(fds[1], 0);
+      dup2(fds[1], 1);
+      close(fds[1]);
+      execl("/usr/bin/ncat", "ncat", "10.10.10.252", "8080", nullptr);
+      _exit(0);
   }
 
-  close(fd[0]);
+  /* parent */
+  close(fds[1]);
 
-  waitpid(pid, &status, 0);
-
-  return status;
-
-err:
-  return ~0;
+  return fds[0];
 }
