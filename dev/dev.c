@@ -8,6 +8,7 @@
 #include <u/core/set.h>
 #include <u/core/stack.h>
 #include <u/core/str.h>
+// #include <u/core/ivec.h>
 #include <u/core/vec.h>
 #include <u/u.h>
 #include <u/util/fs.h>
@@ -74,7 +75,7 @@ ret_t code = 0;
 #undef $
 #define $(...)
 
-#define u_vec(T)    T*
+// #define u_vec(T)    T*
 #define u_tbl(K, V) V*
 #define u_push(self, ...)
 #define u_pop(self, ...)
@@ -100,7 +101,7 @@ import(std::table);
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-#if 1
+#if 0
   infln("hello libu!");
 
   int a = {};
@@ -201,14 +202,15 @@ int main(int argc, const char** argv) {
   infln("status is %d, size is %zu", cmp_status, in_size);
 #endif
 
+#if 0
 // #undef s
-#define u_str_t(_str)                                                                              \
-  (((struct {                                                                                      \
-     size_t cap;                                                                                   \
-     size_t len;                                                                                   \
-     char data[sizeof(_str)];                                                                      \
-   }){.len = sizeof(_str) - 1, .data = (_str)})                                                    \
-       .data)
+#  define u_str_t(_str)                                                                            \
+    (((struct {                                                                                    \
+       size_t cap;                                                                                 \
+       size_t len;                                                                                 \
+       char data[sizeof(_str)];                                                                    \
+     }){.len = sizeof(_str) - 1, .data = (_str)})                                                  \
+         .data)
 
   u_str_t str = u_str_t("hello");
 
@@ -216,11 +218,46 @@ int main(int argc, const char** argv) {
 
   infln("'%s'", str);
 
-#define key(k, v) k
-#define val(k, v) v
-#define l(a, ...) key a, val a
+#  define key(k, v) k
+#  define val(k, v) v
+#  define l(a, ...) key a, val a
 
   // l((1, 2));
+#endif
+
+  typedef struct {
+  }* __vec_t;
+
+  typedef struct {
+  }* __lst_t;
+
+  typedef struct {
+  }* __tbl_t;
+
+  typedef struct {
+  }* __avl_t;
+
+#define _type_of(T)                                                                                \
+  _Generic(typeof(T),                                                                              \
+      __vec_t: "vec<T>",                                                                           \
+      __lst_t: "lst<T>",                                                                           \
+      __tbl_t: "tbl<T>",                                                                           \
+      __avl_t: "avl<T>",                                                                           \
+      default: "none<T>")
+#define type_of(T) infln("%s type is %s, size is %zu", #T, _type_of(T), sizeof((T)))
+
+  __vec_t vec = {};
+  __lst_t lst = {};
+  __tbl_t tbl = {};
+  __avl_t avl = {};
+
+  type_of(vec);
+  type_of(lst);
+  type_of(tbl);
+  type_of(avl);
+
+  extern int vec_test();
+  vec_test();
 
   return EXIT_SUCCESS;
 err:

@@ -9,7 +9,7 @@ add_requires('libsock', 'miniz')
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
-  add_files('dev.c')
+  add_files('dev.c', 'vec.c')
   set_rundir('$(projectdir)')
 
   add_deps('u', 'macro')
