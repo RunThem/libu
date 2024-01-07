@@ -56,7 +56,7 @@ u_vec_t vec_new(size_t itsize, size_t cap) {
   self->itsize = itsize;
   self->cap    = cap;
 
-  infln("vec new(itsize(%zu), cap(%zu))", itsize, cap);
+  infln("itsize(%zu), cap(%zu)", itsize, cap);
 
   return as(self, u_vec_t);
 
@@ -107,10 +107,7 @@ void vec_at(u_vec_t _self, size_t idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_nret(self == nullptr);
-  u_check_nret(idx >= self->len && idx < -self->len,
-               "vec at(idx(%zu), self.len(%zu))",
-               idx,
-               self->len);
+  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
   idx = getidx(idx);
   memcpy(item, at(idx), self->itsize);
@@ -120,10 +117,7 @@ void vec_re(u_vec_t _self, size_t idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_nret(self == nullptr);
-  u_check_nret(idx >= self->len && idx < -self->len,
-               "vec re(idx(%zu), self.len(%zu))",
-               idx,
-               self->len);
+  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
   idx = getidx(idx);
   memcpy(at(idx), item, self->itsize);
@@ -133,10 +127,7 @@ void vec_pop(u_vec_t _self, size_t idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_nret(self == nullptr);
-  u_check_nret(idx >= self->len && idx < -self->len,
-               "vec pop(idx(%zu), self.len(%zu))",
-               idx,
-               self->len);
+  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
   idx = getidx(idx);
   memcpy(item, at(idx), self->itsize);
@@ -152,15 +143,12 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
   ret_t code  = 0;
 
   u_check_nret(self == nullptr);
-  u_check_nret(idx > self->len && idx < -self->len,
-               "vec put(idx(%ld), self.len(%zu))",
-               idx,
-               self->len);
+  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
   idx = getidx(idx);
   if (self->len == self->cap) {
     code = vec_resize(self);
-    u_err_if(code != 0, "vec put() resize failed.");
+    u_err_if(code != 0, "resize failed.");
   }
 
   if (idx != self->len) {

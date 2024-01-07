@@ -1,8 +1,8 @@
 #define __file__ __FILE__
 #define __line__ __LINE__
 
-#define print(fmt, ...)   fprintf(stdout, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define println(fmt, ...) fprintf(stdout, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define print(fmt, ...)   fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define println(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 
 #ifdef NDEBUG
 #  define __display(fmt, ...)

@@ -235,6 +235,9 @@ int main(int argc, const char** argv) {
   }* __tbl_t;
 
   typedef struct {
+  }* __set_t;
+
+  typedef struct {
   }* __avl_t;
 
 #define _type_of(T)                                                                                \
@@ -242,19 +245,26 @@ int main(int argc, const char** argv) {
       __vec_t: "vec<T>",                                                                           \
       __lst_t: "lst<T>",                                                                           \
       __tbl_t: "tbl<T>",                                                                           \
-      __avl_t: "avl<T>",                                                                           \
+      __set_t: "avl<T>",                                                                           \
+      __avl_t: "set<T>",                                                                           \
       default: "none<T>")
 #define type_of(T) infln("%s type is %s, size is %zu", #T, _type_of(T), sizeof((T)))
 
   __vec_t vec = {};
   __lst_t lst = {};
   __tbl_t tbl = {};
+  __set_t set = {};
   __avl_t avl = {};
+
+  any_t ptr = {};
 
   type_of(vec);
   type_of(lst);
   type_of(tbl);
+  type_of(set);
   type_of(avl);
+
+  type_of(ptr);
 
   extern int vec_test();
   vec_test();
