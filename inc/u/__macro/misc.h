@@ -75,8 +75,9 @@ extern bool __benchmark(__tack_t* tack);
     __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                                 \
   })
 
+/* clang-format off */
 /*
- * clang-format off
+ *
  * '==' => true
  * '!=' => false
  * */
