@@ -1,9 +1,9 @@
 /* local libs */
-#include <u/core/iavl.h>
-#include <u/core/itbl.h>
-#include <u/core/ivec.h>
+#include "u/core/itbl.h"
+#include "u/core/ivec.h"
+
+#include <u/core.h>
 #include <u/core/list.h>
-#include <u/core/set.h>
 #include <u/core/str.h>
 #include <u/u.h>
 #include <u/util/fs.h>
@@ -69,6 +69,14 @@ int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
   infln("hello libu!");
+
+  u_vec(int) v = {};
+
+  u_vec_from(v, {1, 2, 3, 4, 5, 6});
+
+  u_vec_for(v, i) {
+    infln("%d ", v->it);
+  }
 
   return EXIT_SUCCESS;
 err:
@@ -258,6 +266,7 @@ void __str() {
 }
 
 void generic() {
+#if 0
   typedef struct {
   }* __vec_t;
 
@@ -273,15 +282,15 @@ void generic() {
   typedef struct {
   }* __avl_t;
 
-#define _type_of(T)                                                                                \
-  _Generic(typeof(T),                                                                              \
-      __vec_t: "vec<T>",                                                                           \
-      __lst_t: "lst<T>",                                                                           \
-      __tbl_t: "tbl<T>",                                                                           \
-      __set_t: "avl<T>",                                                                           \
-      __avl_t: "set<T>",                                                                           \
-      default: "none<T>")
-#define type_of(T) infln("%s type is %s, size is %zu", #T, _type_of(T), sizeof((T)))
+#  define _type_of(T)                                                                              \
+    _Generic(typeof(T),                                                                            \
+        __vec_t: "vec<T>",                                                                         \
+        __lst_t: "lst<T>",                                                                         \
+        __tbl_t: "tbl<T>",                                                                         \
+        __set_t: "avl<T>",                                                                         \
+        __avl_t: "set<T>",                                                                         \
+        default: "none<T>")
+#  define type_of(T) infln("%s type is %s, size is %zu", #T, _type_of(T), sizeof((T)))
 
   __vec_t vec = {};
   __lst_t lst = {};
@@ -298,4 +307,5 @@ void generic() {
   type_of(avl);
 
   type_of(ptr);
+#endif
 }

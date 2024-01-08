@@ -15,7 +15,7 @@ struct vec_t {
 #define at(idx) (self->items + self->itsize * (idx))
 
 #undef getidx
-#define getidx(idx) (((idx) < 0) ? ((idx) + as(self->len, ssize_t)) : (idx))
+#define getidx(idx) (((idx) < 0) ? ((idx) + as(self->len + 1, ssize_t)) : (idx))
 
 static ret_t vec_resize(vec_t* self) {
   size_t cap  = 0;
