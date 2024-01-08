@@ -82,7 +82,7 @@ struct avl_t {
 
   avl_node_t* root;
   avl_node_t* itor;
-  avl_node_t* free;
+  avl_node_t* free_nodes;
 };
 
 #define selfof(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
@@ -90,9 +90,9 @@ struct avl_t {
 static avl_node_t* __avl_node(avl_t* self, avl_node_t* parent, any_t key, any_t val) {
   avl_node_t* node = nullptr;
 
-  if (self->free != nullptr) {
-    node       = self->free;
-    self->free = node->parent;
+  if (self->free_nodes != nullptr) {
+    node       = self->free_nodes;
+    self->free_nodes = node->parent;
   } else {
     node = u_zalloc(sizeof(avl_node_t) + self->ksize + self->vsize);
     u_mem_if(node);
@@ -441,9 +441,9 @@ void __avl_cleanup(any_t _self) {
 
   __avl_clear(_self);
 
-  while (self->free != nullptr) {
-    node       = self->free;
-    self->free = node->parent;
+  while (self->free_nodes != nullptr) {
+    node       = self->free_nodes;
+    self->free_nodes = node->parent;
 
     u_free(node);
   }
@@ -562,8 +562,8 @@ void __avl_pop(any_t _self) {
   memcpy(key, key(node), self->ksize);
   memcpy(val, val(node), self->vsize);
 
-  node->parent = self->free;
-  self->free   = node;
+  node->parent = self->free_nodes;
+  self->free_nodes   = node;
 
   self->len--;
 

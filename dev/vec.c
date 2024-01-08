@@ -1,9 +1,12 @@
+#include <u/core/iavl.h>
 #include <u/core/itbl.h>
 #include <u/core/ivec.h>
 
 int vec_test() {
-#if 0
-  u_vec(int) v = u_vec_new(int);
+#if 1
+  u_vec(int) v = nullptr;  // u_zalloc(sizeof(*v));
+
+  u_vec_init(v);
 
   u_vec_put(v, 0, 10);
 
@@ -14,7 +17,7 @@ int vec_test() {
   infln("len size is %zu", u_vec_len(v));
 
   u_vec_for(v, i) {
-    infln("[%zu] is %d", i, v.item);
+    infln("[%zu] is %d", i, v->it);
   }
 
   each(i, 10) {
@@ -26,7 +29,7 @@ int vec_test() {
   infln("len size is %zu", u_vec_len(v));
 
   u_vec_for(v, i) {
-    infln("[%zu] is %d", i, v.item);
+    infln("[%zu] is %d", i, v->it);
   }
 
   infln("first is %d", u_vec_at(v, 0));
@@ -38,18 +41,43 @@ int vec_test() {
   extern int tbl_test();
   tbl_test();
 
+  extern int avl_test();
+  avl_test();
+
+  return 0;
+}
+
+int avl_test() {
+  u_avl(int, char*) t = {};
+
+  u_avl_from(t,
+             fn_cmp(int),
+             {1, "hello"},
+             {2, "jisdf"},
+             {4, "sjidf"},
+             {53, "jfs"},
+             {23, "92jgak"},
+             {324, "92jfoasjdf"});
+
+  u_avl_for(t) {
+    infln("[%d] = '%s'", t->key, t->val);
+  }
+
   return 0;
 }
 
 int tbl_test() {
-  u_tbl(int, char*) m = u_tbl_new(int, char*, fn_eq(int));
+  u_tbl(int, char*) m;
 
+  u_tbl_init(m, fn_eq(int));
+
+#if 1
   u_tbl_put(m, 1, "1");
   u_tbl_put(m, 2, "3");
   u_tbl_put(m, 3, "4");
 
   u_tbl_for(m) {
-    infln("[%d] = %s", m.key, m.val);
+    infln("[%d] = %s", m->key, m->val);
   }
 
   infln("[3] is %s", u_tbl_at(m, 3));
@@ -57,6 +85,7 @@ int tbl_test() {
   u_tbl_clear(m);
 
   u_tbl_cleanup(m);
+#endif
 
   return 0;
 }
