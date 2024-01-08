@@ -1,15 +1,10 @@
 /* local libs */
-#include <math.h>
-#include <u/core/avl.h>
-#include <u/core/heap.h>
+#include <u/core/iavl.h>
+#include <u/core/itbl.h>
+#include <u/core/ivec.h>
 #include <u/core/list.h>
-#include <u/core/map.h>
-#include <u/core/queue.h>
 #include <u/core/set.h>
-#include <u/core/stack.h>
 #include <u/core/str.h>
-// #include <u/core/ivec.h>
-#include <u/core/vec.h>
 #include <u/u.h>
 #include <u/util/fs.h>
 #include <u/util/obj.h>
@@ -19,6 +14,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <math.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/if_ether.h>
@@ -47,6 +43,8 @@
 
 #define _typeof(t) __builtin_classify_type(t)
 
+ret_t code = 0;
+
 any_t __bt_state = nullptr;
 void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
@@ -67,42 +65,79 @@ st_t* u_new_st_t(int a, char c) {
   return self;
 }
 
-#define to_str(...)   #__VA_ARGS__
-#define $(shell, ...) printf("{" to_str(shell) "}\n" va_opt(, ) __VA_ARGS__)
-
-ret_t code = 0;
-
-#undef $
-#define $(...)
-
-// #define u_vec(T)    T*
-#define u_tbl(K, V) V*
-#define u_push(self, ...)
-#define u_pop(self, ...)
-#define u_clone(self)
-#define u_at(self, idx) (*(self))
-#define u_size(self)    (sizeof(*(self)))
-#define u_erase(self, ...)
-#define u_cleanup(self)
-#define u_clear(self)
-#define u_dump(self)
-
-#define fn(func, ret, ...) ret func(__VA_ARGS__)
-
-#define u_map(self, ...)
-#define u_filter(self, ...) (void)self
-#define u_sort(self, ...)
-
-#define import(url)
-
-import(std::vector);
-import(std::table);
-
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-#if 0
   infln("hello libu!");
+
+  return EXIT_SUCCESS;
+err:
+  return EXIT_FAILURE;
+}
+
+/*
+ * ncat -l -p 8080 -e /bin/cat
+ * */
+int sopen(const char* program) {
+  int fds[2];
+  pid_t pid;
+
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
+    return -1;
+
+  switch (pid = vfork()) {
+    case -1: /* Error */
+      close(fds[0]);
+      close(fds[1]);
+      return -1;
+    case 0: /* child */
+      close(fds[0]);
+      dup2(fds[1], 0);
+      dup2(fds[1], 1);
+      close(fds[1]);
+      execl("/usr/bin/ncat", "ncat", "10.10.10.252", "8080", nullptr);
+      _exit(0);
+  }
+
+  /* parent */
+  close(fds[1]);
+
+  return fds[0];
+}
+
+void macro_codegen() {
+#if 0
+
+#  if 0
+#    define to_str(...)   #__VA_ARGS__
+#    define $(shell, ...) printf("{" to_str(shell) "}\n" va_opt(, ) __VA_ARGS__)
+
+#    undef $
+#    define $(...)
+
+// #define u_vec(T)    T*
+#    define u_tbl(K, V) V*
+#    define u_push(self, ...)
+#    define u_pop(self, ...)
+#    define u_clone(self)
+#    define u_at(self, idx) (*(self))
+#    define u_size(self)    (sizeof(*(self)))
+#    define u_erase(self, ...)
+#    define u_cleanup(self)
+#    define u_clear(self)
+#    define u_dump(self)
+
+#    define fn(func, ret, ...) ret func(__VA_ARGS__)
+
+#    define u_map(self, ...)
+#    define u_filter(self, ...) (void)self
+#    define u_sort(self, ...)
+
+#    define import(url)
+
+import(std::vector);
+import(std::table);
+#  endif
 
   int a = {};
 
@@ -166,16 +201,10 @@ int main(int argc, const char** argv) {
 
   int $$ = 0;
 
-  char buf[1024] = {0};
-
-  FILE* fd = popen("ls", "r");
-  u_die_if(fd == nullptr);
-
-  u_str_t result = u_str_new(100);
-
-  infln("%s", buf);
 #endif
+}
 
+void miniz() {
 #if 0
   u_str_t file = u_fs_read("test_1.txt");
   u_mem_if(file);
@@ -201,7 +230,9 @@ int main(int argc, const char** argv) {
   cmp_status = uncompress(in, &in_size, out, out_size);
   infln("status is %d, size is %zu", cmp_status, in_size);
 #endif
+}
 
+void __str() {
 #if 0
 // #undef s
 #  define u_str_t(_str)                                                                            \
@@ -224,7 +255,9 @@ int main(int argc, const char** argv) {
 
   // l((1, 2));
 #endif
+}
 
+void generic() {
   typedef struct {
   }* __vec_t;
 
@@ -265,41 +298,4 @@ int main(int argc, const char** argv) {
   type_of(avl);
 
   type_of(ptr);
-
-  extern int vec_test();
-  vec_test();
-
-  return EXIT_SUCCESS;
-err:
-  return EXIT_FAILURE;
-}
-
-/*
- * ncat -l -p 8080 -e /bin/cat
- * */
-int sopen(const char* program) {
-  int fds[2];
-  pid_t pid;
-
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
-    return -1;
-
-  switch (pid = vfork()) {
-    case -1: /* Error */
-      close(fds[0]);
-      close(fds[1]);
-      return -1;
-    case 0: /* child */
-      close(fds[0]);
-      dup2(fds[1], 0);
-      dup2(fds[1], 1);
-      close(fds[1]);
-      execl("/usr/bin/ncat", "ncat", "10.10.10.252", "8080", nullptr);
-      _exit(0);
-  }
-
-  /* parent */
-  close(fds[1]);
-
-  return fds[0];
 }
