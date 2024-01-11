@@ -65,18 +65,32 @@ st_t* u_new_st_t(int a, char c) {
   return self;
 }
 
+typedef struct {
+  int a;
+} s1;
+
+typedef struct {
+  int a;
+} s2;
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
   infln("hello libu!");
 
-  u_vec(int) v = {};
+  s1 S1;
+  s2 S2;
+  u_vec(s2) v = {};
 
-  u_vec_from(v, {1, 2, 3, 4, 5, 6});
+  int result = __builtin_types_compatible_p(s1, s2);
+  infln("result is %d", result);
 
-  u_vec_for(v, i) {
-    infln("%d ", v->it);
-  }
+  infln("type is %d", __builtin_classify_type(v));
+
+#define typeid(T) _Generic(T, s1: 1, s2: 2, default: -1)
+
+  infln("%d", typeid(s1));
+  infln("%d", typeid(s2));
 
   return EXIT_SUCCESS;
 err:

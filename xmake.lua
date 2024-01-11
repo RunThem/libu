@@ -52,8 +52,8 @@ task('lsp', function()
   })
 
   on_run(function()
-    os.exec('xmake project -k cmake build/lsp')
-    os.exec('xmake project -k compile_commands build/lsp')
+    os.exec('xmake project -k cmake build')
+    os.exec('xmake project -k compile_commands build')
   end)
 end)
 
