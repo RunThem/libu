@@ -4,125 +4,147 @@
 #include "core/itbl.h"
 #include "core/ivec.h"
 
-/* init */
+typedef void** invalied_type_t;
+/***************************************************************************************************
+ * iType
+ **************************************************************************************************/
+#define u_vec(T)                                                                                   \
+  struct [[gnu::packed]] {                                                                         \
+    struct {                                                                                       \
+      u_vec_t mate;                                                                                \
+      typeof(T*) a;                                                                                \
+      typeof(T*) b;                                                                                \
+    } _;                                                                                           \
+                                                                                                   \
+    T it;                                                                                          \
+  }*
+
+#define u_tbl(K, V)                                                                                \
+  struct [[gnu::packed]] {                                                                         \
+    struct {                                                                                       \
+      u_tbl_t mate;                                                                                \
+      typeof(K*) a;                                                                                \
+      typeof(V*) b;                                                                                \
+    } _;                                                                                           \
+                                                                                                   \
+    K key;                                                                                         \
+    V val;                                                                                         \
+  }*
+
+#define u_avl(K, V)                                                                                \
+  struct [[gnu::packed]] {                                                                         \
+    struct {                                                                                       \
+      u_avl_t mate;                                                                                \
+      typeof(K*) a;                                                                                \
+      typeof(V*) b;                                                                                \
+    } _;                                                                                           \
+                                                                                                   \
+    K key;                                                                                         \
+    V val;                                                                                         \
+  }*
+
+/***************************************************************************************************
+ * iApi
+ **************************************************************************************************/
+#define typeeq(t1, t2) (__builtin_types_compatible_p(t1, t2))
+#define __set(x, args...)                                                                          \
+  do {                                                                                             \
+    _Generic(x->mate,                                                                              \
+        u_vec_t: ({                                                                                \
+               static_assert(1 == va_size(args) || !typeeq(typeof(x->mate), u_vec_t));             \
+                                                                                                   \
+               *(x->a) = va_0th((typeof(*x->a)){}, args);                                          \
+             }),                                                                                   \
+        u_tbl_t: ({                                                                                \
+               static_assert(2 == va_size(args) || !typeeq(typeof(x->mate), u_tbl_t));             \
+                                                                                                   \
+               *(x->a) = va_0th((typeof(*x->a)){}, args);                                          \
+               *(x->b) = va_1th((typeof(*x->a)){}, args);                                          \
+             }),                                                                                   \
+        u_avl_t: ({                                                                                \
+               static_assert(2 == va_size(args) || !typeeq(typeof(x->mate), u_avl_t));             \
+                                                                                                   \
+               *(x->a) = va_0th((typeof(*x->a)){}, args);                                          \
+               *(x->b) = va_1th((typeof(*x->a)){}, args);                                          \
+             }),                                                                                   \
+        default: abort());                                                                         \
+  } while (0)
+
+#define __get(x, ...)                                                                              \
+  ({                                                                                               \
+    _Generic(x->mate,                                                                              \
+        u_vec_t: (*(x->b)),                                                                        \
+        u_tbl_t: (*(x->b)),                                                                        \
+        u_avl_t: (*(x->b)),                                                                        \
+        default: abort();                                                                          \
+  })
+
 #define u_init(u, args...)                                                                         \
-  _Generic((u)->_,                                                                                 \
-      u_vec_t: ({                                                                                  \
-             (u)    = u_zalloc(sizeof(typeof(*u)));                                                \
-             (u)->_ = vec_new(sizeof(typeof((u)->it)), va_0th(U_VEC_CAP, args));                   \
-           }),                                                                                     \
-      u_tbl_t: ({                                                                                  \
-             (u)    = u_zalloc(sizeof(typeof(*(u))));                                              \
-             (u)->_ = tbl_new(sizeof(typeof((u)->key)), sizeof(typeof((u)->val)), eq_fn);          \
-           }),                                                                                     \
-      u_avl_t: ({                                                                                  \
-             (u)    = u_zalloc(sizeof(typeof(*(u))));                                              \
-             (u)->_ = avl_new(sizeof(typeof((u)->key)), sizeof(typeof((u)->val)), cmp_fn);         \
-           }),                                                                                     \
-      default: (void)u)
+  do {                                                                                             \
+    (u) = u_zalloc(sizeof(typeof(*(u))) + sizeof(size_t));                                         \
+                                                                                                   \
+    _Generic((u)->_.mate,                                                                          \
+        u_vec_t: ({                                                                                \
+               static_assert((0 == va_size(args)) + !typeeq(typeof((u)->_.mate), u_vec_t));        \
+                                                                                                   \
+               (u)->_.mate = (any_t)vec_new(sizeof(*(u)->_.a));                                    \
+               (u)->_.a    = any(u) + sizeof((u)->_);                                              \
+               (u)->_.b    = any(u) + sizeof((u)->_) + sizeof(*(u)->_.a);                          \
+             }),                                                                                   \
+        u_tbl_t: ({                                                                                \
+               static_assert((0 == va_size(args)) + !typeeq(typeof((u)->_.mate), u_tbl_t));        \
+                                                                                                   \
+               (u)->_.mate = (any_t)tbl_new(sizeof(*(u)->_.a), sizeof(*(u)->_.b));                 \
+               (u)->_.a    = any(u) + sizeof((u)->_);                                              \
+               (u)->_.b    = any(u) + sizeof((u)->_) + sizeof(*(u)->_.a);                          \
+             }),                                                                                   \
+        u_avl_t: ({                                                                                \
+               static_assert((1 == va_size(args)) + !typeeq(typeof((u)->_.mate), u_avl_t));        \
+                                                                                                   \
+               (u)->_.mate =                                                                       \
+                   (any_t)avl_new(sizeof(*(u)->_.a), sizeof(*(u)->_.b), va_0th(nullptr, args));    \
+               (u)->_.a = any(u) + sizeof((u)->_);                                                 \
+               (u)->_.b = any(u) + sizeof((u)->_) + sizeof(*(u)->_.a);                             \
+             }));                                                                                  \
+  } while (0)
 
-#if 0
-/* from */
-#  define u_from(u, ...)                                                                           \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_from,                                                                       \
-        u_tbl_t: u_tbl_from,                                                                       \
-        u_avl_t: u_avl_from,                                                                       \
-        default: nullptr)(u, __VA_ARGS__)
+#define u_len(u)                                                                                   \
+  ({ _Generic((u)->_.mate, u_vec_t: vec_len, u_tbl_t: tbl_len, u_avl_t: avl_len)((u)->_.mate); })
 
-/* len */
-#  define u_len(u, ...)                                                                            \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_len,                                                                        \
-        u_tbl_t: u_tbl_len,                                                                        \
-        u_avl_t: u_avl_len,                                                                        \
-        default: nullptr)(u, __VA_ARGS__)
+#define u_cap(u) ({ _Generic((u)->_.mate, u_vec_t: vec_cap)((u)->_.mate); })
 
-/* cap */
-#  define u_cap(u, ...) _Generic((u)->_, u_vec_t: u_vec_cap, default: nullptr)(u, __VA_ARGS__)
+#define u_put(u, args...)                                                                          \
+  do {                                                                                             \
+    _Generic((u)->_.mate,                                                                          \
+        u_vec_t: ({                                                                                \
+               static_assert((2 == va_size(args)) + !typeeq(typeof((u)->_.mate), u_vec_t));        \
+                                                                                                   \
+               *(u)->_.a = va_at(1, args);                                                         \
+               vec_put((any_t)(u)->_.mate, va_at(0, args), (u)->_.a);                              \
+             }),                                                                                   \
+        u_tbl_t: ({                                                                                \
+               static_assert((2 == va_size(args)) + !typeeq(typeof((u)->_.mate), u_tbl_t));        \
+                                                                                                   \
+               *(u)->_.a = va_at(0, args);                                                         \
+               *(u)->_.b = va_at(1, args);                                                         \
+               tbl_put((any_t)(u)->_.mate, (u)->_.a, (u)->_.b);                                    \
+             }),                                                                                   \
+        u_avl_t: ({                                                                                \
+               static_assert((2 == va_size(args)) + !typeeq(typeof((u)->_.mate), u_avl_t));        \
+                                                                                                   \
+               *(u)->_.a = va_at(0, args);                                                         \
+               *(u)->_.b = va_at(1, args);                                                         \
+               tbl_put((any_t)(u)->_.mate, (u)->_.a, (u)->_.b);                                    \
+             }));                                                                                  \
+  } while (0)
 
-/* isinit */
-#  define u_isinit(u, ...)                                                                         \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_isinit,                                                                     \
-        u_tbl_t: u_tbl_isinit,                                                                     \
-        u_avl_t: u_avl_isinit,                                                                     \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* isempty */
-#  define u_isempty(u, ...)                                                                        \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_isempty,                                                                    \
-        u_tbl_t: u_tbl_isempty,                                                                    \
-        u_avl_t: u_avl_isempty,                                                                    \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* isexist */
-#  define u_isexist(u, ...)                                                                        \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_isexist,                                                                    \
-        u_tbl_t: u_tbl_isexist,                                                                    \
-        u_avl_t: u_avl_isexist,                                                                    \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* clear */
-#  define u_clear(u, ...)                                                                          \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_clear,                                                                      \
-        u_tbl_t: u_tbl_clear,                                                                      \
-        u_avl_t: u_avl_clear,                                                                      \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* cleanup */
-#  define u_cleanup(u, ...)                                                                        \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_cleanup,                                                                    \
-        u_tbl_t: u_tbl_cleanup,                                                                    \
-        u_avl_t: u_avl_cleanup,                                                                    \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* at */
-#  define u_at(u, ...)                                                                             \
-    _Generic((u)->_, u_vec_t: u_vec_at, u_tbl_t: u_tbl_at, u_avl_t: u_avl_at, default: nullptr)(   \
-        u,                                                                                         \
-        __VA_ARGS__)
-
-/* re */
-#  define u_re(u, ...)                                                                             \
-    _Generic((u)->_, u_vec_t: u_vec_re, u_tbl_t: u_tbl_re, u_avl_t: u_avl_re, default: nullptr)(   \
-        u,                                                                                         \
-        __VA_ARGS__)
-
-/* pop */
-#  define u_pop(u, ...)                                                                            \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_pop,                                                                        \
-        u_tbl_t: u_tbl_pop,                                                                        \
-        u_avl_t: u_avl_pop,                                                                        \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* put */
-#  define u_put(u, ...)                                                                            \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_put,                                                                        \
-        u_tbl_t: u_tbl_put,                                                                        \
-        u_avl_t: u_avl_put,                                                                        \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* for */
-#  define u_for(u, ...)                                                                            \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_for,                                                                        \
-        u_tbl_t: u_tbl_for,                                                                        \
-        u_avl_t: u_avl_for,                                                                        \
-        default: nullptr)(u, __VA_ARGS__)
-
-/* rfor */
-#  define u_rfor(u, ...)                                                                           \
-    _Generic((u)->_,                                                                               \
-        u_vec_t: u_vec_rfor,                                                                       \
-        u_tbl_t: u_tbl_rfor,                                                                       \
-        u_avl_t: u_avl_rfor,                                                                       \
-        default: nullptr)(u, __VA_ARGS__)
-
-#endif
+#define __u_put(u, args...)                                                                        \
+  do {                                                                                             \
+    *(u)->_.a = va_at(0, args);                                                                    \
+    *(u)->_.b = va_at(1, args);                                                                    \
+                                                                                                   \
+    _Generic((u)->_.mate,                                                                          \
+        u_vec_t: ({ vec_put((any_t)(u)->_.mate, *(u)->_.a, (u)->_.a); }),                           \
+        u_tbl_t: ({ tbl_put((any_t)(u)->_.mate, (u)->_.a, (u)->_.b); }),                           \
+        u_avl_t: ({ tbl_put((any_t)(u)->_.mate, (u)->_.a, (u)->_.b); }));                          \
+  } while (0)

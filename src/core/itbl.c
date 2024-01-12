@@ -31,8 +31,6 @@ struct tbl_t {
   size_t vsize;
   size_t len;
 
-  u_tbl_eq_fn eq_fn;
-
   node_t* itor;
   node_t* free_nodes;
 
@@ -85,7 +83,7 @@ static node_t* tbl_find(tbl_t* self, node_t* idx[2], any_t key) {
   for (idx[1] = idx[0], node = (idx[0])->next; node->next != nullptr;
        idx[1] = node, node = node->next) {
 
-    if (hash == node->hash && self->eq_fn(key(node), key)) {
+    if (hash == node->hash && memcmp(key(node), key, self->ksize) == 0) {
       break;
     }
   }
@@ -184,12 +182,11 @@ err:
 /***************************************************************************************************
  * Create
  **************************************************************************************************/
-u_tbl_t tbl_new(size_t ksize, size_t vsize, u_tbl_eq_fn eq_fn) {
+u_tbl_t tbl_new(size_t ksize, size_t vsize) {
   tbl_t* self = nullptr;
 
   u_check_ret(ksize == 0, nullptr);
   u_check_ret(vsize == 0, nullptr);
-  u_check_ret(eq_fn == nullptr, nullptr);
 
   self = u_zalloc(sizeof(tbl_t) + ksize + vsize);
   u_mem_if(self);
@@ -200,10 +197,9 @@ u_tbl_t tbl_new(size_t ksize, size_t vsize, u_tbl_eq_fn eq_fn) {
   self->ksize      = ksize;
   self->vsize      = vsize;
   self->len        = 0;
-  self->eq_fn      = eq_fn;
   self->bucket_idx = 0;
 
-  infln("tbl new(ksize(%zu), vsize(%zu), eq_fn(%p))", ksize, vsize, eq_fn);
+  infln("tbl new(ksize(%zu), vsize(%zu))", ksize, vsize);
 
   return as(self, u_tbl_t);
 

@@ -40,23 +40,21 @@ err:
 /***************************************************************************************************
  * Create & Clone
  **************************************************************************************************/
-u_vec_t vec_new(size_t itsize, size_t cap) {
+u_vec_t vec_new(size_t itsize) {
   vec_t* self = nullptr;
 
   u_check_ret(itsize == 0, nullptr);
 
-  cap = (cap < U_VEC_CAP) ? U_VEC_CAP : cap;
-
   self = u_zalloc(sizeof(vec_t));
   u_mem_if(self);
 
-  self->items = u_zalloc(itsize * cap);
+  self->items = u_zalloc(itsize * 16);
   u_mem_if(self->items);
 
   self->itsize = itsize;
-  self->cap    = cap;
+  self->cap    = 16;
 
-  infln("itsize(%zu), cap(%zu)", itsize, cap);
+  infln("itsize(%zu)", itsize);
 
   return as(self, u_vec_t);
 

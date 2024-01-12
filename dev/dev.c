@@ -1,6 +1,6 @@
 /* local libs */
-#include "u/core/itbl.h"
-#include "u/core/ivec.h"
+// #include "u/core/itbl.h"
+// #include "u/core/ivec.h"
 
 #include <u/core.h>
 #include <u/core/list.h>
@@ -11,10 +11,8 @@
 
 /* system libs */
 #include <arpa/inet.h>
-#include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <math.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/if_ether.h>
@@ -25,7 +23,6 @@
 #include <regex.h>
 #include <stdalign.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
@@ -33,10 +30,10 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <threads.h>
-#include <time.h>
 #include <unistd.h>
 
 /* third libs */
+
 #include <libsock.h>
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
@@ -73,6 +70,32 @@ typedef struct {
   int a;
 } s2;
 
+void __str() {
+// #undef s
+#define u_str_t(s, args...)                                                                        \
+  (((struct {                                                                                      \
+     size_t cap;                                                                                   \
+     size_t len;                                                                                   \
+     char data[va_0th(sizeof(s), args)];                                                           \
+   }){.cap = va_0th(0, args), .len = sizeof(s) - 1, .data = (s)})                                  \
+       .data)
+
+  u_str_t str = u_str_t("hello", 10);
+
+  infln("len is %zu", u_str_len(&str));
+  infln("cap is %zu", u_str_cap(&str));
+
+  str[4] = ' ';
+
+  infln("'%s'", str);
+
+#define key(k, v) k
+#define val(k, v) v
+#define l(a, ...) key a, val a
+
+  // l((1, 2));
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
@@ -80,17 +103,35 @@ int main(int argc, const char** argv) {
 
   s1 S1;
   s2 S2;
-  u_vec(s2) v = {};
 
   int result = __builtin_types_compatible_p(s1, s2);
   infln("result is %d", result);
 
-  infln("type is %d", __builtin_classify_type(v));
+  int n;
 
-#define typeid(T) _Generic(T, s1: 1, s2: 2, default: -1)
+  /* vec */
+  u_vec(int) vec = {};
+  u_init(vec);
+  println("init %p, %p, %p", vec, vec->_.a, &vec->it);
 
-  infln("%d", typeid(s1));
-  infln("%d", typeid(s2));
+  u_put(vec, 0, 1);
+
+  println("len %zu", u_len(vec));
+  println("cap %zu", u_cap(vec));
+
+  /* tbl */
+  u_tbl(any_t, char*) tbl = {};
+  u_init(tbl);
+  println("init %p, %p, %p, %p, %p", tbl, tbl->_.a, &tbl->key, tbl->_.b, &tbl->val);
+
+  __u_put(tbl, nullptr, "heias");
+  println("len %zu", u_len(tbl));
+
+  /* avl */
+  u_avl(int, char*) avl = {};
+  u_init(avl, fn_cmp(int));
+  println("init %p, %p, %p, %p, %p", avl, avl->_.a, &avl->key, avl->_.b, &avl->val);
+  println("len %zu", u_len(avl));
 
   return EXIT_SUCCESS;
 err:
@@ -251,31 +292,6 @@ void miniz() {
 
   cmp_status = uncompress(in, &in_size, out, out_size);
   infln("status is %d, size is %zu", cmp_status, in_size);
-#endif
-}
-
-void __str() {
-#if 0
-// #undef s
-#  define u_str_t(_str)                                                                            \
-    (((struct {                                                                                    \
-       size_t cap;                                                                                 \
-       size_t len;                                                                                 \
-       char data[sizeof(_str)];                                                                    \
-     }){.len = sizeof(_str) - 1, .data = (_str)})                                                  \
-         .data)
-
-  u_str_t str = u_str_t("hello");
-
-  str[4] = ' ';
-
-  infln("'%s'", str);
-
-#  define key(k, v) k
-#  define val(k, v) v
-#  define l(a, ...) key a, val a
-
-  // l((1, 2));
 #endif
 }
 

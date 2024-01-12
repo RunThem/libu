@@ -22,7 +22,6 @@
 
 ## Api
  - init
- - from
  - len
  - cap (only arr & vec)
  - isinit
@@ -36,5 +35,3 @@
  - put
  - for
  - rfor
- - next (^tbl)
- - prev (^tbl)
