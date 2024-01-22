@@ -2,6 +2,8 @@
 // #include "u/core/itbl.h"
 // #include "u/core/ivec.h"
 
+#include "u/core/iavl.h"
+
 #include <u/core.h>
 #include <u/core/list.h>
 #include <u/core/str.h>
@@ -38,7 +40,11 @@
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
 
-#define _typeof(t) __builtin_classify_type(t)
+#undef typeeq
+
+#define __typeof(t)     (__builtin_classify_type(t))
+#define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#define constexpr(expr) (__builtin_constant_p(expr))
 
 ret_t code = 0;
 
@@ -47,29 +53,6 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-typedef struct st_t {
-  int a;
-  char c;
-} st_t;
-
-fn_compe_def(st_t, x.a == y.a, x.a > y.a);
-
-st_t* u_new_st_t(int a, char c) {
-  st_t* self = u_zalloc(sizeof(st_t));
-  self->a    = a;
-  self->c    = c;
-
-  return self;
-}
-
-typedef struct {
-  int a;
-} s1;
-
-typedef struct {
-  int a;
-} s2;
-
 void __str() {
 // #undef s
 #define u_str_t(s, args...)                                                                        \
@@ -77,10 +60,10 @@ void __str() {
      size_t cap;                                                                                   \
      size_t len;                                                                                   \
      char data[va_0th(sizeof(s), args)];                                                           \
-   }){.cap = va_0th(0, args), .len = sizeof(s) - 1, .data = (s)})                                  \
+   }){.cap = va_0th(sizeof(s) - 1, args), .len = sizeof(s) - 1, .data = (s)})                      \
        .data)
 
-  u_str_t str = u_str_t("hello", 10);
+  u_str_t str = u_str_t("hello");
 
   infln("len is %zu", u_str_len(&str));
   infln("cap is %zu", u_str_cap(&str));
@@ -101,37 +84,8 @@ int main(int argc, const char** argv) {
 
   infln("hello libu!");
 
-  s1 S1;
-  s2 S2;
-
-  int result = __builtin_types_compatible_p(s1, s2);
+  int result = __builtin_types_compatible_p(char[], char*);
   infln("result is %d", result);
-
-  int n;
-
-  /* vec */
-  u_vec(int) vec = {};
-  u_init(vec);
-  println("init %p, %p, %p", vec, vec->_.a, &vec->it);
-
-  u_put(vec, 0, 1);
-
-  println("len %zu", u_len(vec));
-  println("cap %zu", u_cap(vec));
-
-  /* tbl */
-  u_tbl(any_t, char*) tbl = {};
-  u_init(tbl);
-  println("init %p, %p, %p, %p, %p", tbl, tbl->_.a, &tbl->key, tbl->_.b, &tbl->val);
-
-  __u_put(tbl, nullptr, "heias");
-  println("len %zu", u_len(tbl));
-
-  /* avl */
-  u_avl(int, char*) avl = {};
-  u_init(avl, fn_cmp(int));
-  println("init %p, %p, %p, %p, %p", avl, avl->_.a, &avl->key, avl->_.b, &avl->val);
-  println("len %zu", u_len(avl));
 
   return EXIT_SUCCESS;
 err:
@@ -292,50 +246,5 @@ void miniz() {
 
   cmp_status = uncompress(in, &in_size, out, out_size);
   infln("status is %d, size is %zu", cmp_status, in_size);
-#endif
-}
-
-void generic() {
-#if 0
-  typedef struct {
-  }* __vec_t;
-
-  typedef struct {
-  }* __lst_t;
-
-  typedef struct {
-  }* __tbl_t;
-
-  typedef struct {
-  }* __set_t;
-
-  typedef struct {
-  }* __avl_t;
-
-#  define _type_of(T)                                                                              \
-    _Generic(typeof(T),                                                                            \
-        __vec_t: "vec<T>",                                                                         \
-        __lst_t: "lst<T>",                                                                         \
-        __tbl_t: "tbl<T>",                                                                         \
-        __set_t: "avl<T>",                                                                         \
-        __avl_t: "set<T>",                                                                         \
-        default: "none<T>")
-#  define type_of(T) infln("%s type is %s, size is %zu", #T, _type_of(T), sizeof((T)))
-
-  __vec_t vec = {};
-  __lst_t lst = {};
-  __tbl_t tbl = {};
-  __set_t set = {};
-  __avl_t avl = {};
-
-  any_t ptr = {};
-
-  type_of(vec);
-  type_of(lst);
-  type_of(tbl);
-  type_of(set);
-  type_of(avl);
-
-  type_of(ptr);
 #endif
 }
