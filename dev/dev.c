@@ -79,6 +79,10 @@ void __str() {
   // l((1, 2));
 }
 
+void pr(int a, ...) {
+  println("%d", a);
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
@@ -86,6 +90,25 @@ int main(int argc, const char** argv) {
 
   int result = __builtin_types_compatible_p(char[], char*);
   infln("result is %d", result);
+
+  iu_vec(int) v          = {0};
+  iu_tbl(u64_t, char*) t = {0};
+
+  v         = u_zalloc(sizeof(*v));
+  v->_.mate = vec_new(sizeof(int));
+
+  t         = u_zalloc(sizeof(*t));
+  t->_.mate = tbl_new(sizeof(u64_t), sizeof(char*));
+
+  int l = 3;
+  vec_put(v->_.mate, 3, &l);
+  iu_put(v, 3, 3);
+  println("len is %zu", vec_len(v->_.mate));
+
+  iu_put(t, 4, "hello");
+  println("len is %zu", tbl_len(t->_.mate));
+
+  // pr(_Generic(v->_.mate, u_vec_t: (1), u_tbl_t: (2, 2), u_avl_t: (3, 3, 3), default: (4)));
 
   return EXIT_SUCCESS;
 err:

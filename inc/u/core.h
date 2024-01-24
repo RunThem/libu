@@ -1,6 +1,6 @@
 #pragma once
 
-#if 0
+#if 1
 #  include "core/iavl.h"
 #  include "core/itbl.h"
 #  include "core/ivec.h"
@@ -9,35 +9,35 @@ typedef void** invalied_type_t;
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_vec(T)                                                                                 \
+#  define iu_vec(T)                                                                                \
     struct [[gnu::packed]] {                                                                       \
       struct {                                                                                     \
         u_vec_t mate;                                                                              \
-        ssize_t* a;                                                                                \
-        typeof(T*) b;                                                                              \
+        ssize_t a;                                                                                 \
+        T b;                                                                                       \
       } _;                                                                                         \
                                                                                                    \
       T it;                                                                                        \
     }*
 
-#  define u_tbl(K, V)                                                                              \
+#  define iu_tbl(K, V)                                                                             \
     struct [[gnu::packed]] {                                                                       \
       struct {                                                                                     \
         u_tbl_t mate;                                                                              \
-        typeof(K*) a;                                                                              \
-        typeof(V*) b;                                                                              \
+        K a;                                                                                       \
+        V b;                                                                                       \
       } _;                                                                                         \
                                                                                                    \
       K key;                                                                                       \
       V val;                                                                                       \
     }*
 
-#  define u_avl(K, V)                                                                              \
+#  define iu_avl(K, V)                                                                             \
     struct [[gnu::packed]] {                                                                       \
       struct {                                                                                     \
         u_avl_t mate;                                                                              \
-        typeof(K*) a;                                                                              \
-        typeof(V*) b;                                                                              \
+        K a;                                                                                       \
+        V b;                                                                                       \
       } _;                                                                                         \
                                                                                                    \
       K key;                                                                                       \
@@ -48,6 +48,15 @@ typedef void** invalied_type_t;
  * iApi
  **************************************************************************************************/
 
-#  define igeneric(mate, vec, tbl, avl, def, ...)                                                  \
-    (_Generic(mate, u_vec_t: vec, u_tbl_t: tbl, u_avl_t: avl, default: def))
+#  define igeneric(mate, vec, tbl, avl) _Generic(mate, u_vec_t: vec, u_tbl_t: tbl, u_avl_t: avl)
+
 #endif
+
+#define iu_put(u, args...)                                                                         \
+  do {                                                                                             \
+    u->_.a  = va_at(0, args);                                                                      \
+    u->_.b  = va_at(1, args);                                                                      \
+    auto fn = igeneric(u->_.mate, vec_put, tbl_put, avl_put);                                      \
+                                                                                                   \
+    fn(u->_.mate, igeneric(u->_.mate, u->_.a, &u->_.a, &u->_.a), &u->_.b);                         \
+  } while (0)

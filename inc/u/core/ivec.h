@@ -42,7 +42,7 @@ extern bool vec_range(u_vec_t _self, ssize_t* idx, bool flag, any_t item);
 #define u_vec_init(vec, args...)                                                                   \
   do {                                                                                             \
     (vec)    = u_zalloc(sizeof(typeof(*vec)));                                                     \
-    (vec)->_ = vec_new(sizeof(typeof((vec)->it)), va_0th(U_VEC_CAP, args));                        \
+    (vec)->_ = vec_new(sizeof(typeof((vec)->it)));                                                 \
   } while (0)
 
 #define u_vec_from(vec, ...)                                                                       \
