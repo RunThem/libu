@@ -1,5 +1,4 @@
-#include <u/core/iavl.h>
-#include <u/core/ivec.h>
+#include <u/core.h>
 
 /***************************************************************************************************
  * Private
@@ -363,8 +362,8 @@ err:
  * Destruction
  **************************************************************************************************/
 void avl_clear(u_avl_t _self) {
-  avl_t* self          = as(_self, avl_t*);
-  node_t* node         = nullptr;
+  avl_t* self  = as(_self, avl_t*);
+  node_t* node = nullptr;
 #if 0
   u_vec(node_t*) nodes = nullptr;
 

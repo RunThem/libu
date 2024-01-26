@@ -1,22 +1,29 @@
-#include <u/core/ivec.h>
+#include <u/core.h>
 
 /***************************************************************************************************
- * Private
+ * Type
  **************************************************************************************************/
 typedef struct vec_t vec_t;
 struct vec_t {
+  bool flags[4];
   size_t itsize;
   size_t len;
   size_t cap;
   any_t items;
 };
 
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
 #undef at
 #define at(idx) (self->items + self->itsize * (idx))
 
 #undef getidx
 #define getidx(idx) (((idx) < 0) ? ((idx) + as(self->len + 1, ssize_t)) : (idx))
 
+/***************************************************************************************************
+ * Function
+ **************************************************************************************************/
 static ret_t vec_resize(vec_t* self) {
   size_t cap  = 0;
   any_t items = nullptr;
@@ -37,9 +44,6 @@ err:
   return -1;
 }
 
-/***************************************************************************************************
- * Create & Clone
- **************************************************************************************************/
 u_vec_t vec_new(size_t itsize) {
   vec_t* self = nullptr;
 
@@ -64,9 +68,6 @@ err:
   return nullptr;
 }
 
-/***************************************************************************************************
- * Destruction
- **************************************************************************************************/
 void vec_clear(u_vec_t _self) {
   vec_t* self = as(_self, vec_t*);
 
@@ -80,9 +81,12 @@ void vec_cleanup(u_vec_t _self) {
   u_free_if(self);
 }
 
-/***************************************************************************************************
- * Interface
- **************************************************************************************************/
+bool vec_isexist(u_vec_t _self, size_t idx) {
+  vec_t* self = as(_self, vec_t*);
+
+  return self->len > idx;
+}
+
 size_t vec_len(u_vec_t _self) {
   vec_t* self = as(_self, vec_t*);
 
@@ -93,12 +97,6 @@ size_t vec_cap(u_vec_t _self) {
   vec_t* self = as(_self, vec_t*);
 
   return self->cap;
-}
-
-bool vec_isexist(u_vec_t _self, size_t idx) {
-  vec_t* self = as(_self, vec_t*);
-
-  return self->len > idx;
 }
 
 void vec_at(u_vec_t _self, size_t idx, any_t item) {
@@ -141,7 +139,10 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
   ret_t code  = 0;
 
   u_check_nret(self == nullptr);
-  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
+  u_check_nret(idx > as(self->len, ssize_t) || idx < -as(self->len + 1, ssize_t),
+               "idx(%ld), len(%zu)",
+               idx,
+               self->len);
 
   idx = getidx(idx);
   if (self->len == self->cap) {
@@ -158,6 +159,44 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
   self->len++;
 
 err:
+}
+
+bool vec_for_init(u_vec_t _self, bool flag) {
+  vec_t* self = as(_self, vec_t*);
+
+  u_check_ret(self == nullptr, false);
+  u_check_ret(self->len == 0, false);
+
+  self->flags[0] = !self->flags[0];
+  self->flags[1] = flag;
+  self->flags[2] = true;
+  self->flags[3] = false;
+
+  return self->flags[0];
+}
+
+bool vec_for(u_vec_t _self, size_t* idx, any_t item) {
+  vec_t* self = as(_self, vec_t*);
+
+  u_check_ret(self == nullptr, false);
+  u_check_ret(self->flags[3], false);
+
+  /* 初始化 */
+  if (self->flags[2]) {
+    *idx = self->flags[1] ? 0 : self->len - 1;
+    self->flags[2] = !self->flags[2];
+  } else { /* 迭代 */
+    *idx += self->flags[1] ? 1 : -1;
+  }
+
+  /* 判断是否迭代 */
+  if ((self->flags[1] && *idx == self->len - 1) || (!self->flags[1] && *idx == 0)) {
+    self->flags[3] = true;
+  }
+
+  memcpy(item, at(*idx), self->itsize);
+
+  return true;
 }
 
 /***************************************************************************************************

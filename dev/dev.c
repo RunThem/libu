@@ -1,9 +1,4 @@
-/* local libs */
-// #include "u/core/itbl.h"
-// #include "u/core/ivec.h"
-
-#include "u/core/iavl.h"
-
+->/* local libs */
 #include <u/core.h>
 #include <u/core/list.h>
 #include <u/core/str.h>
@@ -46,7 +41,7 @@
 #define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
 #define constexpr(expr) (__builtin_constant_p(expr))
 
-ret_t code = 0;
+    ret_t code = 0;
 
 any_t __bt_state = nullptr;
 void boo() {
@@ -79,10 +74,6 @@ void __str() {
   // l((1, 2));
 }
 
-void pr(int a, ...) {
-  println("%d", a);
-}
-
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
@@ -91,22 +82,57 @@ int main(int argc, const char** argv) {
   int result = __builtin_types_compatible_p(char[], char*);
   infln("result is %d", result);
 
-  iu_vec(int) v          = {0};
-  iu_tbl(u64_t, char*) t = {0};
+  iu_vec(int) v          = iu_new(v);
+  iu_tbl(u64_t, char*) t = iu_new(t);
 
-  v         = u_zalloc(sizeof(*v));
-  v->_.mate = vec_new(sizeof(int));
+  // iu_vec(int) v          = {0};
+  // iu_tbl(u64_t, char*) t = {0};
 
-  t         = u_zalloc(sizeof(*t));
-  t->_.mate = tbl_new(sizeof(u64_t), sizeof(char*));
+  // iu_init(v);
+  // iu_init(t);
 
-  int l = 3;
-  vec_put(v->_.mate, 3, &l);
-  iu_put(v, 3, 3);
-  println("len is %zu", vec_len(v->_.mate));
+  println("isinit is %d", iu_isinit(v));
+  println("isinit is %d", iu_isinit(t));
 
+  println("\nvec:");
+  println("isempty is %d", iu_isempty(v));
+  iu_put(v, -1, 3);
+  println("len is %zu", iu_len(v));
+  println("cap is %zu", iu_cap(v));
+  println("isinit is %d", iu_isinit(v));
+  println("isexist is %d", iu_isexist(v, 0));
+  println("isexist is %d", iu_isexist(v, 1));
+  println("isempty is %d", iu_isempty(v));
+  println("at is %d", iu_at(v, 0));
+
+  extern bool vec_for_init(u_vec_t);
+  extern bool vec_for(u_vec_t, any_t, any_t);
+#define u_for(u, idx, it)                                                                          \
+  for (typeof(u->_.a) idx; vec_for_init(v->_.mate);)                                               \
+    for (typeof(u->_.b) it; vec_for(u->_.mate, &idx, &it);)
+
+  int arr[] = {1, 2, 3, 4, 5};
+
+  // u_for(arr, i, it, { println("[%zu] is %d", i, it); });
+  u_for(v, i, it) {
+    println("[%zd] is %d", i, it);
+  }
+
+  iu_re(v, 0, 341234);
+  println("at is %d", iu_at(v, 0));
+
+  println("\ntbl:");
+  println("isempty is %d", iu_isempty(t));
   iu_put(t, 4, "hello");
-  println("len is %zu", tbl_len(t->_.mate));
+  println("len is %zu", iu_len(t));
+  println("isinit is %d", iu_isinit(t));
+  println("isexist is %d", iu_isexist(t, 4));
+  println("isexist is %d", iu_isexist(t, 3));
+  println("isempty is %d", iu_isempty(t));
+  println("at is %s", iu_at(t, 4));
+
+  iu_re(t, 4, "hello tbl");
+  println("at is %s", iu_at(t, 4));
 
   // pr(_Generic(v->_.mate, u_vec_t: (1), u_tbl_t: (2, 2), u_avl_t: (3, 3, 3), default: (4)));
 
