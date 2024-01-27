@@ -12,33 +12,61 @@ static size_t bucket_sizes[] = {
     536870909, 1073741789, 2147483647, 4294967291, 8589934583, 17179869143, 34359738337,
 };
 
+/***************************************************************************************************
+ * Tyoe
+ **************************************************************************************************/
 typedef u64_t u_hash_t;
+
 typedef struct node_t node_t;
 struct node_t {
   node_t* next;
   u_hash_t hash;
 };
 
-#undef key
-#define key(node) (any(node) + sizeof(node_t))
-
-#undef val
-#define val(node) (any(node) + sizeof(node_t) + self->ksize)
-
 typedef struct tbl_t tbl_t;
 struct tbl_t {
+  bool flags[4];
   size_t ksize;
   size_t vsize;
   size_t len;
 
-  node_t* itor;
+  node_t* iter;
   node_t* free_nodes;
 
   i8_t bucket_idx;
   node_t* buckets;
 };
 
-static void tbl_debug(tbl_t* self);
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
+#undef key
+#define key(node) (any(node) + sizeof(node_t))
+
+#undef val
+#define val(node) (any(node) + sizeof(node_t) + self->ksize)
+
+/***************************************************************************************************
+ * Function
+ **************************************************************************************************/
+/* [idx, len] { 0xffff } { 0xfffe } */
+static void tbl_debug(tbl_t* self) {
+  infln("ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)",
+        self->ksize,
+        self->vsize,
+        self->len,
+        bucket_sizes[self->bucket_idx]);
+
+  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
+    print("[%zu, %zu] ", i, self->buckets[i].hash);
+
+    for (node_t* node = &self->buckets[i]; node != nullptr; node = node->next) {
+      print("{ %p } ", node);
+    }
+
+    println();
+  }
+}
 
 /* fnv 64-bit hash function */
 static u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
@@ -116,25 +144,25 @@ err:
 static void tbl_next(tbl_t* self) {
   size_t idx = 0;
 
-  if (self->itor != nullptr) {
-    self->itor = self->itor->next;
+  if (self->iter != nullptr) {
+    self->iter = self->iter->next;
 
     /* ok */
-    u_nret_if(self->itor->next != nullptr);
+    u_nret_if(self->iter->next != nullptr);
 
     /* end */
-    u_if(self->itor->hash == 0) {
-      self->itor = nullptr;
+    u_if(self->iter->hash == 0) {
+      self->iter = nullptr;
       return;
     }
 
-    idx        = self->itor->hash;
-    self->itor = nullptr;
+    idx        = self->iter->hash;
+    self->iter = nullptr;
   }
 
   for (size_t i = idx; i < bucket_sizes[self->bucket_idx]; i++) {
     if (self->buckets[i].hash != 0) {
-      self->itor = self->buckets[i].next;
+      self->iter = self->buckets[i].next;
       break;
     }
   }
@@ -179,9 +207,6 @@ err:
   return false;
 }
 
-/***************************************************************************************************
- * Create
- **************************************************************************************************/
 u_tbl_t tbl_new(size_t ksize, size_t vsize) {
   tbl_t* self = nullptr;
 
@@ -209,9 +234,6 @@ err:
   return nullptr;
 }
 
-/***************************************************************************************************
- * Destruction
- **************************************************************************************************/
 void tbl_clear(u_tbl_t _self) {
   tbl_t* self  = as(_self, tbl_t*);
   node_t* node = nullptr;
@@ -251,9 +273,6 @@ void tbl_cleanup(u_tbl_t _self) {
   u_free_if(self);
 }
 
-/***************************************************************************************************
- * Interface
- **************************************************************************************************/
 size_t tbl_len(u_tbl_t _self) {
   tbl_t* self = as(_self, tbl_t*);
 
@@ -374,45 +393,28 @@ err:
   u_free_if(node);
 }
 
-/***************************************************************************************************
- * Iterator
- **************************************************************************************************/
-void tbl_range_init(u_tbl_t _self) {
-  tbl_t* self = as(_self, tbl_t*);
-
-  self->itor = nullptr;
-}
-
-bool tbl_range(u_tbl_t _self, any_t key, any_t val) {
+bool tbl_for_init(u_tbl_t _self, bool flag) {
   tbl_t* self = as(_self, tbl_t*);
 
   u_check_ret(self == nullptr, false);
   u_check_ret(self->len == 0, false);
-  u_check_ret(val == nullptr, false);
 
-  tbl_next(self);
-  u_ret_if(self->itor == nullptr, false);
+  self->iter     = nullptr;
+  self->flags[0] = !self->flags[0];
 
-  memcpy(key, key(self->itor), self->ksize + self->vsize);
-
-  return true;
+  return self->flags[0];
 }
 
-/* [idx, len] { 0xffff } { 0xfffe } */
-static void tbl_debug(tbl_t* self) {
-  infln("ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)",
-        self->ksize,
-        self->vsize,
-        self->len,
-        bucket_sizes[self->bucket_idx]);
+bool tbl_for(u_tbl_t _self, any_t key, any_t val) {
+  tbl_t* self = as(_self, tbl_t*);
 
-  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
-    print("[%zu, %zu] ", i, self->buckets[i].hash);
+  u_check_ret(self == nullptr, false);
 
-    for (node_t* node = &self->buckets[i]; node != nullptr; node = node->next) {
-      print("{ %p } ", node);
-    }
+  tbl_next(self);
+  u_ret_if(self->iter == nullptr, false);
 
-    println();
-  }
+  memcpy(key, key(self->iter), self->ksize);
+  memcpy(val, val(self->iter), self->vsize);
+
+  return true;
 }

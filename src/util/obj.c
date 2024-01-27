@@ -133,7 +133,7 @@ any_t __obj_method(any_t prototype, any_t data) {
     uintptr_t data;
     u8_t jmp;
     uintptr_t addr;
-  } asm_code    = {.jmp = 0xE9};
+  } asm_code = {.jmp = 0xE9};
   /* ihsize = offset + sizeof(any_t) * 2 + 1; */
 
 #endif

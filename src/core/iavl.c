@@ -1,7 +1,7 @@
 #include <u/core.h>
 
 /***************************************************************************************************
- * Private
+ * Type
  **************************************************************************************************/
 typedef struct node_t node_t;
 struct node_t {
@@ -11,6 +11,23 @@ struct node_t {
   size_t height;
 };
 
+typedef struct avl_t avl_t;
+struct avl_t {
+  bool flags[4];
+  size_t ksize;
+  size_t vsize;
+  size_t len;
+
+  u_cmp_fn cmp_fn;
+
+  node_t* root;
+  node_t* iter;
+  node_t* free_nodes;
+};
+
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
 #undef key
 #define key(node) (any(node) + sizeof(node_t))
 
@@ -29,21 +46,11 @@ struct node_t {
     (node)->height = max(lh(node), rh(node)) + 1;                                                  \
   } while (0)
 
-typedef struct avl_t avl_t;
-struct avl_t {
-  size_t ksize;
-  size_t vsize;
-  size_t len;
-
-  u_avl_cmp_fn cmp_fn;
-
-  node_t* root;
-  node_t* itor;
-  node_t* free_nodes;
-};
-
 #define selfof(self) (assert((self) != nullptr), as((self) - sizeof(avl_t), avl_t*))
 
+/***************************************************************************************************
+ * Function
+ **************************************************************************************************/
 static node_t* avl_node(avl_t* self, node_t* parent, any_t key, any_t val) {
   node_t* node = nullptr;
 
@@ -272,7 +279,7 @@ static void avl_push_rebalance(avl_t* self, node_t* node) {
 }
 
 static void avl_next(avl_t* self) {
-  node_t* node = self->itor;
+  node_t* node = self->iter;
   node_t* last = nullptr;
 
   if (node == nullptr) {
@@ -298,11 +305,11 @@ static void avl_next(avl_t* self) {
     }
   }
 
-  self->itor = node;
+  self->iter = node;
 }
 
 static void avl_prev(avl_t* self) {
-  node_t* node = self->itor;
+  node_t* node = self->iter;
   node_t* last = nullptr;
 
   if (node == nullptr) {
@@ -328,13 +335,10 @@ static void avl_prev(avl_t* self) {
     }
   }
 
-  self->itor = node;
+  self->iter = node;
 }
 
-/***************************************************************************************************
- * Create
- **************************************************************************************************/
-u_avl_t avl_new(size_t ksize, size_t vsize, u_avl_cmp_fn cmp_fn) {
+u_avl_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
   u_check_ret(ksize == 0, nullptr);
@@ -358,36 +362,31 @@ err:
   return nullptr;
 }
 
-/***************************************************************************************************
- * Destruction
- **************************************************************************************************/
 void avl_clear(u_avl_t _self) {
-  avl_t* self  = as(_self, avl_t*);
-  node_t* node = nullptr;
-#if 0
-  u_vec(node_t*) nodes = nullptr;
+  avl_t* self          = as(_self, avl_t*);
+  node_t* node         = nullptr;
+  u_vec(node_t*) nodes = u_new(nodes);
 
   u_check_nret(self->len == 0);
 
-  u_vec_from(nodes, {self->root});
+  u_put(nodes, -1, self->root);
 
-  while (!u_vec_isempty(nodes)) {
-    node = u_vec_at(nodes, 0);
+  while (!u_isempty(nodes)) {
+    node = u_at(nodes, 0);
 
     if (node->left) {
-      u_vec_put(nodes, -1, node->left);
+      u_put(nodes, -1, node->left);
     }
     if (node->right) {
-      u_vec_put(nodes, -1, node->right);
+      u_put(nodes, -1, node->right);
     }
 
     u_free(node);
 
-    u_vec_pop(nodes, 0);
+    u_pop(nodes, 0);
   }
 
-  u_vec_cleanup(nodes);
-#endif
+  u_cleanup(nodes);
 
   self->len = 0;
 }
@@ -410,9 +409,6 @@ void avl_cleanup(u_avl_t _self) {
   u_free(self);
 }
 
-/***************************************************************************************************
- * Interface
- **************************************************************************************************/
 size_t avl_len(u_avl_t _self) {
   avl_t* self = as(_self, avl_t*);
 
@@ -564,25 +560,29 @@ void avl_put(u_avl_t _self, any_t key, any_t val) {
 err:
 }
 
-/***************************************************************************************************
- * Iterator
- **************************************************************************************************/
-void avl_range_init(u_avl_t _self) {
+bool avl_for_init(u_avl_t _self, bool flag) {
   avl_t* self = as(_self, avl_t*);
 
-  self->itor = nullptr;
+  u_check_ret(self == nullptr, false);
+  u_check_ret(self->len == 0, false);
+
+  self->iter     = nullptr;
+  self->flags[0] = !self->flags[0];
+  self->flags[1] = flag;
+
+  return self->flags[0];
 }
 
-bool avl_range(u_avl_t _self, bool flag, any_t key, any_t val) {
+bool avl_for(u_avl_t _self, any_t key, any_t val) {
   avl_t* self = as(_self, avl_t*);
 
-  u_ret_if(self->len == 0, false);
+  u_check_ret(self == nullptr, false);
 
-  ((flag == 1) ? avl_next : avl_prev)(self);
-  u_ret_if(self->itor == nullptr, false);
+  (self->flags[1] ? avl_next : avl_prev)(self);
+  u_ret_if(self->iter == nullptr, false);
 
-  memcpy(key, key(self->itor), self->ksize);
-  memcpy(val, val(self->itor), self->vsize);
+  memcpy(key, key(self->iter), self->ksize);
+  memcpy(val, val(self->iter), self->vsize);
 
   return true;
-};
+}

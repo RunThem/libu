@@ -183,7 +183,7 @@ bool vec_for(u_vec_t _self, size_t* idx, any_t item) {
 
   /* 初始化 */
   if (self->flags[2]) {
-    *idx = self->flags[1] ? 0 : self->len - 1;
+    *idx           = self->flags[1] ? 0 : self->len - 1;
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
     *idx += self->flags[1] ? 1 : -1;
@@ -192,24 +192,6 @@ bool vec_for(u_vec_t _self, size_t* idx, any_t item) {
   /* 判断是否迭代 */
   if ((self->flags[1] && *idx == self->len - 1) || (!self->flags[1] && *idx == 0)) {
     self->flags[3] = true;
-  }
-
-  memcpy(item, at(*idx), self->itsize);
-
-  return true;
-}
-
-/***************************************************************************************************
- * Iterator
- **************************************************************************************************/
-bool vec_range(u_vec_t _self, ssize_t* idx, bool flag, any_t item) {
-  vec_t* self = as(_self, vec_t*);
-
-  u_check_ret(*idx == -1 || *idx == self->len, false);
-
-  /* initialize */
-  if (*idx == -2) {
-    *idx = flag ? 0 : as(self->len - 1, ssize_t);
   }
 
   memcpy(item, at(*idx), self->itsize);
