@@ -121,7 +121,7 @@ typedef void** invalied_type_t;
     u = u_zalloc(sizeof(typeof(*u)));                                                              \
                                                                                                    \
     if (typeeq(u->_.mate, u_vec_t)) {                                                              \
-      u->_.mate = (any_t)vec_new(sizeof(typeof(u->_.a)));                                          \
+      u->_.mate = (any_t)vec_new(sizeof(typeof(u->_.b)));                                          \
     } else if (typeeq(u->_.mate, u_tbl_t)) {                                                       \
       u->_.mate = (any_t)tbl_new(sizeof(typeof(u->_.a)), sizeof(typeof(u->_.b)));                  \
     } else if (typeeq(u->_.mate, u_avl_t)) {                                                       \
