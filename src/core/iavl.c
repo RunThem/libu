@@ -363,7 +363,7 @@ err:
 void avl_clear(u_avl_t _self) {
   avl_t* self          = as(_self, avl_t*);
   node_t* node         = nullptr;
-  u_vec(node_t*) nodes = u_new(nodes);
+  u_vec(node_t*) nodes = u_new(nodes, sizeof(node_t*));
 
   u_check_nret(self->len == 0);
 

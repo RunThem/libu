@@ -92,6 +92,28 @@ int main(int argc, const char** argv) {
   int result = __builtin_types_compatible_p(char[], char*);
   infln("result is %d", result);
 
+  struct st_t {
+    lstn_t node;
+    int a;
+  };
+
+  u_lst(struct st_t) l = u_new(l, offsetof(struct st_t, node));
+
+  u_put(l, nullptr, &me(struct st_t, .a = 10));
+  u_put(l, nullptr, &me(struct st_t, .a = 11));
+  u_put(l, nullptr, &me(struct st_t, .a = 12));
+  u_put(l, nullptr, &me(struct st_t, .a = 13));
+  u_put(l, nullptr, &me(struct st_t, .a = 14));
+  u_put(l, nullptr, &me(struct st_t, .a = 15));
+  u_put(l, nullptr, &me(struct st_t, .a = 16));
+  u_put(l, nullptr, &me(struct st_t, .a = 17));
+
+  println("len is %zu", u_len(l));
+
+  u_for(l, idx, it) {
+    println("idx is %p, it is %p, .a is %d", idx, it, it->a);
+  }
+
   return EXIT_SUCCESS;
 err:
   return EXIT_FAILURE;

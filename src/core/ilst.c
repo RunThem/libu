@@ -11,6 +11,8 @@ typedef(lst_t) {
 
   lstn_t* head;
   lstn_t* tail;
+
+  lstn_t* iter;
 };
 
 /***************************************************************************************************
@@ -162,14 +164,32 @@ bool lst_for_init(u_lst_t _self, bool flag) {
   self->flags[2] = true;
   self->flags[3] = false;
 
+  self->iter = nullptr;
+
   return self->flags[0];
 }
 
 bool lst_for(u_lst_t _self, any_t idx, any_t item) {
-  lst_t* self = as(_self, lst_t*);
+  lst_t* self  = as(_self, lst_t*);
+  lstn_t* node = nullptr;
 
   u_check_ret(self == nullptr, false);
   u_check_ret(self->flags[3], false);
+
+  if (self->flags[2]) {
+    self->iter     = self->flags[1] ? self->head : self->tail;
+    self->flags[2] = !self->flags[2];
+  } else {
+    self->iter = self->flags[1] ? self->iter->next : self->iter->prev;
+  }
+
+  if ((self->flags[1] && self->iter == self->tail) ||
+      (!self->flags[1] && self->iter == self->head)) {
+    self->flags[3] = true;
+  }
+
+  *as(idx, any_t*)  = self->iter->item;
+  *as(item, any_t*) = self->iter->item;
 
   return true;
 }
