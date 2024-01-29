@@ -45,3 +45,14 @@ bool tbl_next(u_vec_t, any_t, any_t)
 #define u_for(u, args...) for (vec_for_init(u->_.mate); vec_for(u->_.mate, &va_at(0, args),
 &va_at(1, args)))
 ```
+
+
+
+
+```c
+int main() {
+    u_lst(int) l = u_new(l, 0);
+
+    u_put(l, nullptr, 1);
+}
+```

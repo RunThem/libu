@@ -2,6 +2,10 @@
 
 #define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
 
+#define typedef(name)                                                                              \
+  typedef struct name name;                                                                        \
+  struct name
+
 /*
  * a >  b  ->  1
  * a == b  ->  0

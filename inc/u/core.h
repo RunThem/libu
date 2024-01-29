@@ -15,6 +15,18 @@ typedef struct {
 
 typedef fnt(u_cmp_fn, int, const void*, const void*);
 
+typedef(lstn_t) {
+  lstn_t* prev;
+  lstn_t* next;
+
+  any_t item;
+};
+
+typedef struct {
+}* u_lst_t;
+
+typedef fnt(u_eq_fn, bool, const void*, const void*);
+
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
@@ -100,6 +112,17 @@ typedef void** invalied_type_t;
                                                                                                    \
     K key;                                                                                         \
     V val;                                                                                         \
+  }*
+
+#define u_lst(T)                                                                                   \
+  struct [[gnu::packed]] {                                                                         \
+    struct {                                                                                       \
+      u_lst_t mate;                                                                                \
+      T* a;                                                                                        \
+      T* b;                                                                                        \
+    } _;                                                                                           \
+                                                                                                   \
+    T* it;                                                                                         \
   }*
 
 /***************************************************************************************************
