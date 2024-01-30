@@ -1,5 +1,5 @@
 #include <stdarg.h>
-#include <u/core/str.h>
+#include <u/util.h>
 #include <unistd.h>
 
 /*************************************************************************************************

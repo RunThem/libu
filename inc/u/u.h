@@ -26,3 +26,6 @@
 #include "__macro/debug.h"
 #include "__macro/print.h"
 #include "__macro/misc.h"
+
+#include "core.h"
+#include "util.h"

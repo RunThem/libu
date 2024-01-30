@@ -1,8 +1,5 @@
 /* local libs */
-#include <u/core.h>
-#include <u/core/str.h>
 #include <u/u.h>
-#include <u/util/fs.h>
 
 /* system libs */
 #include <arpa/inet.h>
