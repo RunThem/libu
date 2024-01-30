@@ -153,6 +153,46 @@ void lst_put(u_lst_t _self, any_t idx, any_t item) {
   self->len++;
 }
 
+void lst_first(u_lst_t _self, any_t item) {
+  lst_t* self = as(_self, lst_t*);
+
+  u_check_nret(self == nullptr);
+  u_check_nret(self->len == 0);
+
+  *as(item, any_t*) = self->head->item;
+}
+
+void lst_last(u_lst_t _self, any_t item) {
+  lst_t* self = as(_self, lst_t*);
+
+  u_check_nret(self == nullptr);
+  u_check_nret(self->len == 0);
+
+  *as(item, any_t*) = self->tail->item;
+}
+
+void lst_next(u_lst_t _self, any_t idx, any_t item) {
+  lst_t* self = as(_self, lst_t*);
+
+  u_check_nret(self == nullptr);
+  u_check_nret(self->len == 0);
+  u_check_nret(idx == nullptr);
+  u_check_nret(*as(idx, any_t*) == nullptr);
+
+  *as(item, any_t*) = as(*as(idx, any_t*) + self->off, lstn_t*)->next;
+}
+
+void lst_prev(u_lst_t _self, any_t idx, any_t item) {
+  lst_t* self = as(_self, lst_t*);
+
+  u_check_nret(self == nullptr);
+  u_check_nret(self->len == 0);
+  u_check_nret(idx == nullptr);
+  u_check_nret(*as(idx, any_t*) == nullptr);
+
+  *as(item, any_t*) = as(*as(idx, any_t*) + self->off, lstn_t*)->prev;
+}
+
 bool lst_for_init(u_lst_t _self, bool flag) {
   lst_t* self = as(_self, lst_t*);
 

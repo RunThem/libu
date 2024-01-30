@@ -74,6 +74,11 @@ extern void tbl_put(u_tbl_t, any_t, any_t);
 extern void avl_put(u_avl_t, any_t, any_t);
 extern void lst_put(u_lst_t, any_t, any_t);
 
+extern void lst_first(u_lst_t, any_t);
+extern void lst_last(u_lst_t, any_t);
+extern void lst_next(u_lst_t, any_t, any_t);
+extern void lst_prev(u_lst_t, any_t, any_t);
+
 extern bool vec_for_init(u_vec_t, bool);
 extern bool vec_for(u_vec_t, size_t*, any_t);
 extern bool tbl_for_init(u_tbl_t, bool);
@@ -284,8 +289,64 @@ typedef void** invalied_type_t;
        igeneric(u->_.mate, &u->_.b, &u->_.b, &u->_.b, u->_.b));                                    \
   } while (0)
 
+#define u_first(u)                                                                                 \
+  ({                                                                                               \
+    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+                                                                                                   \
+    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_first);                           \
+                                                                                                   \
+    fn(u->_.mate, &u->_.b);                                                                        \
+                                                                                                   \
+    u->_.b;                                                                                        \
+  })
+
+#define u_last(u)                                                                                  \
+  ({                                                                                               \
+    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+                                                                                                   \
+    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_last);                            \
+                                                                                                   \
+    fn(u->_.mate, &u->_.b);                                                                        \
+                                                                                                   \
+    u->_.b;                                                                                        \
+  })
+
+#define u_next(u, args...)                                                                         \
+  ({                                                                                               \
+    static_assert(va_size(args) == 1);                                                             \
+    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+                                                                                                   \
+    u->_.a = va_at(0, args);                                                                       \
+                                                                                                   \
+    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_next);                            \
+                                                                                                   \
+    fn(u->_.mate, &u->_.a, &u->_.b);                                                               \
+                                                                                                   \
+    u->_.b;                                                                                        \
+  })
+
+#define u_prev(u, args...)                                                                         \
+  ({                                                                                               \
+    static_assert(va_size(args) == 1);                                                             \
+    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+                                                                                                   \
+    u->_.a = va_at(0, args);                                                                       \
+                                                                                                   \
+    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_prev);                            \
+                                                                                                   \
+    fn(u->_.mate, &u->_.a, &u->_.b);                                                               \
+                                                                                                   \
+    u->_.b;                                                                                        \
+  })
+
 #define u_for(u, idx, it)                                                                          \
   for (typeof(u->_.a) idx;                                                                         \
        igeneric(u->_.mate, vec_for_init, tbl_for_init, avl_for_init, lst_for_init)(u->_.mate, 1);) \
+    for (typeof(u->_.b) it;                                                                        \
+         igeneric(u->_.mate, vec_for, tbl_for, avl_for, lst_for)(u->_.mate, any(&idx), &it);)
+
+#define u_rfor(u, idx, it)                                                                         \
+  for (typeof(u->_.a) idx;                                                                         \
+       igeneric(u->_.mate, vec_for_init, tbl_for_init, avl_for_init, lst_for_init)(u->_.mate, 0);) \
     for (typeof(u->_.b) it;                                                                        \
          igeneric(u->_.mate, vec_for, tbl_for, avl_for, lst_for)(u->_.mate, any(&idx), &it);)
