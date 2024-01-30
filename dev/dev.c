@@ -3,7 +3,6 @@
 #include <u/core/str.h>
 #include <u/u.h>
 #include <u/util/fs.h>
-#include <u/util/obj.h>
 
 /* system libs */
 #include <arpa/inet.h>
