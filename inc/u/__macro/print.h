@@ -1,5 +1,6 @@
 #define __file__ __FILE__
 #define __line__ __LINE__
+#define __func__ __func__
 
 #define print(fmt, ...)   fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define println(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)

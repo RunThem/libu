@@ -1,5 +1,7 @@
 #include <u/u.h>
 
+thread_local __err__t __err__ = {};
+
 /*
  * benchmark
  * */

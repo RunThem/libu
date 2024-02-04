@@ -17,6 +17,7 @@
 #include <string.h>
 #include <threads.h>
 #include <time.h>
+#include <setjmp.h>
 
 /* clang-format off */
 #include "__macro/va.h"

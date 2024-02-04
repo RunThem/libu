@@ -1,3 +1,22 @@
+extern thread_local __err__t __err__;
+
+#define try      for (bzero(&__err__, sizeof(__err__)); !setjmp(__err__.label);)
+#define catch(e) for (auto e = __err__; e.is_err; e.is_err = false)
+#define panic(_expr, _id, _msg, args...)                                                           \
+  do {                                                                                             \
+    __err__.is_err = true;                                                                         \
+    __err__.file   = __file__;                                                                     \
+    __err__.func   = __func__;                                                                     \
+    __err__.line   = __line__;                                                                     \
+    __err__.expr   = #_expr;                                                                       \
+    __err__.id     = _id;                                                                          \
+    __err__.error  = errno;                                                                        \
+                                                                                                   \
+    snprintf(__err__.msg, U_ERR_MSG_SIZE, _msg va_opt(0, args) args);                              \
+                                                                                                   \
+    longjmp(__err__.label, 1);                                                                     \
+  } while (0)
+
 #define noused(x) ((void)(x))
 #define chr(c)    (as(c, char))
 #define any(p)    (as(p, any_t))

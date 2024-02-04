@@ -87,6 +87,14 @@ int main(int argc, const char** argv) {
   int result = __builtin_types_compatible_p(char[], char*);
   infln("result is %d", result);
 
+  try {
+    panic(false, 1, "hejaoshdgowieh");
+
+    panic(true, 0, "hello%s", "isd");
+  } catch (e) {
+    println("[%s:%s %zu] %s", e.file, e.func, e.line, e.msg);
+  }
+
   return EXIT_SUCCESS;
 err:
   return EXIT_FAILURE;

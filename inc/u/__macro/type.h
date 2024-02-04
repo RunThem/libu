@@ -50,3 +50,16 @@ typedef _Atomic(u128_t) atomic_u128_t;
 #endif
 
 /* clang-format on */
+
+typedef struct {
+  bool is_err;
+  jmp_buf label;
+  const char* file;
+  const char* func;
+  const char* expr;
+  size_t line;
+  error_t error;
+  int id;
+#define U_ERR_MSG_SIZE 2048
+  char msg[U_ERR_MSG_SIZE];
+} __err__t;
