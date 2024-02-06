@@ -14,7 +14,7 @@ struct str_t {
 
 #define selfof(self) (assert((self) != nullptr), as(container_of(self, str_t, data), str_t*))
 
-static ret_t __str_resize(u_str_t* _self, size_t cap) {
+static ret_t __str_resize(str_t* _self, size_t cap) {
   str_t* self = selfof(*_self);
   str_t* str  = nullptr;
 
@@ -36,7 +36,7 @@ err:
 /*************************************************************************************************
  * Create
  *************************************************************************************************/
-u_str_t __str_new(size_t cap, u_str_t fmt, ...) {
+str_t __str_new(size_t cap, str_t fmt, ...) {
   str_t* self    = nullptr;
   va_list ap     = {0};
   char buf[4096] = {0};
@@ -82,7 +82,7 @@ err:
 /*************************************************************************************************
  * Destruction
  *************************************************************************************************/
-void __str_clear(u_str_t* _self) {
+void __str_clear(str_t* _self) {
   str_t* self = selfof(*_self);
 
   /* static string */
@@ -92,7 +92,7 @@ void __str_clear(u_str_t* _self) {
   self->data[0] = '\0';
 }
 
-void __str_cleanup(u_str_t* _self) {
+void __str_cleanup(str_t* _self) {
   str_t* self = selfof(*_self);
 
   /* static string */
@@ -105,7 +105,7 @@ void __str_cleanup(u_str_t* _self) {
 /*************************************************************************************************
  * Interface
  *************************************************************************************************/
-void __str_slen(u_str_t* _self, size_t nlen) {
+void __str_slen(str_t* _self, size_t nlen) {
   str_t* self = selfof(*_self);
 
   u_check_nret(nlen > self->cap, "str slen(len(%zu), self.cap(%zu))", nlen, self->cap);
@@ -114,19 +114,19 @@ void __str_slen(u_str_t* _self, size_t nlen) {
   self->data[nlen] = '\0';
 }
 
-size_t __str_len(u_str_t* _self) {
+size_t __str_len(str_t* _self) {
   return selfof(*_self)->len;
 }
 
-size_t __str_cap(u_str_t* _self) {
+size_t __str_cap(str_t* _self) {
   return selfof(*_self)->cap;
 }
 
-bool __str_empty(u_str_t* _self) {
+bool __str_empty(str_t* _self) {
   return selfof(*_self)->len == 0;
 }
 
-ret_t __str_append(u_str_t* _self, u_str_t fmt, ...) {
+ret_t __str_append(str_t* _self, str_t fmt, ...) {
   str_t* self    = selfof(*_self);
   va_list ap     = {0};
   char buf[4096] = {0};
@@ -160,7 +160,7 @@ err:
   return -2;
 }
 
-ret_t __str_erase(u_str_t* _self, size_t idx, size_t len) {
+ret_t __str_erase(str_t* _self, size_t idx, size_t len) {
   str_t* self = selfof(*_self);
 
   u_check_ret(idx + len > self->len, -1);
@@ -190,7 +190,7 @@ ret_t __str_erase(u_str_t* _self, size_t idx, size_t len) {
  *   ssize_t __str_write_str(u_str_t* _self, u_str_t buf, size_t size);
  * */
 
-ssize_t __str_read_fd(u_str_t* _self, int fd, size_t size) {
+ssize_t __str_read_fd(str_t* _self, int fd, size_t size) {
   str_t* self      = selfof(*_self);
   ret_t code       = 0;
   size_t rsize     = 0;

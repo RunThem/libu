@@ -5,7 +5,7 @@
 /* libs */
 #include <u/util.h>
 
-off_t u_fs_size(u_str_t file) {
+off_t u_fs_size(str_t file) {
   struct stat st = {0};
   ret_t code     = 0;
 
@@ -22,7 +22,7 @@ err:
   return -1;
 }
 
-bool u_fs_exist(u_str_t file) {
+bool u_fs_exist(str_t file) {
   ret_t code = 0;
   u_check_ret(file == nullptr, false);
 
@@ -33,12 +33,12 @@ bool u_fs_exist(u_str_t file) {
   return code == 0;
 }
 
-u_str_t u_fs_read(u_str_t file) {
+str_t u_fs_read(str_t file) {
   ret_t code  = 0;
   int fd      = 0;
   off_t size  = 0;
   ssize_t len = 0;
-  u_str_t buf = {0};
+  str_t buf = {0};
 
   u_check_ret(file == nullptr, nullptr);
 
@@ -70,7 +70,7 @@ err:
   return nullptr;
 }
 
-bool u_fs_remove(u_str_t file) {
+bool u_fs_remove(str_t file) {
   ret_t code = 0;
 
   u_check_ret(file == nullptr, false);

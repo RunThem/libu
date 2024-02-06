@@ -43,42 +43,6 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-void __str() {
-// #undef s
-#define u_str_t(s, args...)                                                                        \
-  (((struct {                                                                                      \
-     size_t cap;                                                                                   \
-     size_t len;                                                                                   \
-     char data[va_0th(sizeof(s), args)];                                                           \
-   }){.cap = va_0th(sizeof(s) - 1, args), .len = sizeof(s) - 1, .data = (s)})                      \
-       .data)
-
-  u_str_t str = u_str_t("hello");
-
-  infln("len is %zu", u_str_len(&str));
-  infln("cap is %zu", u_str_cap(&str));
-
-  str[4] = ' ';
-
-  infln("'%s'", str);
-
-#define u_arr(T, args...)                                                                          \
-  struct [[gnu::packed]] {                                                                         \
-    struct {                                                                                       \
-      size_t len;                                                                                  \
-      T data[va_at(0, args)];                                                                      \
-    } _;                                                                                           \
-  }
-
-  u_arr(int, 100) a = {0};
-
-#define key(k, v) k
-#define val(k, v) v
-#define l(a, ...) key a, val a
-
-  // l((1, 2));
-}
-
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
