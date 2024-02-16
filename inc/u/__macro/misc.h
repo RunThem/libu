@@ -33,7 +33,7 @@ extern thread_local __err__t __err__;
 
 #define each(i, num) for (size_t i = 0; (i) < (num); (i)++)
 
-#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
+#define align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
     const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \

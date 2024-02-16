@@ -1,3 +1,4 @@
+#if 0
 #include <stdarg.h>
 #include <u/util.h>
 #include <unistd.h>
@@ -234,3 +235,5 @@ err:
 
   return -2;
 }
+
+#endif

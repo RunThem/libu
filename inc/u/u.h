@@ -7,7 +7,9 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <setjmp.h>
 #include <stdalign.h>
+#include <stdarg.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -17,7 +19,6 @@
 #include <string.h>
 #include <threads.h>
 #include <time.h>
-#include <setjmp.h>
 
 /* clang-format off */
 #include "__macro/va.h"

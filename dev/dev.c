@@ -13,20 +13,16 @@
 #include <netinet/ip_icmp.h>
 #include <netpacket/packet.h>
 #include <regex.h>
-#include <stdalign.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <threads.h>
 #include <unistd.h>
 
 /* third libs */
 
-#include <libsock.h>
+// #include <libsock.h>
 // #include <backtrace-supported.h>
 // #include <backtrace.h>
 
@@ -43,12 +39,29 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
+FILE* fp = 0;
+
+int format_print(const char* __restrict __format, ...) {
+  va_list ap;
+  int n = 0;
+
+  if (fp == nullptr) {
+    return -1;
+  }
+
+  va_start(ap, __format);
+
+  n = vfprintf(fp, __format, ap);
+
+  va_end(ap);
+
+  return n;
+}
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
-  infln("hello libu!");
-
-  int result = __builtin_types_compatible_p(char[], char*);
+  int result = typeeq(char[], char*);
   infln("result is %d", result);
 
   try {
@@ -58,6 +71,17 @@ int main(int argc, const char** argv) {
   } catch (e) {
     println("[%s:%s %zu] %s", e.file, e.func, e.line, e.msg);
   }
+
+  ustr buf = ustr(1000);
+  fp       = tmpfile();
+
+  u_vec(int) v = u_new(v, sizeof(int));
+
+  __builtin_dump_struct(v, format_print);
+
+  fread(buf, 1000, 1, fp);
+
+  println("%s", buf);
 
   return EXIT_SUCCESS;
 err:

@@ -1,11 +1,12 @@
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <u/u.h>
 #include <unistd.h>
 
 /* libs */
 #include <u/util.h>
 
-off_t u_fs_size(str_t file) {
+off_t u_fs_size(ustr file) {
   struct stat st = {0};
   ret_t code     = 0;
 
@@ -22,7 +23,7 @@ err:
   return -1;
 }
 
-bool u_fs_exist(str_t file) {
+bool u_fs_exist(ustr file) {
   ret_t code = 0;
   u_check_ret(file == nullptr, false);
 
@@ -33,12 +34,12 @@ bool u_fs_exist(str_t file) {
   return code == 0;
 }
 
-str_t u_fs_read(str_t file) {
+ustr u_fs_read(ustr file) {
   ret_t code  = 0;
   int fd      = 0;
   off_t size  = 0;
   ssize_t len = 0;
-  str_t buf = {0};
+  ustr buf    = {0};
 
   u_check_ret(file == nullptr, nullptr);
 
@@ -48,7 +49,7 @@ str_t u_fs_read(str_t file) {
   fd = open(file, O_RDONLY);
   u_err_if(fd < 0, "fs read('%s') call open() failed.", file);
 
-  buf = u_str_new(size);
+  // buf = __str_new(size, "");
   u_err_if(buf == nullptr, "fs read('%s') create buffer failed., size(%zu)", file, size);
 
   len = read(fd, buf, size);
@@ -56,7 +57,9 @@ str_t u_fs_read(str_t file) {
 
   close(fd);
 
-  u_str_slen(&buf, len);
+  uslen(buf) = len;
+
+  // u_str_slen(&buf, len);
 
   return buf;
 
@@ -64,13 +67,13 @@ err:
   u_close_if(fd);
 
   if (buf != nullptr) {
-    u_str_cleanup(&buf);
+    // u_str_cleanup(&buf);
   }
 
   return nullptr;
 }
 
-bool u_fs_remove(str_t file) {
+bool u_fs_remove(ustr file) {
   ret_t code = 0;
 
   u_check_ret(file == nullptr, false);
