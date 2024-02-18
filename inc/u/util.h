@@ -28,9 +28,12 @@ typedef struct ustr_t {
        .data)
 
 #define uslen(s) (container_of(s, ustr_t, data)->len)
+#define uscap(s) (container_of(s, ustr_t, data)->cap)
 #define uscat(s, fmt, ...)
-#define usinc(s)
+#define usins(s, fmt, ...)
 #define usfmt(fmt, ...)
+#define usdel(s)
+#define usera(s)
 
 #if 0
 u_str __str_new(size_t cap, u_str fmt, ...);

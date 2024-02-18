@@ -1,4 +1,5 @@
 /* local libs */
+#include <tbox/tbox.h>
 #include <u/u.h>
 
 /* system libs */
@@ -18,6 +19,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <ucontext.h>
 #include <unistd.h>
 
 /* third libs */

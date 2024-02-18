@@ -6,6 +6,8 @@ end)
 
 -- add_requires('libsock', 'miniz')
 
+add_requires('tbox')
+
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
@@ -13,6 +15,8 @@ target('dev.c', function()
   set_rundir('$(projectdir)')
 
   add_deps('u', 'macro')
+
+  add_packages('tbox')
 
   -- add_packages('libsock', 'miniz')
 end)
