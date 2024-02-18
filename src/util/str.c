@@ -1,7 +1,7 @@
 #if 0
-#include <stdarg.h>
-#include <u/util.h>
-#include <unistd.h>
+#  include <stdarg.h>
+#  include <u/util.h>
+#  include <unistd.h>
 
 /*************************************************************************************************
  * Private
@@ -13,7 +13,7 @@ struct str_t {
   char data[];
 };
 
-#define selfof(self) (assert((self) != nullptr), as(container_of(self, str_t, data), str_t*))
+#  define selfof(self) (assert((self) != nullptr), as(container_of(self, str_t, data), str_t*))
 
 static ret_t __str_resize(str_t* _self, size_t cap) {
   str_t* self = selfof(*_self);

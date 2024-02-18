@@ -39,31 +39,18 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-FILE* fp = 0;
-
-int format_print(const char* __restrict __format, ...) {
-  va_list ap;
-  int n = 0;
-
-  if (fp == nullptr) {
-    return -1;
-  }
-
-  va_start(ap, __format);
-
-  n = vfprintf(fp, __format, ap);
-
-  va_end(ap);
-
-  return n;
-}
-
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
   int result = typeeq(char[], char*);
   infln("result is %d", result);
 
+  return EXIT_SUCCESS;
+err:
+  return EXIT_FAILURE;
+}
+
+void try_catch() {
   try {
     panic(false, 1, "hejaoshdgowieh");
 
@@ -71,21 +58,38 @@ int main(int argc, const char** argv) {
   } catch (e) {
     println("[%s:%s %zu] %s", e.file, e.func, e.line, e.msg);
   }
+}
 
-  ustr buf = ustr(1000);
-  fp       = tmpfile();
+FILE* fp = 0;
+#define dump(v) __builtin_dump_struct(v, dump_struct_print)
+void dump_struct_init() {
+  fp = fopen("dump.log", "w+");
+}
+
+void dump_struct_deinit() {
+  fclose(fp);
+}
+
+static int dump_struct_print(const char* __restrict __format, ...) {
+  va_list ap;
+  int n = 0;
+
+  va_start(ap, __format);
+  n = vfprintf(fp, __format, ap);
+  fflush(fp);
+  va_end(ap);
+
+  return n;
+}
+
+void dump_struct() {
+  dump_struct_init();
 
   u_vec(int) v = u_new(v, sizeof(int));
 
-  __builtin_dump_struct(v, format_print);
+  dump(v);
 
-  fread(buf, 1000, 1, fp);
-
-  println("%s", buf);
-
-  return EXIT_SUCCESS;
-err:
-  return EXIT_FAILURE;
+  dump_struct_deinit();
 }
 
 /*
