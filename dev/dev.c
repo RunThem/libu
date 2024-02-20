@@ -41,20 +41,80 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
+#define u_any (any_t)
+
+u_vec(int) gen(int num) {
+  u_vec(int) v = {};
+
+  u_init(v, sizeof(int));
+
+  for (size_t i = 0; i < num; i++) {
+    u_put(v, -1, i);
+  }
+
+  return u_any v;
+}
+
+#define vec(T) u_vec_t
+#define defvec(var, T)                                                                             \
+  size_t $__VEC_##I_##var##__ = {};                                                                \
+  size_t $__VEC_##V_##var##__ = {};                                                                \
+  u_vec_t var
+
+#define u_init(u, args...)                                                                         \
+  do {                                                                                             \
+    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+                                                                                                   \
+    u = u_zalloc(sizeof(typeof(*u)));                                                              \
+                                                                                                   \
+    auto fn   = igeneric(u->_.mate, vec_new, tbl_new, avl_new, lst_new);                           \
+    u->_.mate = fn(args);                                                                          \
+  } while (0)
+
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
 
   int result = typeeq(char[], char*);
   infln("result is %d", result);
 
+  size_t $__VEC_I_vec__ = {};
+  size_t $__VEC_V_vec__ = {};
+
+  u_vec(int) v = {};
+  u_vec(int) l = {};
+
+#undef defvec
+#define defvec(var, T)                                                                             \
+  struct {                                                                                         \
+    size_t i;                                                                                      \
+    T v;                                                                                           \
+  } var##_;                                                                                        \
+                                                                                                   \
+  u_vec_t var
+
+  defvec(h, int);
+
+  struct st_t {
+    defvec(v, int);
+  } st;
+
+  st.v = vec_new(sizeof(int));
+
+#define init(u)                                                                                    \
+  do {                                                                                             \
+    u.$__VEC_##                                                                                    \
+  } while (0)
+
   return EXIT_SUCCESS;
 err:
+  errln("failed.");
+
   return EXIT_FAILURE;
 }
 
 void try_catch() {
   try {
-    panic(false, 1, "hejaoshdgowieh");
+    panic(false, 1);
 
     panic(true, 0, "hello%s", "isd");
   } catch (e) {

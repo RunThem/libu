@@ -1,8 +1,9 @@
 extern thread_local __err__t __err__;
 
+/* clang-format off */
 #define try      for (bzero(&__err__, sizeof(__err__)); !setjmp(__err__.label);)
 #define catch(e) for (auto e = __err__; e.is_err; e.is_err = false)
-#define panic(_expr, _id, _msg, args...)                                                           \
+#define panic(_expr, _id, args...)                                                                 \
   do {                                                                                             \
     __err__.is_err = true;                                                                         \
     __err__.file   = __file__;                                                                     \
@@ -12,10 +13,13 @@ extern thread_local __err__t __err__;
     __err__.id     = _id;                                                                          \
     __err__.error  = errno;                                                                        \
                                                                                                    \
-    snprintf(__err__.msg, U_ERR_MSG_SIZE, _msg va_opt(0, args) args);                              \
+    va_if(va_has(args)) (                                                                          \
+      snprintf(__err__.msg, U_ERR_MSG_SIZE, args);                                                 \
+    )                                                                                              \
                                                                                                    \
-    longjmp(__err__.label, 1);                                                                     \
+    longjmp(__err__.label, 1);                                                                 \
   } while (0)
+/* clang-format no */
 
 #define noused(x) ((void)(x))
 #define chr(c)    (as(c, char))
@@ -33,7 +37,7 @@ extern thread_local __err__t __err__;
 
 #define each(i, num) for (size_t i = 0; (i) < (num); (i)++)
 
-#define align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
+#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
     const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \
