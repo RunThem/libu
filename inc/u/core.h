@@ -92,51 +92,10 @@ typedef void** invalied_type_t;
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define u_vec(T)                                                                                   \
-  struct [[gnu::packed]] {                                                                         \
-    struct {                                                                                       \
-      u_vec_t mate;                                                                                \
-      ssize_t a;                                                                                   \
-      T b;                                                                                         \
-    } _;                                                                                           \
-                                                                                                   \
-    T it;                                                                                          \
-  }*
-
-#define u_tbl(K, V)                                                                                \
-  struct [[gnu::packed]] {                                                                         \
-    struct {                                                                                       \
-      u_tbl_t mate;                                                                                \
-      K a;                                                                                         \
-      V b;                                                                                         \
-    } _;                                                                                           \
-                                                                                                   \
-    K key;                                                                                         \
-    V val;                                                                                         \
-  }*
-
-#define u_avl(K, V)                                                                                \
-  struct [[gnu::packed]] {                                                                         \
-    struct {                                                                                       \
-      u_avl_t mate;                                                                                \
-      K a;                                                                                         \
-      V b;                                                                                         \
-    } _;                                                                                           \
-                                                                                                   \
-    K key;                                                                                         \
-    V val;                                                                                         \
-  }*
-
-#define u_lst(T)                                                                                   \
-  struct [[gnu::packed]] {                                                                         \
-    struct {                                                                                       \
-      u_lst_t mate;                                                                                \
-      T* a;                                                                                        \
-      T* b;                                                                                        \
-    } _;                                                                                           \
-                                                                                                   \
-    T* it;                                                                                         \
-  }*
+#define u_vec(T)    typeof(u_vec_t(*(*)(size_t*, T*))[sizeof(size_t)][sizeof(T)])
+#define u_tbl(K, V) typeof(u_tbl_t(*(*)(K*, V*))[sizeof(K)][sizeof(V)])
+#define u_avl(K, V) typeof(u_avl_t(*(*)(K*, V*))[sizeof(K)][sizeof(V)])
+#define u_lst(T)    typeof(u_lst_t(*(*)(T*, T*))[sizeof(T)][sizeof(T)])
 
 /***************************************************************************************************
  * iApi
@@ -151,104 +110,108 @@ typedef void** invalied_type_t;
 
 #define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
 
-#define u_init(u, args...)                                                                         \
+#define u_init(u, ...)                                                                             \
   do {                                                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
                                                                                                    \
-    u = u_zalloc(sizeof(typeof(*u)));                                                              \
+    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
                                                                                                    \
-    auto fn   = igeneric(u->_.mate, vec_new, tbl_new, avl_new, lst_new);                           \
-    u->_.mate = fn(args);                                                                          \
+    auto fn = igeneric(_, vec_new, tbl_new, avl_new, lst_new);                                     \
+                                                                                                   \
+    u = any(fn(__VA_ARGS__));                                                                      \
   } while (0)
-
-#define u_new(u, args...)                                                                          \
-  ({                                                                                               \
-    u_init(u, args);                                                                               \
-                                                                                                   \
-    u;                                                                                             \
-  })
 
 #define u_len(u)                                                                                   \
   ({                                                                                               \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_len, tbl_len, avl_len, lst_len);                             \
+    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
                                                                                                    \
-    fn(u->_.mate);                                                                                 \
+    auto fn = igeneric(_, vec_len, tbl_len, avl_len, lst_len);                                     \
+                                                                                                   \
+    fn(any(u));                                                                                    \
   })
 
 #define u_cap(u)                                                                                   \
   ({                                                                                               \
-    static_assert(igeneric(u->_.mate, 1, 0, 0, 0, 0));                                             \
+    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_cap, nullptr, nullptr, nullptr);                             \
+    static_assert(igeneric(_, 1, 0, 0, 0, 0));                                                     \
                                                                                                    \
-    fn(u->_.mate);                                                                                 \
+    auto fn = igeneric(_, vec_cap, nullptr, nullptr, nullptr);                                     \
+                                                                                                   \
+    fn(any(u));                                                                                    \
   })
 
-#define u_isinit(u)                                                                                \
+#define u_exist(u, ...)                                                                            \
   ({                                                                                               \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1);                                                      \
                                                                                                    \
-    u != nullptr && u->_.mate != nullptr;                                                          \
+    auto _x                            = va_at(0, __VA_ARGS__);                                    \
+    typeof(u(&_x, nullptr)[0][0][0]) _ = nullptr;                                                  \
+                                                                                                   \
+    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
+                                                                                                   \
+    auto fn = igeneric(_, vec_isexist, tbl_isexist, avl_isexist, lst_isexist);                     \
+                                                                                                   \
+    fn(any(u), igeneric(_, _x, &_x, &_x, _x));                                                     \
   })
 
-#define u_isexist(u, args...)                                                                      \
+#define u_empty(u)                                                                                 \
   ({                                                                                               \
-    static_assert(va_size(args) == 1);                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
+    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_isexist, tbl_isexist, avl_isexist, lst_isexist);             \
+    auto fn = igeneric(_, vec_len, tbl_len, avl_len, lst_len);                                     \
                                                                                                    \
-    fn(u->_.mate, igeneric(u->_.mate, u->_.a, &u->_.a, &u->_.a, u->_.a));                          \
-  })
-
-#define u_isempty(u)                                                                               \
-  ({                                                                                               \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
-                                                                                                   \
-    u_len(u) == 0;                                                                                 \
+    0 == fn(any(u));                                                                               \
   })
 
 #define u_clear(u)                                                                                 \
   do {                                                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 0, 0));                                             \
+    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_clear, tbl_clear, avl_clear, nullptr);                       \
+    static_assert(igeneric(_, 1, 1, 1, 0, 0));                                                     \
                                                                                                    \
-    fn(u->_.mate);                                                                                 \
+    auto fn = igeneric(_, vec_clear, tbl_clear, avl_clear, nullptr);                               \
+                                                                                                   \
+    fn(any(u));                                                                                    \
   } while (0)
 
 #define u_cleanup(u)                                                                               \
   do {                                                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_cleanup, tbl_cleanup, avl_cleanup, lst_cleanup);             \
+    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
                                                                                                    \
-    fn(u->_.mate);                                                                                 \
+    auto fn = igeneric(_, vec_cleanup, tbl_cleanup, avl_cleanup, lst_cleanup);                     \
                                                                                                    \
-    u_free(u);                                                                                     \
+    fn(any(u));                                                                                    \
+                                                                                                   \
+    u_free(any(u));                                                                                \
     u = nullptr;                                                                                   \
   } while (0)
 
-#define u_at(u, args...)                                                                           \
+#define u_at(u, ...)                                                                               \
   ({                                                                                               \
-    static_assert(va_size(args) == 1);                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 0, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1);                                                      \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
+    auto _x                           = va_at(0, args);                                            \
+    typeof(u(_x, nullptr)[0][0][0]) _ = nullptr;                                                   \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_at, tbl_at, avl_at, nullptr);                                \
+    static_assert(igeneric(_, 1, 1, 1, 0, 0));                                                     \
                                                                                                    \
-    fn(u->_.mate, igeneric(u->_.mate, u->_.a, &u->_.a, &u->_.a, nullptr), &u->_.b);                \
+    auto fn = igeneric(_, vec_at, tbl_at, avl_at, nullptr);                                        \
+                                                                                                   \
+    fn(any(u), igeneric(_, _x, &_x, &_x, nullptr), &u->_.b);                                       \
                                                                                                    \
     u->_.b;                                                                                        \
   })
 
 #define u_re(u, args...)                                                                           \
   do {                                                                                             \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(va_size(args) == 2);                                                             \
     static_assert(igeneric(u->_.mate, 1, 1, 1, 0, 0));                                             \
                                                                                                    \
@@ -262,6 +225,7 @@ typedef void** invalied_type_t;
 
 #define u_pop(u, args...)                                                                          \
   ({                                                                                               \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(va_size(args) == 1);                                                             \
     static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
                                                                                                    \
@@ -276,6 +240,7 @@ typedef void** invalied_type_t;
 
 #define u_put(u, args...)                                                                          \
   do {                                                                                             \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(va_size(args) == 2);                                                             \
     static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
                                                                                                    \
@@ -291,6 +256,7 @@ typedef void** invalied_type_t;
 
 #define u_first(u)                                                                                 \
   ({                                                                                               \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
                                                                                                    \
     auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_first);                           \
@@ -302,6 +268,7 @@ typedef void** invalied_type_t;
 
 #define u_last(u)                                                                                  \
   ({                                                                                               \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
                                                                                                    \
     auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_last);                            \
@@ -313,6 +280,7 @@ typedef void** invalied_type_t;
 
 #define u_next(u, args...)                                                                         \
   ({                                                                                               \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(va_size(args) == 1);                                                             \
     static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
                                                                                                    \
@@ -327,6 +295,7 @@ typedef void** invalied_type_t;
 
 #define u_prev(u, args...)                                                                         \
   ({                                                                                               \
+    auto _ = u(&x, nullptr)[0][0][0];                                                              \
     static_assert(va_size(args) == 1);                                                             \
     static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
                                                                                                    \

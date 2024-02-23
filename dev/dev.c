@@ -41,35 +41,17 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-#define u_any (any_t)
+// u_vec(int) gen(int num) {
+//   u_vec(int) v = {};
 
-u_vec(int) gen(int num) {
-  u_vec(int) v = {};
+// u_init(v, sizeof(int));
 
-  u_init(v, sizeof(int));
+// for (size_t i = 0; i < num; i++) {
+//   u_put(v, -1, i);
+// }
 
-  for (size_t i = 0; i < num; i++) {
-    u_put(v, -1, i);
-  }
-
-  return u_any v;
-}
-
-#define vec(T) u_vec_t
-#define defvec(var, T)                                                                             \
-  size_t $__VEC_##I_##var##__ = {};                                                                \
-  size_t $__VEC_##V_##var##__ = {};                                                                \
-  u_vec_t var
-
-#define u_init(u, args...)                                                                         \
-  do {                                                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
-                                                                                                   \
-    u = u_zalloc(sizeof(typeof(*u)));                                                              \
-                                                                                                   \
-    auto fn   = igeneric(u->_.mate, vec_new, tbl_new, avl_new, lst_new);                           \
-    u->_.mate = fn(args);                                                                          \
-  } while (0)
+// return v;
+// }
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
@@ -77,34 +59,48 @@ int main(int argc, const char** argv) {
   int result = typeeq(char[], char*);
   infln("result is %d", result);
 
-  size_t $__VEC_I_vec__ = {};
-  size_t $__VEC_V_vec__ = {};
+  int (*f1)(struct {
+    int a;
+    int b;
+  }*) = nullptr;
 
-  u_vec(int) v = {};
-  u_vec(int) l = {};
+  int (*f2)() = nullptr;
 
-#undef defvec
-#define defvec(var, T)                                                                             \
-  struct {                                                                                         \
-    size_t i;                                                                                      \
-    T v;                                                                                           \
-  } var##_;                                                                                        \
+  f1 = f2;
+
+  typeof(u_vec_t(*(*)(size_t*, int*))[sizeof(size_t)][sizeof(int)]) l = {};
+
+#if 0
+  u_vec(int) p = nullptr;
+  u_vec(int) l = nullptr;
+
+  u_init(p, sizeof(int));
+
+  println("len is %zu", u_len(p));
+  println("cap is %zu", u_cap(p));
+
+  println("exist is %d", u_exist(p, 2ul));
+  println("empty is %d", u_empty(p));
+
+  u_clear(p);
+  u_cleanup(p);
+
+#  undef u_put
+#  define u_put(u, ...)                                                                            \
+    do {                                                                                           \
+      static_assert(va_size(__VA_ARGS__) == 2, "the number of '...' is 2");                        \
                                                                                                    \
-  u_vec_t var
+      auto x                       = va_at(0, __VA_ARGS__);                                        \
+      auto y                       = va_at(1, __VA_ARGS__);                                        \
+      typeof(u(&x, &y)[0][0][0]) _ = nullptr;                                                      \
+                                                                                                   \
+      static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                   \
+                                                                                                   \
+      auto fn = igeneric(_, vec_put, tbl_put, avl_put, lst_put);                                   \
+      fn(any(u), igeneric(_, x, &x, &x, x), igeneric(_, &y, &y, &y, y));                           \
+    } while (0)
 
-  defvec(h, int);
-
-  struct st_t {
-    defvec(v, int);
-  } st;
-
-  st.v = vec_new(sizeof(int));
-
-#define init(u)                                                                                    \
-  do {                                                                                             \
-    u.$__VEC_##                                                                                    \
-  } while (0)
-
+#endif
   return EXIT_SUCCESS;
 err:
   errln("failed.");
@@ -112,6 +108,7 @@ err:
   return EXIT_FAILURE;
 }
 
+#if 0
 void try_catch() {
   try {
     panic(false, 1);
@@ -123,7 +120,7 @@ void try_catch() {
 }
 
 FILE* fp = 0;
-#define dump(v) __builtin_dump_struct(v, dump_struct_print)
+#  define dump(v) __builtin_dump_struct(v, dump_struct_print)
 void dump_struct_init() {
   fp = fopen("dump.log", "w+");
 }
@@ -185,38 +182,38 @@ int sopen(const char* program) {
 }
 
 void macro_codegen() {
-#if 0
-
 #  if 0
-#    define to_str(...)   #__VA_ARGS__
-#    define $(shell, ...) printf("{" to_str(shell) "}\n" va_opt(, ) __VA_ARGS__)
 
-#    undef $
-#    define $(...)
+#    if 0
+#      define to_str(...)   #__VA_ARGS__
+#      define $(shell, ...) printf("{" to_str(shell) "}\n" va_opt(, ) __VA_ARGS__)
+
+#      undef $
+#      define $(...)
 
 // #define u_vec(T)    T*
-#    define u_tbl(K, V) V*
-#    define u_push(self, ...)
-#    define u_pop(self, ...)
-#    define u_clone(self)
-#    define u_at(self, idx) (*(self))
-#    define u_size(self)    (sizeof(*(self)))
-#    define u_erase(self, ...)
-#    define u_cleanup(self)
-#    define u_clear(self)
-#    define u_dump(self)
+#      define u_tbl(K, V) V*
+#      define u_push(self, ...)
+#      define u_pop(self, ...)
+#      define u_clone(self)
+#      define u_at(self, idx) (*(self))
+#      define u_size(self)    (sizeof(*(self)))
+#      define u_erase(self, ...)
+#      define u_cleanup(self)
+#      define u_clear(self)
+#      define u_dump(self)
 
-#    define fn(func, ret, ...) ret func(__VA_ARGS__)
+#      define fn(func, ret, ...) ret func(__VA_ARGS__)
 
-#    define u_map(self, ...)
-#    define u_filter(self, ...) (void)self
-#    define u_sort(self, ...)
+#      define u_map(self, ...)
+#      define u_filter(self, ...) (void)self
+#      define u_sort(self, ...)
 
-#    define import(url)
+#      define import(url)
 
 import(std::vector);
 import(std::table);
-#  endif
+#    endif
 
   int a = {};
 
@@ -240,29 +237,29 @@ import(std::table);
   u_vec(u_vec(int)) l       = {};
   u_vec(u_tbl(int, char)) m = {};
 
-#  undef u_map_t
-#  define u_map_t(K, V)                                                                            \
-    struct [[gnu::packed]] {                                                                       \
-      K key;                                                                                       \
-      V val;                                                                                       \
-    }*
+#    undef u_map_t
+#    define u_map_t(K, V)                                                                          \
+      struct [[gnu::packed]] {                                                                     \
+        K key;                                                                                     \
+        V val;                                                                                     \
+      }*
 
-#  undef u_vec_t
-#  define u_vec_t(T)                                                                               \
-    struct {                                                                                       \
-      T item;                                                                                      \
-    }*
+#    undef u_vec_t
+#    define u_vec_t(T)                                                                             \
+      struct {                                                                                     \
+        T item;                                                                                    \
+      }*
 
   // typedef u_vec_t(u_map_t(int, char)) vmap_t;
 
-#  define _type_of(T) _Generic(typeof(T), vmap_t: "vec<map<int, char>>")
-#  define type_of(T)  infln("%s type is %s", #T, _type_of(T))
+#    define _type_of(T) _Generic(typeof(T), vmap_t: "vec<map<int, char>>")
+#    define type_of(T)  infln("%s type is %s", #T, _type_of(T))
 
   u_vec_t(u_map_t(int, char)) i = {0};
 
   // type_of(i);
 
-#  define u_new(...) u_new_st_t(__VA_ARGS__)
+#    define u_new(...) u_new_st_t(__VA_ARGS__)
 
   auto e = u_new(1, 'c');
 
@@ -280,11 +277,11 @@ import(std::table);
 
   int $$ = 0;
 
-#endif
+#  endif
 }
 
 void miniz() {
-#if 0
+#  if 0
   u_str_t file = u_fs_read("test_1.txt");
   u_mem_if(file);
 
@@ -308,5 +305,6 @@ void miniz() {
 
   cmp_status = uncompress(in, &in_size, out, out_size);
   infln("status is %d, size is %zu", cmp_status, in_size);
-#endif
+#  endif
 }
+#endif
