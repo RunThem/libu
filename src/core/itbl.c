@@ -281,7 +281,7 @@ size_t tbl_len(u_tbl_t _self) {
   return self->len;
 }
 
-bool tbl_isexist(u_tbl_t _self, any_t key) {
+bool tbl_exist(u_tbl_t _self, any_t key) {
   tbl_t* self    = as(_self, tbl_t*);
   node_t* node   = nullptr;
   node_t* idx[2] = {};
@@ -393,19 +393,17 @@ err:
   u_free_if(node);
 }
 
-bool tbl_for_init(u_tbl_t _self, bool flag) {
+any_t tbl_each_init(u_tbl_t _self, bool flag) {
   tbl_t* self = as(_self, tbl_t*);
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(self->len == 0, false);
+  u_check_ret(self == nullptr, nullptr);
 
-  self->iter     = nullptr;
-  self->flags[0] = !self->flags[0];
+  self->iter = nullptr;
 
-  return self->flags[0];
+  return nullptr;
 }
 
-bool tbl_for(u_tbl_t _self, any_t key, any_t val) {
+bool tbl_each(u_tbl_t _self, any_t key, any_t val) {
   tbl_t* self = as(_self, tbl_t*);
 
   u_check_ret(self == nullptr, false);

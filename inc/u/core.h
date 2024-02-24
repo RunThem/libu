@@ -15,12 +15,14 @@ typedef struct {
 
 typedef fnt(u_cmp_fn, int, const void*, const void*);
 
+#if 0
 typedef(lstn_t) {
   lstn_t* prev;
   lstn_t* next;
 
   any_t item;
 };
+#endif
 
 typedef struct {
 }* u_lst_t;
@@ -33,28 +35,28 @@ typedef fnt(u_eq_fn, bool, const void*, const void*);
 extern u_vec_t vec_new(size_t);
 extern u_tbl_t tbl_new(size_t, size_t);
 extern u_avl_t avl_new(size_t, size_t, u_cmp_fn);
-extern u_lst_t lst_new(size_t);
+// extern u_lst_t lst_new(size_t);
 
 extern size_t vec_len(u_vec_t);
 extern size_t tbl_len(u_tbl_t);
 extern size_t avl_len(u_avl_t);
-extern size_t lst_len(u_lst_t);
+// extern size_t lst_len(u_lst_t);
 
 extern size_t vec_cap(u_vec_t);
 
-extern bool tbl_isexist(u_tbl_t, any_t);
-extern bool vec_isexist(u_vec_t, size_t);
-extern bool avl_isexist(u_avl_t, any_t);
-extern bool lst_isexist(u_lst_t, any_t);
+extern bool vec_exist(u_vec_t, size_t);
+extern bool tbl_exist(u_tbl_t, any_t);
+extern bool avl_exist(u_avl_t, any_t);
+// extern bool lst_isexist(u_lst_t, any_t);
 
 extern void vec_clear(u_vec_t);
-extern void avl_clear(u_avl_t);
 extern void tbl_clear(u_tbl_t);
+extern void avl_clear(u_avl_t);
 
 extern void vec_cleanup(u_vec_t);
 extern void tbl_cleanup(u_tbl_t);
 extern void avl_cleanup(u_avl_t);
-extern void lst_cleanup(u_lst_t);
+// extern void lst_cleanup(u_lst_t);
 
 extern void vec_at(u_vec_t, size_t, any_t);
 extern void tbl_at(u_tbl_t, any_t, any_t);
@@ -67,255 +69,366 @@ extern void avl_re(u_avl_t, any_t, any_t);
 extern void vec_pop(u_vec_t, size_t, any_t);
 extern void tbl_pop(u_tbl_t, any_t, any_t);
 extern void avl_pop(u_avl_t, any_t, any_t);
-extern void lst_pop(u_lst_t, any_t, any_t);
+// extern void lst_pop(u_lst_t, any_t, any_t);
 
 extern void vec_put(u_vec_t, ssize_t, any_t);
 extern void tbl_put(u_tbl_t, any_t, any_t);
 extern void avl_put(u_avl_t, any_t, any_t);
-extern void lst_put(u_lst_t, any_t, any_t);
+// extern void lst_put(u_lst_t, any_t, any_t);
 
-extern void lst_first(u_lst_t, any_t);
-extern void lst_last(u_lst_t, any_t);
-extern void lst_next(u_lst_t, any_t, any_t);
-extern void lst_prev(u_lst_t, any_t, any_t);
+// extern void lst_first(u_lst_t, any_t);
+// extern void lst_last(u_lst_t, any_t);
+// extern void lst_next(u_lst_t, any_t, any_t);
+// extern void lst_prev(u_lst_t, any_t, any_t);
 
-extern bool vec_for_init(u_vec_t, bool);
-extern bool vec_for(u_vec_t, size_t*, any_t);
-extern bool tbl_for_init(u_tbl_t, bool);
-extern bool tbl_for(u_tbl_t, any_t, any_t);
-extern bool avl_for_init(u_avl_t, bool);
-extern bool avl_for(u_avl_t, any_t, any_t);
-extern bool lst_for_init(u_lst_t, bool);
-extern bool lst_for(u_lst_t, any_t, any_t);
+extern any_t vec_each_init(u_vec_t, bool);
+extern any_t tbl_each_init(u_tbl_t, bool);
+extern any_t avl_each_init(u_avl_t, bool);
+// extern bool lst_for_init(u_lst_t, bool);
+
+extern bool vec_each(u_vec_t, size_t*, any_t);
+extern bool tbl_each(u_tbl_t, any_t, any_t);
+extern bool avl_each(u_avl_t, any_t, any_t);
+// extern bool lst_for(u_lst_t, any_t, any_t);
 
 typedef void** invalied_type_t;
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define u_vec(T)    typeof(u_vec_t(*(*)(size_t*, T*))[sizeof(size_t)][sizeof(T)])
-#define u_tbl(K, V) typeof(u_tbl_t(*(*)(K*, V*))[sizeof(K)][sizeof(V)])
-#define u_avl(K, V) typeof(u_avl_t(*(*)(K*, V*))[sizeof(K)][sizeof(V)])
-#define u_lst(T)    typeof(u_lst_t(*(*)(T*, T*))[sizeof(T)][sizeof(T)])
+#define uvec(T) typeof(T(*(*)(size_t*, T*))[sizeof(size_t)][sizeof(T)])
+
+#define utbl(K, V) typeof(V(*(*)(K*, V*))[sizeof(K)][sizeof(V)])
+
+#define uavl(K, V) typeof(V(*(*)(K*, V*))[sizeof(K)][sizeof(V)])
 
 /***************************************************************************************************
- * iApi
+ * iApi vec
  **************************************************************************************************/
-#define igeneric(mate, vec, tbl, avl, lst, args...)                                                \
-  _Generic(mate,                                                                                   \
-      u_vec_t: vec,                                                                                \
-      u_tbl_t: tbl,                                                                                \
-      u_avl_t: avl,                                                                                \
-      u_lst_t: lst va_if(va_has(args))(, default                                                   \
-                                       : va_at(0, args)))
-
-#define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
-
-#define u_init(u, ...)                                                                             \
+#define uv_init(u)                                                                                 \
   do {                                                                                             \
-    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
-                                                                                                   \
-    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
-                                                                                                   \
-    auto fn = igeneric(_, vec_new, tbl_new, avl_new, lst_new);                                     \
-                                                                                                   \
-    u = any(fn(__VA_ARGS__));                                                                      \
+    u = any(                                                                                       \
+        vec_new(sizeof(typeof(**u(nullptr, nullptr))) / sizeof(typeof(***u(nullptr, nullptr)))));  \
   } while (0)
 
-#define u_len(u)                                                                                   \
+#define uv_len(u) ({ vec_len(any(u)); })
+
+#define uv_cap(u) ({ vec_cap(any(u)); })
+
+#define uv_empty(u) ({ 0 == vec_len(any(u)); })
+
+#define uv_exist(u, ...)                                                                           \
   ({                                                                                               \
-    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    auto fn = igeneric(_, vec_len, tbl_len, avl_len, lst_len);                                     \
-                                                                                                   \
-    fn(any(u));                                                                                    \
+    vec_exist(any(u), _a);                                                                         \
   })
 
-#define u_cap(u)                                                                                   \
-  ({                                                                                               \
-    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
-                                                                                                   \
-    static_assert(igeneric(_, 1, 0, 0, 0, 0));                                                     \
-                                                                                                   \
-    auto fn = igeneric(_, vec_cap, nullptr, nullptr, nullptr);                                     \
-                                                                                                   \
-    fn(any(u));                                                                                    \
-  })
-
-#define u_exist(u, ...)                                                                            \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1);                                                      \
-                                                                                                   \
-    auto _x                            = va_at(0, __VA_ARGS__);                                    \
-    typeof(u(&_x, nullptr)[0][0][0]) _ = nullptr;                                                  \
-                                                                                                   \
-    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
-                                                                                                   \
-    auto fn = igeneric(_, vec_isexist, tbl_isexist, avl_isexist, lst_isexist);                     \
-                                                                                                   \
-    fn(any(u), igeneric(_, _x, &_x, &_x, _x));                                                     \
-  })
-
-#define u_empty(u)                                                                                 \
-  ({                                                                                               \
-    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
-                                                                                                   \
-    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
-                                                                                                   \
-    auto fn = igeneric(_, vec_len, tbl_len, avl_len, lst_len);                                     \
-                                                                                                   \
-    0 == fn(any(u));                                                                               \
-  })
-
-#define u_clear(u)                                                                                 \
+#define uv_clear(u)                                                                                \
   do {                                                                                             \
-    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
-                                                                                                   \
-    static_assert(igeneric(_, 1, 1, 1, 0, 0));                                                     \
-                                                                                                   \
-    auto fn = igeneric(_, vec_clear, tbl_clear, avl_clear, nullptr);                               \
-                                                                                                   \
-    fn(any(u));                                                                                    \
+    vec_clear(any(u));                                                                             \
   } while (0)
 
-#define u_cleanup(u)                                                                               \
+#define uv_cleanup(u)                                                                              \
   do {                                                                                             \
-    typeof(u(nullptr, nullptr)[0][0][0]) _ = nullptr;                                              \
+    vec_cleanup(any(u));                                                                           \
                                                                                                    \
-    static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                     \
-                                                                                                   \
-    auto fn = igeneric(_, vec_cleanup, tbl_cleanup, avl_cleanup, lst_cleanup);                     \
-                                                                                                   \
-    fn(any(u));                                                                                    \
-                                                                                                   \
-    u_free(any(u));                                                                                \
     u = nullptr;                                                                                   \
   } while (0)
 
-#define u_at(u, ...)                                                                               \
+#define uv_at(u, ...)                                                                              \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1);                                                      \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    auto _x                           = va_at(0, args);                                            \
-    typeof(u(_x, nullptr)[0][0][0]) _ = nullptr;                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    static_assert(igeneric(_, 1, 1, 1, 0, 0));                                                     \
+    vec_at(any(u), _a, &_b);                                                                       \
                                                                                                    \
-    auto fn = igeneric(_, vec_at, tbl_at, avl_at, nullptr);                                        \
-                                                                                                   \
-    fn(any(u), igeneric(_, _x, &_x, &_x, nullptr), &u->_.b);                                       \
-                                                                                                   \
-    u->_.b;                                                                                        \
+    _b;                                                                                            \
   })
 
-#define u_re(u, args...)                                                                           \
+#define uv_re(u, ...)                                                                              \
   do {                                                                                             \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(va_size(args) == 2);                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 0, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
-    u->_.b = va_at(1, args);                                                                       \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_re, tbl_re, avl_re, nullptr);                                \
-                                                                                                   \
-    fn(u->_.mate, igeneric(u->_.mate, u->_.a, &u->_.a, &u->_.a, nullptr), &u->_.b);                \
+    vec_re(any(u), _a, &_b);                                                                       \
   } while (0)
 
-#define u_pop(u, args...)                                                                          \
+#define uv_pop(u, ...)                                                                             \
   ({                                                                                               \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(va_size(args) == 1);                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_pop, tbl_pop, avl_pop, lst_pop);                             \
+    vec_pop(any(u), _a, &_b);                                                                      \
                                                                                                    \
-    fn(u->_.mate, igeneric(u->_.mate, u->_.a, &u->_.a, &u->_.a, u->_.a), &u->_.b);                 \
-                                                                                                   \
-    u->_.b;                                                                                        \
+    _b;                                                                                            \
   })
 
-#define u_put(u, args...)                                                                          \
+#define uv_put(u, ...)                                                                             \
   do {                                                                                             \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(va_size(args) == 2);                                                             \
-    static_assert(igeneric(u->_.mate, 1, 1, 1, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
-    u->_.b = va_at(1, args);                                                                       \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, vec_put, tbl_put, avl_put, lst_put);                             \
-                                                                                                   \
-    fn(u->_.mate,                                                                                  \
-       igeneric(u->_.mate, u->_.a, &u->_.a, &u->_.a, u->_.a),                                      \
-       igeneric(u->_.mate, &u->_.b, &u->_.b, &u->_.b, u->_.b));                                    \
+    vec_put(any(u), _a, &_b);                                                                      \
   } while (0)
 
-#define u_first(u)                                                                                 \
+#define uv_each(u, i, it)                                                                          \
+  for (typeof(u(&i, &it)) $ = vec_each_init(any(u), 1); vec_each(any(u), &i, &it);)
+
+#define uv_reach(u, i, it)                                                                         \
+  for (typeof(u(&i, &it)) $ = vec_each_init(any(u), 0); vec_each(any(u), &i, &it);)
+
+/***************************************************************************************************
+ * iApi tbl
+ **************************************************************************************************/
+#define ut_init(u)                                                                                 \
+  do {                                                                                             \
+    u = any(                                                                                       \
+        tbl_new(sizeof(typeof(*u(nullptr, nullptr))) / sizeof(typeof(**u(nullptr, nullptr))),      \
+                sizeof(typeof(**u(nullptr, nullptr))) / sizeof(typeof(***u(nullptr, nullptr)))));  \
+  } while (0)
+
+#define ut_len(u) ({ tbl_len(any(u)); })
+
+#define ut_empty(u) ({ 0 == tbl_len(any(u)); })
+
+#define ut_exist(u, ...)                                                                           \
   ({                                                                                               \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_first);                           \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    fn(u->_.mate, &u->_.b);                                                                        \
-                                                                                                   \
-    u->_.b;                                                                                        \
+    tbl_exist(any(u), &_a);                                                                        \
   })
 
-#define u_last(u)                                                                                  \
+#define ut_clear(u)                                                                                \
+  do {                                                                                             \
+    tbl_clear(u);                                                                                  \
+  } while (0)
+
+#define ut_cleanup(u)                                                                              \
+  do {                                                                                             \
+    tbl_cleanup(any(u));                                                                           \
+                                                                                                   \
+    u = nullptr;                                                                                   \
+  } while (0)
+
+#define ut_at(u, ...)                                                                              \
   ({                                                                                               \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_last);                            \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    fn(u->_.mate, &u->_.b);                                                                        \
+    tbl_at(any(u), &_a, &_b);                                                                      \
                                                                                                    \
-    u->_.b;                                                                                        \
+    _b;                                                                                            \
   })
 
-#define u_next(u, args...)                                                                         \
+#define ut_re(u, ...)                                                                              \
+  do {                                                                                             \
+    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+                                                                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
+                                                                                                   \
+    tbl_re(any(u), &_a, &_b);                                                                      \
+  } while (0)
+
+#define ut_pop(u, ...)                                                                             \
   ({                                                                                               \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(va_size(args) == 1);                                                             \
-    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_next);                            \
+    tbl_pop(any(u), &_a, &_b);                                                                     \
                                                                                                    \
-    fn(u->_.mate, &u->_.a, &u->_.b);                                                               \
-                                                                                                   \
-    u->_.b;                                                                                        \
+    _b;                                                                                            \
   })
 
-#define u_prev(u, args...)                                                                         \
+#define ut_put(u, ...)                                                                             \
+  do {                                                                                             \
+    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+                                                                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
+                                                                                                   \
+    tbl_put(any(u), &_a, &_b);                                                                     \
+  } while (0)
+
+#define ut_each(u, k, v)                                                                           \
+  for (typeof(u(&k, &v)) $ = tbl_each_init(any(u), 1); tbl_each(any(u), &k, &v);)
+
+#define ut_reach(u, k, v)                                                                          \
+  for (typeof(u(&k, &v)) $ = tbl_each_init(any(u), 0); tbl_each(any(u), &k, &v);)
+
+/***************************************************************************************************
+ * iApi avl
+ **************************************************************************************************/
+#define ua_init(u, ...)                                                                            \
+  do {                                                                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+                                                                                                   \
+    u = any(                                                                                       \
+        avl_new(sizeof(typeof(*u(nullptr, nullptr))) / sizeof(typeof(**u(nullptr, nullptr))),      \
+                sizeof(typeof(**u(nullptr, nullptr))) / sizeof(typeof(***u(nullptr, nullptr))),    \
+                va_at(0, __VA_ARGS__)));                                                           \
+  } while (0)
+
+#define ua_len(u) ({ avl_len(any(u)); })
+
+#define ua_empty(u) ({ 0 == avl_len(any(u)); })
+
+#define ua_exist(u, ...)                                                                           \
   ({                                                                                               \
-    auto _ = u(&x, nullptr)[0][0][0];                                                              \
-    static_assert(va_size(args) == 1);                                                             \
-    static_assert(igeneric(u->_.mate, 0, 0, 0, 1, 0));                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    u->_.a = va_at(0, args);                                                                       \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    auto fn = igeneric(u->_.mate, nullptr, nullptr, nullptr, lst_prev);                            \
-                                                                                                   \
-    fn(u->_.mate, &u->_.a, &u->_.b);                                                               \
-                                                                                                   \
-    u->_.b;                                                                                        \
+    avl_exist(any(u), &_a);                                                                        \
   })
 
-#define u_for(u, idx, it)                                                                          \
-  for (typeof(u->_.a) idx;                                                                         \
-       igeneric(u->_.mate, vec_for_init, tbl_for_init, avl_for_init, lst_for_init)(u->_.mate, 1);) \
-    for (typeof(u->_.b) it;                                                                        \
-         igeneric(u->_.mate, vec_for, tbl_for, avl_for, lst_for)(u->_.mate, any(&idx), &it);)
+#define ua_clear(u)                                                                                \
+  do {                                                                                             \
+    avl_clear(u);                                                                                  \
+  } while (0)
 
-#define u_rfor(u, idx, it)                                                                         \
-  for (typeof(u->_.a) idx;                                                                         \
-       igeneric(u->_.mate, vec_for_init, tbl_for_init, avl_for_init, lst_for_init)(u->_.mate, 0);) \
-    for (typeof(u->_.b) it;                                                                        \
-         igeneric(u->_.mate, vec_for, tbl_for, avl_for, lst_for)(u->_.mate, any(&idx), &it);)
+#define ua_cleanup(u)                                                                              \
+  do {                                                                                             \
+    avl_cleanup(any(u));                                                                           \
+                                                                                                   \
+    u = nullptr;                                                                                   \
+  } while (0)
+
+#define ua_at(u, ...)                                                                              \
+  ({                                                                                               \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+                                                                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
+                                                                                                   \
+    avl_at(any(u), &_a, &_b);                                                                      \
+                                                                                                   \
+    _b;                                                                                            \
+  })
+
+#define ua_re(u, ...)                                                                              \
+  do {                                                                                             \
+    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+                                                                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
+                                                                                                   \
+    avl_re(any(u), &_a, &_b);                                                                      \
+  } while (0)
+
+#define ua_pop(u, ...)                                                                             \
+  ({                                                                                               \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+                                                                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = {};                                                            \
+                                                                                                   \
+    avl_pop(any(u), &_a, &_b);                                                                     \
+                                                                                                   \
+    _b;                                                                                            \
+  })
+
+#define ua_put(u, ...)                                                                             \
+  do {                                                                                             \
+    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+                                                                                                   \
+    auto _a                       = va_at(0, __VA_ARGS__);                                         \
+    typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
+                                                                                                   \
+    avl_put(any(u), &_a, &_b);                                                                     \
+  } while (0)
+
+#define ua_each(u, k, v)                                                                           \
+  for (typeof(u(&k, &v)) $ = avl_each_init(any(u), 1); avl_each(any(u), &k, &v);)
+
+#define ua_reach(u, k, v)                                                                          \
+  for (typeof(u(&k, &v)) $ = avl_each_init(any(u), 0); avl_each(any(u), &k, &v);)
+
+#if 0
+#  define u_first(u)                                                                               \
+    ({                                                                                             \
+      u_type_check(u, 0, 0, 0, 1, "u_first");                                                      \
+                                                                                                   \
+      typeof(*u##_env_.b) _b = {};                                                                 \
+      auto fn                = igeneric(u, nullptr, nullptr, nullptr, lst_first);                  \
+                                                                                                   \
+      fn(u, &_b);                                                                                  \
+                                                                                                   \
+      _b;                                                                                          \
+    })
+
+#  define u_last(u)                                                                                \
+    ({                                                                                             \
+      u_type_check(u, 0, 0, 0, 1, "u_last");                                                       \
+                                                                                                   \
+      typeof(*u##_env_.b) _b = {};                                                                 \
+      auto fn                = igeneric(u, nullptr, nullptr, nullptr, lst_last);                   \
+                                                                                                   \
+      fn(u, &_b);                                                                                  \
+                                                                                                   \
+      _b;                                                                                          \
+    })
+
+#  define u_next(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1);                                                    \
+      u_type_check(u, 0, 0, 0, 1, "u_next");                                                       \
+                                                                                                   \
+      typeof(*u##_env_.a) _a = va_at(0, __VA_ARGS__);                                              \
+      typeof(*u##_env_.b) _b = {};                                                                 \
+      auto fn                = igeneric(u, nullptr, nullptr, nullptr, lst_next);                   \
+                                                                                                   \
+      fn(u, &_a, &_b);                                                                             \
+                                                                                                   \
+      _b;                                                                                          \
+    })
+
+#  define u_prev(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1);                                                    \
+      u_type_check(u, 0, 0, 0, 1, "u_prev");                                                       \
+                                                                                                   \
+      typeof(*u##_env_.a) _a = va_at(0, __VA_ARGS__);                                              \
+      typeof(*u##_env_.b) _b = {};                                                                 \
+      auto fn                = igeneric(u, nullptr, nullptr, nullptr, lst_prev);                   \
+                                                                                                   \
+      fn(u, &_a, &_b);                                                                             \
+                                                                                                   \
+      _b;                                                                                          \
+    })
+
+#  if 0
+#    define u_for(u, idx, it)                                                                      \
+      for (typeof(u->_.a) idx;                                                                     \
+           igeneric(u->_.mate, vec_for_init, tbl_for_init, avl_for_init, lst_for_init)(u->_.mate,  \
+                                                                                       1);)        \
+        for (typeof(u->_.b) it;                                                                    \
+             igeneric(u->_.mate, vec_for, tbl_for, avl_for, lst_for)(u->_.mate, any(&idx), &it);)
+
+#    define u_rfor(u, idx, it)                                                                     \
+      for (typeof(u->_.a) idx;                                                                     \
+           igeneric(u->_.mate, vec_for_init, tbl_for_init, avl_for_init, lst_for_init)(u->_.mate,  \
+                                                                                       0);)        \
+        for (typeof(u->_.b) it;                                                                    \
+             igeneric(u->_.mate, vec_for, tbl_for, avl_for, lst_for)(u->_.mate, any(&idx), &it);)
+#  endif
+#endif

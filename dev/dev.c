@@ -41,17 +41,45 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-// u_vec(int) gen(int num) {
-//   u_vec(int) v = {};
+uvec(int) gen(int num) {
+  uvec(int) v = {};
 
-// u_init(v, sizeof(int));
+  uv_init(v);
 
-// for (size_t i = 0; i < num; i++) {
-//   u_put(v, -1, i);
-// }
+  for (size_t i = 0; i < num; i++) {
+    uv_put(v, -1ul, i);
+  }
 
-// return v;
-// }
+  return v;
+}
+
+int sopen(const char* file, char* const args[]) {
+  int fds[2];
+  pid_t pid;
+
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
+    return -1;
+
+  switch (pid = vfork()) {
+    case -1: /* error */
+      close(fds[0]);
+      close(fds[1]);
+      return -1;
+    case 0: /* child */
+      close(fds[0]);
+      dup2(fds[1], 0);
+      dup2(fds[1], 1);
+      close(fds[1]);
+      // execl("/usr/bin/lua", "lua", nullptr);
+      execvp(file, args);
+      _exit(0);
+  }
+
+  /* parent */
+  close(fds[1]);
+
+  return fds[0];
+}
 
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
@@ -59,48 +87,131 @@ int main(int argc, const char** argv) {
   int result = typeeq(char[], char*);
   infln("result is %d", result);
 
-  int (*f1)(struct {
-    int a;
-    int b;
-  }*) = nullptr;
+  int fd         = sopen("ls", (char* const[]){"ls"});
+  char buf[1024] = {0};
 
-  int (*f2)() = nullptr;
+  size_t len = recv(fd, buf, sizeof(buf), 0);
 
-  f1 = f2;
+  println("%zu, '%s'", len, buf);
 
-  typeof(u_vec_t(*(*)(size_t*, int*))[sizeof(size_t)][sizeof(int)]) l = {};
+  /*
+   * vec
+   * */
+  uvec(int) o = nullptr;
 
-#if 0
-  u_vec(int) p = nullptr;
-  u_vec(int) l = nullptr;
+  uv_init(o);
 
-  u_init(p, sizeof(int));
+  each(i, 10) {
+    uv_put(o, -1ul, i);
+  }
 
-  println("len is %zu", u_len(p));
-  println("cap is %zu", u_cap(p));
+  println("len is %zu", uv_len(o));
+  println("cap is %zu", uv_cap(o));
+  println("empty is %d", uv_empty(o));
+  println("exist is %d", uv_exist(o, 0ul));
+  println("at %d", uv_at(o, 0ul));
 
-  println("exist is %d", u_exist(p, 2ul));
-  println("empty is %d", u_empty(p));
+  uv_re(o, 0ul, 32);
 
-  u_clear(p);
-  u_cleanup(p);
+  uv_pop(o, 0ul);
 
-#  undef u_put
-#  define u_put(u, ...)                                                                            \
-    do {                                                                                           \
-      static_assert(va_size(__VA_ARGS__) == 2, "the number of '...' is 2");                        \
-                                                                                                   \
-      auto x                       = va_at(0, __VA_ARGS__);                                        \
-      auto y                       = va_at(1, __VA_ARGS__);                                        \
-      typeof(u(&x, &y)[0][0][0]) _ = nullptr;                                                      \
-                                                                                                   \
-      static_assert(igeneric(_, 1, 1, 1, 1, 0));                                                   \
-                                                                                                   \
-      auto fn = igeneric(_, vec_put, tbl_put, avl_put, lst_put);                                   \
-      fn(any(u), igeneric(_, x, &x, &x, x), igeneric(_, &y, &y, &y, y));                           \
-    } while (0)
+  size_t i;
+  int it;
+  uv_each(o, i, it) {
+    println("[%zu] is %d", i, it);
+  }
 
-#endif
+  uv_clear(o);
+  uv_cleanup(o);
+
+  utbl(int, char) m = nullptr;
+
+  /*
+   * tbl
+   * */
+  utbl(int, char) t = nullptr;
+
+  ut_init(t);
+
+  each(i, 10) {
+    ut_put(t, (int)i, (char)i);
+  }
+
+  println("len is %zu", ut_len(t));
+  println("empty is %d", ut_empty(t));
+  println("exist is %d", ut_exist(t, 0));
+  println("at %d", ut_at(t, 0));
+
+  ut_re(t, 0, 32);
+
+  ut_pop(t, 0);
+
+  int k;
+  char v;
+  ut_each(t, k, v) {
+    println("[%d] is %d", k, v);
+  }
+
+  uv_clear(t);
+  uv_cleanup(t);
+
+  /*
+   * avl
+   * */
+  uavl(int, char) a = nullptr;
+
+  ua_init(a, fn_cmp(int));
+
+  each(i, 10) {
+    ua_put(a, (int)i, (char)i);
+  }
+
+  println("len is %zu", ua_len(a));
+  println("empty is %d", ua_empty(a));
+  println("exist is %d", ua_exist(a, 0));
+  println("at %d", ua_at(a, 0));
+
+  ua_re(a, 0, 32);
+
+  println("at %d", ua_at(a, 0));
+
+  ua_pop(a, 0);
+
+  println("at %d", ua_at(a, 0));
+
+  {
+    int k;
+    char v;
+
+    ua_each(a, k, v) {
+      println("[%d] is %d", k, v);
+    }
+  }
+
+  /*
+   * FIX: double free or corruption (out)
+   * */
+  // uv_clear(a);
+  // uv_cleanup(a);
+
+  /*
+   * namespace
+   *
+   * uv, ut, ua, ul, us, uf
+   * */
+
+  uvec(int) q = gen(100);
+
+  size_t idx;
+  int V;
+  uv_each(q, idx, V) {
+    println("[%zu] is %d", idx, V);
+  }
+
+#define ulst(T) typeof(T * (*)(T*))
+
+  ulst(int) l = nullptr;
+
   return EXIT_SUCCESS;
 err:
   errln("failed.");

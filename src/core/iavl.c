@@ -361,30 +361,32 @@ err:
 }
 
 void avl_clear(u_avl_t _self) {
-  avl_t* self          = as(_self, avl_t*);
-  node_t* node         = nullptr;
-  u_vec(node_t*) nodes = u_new(nodes, sizeof(node_t*));
+  avl_t* self         = as(_self, avl_t*);
+  node_t* node        = nullptr;
+  uvec(node_t*) nodes = nullptr;
+
+  uv_init(nodes);
 
   u_check_nret(self->len == 0);
 
-  u_put(nodes, -1, self->root);
+  uv_put(nodes, -1ul, self->root);
 
-  while (!u_isempty(nodes)) {
-    node = u_at(nodes, 0);
+  while (!uv_empty(nodes)) {
+    node = uv_at(nodes, 0ul);
 
     if (node->left) {
-      u_put(nodes, -1, node->left);
+      uv_put(nodes, -1ul, node->left);
     }
     if (node->right) {
-      u_put(nodes, -1, node->right);
+      uv_put(nodes, -1ul, node->right);
     }
 
     u_free(node);
 
-    u_pop(nodes, 0);
+    uv_pop(nodes, 0ul);
   }
 
-  u_cleanup(nodes);
+  uv_cleanup(nodes);
 
   self->len = 0;
 }
@@ -415,7 +417,7 @@ size_t avl_len(u_avl_t _self) {
   return self->len;
 }
 
-bool avl_isexist(u_avl_t _self, any_t key) {
+bool avl_exist(u_avl_t _self, any_t key) {
   avl_t* self  = as(_self, avl_t*);
   node_t* node = self->root;
   ret_t result = 0;
@@ -558,23 +560,22 @@ void avl_put(u_avl_t _self, any_t key, any_t val) {
 err:
 }
 
-bool avl_for_init(u_avl_t _self, bool flag) {
+any_t avl_each_init(u_avl_t _self, bool flag) {
+  avl_t* self = as(_self, avl_t*);
+
+  u_check_ret(self == nullptr, nullptr);
+
+  self->iter     = nullptr;
+  self->flags[1] = flag;
+
+  return nullptr;
+}
+
+bool avl_each(u_avl_t _self, any_t key, any_t val) {
   avl_t* self = as(_self, avl_t*);
 
   u_check_ret(self == nullptr, false);
   u_check_ret(self->len == 0, false);
-
-  self->iter     = nullptr;
-  self->flags[0] = !self->flags[0];
-  self->flags[1] = flag;
-
-  return self->flags[0];
-}
-
-bool avl_for(u_avl_t _self, any_t key, any_t val) {
-  avl_t* self = as(_self, avl_t*);
-
-  u_check_ret(self == nullptr, false);
 
   (self->flags[1] ? avl_next : avl_prev)(self);
   u_ret_if(self->iter == nullptr, false);

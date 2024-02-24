@@ -81,7 +81,7 @@ void vec_cleanup(u_vec_t _self) {
   u_free_if(self);
 }
 
-bool vec_isexist(u_vec_t _self, size_t idx) {
+bool vec_exist(u_vec_t _self, size_t idx) {
   vec_t* self = as(_self, vec_t*);
 
   return self->len > idx;
@@ -161,24 +161,23 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
 err:
 }
 
-bool vec_for_init(u_vec_t _self, bool flag) {
+any_t vec_each_init(u_vec_t _self, bool flag) {
   vec_t* self = as(_self, vec_t*);
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(self->len == 0, false);
+  u_check_ret(self == nullptr, nullptr);
 
-  self->flags[0] = !self->flags[0];
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;
 
-  return self->flags[0];
+  return nullptr;
 }
 
-bool vec_for(u_vec_t _self, size_t* idx, any_t item) {
+bool vec_each(u_vec_t _self, size_t* idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_ret(self == nullptr, false);
+  u_check_ret(self->len == 0, false);
   u_check_ret(self->flags[3], false);
 
   /* 初始化 */

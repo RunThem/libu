@@ -3,17 +3,41 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef(lst_t) {
-  bool flags[4];
+typedef struct lstn_t lstn_t;
+struct lstn_t {
+  size_t prev;
+  size_t next;
+  any_t ptr;
+};
 
-  size_t off;
+typedef struct lst_t lst_t;
+struct lst_t {
   size_t len;
 
-  lstn_t* head;
-  lstn_t* tail;
-
-  lstn_t* iter;
+  uvec(lstn_t) items;
 };
+
+/***************************************************************************************************
+ * Function
+ **************************************************************************************************/
+u_lst_t lst_new() {
+  lst_t* self = nullptr;
+
+  self = u_zalloc(sizeof(lst_t));
+  u_mem_if(self);
+
+  self->len = 0;
+
+  infln("lst new(itsize(%zu))", off);
+
+  return as(self, u_lst_t);
+
+err:
+  return nullptr;
+}
+
+#if 0
+
 
 /***************************************************************************************************
  * Macro
@@ -233,3 +257,4 @@ bool lst_for(u_lst_t _self, any_t idx, any_t item) {
 
   return true;
 }
+#endif
