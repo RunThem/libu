@@ -110,11 +110,11 @@ typedef void** invalied_type_t;
         vec_new(sizeof(typeof(**u(nullptr, nullptr))) / sizeof(typeof(***u(nullptr, nullptr)))));  \
   } while (0)
 
-#define uv_len(u) ({ vec_len(any(u)); })
+#define uv_len(u) ({ vec_len(as(u, u_vec_t)); })
 
-#define uv_cap(u) ({ vec_cap(any(u)); })
+#define uv_cap(u) ({ vec_cap(as(u, u_vec_t)); })
 
-#define uv_empty(u) ({ 0 == vec_len(any(u)); })
+#define uv_empty(u) ({ 0 == vec_len(as(u, u_vec_t)); })
 
 #define uv_exist(u, ...)                                                                           \
   ({                                                                                               \
@@ -123,17 +123,17 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    vec_exist(any(u), _a);                                                                         \
+    vec_exist(as(u, u_vec_t), _a);                                                                 \
   })
 
 #define uv_clear(u)                                                                                \
   do {                                                                                             \
-    vec_clear(any(u));                                                                             \
+    vec_clear(as(u, u_vec_t));                                                                     \
   } while (0)
 
 #define uv_cleanup(u)                                                                              \
   do {                                                                                             \
-    vec_cleanup(any(u));                                                                           \
+    vec_cleanup(as(u, u_vec_t));                                                                   \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -145,7 +145,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    vec_at(any(u), _a, &_b);                                                                       \
+    vec_at(as(u, u_vec_t), _a, &_b);                                                               \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -157,7 +157,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    vec_re(any(u), _a, &_b);                                                                       \
+    vec_re(as(u, u_vec_t), _a, &_b);                                                               \
   } while (0)
 
 #define uv_pop(u, ...)                                                                             \
@@ -167,7 +167,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    vec_pop(any(u), _a, &_b);                                                                      \
+    vec_pop(as(u, u_vec_t), _a, &_b);                                                              \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -179,14 +179,14 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    vec_put(any(u), _a, &_b);                                                                      \
+    vec_put(as(u, u_vec_t), _a, &_b);                                                              \
   } while (0)
 
 #define uv_each(u, i, it)                                                                          \
-  for (typeof(u(&i, &it)) $ = vec_each_init(any(u), 1); vec_each(any(u), &i, &it);)
+  for (typeof(u(&i, &it)) $ = vec_each_init(as(u, u_vec_t), 1); vec_each(as(u, u_vec_t), &i, &it);)
 
 #define uv_reach(u, i, it)                                                                         \
-  for (typeof(u(&i, &it)) $ = vec_each_init(any(u), 0); vec_each(any(u), &i, &it);)
+  for (typeof(u(&i, &it)) $ = vec_each_init(as(u, u_vec_t), 0); vec_each(as(u, u_vec_t), &i, &it);)
 
 /***************************************************************************************************
  * iApi tbl
@@ -198,9 +198,9 @@ typedef void** invalied_type_t;
                 sizeof(typeof(**u(nullptr, nullptr))) / sizeof(typeof(***u(nullptr, nullptr)))));  \
   } while (0)
 
-#define ut_len(u) ({ tbl_len(any(u)); })
+#define ut_len(u) ({ tbl_len(as(u, u_tbl_t)); })
 
-#define ut_empty(u) ({ 0 == tbl_len(any(u)); })
+#define ut_empty(u) ({ 0 == tbl_len(as(u, u_tbl_t)); })
 
 #define ut_exist(u, ...)                                                                           \
   ({                                                                                               \
@@ -209,17 +209,17 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    tbl_exist(any(u), &_a);                                                                        \
+    tbl_exist(as(u, u_tbl_t), &_a);                                                                \
   })
 
 #define ut_clear(u)                                                                                \
   do {                                                                                             \
-    tbl_clear(u);                                                                                  \
+    tbl_clear(as(u, u_tbl_t));                                                                     \
   } while (0)
 
 #define ut_cleanup(u)                                                                              \
   do {                                                                                             \
-    tbl_cleanup(any(u));                                                                           \
+    tbl_cleanup(as(u, u_tbl_t));                                                                   \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -231,7 +231,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    tbl_at(any(u), &_a, &_b);                                                                      \
+    tbl_at(as(u, u_tbl_t), &_a, &_b);                                                              \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -243,7 +243,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    tbl_re(any(u), &_a, &_b);                                                                      \
+    tbl_re(as(u, u_tbl_t), &_a, &_b);                                                              \
   } while (0)
 
 #define ut_pop(u, ...)                                                                             \
@@ -253,7 +253,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    tbl_pop(any(u), &_a, &_b);                                                                     \
+    tbl_pop(as(u, u_tbl_t), &_a, &_b);                                                             \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -265,14 +265,14 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    tbl_put(any(u), &_a, &_b);                                                                     \
+    tbl_put(as(u, u_tbl_t), &_a, &_b);                                                             \
   } while (0)
 
 #define ut_each(u, k, v)                                                                           \
-  for (typeof(u(&k, &v)) $ = tbl_each_init(any(u), 1); tbl_each(any(u), &k, &v);)
+  for (typeof(u(&k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 1); tbl_each(as(u, u_tbl_t), &k, &v);)
 
 #define ut_reach(u, k, v)                                                                          \
-  for (typeof(u(&k, &v)) $ = tbl_each_init(any(u), 0); tbl_each(any(u), &k, &v);)
+  for (typeof(u(&k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 0); tbl_each(as(u, u_tbl_t), &k, &v);)
 
 /***************************************************************************************************
  * iApi avl
@@ -287,9 +287,9 @@ typedef void** invalied_type_t;
                 va_at(0, __VA_ARGS__)));                                                           \
   } while (0)
 
-#define ua_len(u) ({ avl_len(any(u)); })
+#define ua_len(u) ({ avl_len(as(u, u_avl_t)); })
 
-#define ua_empty(u) ({ 0 == avl_len(any(u)); })
+#define ua_empty(u) ({ 0 == avl_len(as(u, u_avl_t)); })
 
 #define ua_exist(u, ...)                                                                           \
   ({                                                                                               \
@@ -298,17 +298,17 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    avl_exist(any(u), &_a);                                                                        \
+    avl_exist(as(u, u_avl_t), &_a);                                                                \
   })
 
 #define ua_clear(u)                                                                                \
   do {                                                                                             \
-    avl_clear(u);                                                                                  \
+    avl_clear(as(u, u_avl_t));                                                                     \
   } while (0)
 
 #define ua_cleanup(u)                                                                              \
   do {                                                                                             \
-    avl_cleanup(any(u));                                                                           \
+    avl_cleanup(as(u, u_avl_t));                                                                   \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -320,7 +320,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    avl_at(any(u), &_a, &_b);                                                                      \
+    avl_at(as(u, u_avl_t), &_a, &_b);                                                              \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -332,7 +332,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    avl_re(any(u), &_a, &_b);                                                                      \
+    avl_re(as(u, u_avl_t), &_a, &_b);                                                              \
   } while (0)
 
 #define ua_pop(u, ...)                                                                             \
@@ -342,7 +342,7 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = {};                                                            \
                                                                                                    \
-    avl_pop(any(u), &_a, &_b);                                                                     \
+    avl_pop(as(u, u_avl_t), &_a, &_b);                                                             \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -354,14 +354,14 @@ typedef void** invalied_type_t;
     auto _a                       = va_at(0, __VA_ARGS__);                                         \
     typeof(***u(&_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                         \
                                                                                                    \
-    avl_put(any(u), &_a, &_b);                                                                     \
+    avl_put(as(u, u_avl_t), &_a, &_b);                                                             \
   } while (0)
 
 #define ua_each(u, k, v)                                                                           \
-  for (typeof(u(&k, &v)) $ = avl_each_init(any(u), 1); avl_each(any(u), &k, &v);)
+  for (typeof(u(&k, &v)) $ = avl_each_init(as(u, u_avl_t), 1); avl_each(as(u, u_avl_t), &k, &v);)
 
 #define ua_reach(u, k, v)                                                                          \
-  for (typeof(u(&k, &v)) $ = avl_each_init(any(u), 0); avl_each(any(u), &k, &v);)
+  for (typeof(u(&k, &v)) $ = avl_each_init(as(u, u_avl_t), 0); avl_each(as(u, u_avl_t), &k, &v);)
 
 #if 0
 #  define u_first(u)                                                                               \

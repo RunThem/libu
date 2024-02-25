@@ -152,8 +152,8 @@ int main(int argc, const char** argv) {
     println("[%d] is %d", k, v);
   }
 
-  uv_clear(t);
-  uv_cleanup(t);
+  ut_clear(t);
+  ut_cleanup(t);
 
   /*
    * avl
@@ -191,8 +191,8 @@ int main(int argc, const char** argv) {
   /*
    * FIX: double free or corruption (out)
    * */
-  // uv_clear(a);
-  // uv_cleanup(a);
+  ua_clear(a);
+  ua_cleanup(a);
 
   /*
    * namespace

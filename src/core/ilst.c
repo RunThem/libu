@@ -28,7 +28,7 @@ u_lst_t lst_new() {
 
   self->len = 0;
 
-  infln("lst new(itsize(%zu))", off);
+  // infln("lst new(itsize(%zu))", off);
 
   return as(self, u_lst_t);
 
