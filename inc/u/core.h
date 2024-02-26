@@ -77,7 +77,6 @@ extern bool tbl_each(u_tbl_t, any_t, any_t);
 extern bool avl_each(u_avl_t, any_t, any_t);
 extern any_t lst_each(u_lst_t _self);
 
-typedef void** invalied_type_t;
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
@@ -157,7 +156,7 @@ typedef void** invalied_type_t;
       _b = vec_at(as(u, u_vec_t), _a);                                                             \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
-        *_b = va_at(1, __VA_ARGS__);                                                                     \
+        *_b = va_at(1, __VA_ARGS__);                                                               \
         _ret = true;                                                                               \
       }                                                                                            \
                                                                                                    \

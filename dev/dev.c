@@ -43,52 +43,17 @@ void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
 }
 
-int sopen(const char* file, char* const args[]) {
-  int fds[2];
-  pid_t pid;
-
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
-    return -1;
-
-  switch (pid = vfork()) {
-    case -1: /* error */
-      close(fds[0]);
-      close(fds[1]);
-      return -1;
-    case 0: /* child */
-      close(fds[0]);
-      dup2(fds[1], 0);
-      dup2(fds[1], 1);
-      close(fds[1]);
-      // execl("/usr/bin/lua", "lua", nullptr);
-      execvp(file, args);
-      _exit(0);
-  }
-
-  /* parent */
-  close(fds[1]);
-
-  return fds[0];
-}
-
 int main(int argc, const char** argv) {
   // __bt_state = backtrace_create_state(argv[1], 0, nullptr, nullptr);
-
-  int result = typeeq(char[], char*);
-  infln("result is %d", result);
-
-  int fd         = sopen("ls", (char* const[]){"ls"});
-  char buf[1024] = {0};
-
-  size_t len = recv(fd, buf, sizeof(buf), 0);
-
-  println("%zu, '%s'", len, buf);
 
   /*
    * namespace
    *
    * uv, ut, ua, ul, us, uf
    * */
+
+  int result = typeeq(char[], char*);
+  infln("result is %d", result);
 
   return EXIT_SUCCESS;
 err:
