@@ -99,24 +99,13 @@ size_t vec_cap(u_vec_t _self) {
   return self->cap;
 }
 
-void vec_at(u_vec_t _self, size_t idx, any_t item) {
+any_t vec_at(u_vec_t _self, size_t idx) {
   vec_t* self = as(_self, vec_t*);
 
-  u_check_nret(self == nullptr);
-  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(idx > self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
 
-  idx = getidx(idx);
-  memcpy(item, at(idx), self->itsize);
-}
-
-void vec_re(u_vec_t _self, size_t idx, any_t item) {
-  vec_t* self = as(_self, vec_t*);
-
-  u_check_nret(self == nullptr);
-  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
-
-  idx = getidx(idx);
-  memcpy(at(idx), item, self->itsize);
+  return at(idx);
 }
 
 void vec_pop(u_vec_t _self, size_t idx, any_t item) {

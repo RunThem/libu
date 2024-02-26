@@ -1,4 +1,6 @@
 /* local libs */
+#include "u/core.h"
+
 #include <tbox/tbox.h>
 #include <u/u.h>
 
@@ -39,18 +41,6 @@ ret_t code = 0;
 any_t __bt_state = nullptr;
 void boo() {
   // backtrace_print((struct backtrace_state*)__bt_state, 0, stderr);
-}
-
-uvec(int) gen(int num) {
-  uvec(int) v = {};
-
-  uv_init(v);
-
-  for (size_t i = 0; i < num; i++) {
-    uv_put(v, -1ul, i);
-  }
-
-  return v;
 }
 
 int sopen(const char* file, char* const args[]) {
@@ -95,118 +85,10 @@ int main(int argc, const char** argv) {
   println("%zu, '%s'", len, buf);
 
   /*
-   * vec
-   * */
-  uvec(int) o = nullptr;
-
-  uv_init(o);
-
-  each(i, 10) {
-    uv_put(o, -1ul, i);
-  }
-
-  println("len is %zu", uv_len(o));
-  println("cap is %zu", uv_cap(o));
-  println("empty is %d", uv_empty(o));
-  println("exist is %d", uv_exist(o, 0ul));
-  println("at %d", uv_at(o, 0ul));
-
-  uv_re(o, 0ul, 32);
-
-  uv_pop(o, 0ul);
-
-  size_t i;
-  int it;
-  uv_each(o, i, it) {
-    println("[%zu] is %d", i, it);
-  }
-
-  uv_clear(o);
-  uv_cleanup(o);
-
-  utbl(int, char) m = nullptr;
-
-  /*
-   * tbl
-   * */
-  utbl(int, char) t = nullptr;
-
-  ut_init(t);
-
-  each(i, 10) {
-    ut_put(t, (int)i, (char)i);
-  }
-
-  println("len is %zu", ut_len(t));
-  println("empty is %d", ut_empty(t));
-  println("exist is %d", ut_exist(t, 0));
-  println("at %d", ut_at(t, 0));
-
-  ut_re(t, 0, 32);
-
-  ut_pop(t, 0);
-
-  int k;
-  char v;
-  ut_each(t, k, v) {
-    println("[%d] is %d", k, v);
-  }
-
-  ut_clear(t);
-  ut_cleanup(t);
-
-  /*
-   * avl
-   * */
-  uavl(int, char) a = nullptr;
-
-  ua_init(a, fn_cmp(int));
-
-  each(i, 10) {
-    ua_put(a, (int)i, (char)i);
-  }
-
-  println("len is %zu", ua_len(a));
-  println("empty is %d", ua_empty(a));
-  println("exist is %d", ua_exist(a, 0));
-  println("at %d", ua_at(a, 0));
-
-  ua_re(a, 0, 32);
-
-  println("at %d", ua_at(a, 0));
-
-  ua_pop(a, 0);
-
-  println("at %d", ua_at(a, 0));
-
-  {
-    int k;
-    char v;
-
-    ua_each(a, k, v) {
-      println("[%d] is %d", k, v);
-    }
-  }
-
-  /*
-   * FIX: double free or corruption (out)
-   * */
-  ua_clear(a);
-  ua_cleanup(a);
-
-  /*
    * namespace
    *
    * uv, ut, ua, ul, us, uf
    * */
-
-  uvec(int) q = gen(100);
-
-  size_t idx;
-  int V;
-  uv_each(q, idx, V) {
-    println("[%zu] is %d", idx, V);
-  }
 
 #define ulst(T) typeof(T * (*)(T*))
 

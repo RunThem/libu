@@ -294,41 +294,19 @@ bool tbl_exist(u_tbl_t _self, any_t key) {
   return node->next != nullptr;
 }
 
-void tbl_re(u_tbl_t _self, any_t key, any_t val) {
+any_t tbl_at(u_tbl_t _self, any_t key) {
   tbl_t* self    = as(_self, tbl_t*);
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(key == nullptr, nullptr);
+  u_check_ret(self->len == 0, nullptr);
 
   node = tbl_find(self, idx, key);
-  u_nret_if(node->next == nullptr, "node not exists.");
+  u_ret_if(node->next == nullptr, nullptr, "node not exists.");
 
-  if (self->vsize != 0) {
-    memcpy(val(node), val, self->vsize);
-  } else {
-    memcpy(key(node), key, self->ksize);
-  }
-}
-
-void tbl_at(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self    = as(_self, tbl_t*);
-  node_t* node   = nullptr;
-  node_t* idx[2] = {};
-
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
-
-  node = tbl_find(self, idx, key);
-  u_if(node->next == nullptr, "node not exists") {
-    bzero(val, self->vsize);
-  }
-  else {
-    memcpy(val, val(node), self->vsize);
-  }
+  return val(node);
 }
 
 void tbl_pop(u_tbl_t _self, any_t key, any_t val) {

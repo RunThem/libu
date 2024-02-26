@@ -437,14 +437,14 @@ bool avl_exist(u_avl_t _self, any_t key) {
   return node != nullptr;
 }
 
-void avl_re(u_avl_t _self, any_t key, any_t val) {
+any_t avl_at(u_avl_t _self, any_t key) {
   avl_t* self  = as(_self, avl_t*);
   node_t* node = self->root;
   ret_t result = 0;
 
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(key == nullptr, nullptr);
+  u_check_ret(self->len == 0, nullptr);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -455,38 +455,9 @@ void avl_re(u_avl_t _self, any_t key, any_t val) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  u_nret_if(node == nullptr, "node not exists.");
+  u_ret_if(node == nullptr, nullptr, "node not exists.");
 
-  memcpy(key(node), key, self->ksize);
-  memcpy(val(node), val, self->vsize);
-}
-
-void avl_at(u_avl_t _self, any_t key, any_t val) {
-  avl_t* self  = as(_self, avl_t*);
-  node_t* node = self->root;
-  ret_t result = 0;
-
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
-
-  while (node) {
-    result = self->cmp_fn(key, key(node));
-    if (result == 0) {
-      break;
-    }
-
-    node = (result < 0) ? node->left : node->right;
-  }
-
-  u_if(node == nullptr, "node not exists.") {
-    bzero(key, self->ksize);
-    bzero(val, self->vsize);
-  }
-  else {
-    memcpy(key, key(node), self->ksize);
-    memcpy(val, val(node), self->vsize);
-  }
+  return val(node);
 }
 
 void avl_pop(u_avl_t _self, any_t key, any_t val) {

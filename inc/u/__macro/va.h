@@ -644,6 +644,22 @@ va_size(1, 2, 3, 4, 5)        /* : 5 */
 #endif
 
 
+/* 
+ * size_is
+ **/
+#define va_size_is(n, ...) va_eval(va_defer(1, va_first)(__va_size_is(va_at(n, __VA_ARGS__)) 0))
+#define __va_size_is(...)  __VA_OPT__(1, )
+
+#ifdef va_debug
+echo(size_is)
+va_size_is(1)                    /* : 0 */
+va_size_is(1, 2)                 /* : 0 */
+va_size_is(1, 2, 3)              /* : 1 */
+va_size_is(1, 2, 3, 4)           /* : 1 */
+va_size_is(1, 2, 3, 4, 5)        /* : 1 */
+#endif
+
+
 /*
  * list
  **/
