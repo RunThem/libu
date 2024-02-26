@@ -38,7 +38,7 @@ add_cflags('-Werror=vla')
 add_cflags('-gdwarf-4')
 
 --- Toolchain
-set_toolchains('gcc')
+set_toolchains('clang')
 
 --- Repositories
 add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')

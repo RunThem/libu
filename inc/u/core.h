@@ -48,7 +48,7 @@ extern void tbl_cleanup(u_tbl_t);
 extern void avl_cleanup(u_avl_t);
 extern void lst_cleanup(u_lst_t);
 
-extern any_t vec_at(u_vec_t, size_t);
+extern any_t vec_at(u_vec_t, ssize_t);
 extern any_t tbl_at(u_tbl_t, any_t);
 extern any_t avl_at(u_avl_t, any_t);
 
@@ -57,7 +57,7 @@ extern any_t lst_last(u_lst_t);
 extern any_t lst_next(u_lst_t, any_t);
 extern any_t lst_prev(u_lst_t, any_t);
 
-extern void vec_pop(u_vec_t, size_t, any_t);
+extern void vec_pop(u_vec_t, ssize_t, any_t);
 extern void tbl_pop(u_tbl_t, any_t, any_t);
 extern void avl_pop(u_avl_t, any_t, any_t);
 extern void lst_pop(u_lst_t, any_t);
@@ -80,7 +80,7 @@ extern any_t lst_each(u_lst_t _self);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define uvec(T)    typeof(T(*(*)(u_vec_t, size_t*, T*))[sizeof(size_t)][sizeof(T)])
+#define uvec(T)    typeof(T(*(*)(u_vec_t, ssize_t, T*))[sizeof(ssize_t)][sizeof(T)])
 #define utbl(K, V) typeof(V(*(*)(u_tbl_t, K*, V*))[sizeof(K)][sizeof(V)])
 #define uavl(K, V) typeof(V(*(*)(u_avl_t, K*, V*))[sizeof(K)][sizeof(V)])
 #define ulst(T)    typeof(T(*(*)(u_lst_t)))
@@ -90,29 +90,29 @@ extern any_t lst_each(u_lst_t _self);
  **************************************************************************************************/
 #define uv_init(u)                                                                                 \
   do {                                                                                             \
-    typeof(u((u_vec_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
-    u = any(vec_new(sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                               \
-                    sizeof(typeof(***u(nullptr, nullptr, nullptr)))));                             \
+    u = any(vec_new(sizeof(typeof(**u(nullptr, 0, nullptr))) /                                     \
+                    sizeof(typeof(***u(nullptr, 0, nullptr)))));                                   \
   } while (0)
 
 #define uv_len(u)                                                                                  \
   ({                                                                                               \
-    typeof(u((u_vec_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
     vec_len(as(u, u_vec_t));                                                                       \
   })
 
 #define uv_cap(u)                                                                                  \
   ({                                                                                               \
-    typeof(u((u_vec_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
     vec_cap(as(u, u_vec_t));                                                                       \
   })
 
 #define uv_empty(u)                                                                                \
   ({                                                                                               \
-    typeof(u((u_vec_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
     0 == vec_len(as(u, u_vec_t));                                                                  \
   })
@@ -121,22 +121,22 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    auto _a                                           = va_at(0, __VA_ARGS__);                     \
-    typeof(***u((u_vec_t){nullptr}, &_a, nullptr)) _b = {};                                        \
+    auto _a                                          = va_at(0, __VA_ARGS__);                      \
+    typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _b = {};                                         \
                                                                                                    \
     vec_exist(as(u, u_vec_t), _a);                                                                 \
   })
 
 #define uv_clear(u)                                                                                \
   do {                                                                                             \
-    typeof(u((u_vec_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
     vec_clear(as(u, u_vec_t));                                                                     \
   } while (0)
 
 #define uv_cleanup(u)                                                                              \
   do {                                                                                             \
-    typeof(u((u_vec_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
     vec_cleanup(as(u, u_vec_t));                                                                   \
                                                                                                    \
@@ -151,7 +151,7 @@ extern any_t lst_each(u_lst_t _self);
                                                                                                    \
       bool _ret                      = false;                                                      \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u((u_vec_t){nullptr}, &_a, nullptr))* _b = {};                                     \
+      typeof(***u((u_vec_t){nullptr}, _a, nullptr))* _b = {};                                      \
                                                                                                    \
       _b = vec_at(as(u, u_vec_t), _a);                                                             \
                                                                                                    \
@@ -167,8 +167,8 @@ extern any_t lst_each(u_lst_t _self);
       static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u((u_vec_t){nullptr}, &_a, nullptr)) _it = {};                                     \
-      typeof(***u((u_vec_t){nullptr}, &_a, nullptr))* _b = {};                                     \
+      typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _it = {};                                      \
+      typeof(***u((u_vec_t){nullptr}, _a, nullptr))* _b = {};                                      \
                                                                                                    \
       _b = vec_at(as(u, u_vec_t), _a);                                                             \
                                                                                                    \
@@ -185,9 +185,9 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
                                                                                                    \
-    bool _ret                                          = false;                                    \
-    auto _a                                            = va_at(0, __VA_ARGS__);                    \
-    typeof(***u((u_vec_t){nullptr}, &_a, nullptr))* it = {};                                       \
+    bool _ret                                         = false;                                     \
+    auto _a                                           = va_at(0, __VA_ARGS__);                     \
+    typeof(***u((u_vec_t){nullptr}, _a, nullptr))* it = {};                                        \
                                                                                                    \
     it = vec_at(as(u, u_vec_t), _a);                                                               \
                                                                                                    \
@@ -204,8 +204,8 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
                                                                                                    \
-    auto _a                                           = va_at(0, __VA_ARGS__);                     \
-    typeof(***u((u_vec_t){nullptr}, &_a, nullptr)) _b = {};                                        \
+    auto _a                                          = va_at(0, __VA_ARGS__);                      \
+    typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _b = {};                                         \
                                                                                                    \
     vec_pop(as(u, u_vec_t), _a, &_b);                                                              \
                                                                                                    \
@@ -216,18 +216,18 @@ extern any_t lst_each(u_lst_t _self);
   do {                                                                                             \
     static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
                                                                                                    \
-    auto _a                                           = va_at(0, __VA_ARGS__);                     \
-    typeof(***u((u_vec_t){nullptr}, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                     \
+    auto _a                                          = va_at(0, __VA_ARGS__);                      \
+    typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _b = va_at(1, __VA_ARGS__);                      \
                                                                                                    \
     vec_put(as(u, u_vec_t), _a, &_b);                                                              \
   } while (0)
 
 #define uv_each(u, i, it)                                                                          \
-  for (typeof(u((u_vec_t){nullptr}, &i, &it)) $ = vec_each_init(as(u, u_vec_t), 1);                \
+  for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 1);                 \
        vec_each(as(u, u_vec_t), &i, &it);)
 
 #define uv_reach(u, i, it)                                                                         \
-  for (typeof(u((u_vec_t){nullptr}, &i, &it)) $ = vec_each_init(as(u, u_vec_t), 0);                \
+  for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 0);                 \
        vec_each(as(u, u_vec_t), &i, &it);)
 
 /***************************************************************************************************

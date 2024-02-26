@@ -329,6 +329,8 @@ void tbl_pop(u_tbl_t _self, any_t key, any_t val) {
 
     node->next       = self->free_nodes;
     self->free_nodes = node;
+
+    return;
   }
 
   bzero(val, self->vsize);
@@ -346,7 +348,7 @@ void tbl_put(u_tbl_t _self, any_t key, any_t val) {
 
   if (self->len >= as(U_RESIZE_RADIO * bucket_sizes[self->bucket_idx], size_t)) {
     code = tbl_resize(self);
-    u_err_if(code != 0, "resize failed.");
+    u_err_if(code != true, "resize failed.");
   }
 
   node = tbl_find(self, idx, key);

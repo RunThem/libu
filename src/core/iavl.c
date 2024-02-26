@@ -365,25 +365,25 @@ void avl_clear(u_avl_t _self) {
   node_t* node        = nullptr;
   uvec(node_t*) nodes = nullptr;
 
-  uv_init(nodes);
-
   u_check_nret(self->len == 0);
 
-  uv_put(nodes, -1ul, self->root);
+  uv_init(nodes);
+
+  uv_put(nodes, -1, self->root);
 
   while (!uv_empty(nodes)) {
-    node = uv_at(nodes, 0ul);
+    node = uv_at(nodes, 0);
 
     if (node->left) {
-      uv_put(nodes, -1ul, node->left);
+      uv_put(nodes, -1, node->left);
     }
     if (node->right) {
-      uv_put(nodes, -1ul, node->right);
+      uv_put(nodes, -1, node->right);
     }
 
     u_free(node);
 
-    uv_pop(nodes, 0ul);
+    uv_pop(nodes, 0);
   }
 
   uv_cleanup(nodes);

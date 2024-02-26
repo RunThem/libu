@@ -1,7 +1,7 @@
 #include <mut.h>
 #include <u/u.h>
 
-#define N 32
+#define N 10
 
 mut_test(vec_create) {
   uvec(int) v = nullptr;
@@ -29,12 +29,12 @@ mut_test(vec_interface) {
 
   /* 31, 30, ..., 1, 0 */
   each(i, N) {
-    uv_put(v, 0ul, i);
+    uv_put(v, 0, i);
   }
 
   /* <- 0, 1, ..., 30, 31 */
   each(i, N) {
-    uv_put(v, -1ul, i);
+    uv_put(v, -1, i);
   }
 
   /* <- 0, 1, ..., 30, 31 -> */
@@ -44,7 +44,7 @@ mut_test(vec_interface) {
 
   /* <- 31, 30, ..., 1, 0 -> */
   each(i, N) {
-    uv_put(v, (size_t)N * 2, i);
+    uv_put(v, N * 2, i);
   }
 
   /* [       0       ]  [       2       ]  [        3      ]  [       1       ]
@@ -54,8 +54,8 @@ mut_test(vec_interface) {
   mut_assert(false == uv_empty(v));
   mut_assert(N * 4 == uv_len(v));
 
-  mut_assert(N - 1 == uv_at(v, 0ul));
-  mut_assert(N - 1 == uv_at(v, -1ul));
+  mut_assert(N - 1 == uv_at(v, 0));
+  mut_assert(N - 1 == uv_at(v, -1));
 
   each(i, N) {
     mut_assert(N - 1 - i == uv_at(v, i));
@@ -82,7 +82,7 @@ mut_test(vec_interface) {
   }
 
   each(i, N) {
-    uv_pop(v, -1ul);
+    uv_pop(v, -1);
   }
 
   mut_assert(N == uv_len(v));
@@ -95,14 +95,16 @@ mut_test(vec_interface) {
 
   mut_assert(0 == uv_len(v));
 
+  /* 0, 1, 2, 3 */
   each(i, 4) {
-    uv_put(v, -1ul, i);
+    uv_put(v, -1, i);
   }
 
-  uv_at(v, 0ul, 3);
-  uv_at(v, -1ul, 0);
-  uv_at(v, 1ul, 2);
-  uv_at(v, 2ul, 1);
+  /* 3, 2, 1, 0 */
+  uv_at(v, 0, 3);
+  uv_at(v, -1, 0);
+  uv_at(v, 1, 2);
+  uv_at(v, 2, 1);
 
   mut_assert(4 == uv_len(v));
 
@@ -121,7 +123,7 @@ mut_test(vec_iterator) {
 
   /* 0, 1, ..., 30, 31 */
   each(i, N) {
-    uv_put(v, -1ul, i);
+    uv_put(v, -1, i);
   }
 
   size_t i = 0;

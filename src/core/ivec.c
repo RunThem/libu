@@ -18,9 +18,6 @@ struct vec_t {
 #undef at
 #define at(idx) (self->items + self->itsize * (idx))
 
-#undef getidx
-#define getidx(idx) (((idx) < 0) ? ((idx) + as(self->len + 1, ssize_t)) : (idx))
-
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
@@ -99,22 +96,31 @@ size_t vec_cap(u_vec_t _self) {
   return self->cap;
 }
 
-any_t vec_at(u_vec_t _self, size_t idx) {
+any_t vec_at(u_vec_t _self, ssize_t idx) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_ret(self == nullptr, nullptr);
   u_check_ret(idx > self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
 
+  idx += (idx < 0) ? as(self->len, ssize_t) : 0;
+
   return at(idx);
 }
 
-void vec_pop(u_vec_t _self, size_t idx, any_t item) {
+/*
+ * len = 7
+ *
+ * idx = (idx < 0) ? idx + len : idx
+ * {  0,  1,  2,  3,  4,  5,  6 }
+ * { -7, -6, -5, -4, -3, -2  -1 }
+ * */
+void vec_pop(u_vec_t _self, ssize_t idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_nret(self == nullptr);
   u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
-  idx = getidx(idx);
+  idx += (idx < 0) ? as(self->len, ssize_t) : 0;
   memcpy(item, at(idx), self->itsize);
   if (idx != self->len - 1) {
     memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
@@ -123,6 +129,14 @@ void vec_pop(u_vec_t _self, size_t idx, any_t item) {
   self->len--;
 }
 
+/*
+ * len = 7
+ *
+ * idx = (0 < idx) ? idx + 1 + len : idx
+ *
+ * {  0,  1,  2,  3,  4,  5,  6 }  7
+ * { -8, -7, -6, -5, -4, -3, -2 } -1
+ * */
 void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
   ret_t code  = 0;
@@ -133,7 +147,7 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
                idx,
                self->len);
 
-  idx = getidx(idx);
+  idx += (idx < 0) ? as(1 + self->len, ssize_t) : 0;
   if (self->len == self->cap) {
     code = vec_resize(self);
     u_err_if(code != 0, "resize failed.");
