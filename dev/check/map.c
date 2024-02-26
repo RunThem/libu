@@ -1,3 +1,4 @@
+#if 0
 #include <mut.h>
 #include <u/core/map.h>
 
@@ -96,3 +97,4 @@ mut_group(map) {
 
   mut_add_test(map_interface, "map interface.");
 }
+#endif

@@ -38,7 +38,7 @@ add_cflags('-Werror=vla')
 add_cflags('-gdwarf-4')
 
 --- Toolchain
-set_toolchains('clang')
+set_toolchains('gcc')
 
 --- Repositories
 add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
@@ -89,6 +89,9 @@ end
 --- Project common header file path
 add_includedirs('$(projectdir)/inc')
 
+--- Third party library.
+add_requires('tbox', 'libsock')
+
 --- Main target
 target('u', function()
   set_kind('static')
@@ -97,8 +100,10 @@ target('u', function()
   add_headerfiles('$(projectdir)/inc/(**.h)')
 
   if has_config('mimalloc') then
-    add_packages('mimalloc')
+    add_packages('mimalloc', { public = true })
   end
+
+  add_packages('tbox', 'libsock', { public = true })
 end)
 
 --- Dev mode

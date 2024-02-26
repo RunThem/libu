@@ -1,6 +1,4 @@
 /* local libs */
-#include "u/core.h"
-
 #include <tbox/tbox.h>
 #include <u/u.h>
 

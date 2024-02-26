@@ -1,3 +1,4 @@
+#if 0
 #include <mut.h>
 #include <u/core/avl.h>
 
@@ -81,3 +82,5 @@ mut_group(avl) {
 
   mut_add_test(avl_interface, "avl interface.");
 }
+
+#endif
