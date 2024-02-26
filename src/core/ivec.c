@@ -175,11 +175,11 @@ bool vec_each(u_vec_t _self, size_t* idx, any_t item) {
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
     *idx += self->flags[1] ? 1 : -1;
-  }
 
-  /* 判断是否迭代 */
-  if ((self->flags[1] && *idx == self->len - 1) || (!self->flags[1] && *idx == 0)) {
-    self->flags[3] = true;
+    /* 判断是否继续迭代 */
+    if (*idx == self->len - 1 || *idx == 0) {
+      self->flags[3] = true;
+    }
   }
 
   memcpy(item, at(*idx), self->itsize);

@@ -3,41 +3,13 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef struct lstn_t lstn_t;
-struct lstn_t {
-  size_t prev;
-  size_t next;
-  any_t ptr;
-};
-
 typedef struct lst_t lst_t;
 struct lst_t {
-  size_t len;
+  bool flags[4];
+  uvec(any_t) items;
 
-  uvec(lstn_t) items;
+  size_t iter;
 };
-
-/***************************************************************************************************
- * Function
- **************************************************************************************************/
-u_lst_t lst_new() {
-  lst_t* self = nullptr;
-
-  self = u_zalloc(sizeof(lst_t));
-  u_mem_if(self);
-
-  self->len = 0;
-
-  // infln("lst new(itsize(%zu))", off);
-
-  return as(self, u_lst_t);
-
-err:
-  return nullptr;
-}
-
-#if 0
-
 
 /***************************************************************************************************
  * Macro
@@ -46,29 +18,31 @@ err:
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-u_lst_t lst_new(size_t off) {
+u_lst_t lst_new() {
+
   lst_t* self = nullptr;
 
-  self = u_zalloc(sizeof(lst_t) + off);
+  self = u_zalloc(sizeof(lst_t));
   u_mem_if(self);
 
-  self->off = off;
-  self->len = 0;
+  uv_init(self->items);
+  u_mem_if(self->items);
 
-  infln("lst new(itsize(%zu))", off);
+  self->iter = 0;
 
   return as(self, u_lst_t);
 
 err:
+  u_free_if(self);
+
   return nullptr;
 }
 
 void lst_cleanup(u_lst_t _self) {
   lst_t* self = as(_self, lst_t*);
 
-  u_check_nret(self == nullptr);
-
-  u_free(self);
+  uv_cleanup(self->items);
+  u_free_if(self);
 }
 
 size_t lst_len(u_lst_t _self) {
@@ -76,18 +50,20 @@ size_t lst_len(u_lst_t _self) {
 
   u_check_ret(self == nullptr, 0);
 
-  return self->len;
+  return uv_len(self->items);
 }
 
-bool lst_isexist(u_lst_t _self, any_t idx) {
+bool lst_exist(u_lst_t _self, any_t ptr) {
   lst_t* self = as(_self, lst_t*);
+  size_t i    = 0;
+  any_t node  = {};
 
   u_check_ret(self == nullptr, false);
-  u_check_ret(idx == nullptr, false);
-  u_check_ret(self->len == 0, false);
+  u_check_ret(ptr == nullptr, false);
+  u_check_ret(uv_empty(self->items), false);
 
-  for (auto node = self->head; node != nullptr; node = node->next) {
-    if (node->item == idx) {
+  uv_each(self->items, i, node) {
+    if (node == ptr) {
       return true;
     }
   }
@@ -95,166 +71,128 @@ bool lst_isexist(u_lst_t _self, any_t idx) {
   return false;
 }
 
-void lst_pop(u_lst_t _self, any_t idx, any_t item) {
-  lst_t* self  = as(_self, lst_t*);
-  lstn_t* node = nullptr;
-  lstn_t* prev = nullptr;
-  lstn_t* next = nullptr;
+any_t lst_first(u_lst_t _self) {
+  lst_t* self = as(_self, lst_t*);
 
-  u_check_nret(self == nullptr);
-  u_check_nret(idx == nullptr || !lst_isexist(_self, idx));
-  u_check_nret(self->len == 0);
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(uv_empty(self->items), nullptr);
 
-  node = as(idx + self->off, lstn_t*);
-
-  if (self->head == idx) {
-    self->head = node->next;
-
-    if (self->head != nullptr) {
-      self->head->prev = nullptr;
-    }
-  } else if (self->tail == idx) {
-    self->tail = node->prev;
-
-    if (self->tail != nullptr) {
-      self->tail->next = nullptr;
-    }
-  } else {
-    node->prev->next = node->next;
-    node->next->prev = node->prev;
-  }
-
-  node->prev = node->next = nullptr;
-
-  self->len--;
-
-  *as(item, any_t*) = idx;
+  return uv_at(self->items, 0ul);
 }
 
-void lst_put(u_lst_t _self, any_t idx, any_t item) {
-  lst_t* self  = as(_self, lst_t*);
-  lstn_t* node = nullptr;
-  lstn_t* prev = nullptr;
-  lstn_t* next = nullptr;
+any_t lst_last(u_lst_t _self) {
+  lst_t* self = as(_self, lst_t*);
+
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(uv_empty(self->items), nullptr);
+
+  return uv_at(self->items, -1ul);
+}
+
+any_t lst_next(u_lst_t _self, any_t idx) {
+  lst_t* self = as(_self, lst_t*);
+  size_t i    = 0;
+  any_t node  = 0;
+
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(idx == nullptr, nullptr);
+
+  uv_each(self->items, i, node) {
+    if (node == idx) {
+      return uv_at(self->items, i + 1);
+    }
+  }
+
+  return nullptr;
+}
+
+any_t lst_prev(u_lst_t _self, any_t idx) {
+  lst_t* self = as(_self, lst_t*);
+  size_t i    = 0;
+  any_t node  = 0;
+
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(idx == nullptr, nullptr);
+
+  uv_each(self->items, i, node) {
+    if (node == idx) {
+      return (i == 0) ? nullptr : uv_at(self->items, i - 1);
+    }
+  }
+
+  return nullptr;
+}
+
+void lst_pop(u_lst_t _self, any_t ptr) {
+  lst_t* self = as(_self, lst_t*);
+  size_t i    = 0;
+  any_t node  = 0;
 
   u_check_nret(self == nullptr);
-  u_check_nret(item == nullptr);
-  u_check_nret(idx != nullptr && !lst_isexist(_self, idx));
+  u_check_nret(ptr == nullptr);
+  u_check_nret(uv_empty(self->items));
 
-  /*
-   * <- {a} <-> {b} <-> {c} ->
-   *     ^
-   *
-   * <- {a} <-> {x} <-> {b} <-> {c} ->
-   * */
+  uv_each(self->items, i, node) {
+    if (node == ptr) {
+      uv_pop(self->items, i);
 
-  node       = as(item + self->off, lstn_t*);
-  node->item = item;
+      uv_put(self->items, -1ul, nullptr);
+      break;
+    }
+  }
+}
+
+void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
+  lst_t* self = as(_self, lst_t*);
+  size_t i    = 0;
+  any_t node  = 0;
+
+  u_check_nret(self == nullptr);
+  u_check_nret(ptr == nullptr);
 
   if (idx == nullptr) {
-    prev = nullptr;
-    next = self->head;
+    uv_put(self->items, -1ul, ptr);
   } else {
-    prev = as(idx + self->off, lstn_t*);
-    next = as(idx + self->off, lstn_t*)->next;
+    uv_each(self->items, i, node) {
+      if (node == idx) {
+        uv_put(self->items, i, ptr);
+        break;
+      }
+    }
   }
-
-  node->prev = prev;
-  node->next = next;
-
-  if (prev == nullptr) {
-    self->head = node;
-  } else {
-    prev->next = node;
-  }
-
-  if (next == nullptr) {
-    self->tail = node;
-  } else {
-    next->prev = node;
-  }
-
-  self->len++;
 }
 
-void lst_first(u_lst_t _self, any_t item) {
+any_t lst_each_init(u_lst_t _self, bool flag) {
   lst_t* self = as(_self, lst_t*);
 
-  u_check_nret(self == nullptr);
-  u_check_nret(self->len == 0);
+  u_check_ret(self == nullptr, nullptr);
 
-  *as(item, any_t*) = self->head->item;
-}
-
-void lst_last(u_lst_t _self, any_t item) {
-  lst_t* self = as(_self, lst_t*);
-
-  u_check_nret(self == nullptr);
-  u_check_nret(self->len == 0);
-
-  *as(item, any_t*) = self->tail->item;
-}
-
-void lst_next(u_lst_t _self, any_t idx, any_t item) {
-  lst_t* self = as(_self, lst_t*);
-
-  u_check_nret(self == nullptr);
-  u_check_nret(self->len == 0);
-  u_check_nret(idx == nullptr);
-  u_check_nret(*as(idx, any_t*) == nullptr);
-
-  *as(item, any_t*) = as(*as(idx, any_t*) + self->off, lstn_t*)->next;
-}
-
-void lst_prev(u_lst_t _self, any_t idx, any_t item) {
-  lst_t* self = as(_self, lst_t*);
-
-  u_check_nret(self == nullptr);
-  u_check_nret(self->len == 0);
-  u_check_nret(idx == nullptr);
-  u_check_nret(*as(idx, any_t*) == nullptr);
-
-  *as(item, any_t*) = as(*as(idx, any_t*) + self->off, lstn_t*)->prev;
-}
-
-bool lst_for_init(u_lst_t _self, bool flag) {
-  lst_t* self = as(_self, lst_t*);
-
-  u_check_ret(self == nullptr, false);
-  u_check_ret(self->len == 0, false);
-
-  self->flags[0] = !self->flags[0];
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;
 
-  self->iter = nullptr;
-
-  return self->flags[0];
+  return nullptr;
 }
 
-bool lst_for(u_lst_t _self, any_t idx, any_t item) {
-  lst_t* self  = as(_self, lst_t*);
-  lstn_t* node = nullptr;
+any_t lst_each(u_lst_t _self) {
+  lst_t* self = as(_self, lst_t*);
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(self->flags[3], false);
+  u_check_ret(self == nullptr, nullptr);
+  u_check_ret(uv_empty(self->items), nullptr);
+  u_check_ret(self->flags[3], nullptr);
 
+  /* 初始化 */
   if (self->flags[2]) {
-    self->iter     = self->flags[1] ? self->head : self->tail;
+    self->iter     = self->flags[1] ? 0 : uv_len(self->items) - 1;
     self->flags[2] = !self->flags[2];
-  } else {
-    self->iter = self->flags[1] ? self->iter->next : self->iter->prev;
+  } else { /* 迭代 */
+    self->iter += (self->flags[1] ? +1 : -1);
+
+    /* 判断是否继续迭代 */
+    if (self->iter == 0 || self->iter == uv_len(self->items) - 1) {
+      self->flags[3] = true;
+    }
   }
 
-  if ((self->flags[1] && self->iter == self->tail) ||
-      (!self->flags[1] && self->iter == self->head)) {
-    self->flags[3] = true;
-  }
-
-  *as(idx, any_t*)  = self->iter->item;
-  *as(item, any_t*) = self->iter->item;
-
-  return true;
+  return uv_at(self->items, self->iter);
 }
-#endif

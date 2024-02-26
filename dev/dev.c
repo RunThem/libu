@@ -90,10 +90,6 @@ int main(int argc, const char** argv) {
    * uv, ut, ua, ul, us, uf
    * */
 
-#define ulst(T) typeof(T * (*)(T*))
-
-  ulst(int) l = nullptr;
-
   return EXIT_SUCCESS;
 err:
   errln("failed.");
