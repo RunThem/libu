@@ -94,9 +94,44 @@ mut_test(tbl_interface) {
   ut_cleanup(m);
 }
 
+mut_test(tbl_iterator) {
+  utbl(int, char) t = nullptr;
+  ut_init(t);
+
+  mut_assert(true == ut_empty(t));
+
+  each(i, N) {
+    ut_put(t, (int)i, 'a' + i);
+  }
+
+  int k  = 0;
+  char v = 0;
+  ut_each(t, k, v) {
+    mut_assert(k + 'a' == +v);
+  }
+
+  ut_reach(t, k, v) {
+    mut_assert(k + 'a' == +v);
+  }
+
+  ut_foreach(t, int, k, v, {
+    ;
+    mut_assert(k + 'a' == +v);
+  });
+
+  ut_rforeach(t, int, k, v, {
+    ;
+    mut_assert(k + 'a' == +v);
+  });
+
+  ut_cleanup(t);
+}
+
 mut_group(tbl) {
 
   mut_add_test(tbl_create, "create tbl instance.");
 
   mut_add_test(tbl_interface, "tbl interface.");
+
+  mut_add_test(tbl_iterator, "tbl iterator.");
 }

@@ -81,9 +81,44 @@ mut_test(avl_interface) {
   ua_cleanup(t);
 }
 
+mut_test(avl_iterator) {
+  uavl(int, char) t = nullptr;
+  ua_init(t, fn_cmp(int));
+
+  mut_assert(true == ua_empty(t));
+
+  each(i, N) {
+    ua_put(t, (int)i, 'a' + i);
+  }
+
+  int k  = 0;
+  char v = 0;
+  ua_each(t, k, v) {
+    mut_assert(k + 'a' == +v);
+  }
+
+  ua_reach(t, k, v) {
+    mut_assert(k + 'a' == +v);
+  }
+
+  ua_foreach(t, int, k, v, {
+    ;
+    mut_assert(k + 'a' == +v);
+  });
+
+  ua_rforeach(t, int, k, v, {
+    ;
+    mut_assert(k + 'a' == +v);
+  });
+
+  ua_cleanup(t);
+}
+
 mut_group(avl) {
 
   mut_add_test(avl_create, "create avl instance.");
 
   mut_add_test(avl_interface, "avl interface.");
+
+  mut_add_test(avl_iterator, "avl iterator.");
 }
