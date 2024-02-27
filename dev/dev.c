@@ -50,86 +50,9 @@ int main(int argc, const char** argv) {
    * uv, ut, ua, ul, us, uf
    * */
 
-  int result = typeeq(char[], char*);
+  char str[] = "hello";
+  int result = typeeq(char[], str);
   infln("result is %d", result);
-
-  uvec(int) v = nullptr;
-  uv_init(v);
-
-  each(i, 10) {
-    uv_put(v, i, i);
-  }
-
-  uv_foreach(v, i, it, {
-    ;
-    println("[%zu] = %d", i, it);
-  });
-
-  uv_rforeach(v, i, it, {
-    ;
-    println("[%zu] = %d", i, it);
-  });
-
-  uv_cleanup(v);
-
-  utbl(int, char) t = nullptr;
-  ut_init(t);
-
-  each(i, 10) {
-    ut_put(t, (int)i, 'a' + i);
-  }
-
-  ut_foreach(t, int, k, v, {
-    ;
-    println("[%d] = '%c'", k, v);
-  });
-
-  ut_rforeach(t, int, k, v, {
-    ;
-    println("[%d] = '%c'", k, v);
-  });
-
-  ut_cleanup(t);
-
-  uavl(int, char) a = nullptr;
-  ua_init(a, fn_cmp(int));
-
-  each(i, 10) {
-    ua_put(a, (int)i, 'a' + i);
-  }
-
-  ua_foreach(a, int, k, v, {
-    ;
-    println("[%d] = '%c'", k, v);
-  });
-
-  ua_rforeach(a, int, k, v, {
-    ;
-    println("[%d] = '%c'", k, v);
-  });
-
-  ua_cleanup(a);
-
-  ulst(int) l = nullptr;
-  ul_init(l);
-
-  each(i, 10) {
-    int* it = u_zalloc(sizeof(int));
-    *it     = (int)i;
-    ul_put(l, ul_last(l), it);
-  }
-
-  ul_foreach(l, it, {
-    ;
-    println("[%p] = %d", it, *it);
-  });
-
-  ul_rforeach(l, it, {
-    ;
-    println("[%p] = %d", it, *it);
-  });
-
-  ul_cleanup(l);
 
   return EXIT_SUCCESS;
 err:
