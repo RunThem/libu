@@ -128,8 +128,6 @@ void lst_pop(u_lst_t _self, any_t ptr) {
   uv_foreach(self->items, i, node, {
     if (node == ptr) {
       uv_pop(self->items, i);
-
-      uv_put(self->items, -1ul, nullptr);
       break;
     }
   });
