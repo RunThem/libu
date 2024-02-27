@@ -6,6 +6,7 @@ int main(int argc, const char** argv) {
   mut_add_group(vec, "Generic vec container.");
   mut_add_group(tbl, "Generic tbl container.");
   mut_add_group(avl, "Generic avl container.");
+  mut_add_group(lst, "Generic lst container.");
 
   mut_results();
 
