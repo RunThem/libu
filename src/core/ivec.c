@@ -127,6 +127,8 @@ void vec_pop(u_vec_t _self, ssize_t idx, any_t item) {
   }
 
   self->len--;
+
+  bzero(at(self->len), self->itsize);
 }
 
 /*
