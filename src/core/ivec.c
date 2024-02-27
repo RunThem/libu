@@ -176,7 +176,7 @@ any_t vec_each_init(u_vec_t _self, bool flag) {
   return nullptr;
 }
 
-bool vec_each(u_vec_t _self, size_t* idx, any_t item) {
+bool vec_each(u_vec_t _self, ssize_t* idx, any_t item) {
   vec_t* self = as(_self, vec_t*);
 
   u_check_ret(self == nullptr, false);
@@ -185,7 +185,7 @@ bool vec_each(u_vec_t _self, size_t* idx, any_t item) {
 
   /* 初始化 */
   if (self->flags[2]) {
-    *idx           = self->flags[1] ? 0 : self->len - 1;
+    *idx           = self->flags[1] ? 0 : as(self->len, ssize_t) - 1;
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
     *idx += self->flags[1] ? 1 : -1;

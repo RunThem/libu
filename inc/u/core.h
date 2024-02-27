@@ -72,7 +72,7 @@ extern any_t tbl_each_init(u_tbl_t, bool);
 extern any_t avl_each_init(u_avl_t, bool);
 extern any_t lst_each_init(u_lst_t, bool);
 
-extern bool vec_each(u_vec_t, size_t*, any_t);
+extern bool vec_each(u_vec_t, ssize_t*, any_t);
 extern bool tbl_each(u_tbl_t, any_t, any_t);
 extern bool avl_each(u_avl_t, any_t, any_t);
 extern any_t lst_each(u_lst_t _self);
@@ -230,6 +230,24 @@ extern any_t lst_each(u_lst_t _self);
   for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 0);                 \
        vec_each(as(u, u_vec_t), &i, &it);)
 
+#define uv_foreach(u, i, it, ...)                                                                  \
+  do {                                                                                             \
+    ssize_t i                                       = {};                                          \
+    typeof(***u((u_vec_t){nullptr}, i, nullptr)) it = {};                                          \
+                                                                                                   \
+    for (vec_each_init(as(u, u_vec_t), 1); vec_each(as(u, u_vec_t), &i, &it);)                     \
+      __VA_ARGS__                                                                                  \
+  } while (0)
+
+#define uv_rforeach(u, i, it, ...)                                                                 \
+  do {                                                                                             \
+    ssize_t i                                       = {};                                          \
+    typeof(***u((u_vec_t){nullptr}, i, nullptr)) it = {};                                          \
+                                                                                                   \
+    for (vec_each_init(as(u, u_vec_t), 0); vec_each(as(u, u_vec_t), &i, &it);)                     \
+      __VA_ARGS__                                                                                  \
+  } while (0)
+
 /***************************************************************************************************
  * iApi tbl
  **************************************************************************************************/
@@ -369,6 +387,24 @@ extern any_t lst_each(u_lst_t _self);
 #define ut_reach(u, k, v)                                                                          \
   for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 0);                 \
        tbl_each(as(u, u_tbl_t), &k, &v);)
+
+#define ut_foreach(u, K, k, v, ...)                                                                \
+  do {                                                                                             \
+    K k                                             = {};                                          \
+    typeof(***u((u_tbl_t){nullptr}, &k, nullptr)) v = {};                                          \
+                                                                                                   \
+    for (tbl_each_init(as(u, u_tbl_t), 1); tbl_each(as(u, u_tbl_t), &k, &v);)                      \
+      __VA_ARGS__                                                                                  \
+  } while (0)
+
+#define ut_rforeach(u, K, k, v, ...)                                                               \
+  do {                                                                                             \
+    K k                                             = {};                                          \
+    typeof(***u((u_tbl_t){nullptr}, &k, nullptr)) v = {};                                          \
+                                                                                                   \
+    for (tbl_each_init(as(u, u_tbl_t), 0); tbl_each(as(u, u_tbl_t), &k, &v);)                      \
+      __VA_ARGS__                                                                                  \
+  } while (0)
 
 /***************************************************************************************************
  * iApi avl
@@ -512,6 +548,24 @@ extern any_t lst_each(u_lst_t _self);
   for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init(as(u, u_avl_t), 0);                 \
        avl_each(as(u, u_avl_t), &k, &v);)
 
+#define ua_foreach(u, K, k, v, ...)                                                                \
+  do {                                                                                             \
+    K k                                             = {};                                          \
+    typeof(***u((u_avl_t){nullptr}, &k, nullptr)) v = {};                                          \
+                                                                                                   \
+    for (avl_each_init(as(u, u_avl_t), 1); avl_each(as(u, u_avl_t), &k, &v);)                      \
+      __VA_ARGS__                                                                                  \
+  } while (0)
+
+#define ua_rforeach(u, K, k, v, ...)                                                               \
+  do {                                                                                             \
+    K k                                             = {};                                          \
+    typeof(***u((u_avl_t){nullptr}, &k, nullptr)) v = {};                                          \
+                                                                                                   \
+    for (avl_each_init(as(u, u_avl_t), 0); avl_each(as(u, u_avl_t), &k, &v);)                      \
+      __VA_ARGS__                                                                                  \
+  } while (0)
+
 /***************************************************************************************************
  * iApi lst
  **************************************************************************************************/
@@ -631,3 +685,19 @@ extern any_t lst_each(u_lst_t _self);
 #define ul_reach(u, it)                                                                            \
   for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init(as(u, u_lst_t), 0);                         \
        (it = lst_each(as(u, u_lst_t)));)
+
+#define ul_foreach(u, it, ...)                                                                     \
+  do {                                                                                             \
+    typeof(u((u_lst_t){nullptr})) it = nullptr;                                                    \
+                                                                                                   \
+    for (lst_each_init(as(u, u_lst_t), 1); (it = lst_each(as(u, u_lst_t)));)                       \
+      __VA_ARGS__                                                                                  \
+  } while (0)
+
+#define ul_rforeach(u, it, ...)                                                                    \
+  do {                                                                                             \
+    typeof(u((u_lst_t){nullptr})) it = nullptr;                                                    \
+                                                                                                   \
+    for (lst_each_init(as(u, u_lst_t), 0); (it = lst_each(as(u, u_lst_t)));)                       \
+      __VA_ARGS__                                                                                  \
+  } while (0)

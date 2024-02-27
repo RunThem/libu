@@ -42,6 +42,7 @@ void lst_cleanup(u_lst_t _self) {
   lst_t* self = as(_self, lst_t*);
 
   uv_cleanup(self->items);
+
   u_free_if(self);
 }
 
@@ -55,18 +56,16 @@ size_t lst_len(u_lst_t _self) {
 
 bool lst_exist(u_lst_t _self, any_t ptr) {
   lst_t* self = as(_self, lst_t*);
-  size_t i    = 0;
-  any_t node  = {};
 
   u_check_ret(self == nullptr, false);
   u_check_ret(ptr == nullptr, false);
   u_check_ret(uv_empty(self->items), false);
 
-  uv_each(self->items, i, node) {
+  uv_foreach(self->items, i, node, {
     if (node == ptr) {
       return true;
     }
-  }
+  });
 
   return false;
 }
@@ -91,74 +90,66 @@ any_t lst_last(u_lst_t _self) {
 
 any_t lst_next(u_lst_t _self, any_t idx) {
   lst_t* self = as(_self, lst_t*);
-  size_t i    = 0;
-  any_t node  = 0;
 
   u_check_ret(self == nullptr, nullptr);
   u_check_ret(idx == nullptr, nullptr);
 
-  uv_each(self->items, i, node) {
+  uv_foreach(self->items, i, node, {
     if (node == idx) {
       return uv_at(self->items, i + 1);
     }
-  }
+  });
 
   return nullptr;
 }
 
 any_t lst_prev(u_lst_t _self, any_t idx) {
   lst_t* self = as(_self, lst_t*);
-  size_t i    = 0;
-  any_t node  = 0;
 
   u_check_ret(self == nullptr, nullptr);
   u_check_ret(idx == nullptr, nullptr);
 
-  uv_each(self->items, i, node) {
+  uv_foreach(self->items, i, node, {
     if (node == idx) {
       return (i == 0) ? nullptr : uv_at(self->items, i - 1);
     }
-  }
+  });
 
   return nullptr;
 }
 
 void lst_pop(u_lst_t _self, any_t ptr) {
   lst_t* self = as(_self, lst_t*);
-  size_t i    = 0;
-  any_t node  = 0;
 
   u_check_nret(self == nullptr);
   u_check_nret(ptr == nullptr);
   u_check_nret(uv_empty(self->items));
 
-  uv_each(self->items, i, node) {
+  uv_foreach(self->items, i, node, {
     if (node == ptr) {
       uv_pop(self->items, i);
 
       uv_put(self->items, -1ul, nullptr);
       break;
     }
-  }
+  });
 }
 
 void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
   lst_t* self = as(_self, lst_t*);
-  size_t i    = 0;
-  any_t node  = 0;
 
   u_check_nret(self == nullptr);
   u_check_nret(ptr == nullptr);
 
   if (idx == nullptr) {
-    uv_put(self->items, -1ul, ptr);
+    uv_put(self->items, 0, ptr);
   } else {
-    uv_each(self->items, i, node) {
+    uv_foreach(self->items, i, node, {
       if (node == idx) {
-        uv_put(self->items, i, ptr);
+        uv_put(self->items, i + 1, ptr);
         break;
       }
-    }
+    });
   }
 }
 
