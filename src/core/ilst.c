@@ -61,7 +61,7 @@ bool lst_exist(u_lst_t _self, any_t ptr) {
   u_check_ret(ptr == nullptr, false);
   u_check_ret(uv_empty(self->items), false);
 
-  uv_foreach(self->items, i, node, {
+  uv_foreach(self->items, ssize_t, i, any_t, node, {
     if (node == ptr) {
       return true;
     }
@@ -94,7 +94,7 @@ any_t lst_next(u_lst_t _self, any_t idx) {
   u_check_ret(self == nullptr, nullptr);
   u_check_ret(idx == nullptr, nullptr);
 
-  uv_foreach(self->items, i, node, {
+  uv_foreach(self->items, ssize_t, i, any_t, node, {
     if (node == idx) {
       return uv_at(self->items, i + 1);
     }
@@ -109,7 +109,7 @@ any_t lst_prev(u_lst_t _self, any_t idx) {
   u_check_ret(self == nullptr, nullptr);
   u_check_ret(idx == nullptr, nullptr);
 
-  uv_foreach(self->items, i, node, {
+  uv_foreach(self->items, ssize_t, i, any_t, node, {
     if (node == idx) {
       return (i == 0) ? nullptr : uv_at(self->items, i - 1);
     }
@@ -125,7 +125,7 @@ void lst_pop(u_lst_t _self, any_t ptr) {
   u_check_nret(ptr == nullptr);
   u_check_nret(uv_empty(self->items));
 
-  uv_foreach(self->items, i, node, {
+  uv_foreach(self->items, ssize_t, i, any_t, node, {
     if (node == ptr) {
       uv_pop(self->items, i);
       break;
@@ -142,7 +142,7 @@ void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
   if (idx == nullptr) {
     uv_put(self->items, 0, ptr);
   } else {
-    uv_foreach(self->items, i, node, {
+    uv_foreach(self->items, ssize_t, i, any_t, node, {
       if (node == idx) {
         uv_put(self->items, i + 1, ptr);
         break;

@@ -101,12 +101,12 @@ mut_test(avl_iterator) {
     mut_assert(k + 'a' == +v);
   }
 
-  ua_foreach(t, int, k, v, {
+  ua_foreach(t, int, k, char, v, {
     ;
     mut_assert(k + 'a' == +v);
   });
 
-  ua_rforeach(t, int, k, v, {
+  ua_foreach(t, int, k, char, v, {
     ;
     mut_assert(k + 'a' == +v);
   });

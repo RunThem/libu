@@ -92,13 +92,13 @@ mut_test(lst_iterator) {
   }
 
   i = 1;
-  ul_foreach(l, it, {
+  ul_foreach(l, int, it, {
     ;
     mut_assert(*it == i++);
   });
 
   i = 5;
-  ul_rforeach(l, it, {
+  ul_foreach(l, int, it, {
     ;
     mut_assert(*it == i--);
   });

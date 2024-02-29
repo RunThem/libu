@@ -114,12 +114,12 @@ mut_test(tbl_iterator) {
     mut_assert(k + 'a' == +v);
   }
 
-  ut_foreach(t, int, k, v, {
+  ut_foreach(t, int, k, char, v, {
     ;
     mut_assert(k + 'a' == +v);
   });
 
-  ut_rforeach(t, int, k, v, {
+  ut_foreach(t, int, k, char, v, {
     ;
     mut_assert(k + 'a' == +v);
   });

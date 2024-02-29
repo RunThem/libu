@@ -136,12 +136,12 @@ mut_test(vec_iterator) {
     mut_assert(i == it);
   }
 
-  uv_foreach(v, i, it, {
+  uv_foreach(v, ssize_t, i, int, it, {
     ;
     mut_assert(i == it);
   });
 
-  uv_rforeach(v, i, it, {
+  uv_foreach(v, ssize_t, i, int, it, {
     ;
     mut_assert(i == it);
   });
