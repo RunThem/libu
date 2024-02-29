@@ -57,23 +57,6 @@ task('lsp', function()
   end)
 end)
 
---- Lambda expressions option
-option('lambda', function()
-  set_default(false)
-  set_category('option')
-  set_description('Enable or disable "clang lambda expression"')
-end)
-
-if has_config('lambda') then
-  add_defines('USE_LAMBDA')
-  add_cflags('-fblocks')
-
-  if is_plat('linux') then
-    add_ldflags('-lBlocksRuntime')
-    add_defines('__linux__=1')
-  end
-end
-
 --- Mimalloc option
 option('mimalloc', function()
   set_default(true)
@@ -95,7 +78,6 @@ add_requires('tbox', 'libsock')
 --- Main target
 target('u', function()
   set_kind('static')
-  add_files('$(projectdir)/inc/u/__macro/func.c')
   add_files('$(projectdir)/src/**.c')
   add_headerfiles('$(projectdir)/inc/(**.h)')
 

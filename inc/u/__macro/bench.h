@@ -24,25 +24,23 @@
 
 #pragma once
 
-#ifdef USE_MIMALLOC
-#  include <mimalloc.h>
+#include "type.h"
 
-#  define u_free(p) mi_free(p)
+#include <time.h>
 
-/* clang-format off */
-#  define u_malloc(s)     ({ any_t _ptr = mi_malloc(s);     if (errno == 2) errno = 0; _ptr; })
-#  define u_zalloc(s)     ({ any_t _ptr = mi_zalloc(s);     if (errno == 2) errno = 0; _ptr; })
-#  define u_calloc(c, s)  ({ any_t _ptr = mi_calloc(c, s);  if (errno == 2) errno = 0; _ptr; })
-#  define u_realloc(p, s) ({ any_t _ptr = mi_realloc(p, s); if (errno == 2) errno = 0; _ptr; })
-/* clang-format on */
+#define nsec_of(tv)         ((tv).tv_sec * 1000000000 + (tv).tv_nsec) /* timespec */
+#define nsec_diff(tv1, tv2) (nsec_of(tv1) - nsec_of(tv2))
+typedef struct {
+  str_t msg;
+  struct timespec begin;
+  struct timespec end;
+  size_t diff;
 
-#else
+  size_t i;
+  size_t n;
+} __tack_t;
 
-#  define u_free(p) free(p)
+extern bool __benchmark(__tack_t* tack);
 
-#  define u_malloc(s)     malloc(s)
-#  define u_zalloc(s)     calloc(1, s)
-#  define u_calloc(c, s)  calloc(c, s)
-#  define u_realloc(p, s) realloc(p, s)
-
-#endif
+#define benchmark(...)                                                                             \
+  for (__tack_t T = {__VA_ARGS__}; (T.i != 0 && T.i != T.n) || __benchmark(&T); T.i++)

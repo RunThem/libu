@@ -1,4 +1,29 @@
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
 #pragma once
+
 #include <u/u.h>
 
 /***************************************************************************************************
@@ -16,12 +41,9 @@ typedef struct {
 typedef struct {
 }* u_lst_t;
 
-typedef fnt(u_cmp_fn, int, const void*, const void*);
-typedef fnt(u_eq_fn, bool, const void*, const void*);
-
 /***************************************************************************************************
  * Api
- **************************************************************************************************/
+ ***************s***********************************************************************************/
 extern u_vec_t vec_new(size_t);
 extern u_tbl_t tbl_new(size_t, size_t);
 extern u_avl_t avl_new(size_t, size_t, u_cmp_fn);
@@ -100,21 +122,21 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
-    vec_len(as(u, u_vec_t));                                                                       \
+    vec_len((u_vec_t)u);                                                                           \
   })
 
 #define uv_cap(u)                                                                                  \
   ({                                                                                               \
     typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
-    vec_cap(as(u, u_vec_t));                                                                       \
+    vec_cap((u_vec_t)u);                                                                           \
   })
 
 #define uv_empty(u)                                                                                \
   ({                                                                                               \
     typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
-    0 == vec_len(as(u, u_vec_t));                                                                  \
+    0 == vec_len((u_vec_t)u);                                                                      \
   })
 
 #define uv_exist(u, ...)                                                                           \
@@ -124,21 +146,21 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                          = va_at(0, __VA_ARGS__);                      \
     typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _b = {};                                         \
                                                                                                    \
-    vec_exist(as(u, u_vec_t), _a);                                                                 \
+    vec_exist((u_vec_t)u, _a);                                                                     \
   })
 
 #define uv_clear(u)                                                                                \
   do {                                                                                             \
     typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
-    vec_clear(as(u, u_vec_t));                                                                     \
+    vec_clear((u_vec_t)u);                                                                         \
   } while (0)
 
 #define uv_cleanup(u)                                                                              \
   do {                                                                                             \
     typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
                                                                                                    \
-    vec_cleanup(as(u, u_vec_t));                                                                   \
+    vec_cleanup((u_vec_t)u);                                                                       \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -153,7 +175,7 @@ extern any_t lst_each(u_lst_t _self);
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
       typeof(***u((u_vec_t){nullptr}, _a, nullptr))* _b = {};                                      \
                                                                                                    \
-      _b = vec_at(as(u, u_vec_t), _a);                                                             \
+      _b = vec_at((u_vec_t)u, _a);                                                             \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
         *_b = va_at(1, __VA_ARGS__);                                                               \
@@ -170,7 +192,7 @@ extern any_t lst_each(u_lst_t _self);
       typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _it = {};                                      \
       typeof(***u((u_vec_t){nullptr}, _a, nullptr))* _b = {};                                      \
                                                                                                    \
-      _b = vec_at(as(u, u_vec_t), _a);                                                             \
+      _b = vec_at((u_vec_t)u, _a);                                                             \
                                                                                                    \
       if (_b == nullptr) {                                                                         \
         _b = &_it;                                                                                 \
@@ -189,7 +211,7 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_vec_t){nullptr}, _a, nullptr))* it = {};                                        \
                                                                                                    \
-    it = vec_at(as(u, u_vec_t), _a);                                                               \
+    it = vec_at((u_vec_t)u, _a);                                                                   \
                                                                                                    \
     if (it != nullptr) {                                                                           \
       _ret = true;                                                                                 \
@@ -207,7 +229,7 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                          = va_at(0, __VA_ARGS__);                      \
     typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _b = {};                                         \
                                                                                                    \
-    vec_pop(as(u, u_vec_t), _a, &_b);                                                              \
+    vec_pop((u_vec_t)u, _a, &_b);                                                                  \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -219,24 +241,24 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                          = va_at(0, __VA_ARGS__);                      \
     typeof(***u((u_vec_t){nullptr}, _a, nullptr)) _b = va_at(1, __VA_ARGS__);                      \
                                                                                                    \
-    vec_put(as(u, u_vec_t), _a, &_b);                                                              \
+    vec_put((u_vec_t)u, _a, &_b);                                                                  \
   } while (0)
 
 #define uv_each(u, i, it)                                                                          \
-  for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 1);                 \
-       vec_each(as(u, u_vec_t), &i, &it);)
+  for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init((u_vec_t)u, 1);                     \
+       vec_each((u_vec_t)u, &i, &it);)
 
 #define uv_reach(u, i, it)                                                                         \
-  for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 0);                 \
-       vec_each(as(u, u_vec_t), &i, &it);)
+  for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init((u_vec_t)u, 0);                     \
+       vec_each((u_vec_t)u, &i, &it);)
 
 #define uv_foreach(u, S, i, T, it, ...)                                                            \
   do {                                                                                             \
     S i  = {};                                                                                     \
     T it = {};                                                                                     \
                                                                                                    \
-    for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 1);               \
-         vec_each(as(u, u_vec_t), &i, &it);)                                                       \
+    for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init((u_vec_t)u, 1);                   \
+         vec_each((u_vec_t)u, &i, &it);)                                                           \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -245,8 +267,8 @@ extern any_t lst_each(u_lst_t _self);
     S i  = {};                                                                                     \
     T it = {};                                                                                     \
                                                                                                    \
-    for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init(as(u, u_vec_t), 0);               \
-         vec_each(as(u, u_vec_t), &i, &it);)                                                       \
+    for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init((u_vec_t)u, 0);                   \
+         vec_each((u_vec_t)u, &i, &it);)                                                           \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -267,14 +289,14 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     typeof(u((u_tbl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    tbl_len(as(u, u_tbl_t));                                                                       \
+    tbl_len((u_tbl_t)u);                                                                           \
   })
 
 #define ut_empty(u)                                                                                \
   ({                                                                                               \
     typeof(u((u_tbl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    0 == tbl_len(as(u, u_tbl_t));                                                                  \
+    0 == tbl_len((u_tbl_t)u);                                                                      \
   })
 
 #define ut_exist(u, ...)                                                                           \
@@ -284,21 +306,21 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_tbl_t){nullptr}, &_a, nullptr)) _b = {};                                        \
                                                                                                    \
-    tbl_exist(as(u, u_tbl_t), &_a);                                                                \
+    tbl_exist((u_tbl_t)u, &_a);                                                                    \
   })
 
 #define ut_clear(u)                                                                                \
   do {                                                                                             \
     typeof(u((u_tbl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    tbl_clear(as(u, u_tbl_t));                                                                     \
+    tbl_clear((u_tbl_t)u);                                                                         \
   } while (0)
 
 #define ut_cleanup(u)                                                                              \
   do {                                                                                             \
     typeof(u((u_tbl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    tbl_cleanup(as(u, u_tbl_t));                                                                   \
+    tbl_cleanup((u_tbl_t)u);                                                                       \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -313,7 +335,7 @@ extern any_t lst_each(u_lst_t _self);
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
       typeof(***u((u_tbl_t){nullptr}, &_a, nullptr))* _b = {};                                     \
                                                                                                    \
-      _b = tbl_at(as(u, u_tbl_t), &_a);                                                            \
+      _b = tbl_at((u_tbl_t)u, &_a);                                                            \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
         *_b = va_at(1, __VA_ARGS__);                                                               \
@@ -330,7 +352,7 @@ extern any_t lst_each(u_lst_t _self);
       typeof(***u((u_tbl_t){nullptr}, &_a, nullptr)) _it = {};                                     \
       typeof(***u((u_tbl_t){nullptr}, &_a, nullptr))* _b = {};                                     \
                                                                                                    \
-      _b = tbl_at(as(u, u_tbl_t), &_a);                                                            \
+      _b = tbl_at((u_tbl_t)u, &_a);                                                            \
                                                                                                    \
       if (_b == nullptr) {                                                                         \
         _b = &_it;                                                                                 \
@@ -349,7 +371,7 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                            = va_at(0, __VA_ARGS__);                    \
     typeof(***u((u_tbl_t){nullptr}, &_a, nullptr))* it = {};                                       \
                                                                                                    \
-    it = tbl_at(as(u, u_tbl_t), &_a);                                                              \
+    it = tbl_at((u_tbl_t)u, &_a);                                                                  \
                                                                                                    \
     if (it != nullptr) {                                                                           \
       _ret = true;                                                                                 \
@@ -367,7 +389,7 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_tbl_t){nullptr}, &_a, nullptr)) _b = {};                                        \
                                                                                                    \
-    tbl_pop(as(u, u_tbl_t), &_a, &_b);                                                             \
+    tbl_pop((u_tbl_t)u, &_a, &_b);                                                                 \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -379,24 +401,24 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_tbl_t){nullptr}, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                     \
                                                                                                    \
-    tbl_put(as(u, u_tbl_t), &_a, &_b);                                                             \
+    tbl_put((u_tbl_t)u, &_a, &_b);                                                                 \
   } while (0)
 
 #define ut_each(u, k, v)                                                                           \
-  for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 1);                 \
-       tbl_each(as(u, u_tbl_t), &k, &v);)
+  for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init((u_tbl_t)u, 1);                     \
+       tbl_each((u_tbl_t)u, &k, &v);)
 
 #define ut_reach(u, k, v)                                                                          \
-  for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 0);                 \
-       tbl_each(as(u, u_tbl_t), &k, &v);)
+  for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init((u_tbl_t)u, 0);                     \
+       tbl_each((u_tbl_t)u, &k, &v);)
 
 #define ut_foreach(u, K, k, V, v, ...)                                                             \
   do {                                                                                             \
     K k = {};                                                                                      \
     V v = {};                                                                                      \
                                                                                                    \
-    for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 1);               \
-         tbl_each(as(u, u_tbl_t), &k, &v);)                                                        \
+    for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init((u_tbl_t)u, 1);                   \
+         tbl_each((u_tbl_t)u, &k, &v);)                                                            \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -405,8 +427,8 @@ extern any_t lst_each(u_lst_t _self);
     K k = {};                                                                                      \
     V v = {};                                                                                      \
                                                                                                    \
-    for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init(as(u, u_tbl_t), 0);               \
-         tbl_each(as(u, u_tbl_t), &k, &v);)                                                        \
+    for (typeof(u((u_tbl_t){nullptr}, &k, &v)) $ = tbl_each_init((u_tbl_t)u, 0);                   \
+         tbl_each((u_tbl_t)u, &k, &v);)                                                            \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -429,14 +451,14 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     typeof(u((u_avl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    avl_len(as(u, u_avl_t));                                                                       \
+    avl_len((u_avl_t)u);                                                                           \
   })
 
 #define ua_empty(u)                                                                                \
   ({                                                                                               \
     typeof(u((u_avl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    0 == avl_len(as(u, u_avl_t));                                                                  \
+    0 == avl_len((u_avl_t)u);                                                                      \
   })
 
 #define ua_exist(u, ...)                                                                           \
@@ -446,21 +468,21 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_avl_t){nullptr}, &_a, nullptr)) _b = {};                                        \
                                                                                                    \
-    avl_exist(as(u, u_avl_t), &_a);                                                                \
+    avl_exist((u_avl_t)u, &_a);                                                                    \
   })
 
 #define ua_clear(u)                                                                                \
   do {                                                                                             \
     typeof(u((u_avl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    avl_clear(as(u, u_avl_t));                                                                     \
+    avl_clear((u_avl_t)u);                                                                         \
   } while (0)
 
 #define ua_cleanup(u)                                                                              \
   do {                                                                                             \
     typeof(u((u_avl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
                                                                                                    \
-    avl_cleanup(as(u, u_avl_t));                                                                   \
+    avl_cleanup((u_avl_t)u);                                                                       \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -475,7 +497,7 @@ extern any_t lst_each(u_lst_t _self);
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
       typeof(***u((u_avl_t){nullptr}, &_a, nullptr))* _b = {};                                     \
                                                                                                    \
-      _b = avl_at(as(u, u_avl_t), &_a);                                                            \
+      _b = avl_at((u_avl_t)u, &_a);                                                            \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
         *_b = va_at(1, __VA_ARGS__);                                                               \
@@ -492,7 +514,7 @@ extern any_t lst_each(u_lst_t _self);
       typeof(***u((u_avl_t){nullptr}, &_a, nullptr)) _it = {};                                     \
       typeof(***u((u_avl_t){nullptr}, &_a, nullptr))* _b = {};                                     \
                                                                                                    \
-      _b = avl_at(as(u, u_avl_t), &_a);                                                            \
+      _b = avl_at((u_avl_t)u, &_a);                                                            \
                                                                                                    \
       if (_b == nullptr) {                                                                         \
         _b = &_it;                                                                                 \
@@ -511,7 +533,7 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                            = va_at(0, __VA_ARGS__);                    \
     typeof(***u((u_avl_t){nullptr}, &_a, nullptr))* it = {};                                       \
                                                                                                    \
-    it = avl_at(as(u, u_avl_t), &_a);                                                              \
+    it = avl_at((u_avl_t)u, &_a);                                                                  \
                                                                                                    \
     if (it != nullptr) {                                                                           \
       _ret = true;                                                                                 \
@@ -529,7 +551,7 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_avl_t){nullptr}, &_a, nullptr)) _b = {};                                        \
                                                                                                    \
-    avl_pop(as(u, u_avl_t), &_a, &_b);                                                             \
+    avl_pop((u_avl_t)u, &_a, &_b);                                                                 \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -541,24 +563,24 @@ extern any_t lst_each(u_lst_t _self);
     auto _a                                           = va_at(0, __VA_ARGS__);                     \
     typeof(***u((u_avl_t){nullptr}, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                     \
                                                                                                    \
-    avl_put(as(u, u_avl_t), &_a, &_b);                                                             \
+    avl_put((u_avl_t)u, &_a, &_b);                                                                 \
   } while (0)
 
 #define ua_each(u, k, v)                                                                           \
-  for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init(as(u, u_avl_t), 1);                 \
-       avl_each(as(u, u_avl_t), &k, &v);)
+  for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init((u_avl_t)u, 1);                     \
+       avl_each((u_avl_t)u, &k, &v);)
 
 #define ua_reach(u, k, v)                                                                          \
-  for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init(as(u, u_avl_t), 0);                 \
-       avl_each(as(u, u_avl_t), &k, &v);)
+  for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init((u_avl_t)u, 0);                     \
+       avl_each((u_avl_t)u, &k, &v);)
 
 #define ua_foreach(u, K, k, V, v, ...)                                                             \
   do {                                                                                             \
     K k = {};                                                                                      \
     V v = {};                                                                                      \
                                                                                                    \
-    for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init(as(u, u_avl_t), 1);               \
-         avl_each(as(u, u_avl_t), &k, &v);)                                                        \
+    for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init((u_avl_t)u, 1);                   \
+         avl_each((u_avl_t)u, &k, &v);)                                                            \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -567,8 +589,8 @@ extern any_t lst_each(u_lst_t _self);
     K k = {};                                                                                      \
     V v = {};                                                                                      \
                                                                                                    \
-    for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init(as(u, u_avl_t), 0);               \
-         avl_each(as(u, u_avl_t), &k, &v);)                                                        \
+    for (typeof(u((u_avl_t){nullptr}, &k, &v)) $ = avl_each_init((u_avl_t)u, 0);                   \
+         avl_each((u_avl_t)u, &k, &v);)                                                            \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -586,14 +608,14 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     typeof(u((u_lst_t){nullptr})) _m = nullptr;                                                    \
                                                                                                    \
-    lst_len(as(u, u_lst_t));                                                                       \
+    lst_len((u_lst_t)u);                                                                           \
   })
 
 #define ul_empty(u)                                                                                \
   ({                                                                                               \
     typeof(u((u_lst_t){nullptr})) _m = nullptr;                                                    \
                                                                                                    \
-    0 == lst_len(as(u, u_lst_t));                                                                  \
+    0 == lst_len((u_lst_t)u);                                                                      \
   })
 
 #define ul_exist(u, ...)                                                                           \
@@ -602,21 +624,21 @@ extern any_t lst_each(u_lst_t _self);
                                                                                                    \
     typeof(u((u_lst_t){nullptr})) _a = va_at(0, __VA_ARGS__);                                      \
                                                                                                    \
-    lst_exist(as(u, u_lst_t), _a);                                                                 \
+    lst_exist((u_lst_t)u, _a);                                                                     \
   })
 
 #define ul_clear(u)                                                                                \
   do {                                                                                             \
     typeof(u((u_lst_t){nullptr})) _m = nullptr;                                                    \
                                                                                                    \
-    lst_clear(as(u, u_lst_t));                                                                     \
+    lst_clear((u_lst_t)u);                                                                         \
   } while (0)
 
 #define ul_cleanup(u)                                                                              \
   do {                                                                                             \
     typeof(u((u_lst_t){nullptr})) _m = nullptr;                                                    \
                                                                                                    \
-    lst_cleanup(as(u, u_lst_t));                                                                   \
+    lst_cleanup((u_lst_t)u);                                                                       \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
@@ -625,7 +647,7 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     typeof(u((u_lst_t){nullptr})) _a = {};                                                         \
                                                                                                    \
-    _a = lst_first(as(u, u_lst_t));                                                                \
+    _a = lst_first((u_lst_t)u);                                                                    \
                                                                                                    \
     _a;                                                                                            \
   })
@@ -634,7 +656,7 @@ extern any_t lst_each(u_lst_t _self);
   ({                                                                                               \
     typeof(u((u_lst_t){nullptr})) _a = {};                                                         \
                                                                                                    \
-    _a = lst_last(as(u, u_lst_t));                                                                 \
+    _a = lst_last((u_lst_t)u);                                                                     \
                                                                                                    \
     _a;                                                                                            \
   })
@@ -646,7 +668,7 @@ extern any_t lst_each(u_lst_t _self);
     typeof(u((u_lst_t){nullptr})) _a = va_at(0, __VA_ARGS__);                                      \
     typeof(u((u_lst_t){nullptr})) _b = {};                                                         \
                                                                                                    \
-    _b = lst_prev(as(u, u_lst_t), _a);                                                             \
+    _b = lst_prev((u_lst_t)u, _a);                                                                 \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -658,7 +680,7 @@ extern any_t lst_each(u_lst_t _self);
     typeof(u((u_lst_t){nullptr})) _a = va_at(0, __VA_ARGS__);                                      \
     typeof(u((u_lst_t){nullptr})) _b = {};                                                         \
                                                                                                    \
-    _b = lst_next(as(u, u_lst_t), _a);                                                             \
+    _b = lst_next((u_lst_t)u, _a);                                                                 \
                                                                                                    \
     _b;                                                                                            \
   })
@@ -669,7 +691,7 @@ extern any_t lst_each(u_lst_t _self);
                                                                                                    \
     typeof(u((u_lst_t){nullptr})) _a = va_at(0, __VA_ARGS__);                                      \
                                                                                                    \
-    lst_pop(as(u, u_lst_t), _a);                                                                   \
+    lst_pop((u_lst_t)u, _a);                                                                       \
                                                                                                    \
     _a;                                                                                            \
   })
@@ -681,23 +703,21 @@ extern any_t lst_each(u_lst_t _self);
     typeof(u((u_lst_t){nullptr})) _a = va_at(0, __VA_ARGS__);                                      \
     typeof(u((u_lst_t){nullptr})) _b = va_at(1, __VA_ARGS__);                                      \
                                                                                                    \
-    lst_put(as(u, u_lst_t), _a, _b);                                                               \
+    lst_put((u_lst_t)u, _a, _b);                                                                   \
   } while (0)
 
 #define ul_each(u, it)                                                                             \
-  for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init(as(u, u_lst_t), 1);                         \
-       (it = lst_each(as(u, u_lst_t)));)
+  for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init((u_lst_t)u, 1); (it = lst_each((u_lst_t)u));)
 
 #define ul_reach(u, it)                                                                            \
-  for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init(as(u, u_lst_t), 0);                         \
-       (it = lst_each(as(u, u_lst_t)));)
+  for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init((u_lst_t)u, 0); (it = lst_each((u_lst_t)u));)
 
 #define ul_foreach(u, T, it, ...)                                                                  \
   do {                                                                                             \
     T* it = nullptr;                                                                               \
                                                                                                    \
-    for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init(as(u, u_lst_t), 1);                       \
-         (it = lst_each(as(u, u_lst_t)));)                                                         \
+    for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init((u_lst_t)u, 1);                           \
+         (it = lst_each((u_lst_t)u));)                                                             \
       __VA_ARGS__                                                                                  \
   } while (0)
 
@@ -705,7 +725,7 @@ extern any_t lst_each(u_lst_t _self);
   do {                                                                                             \
     T* it = nullptr;                                                                               \
                                                                                                    \
-    for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init(as(u, u_lst_t), 0);                       \
-         (it = lst_each(as(u, u_lst_t)));)                                                         \
+    for (typeof(u((u_lst_t){nullptr})) $ = lst_each_init((u_lst_t)u, 0);                           \
+         (it = lst_each((u_lst_t)u));)                                                             \
       __VA_ARGS__                                                                                  \
   } while (0)

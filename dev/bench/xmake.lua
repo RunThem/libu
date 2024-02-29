@@ -19,7 +19,7 @@ task('bench', function()
     local bin = target:targetdir() .. '/profile/' .. target:name()
     local gmon = target:targetdir() .. '/profile/' .. 'gmon.out'
 
-    os.exec('xmake f -m profile --mimalloc=n --lambda=n')
+    os.exec('xmake f -m profile --mimalloc=n')
     os.exec('xmake build -v bench')
     os.exec('xmake run bench')
 
@@ -29,7 +29,7 @@ task('bench', function()
     end
     --]]
 
-    os.exec('xmake f -m release --mimalloc=y --lambda=n')
+    os.exec('xmake f -m release --mimalloc=y')
     os.exec('xmake build -v bench')
     os.exec('xmake run bench')
   end)

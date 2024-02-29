@@ -22,27 +22,28 @@
  *
  * */
 
-#pragma once
+#include <u/u.h>
 
-#ifdef USE_MIMALLOC
-#  include <mimalloc.h>
+/*
+ * cmp & eq func from base type
+ * */
+fn_compe_def(char, (x == y), (x > y));
+fn_compe_def(int, (x == y), (x > y));
 
-#  define u_free(p) mi_free(p)
+fn_compe_def(byte_t, (x == y), (x > y));
+fn_compe_def(i8_t, (x == y), (x > y));
+fn_compe_def(u8_t, (x == y), (x > y));
+fn_compe_def(i16_t, (x == y), (x > y));
+fn_compe_def(u16_t, (x == y), (x > y));
+fn_compe_def(i32_t, (x == y), (x > y));
+fn_compe_def(u32_t, (x == y), (x > y));
+fn_compe_def(i64_t, (x == y), (x > y));
+fn_compe_def(u64_t, (x == y), (x > y));
 
-/* clang-format off */
-#  define u_malloc(s)     ({ any_t _ptr = mi_malloc(s);     if (errno == 2) errno = 0; _ptr; })
-#  define u_zalloc(s)     ({ any_t _ptr = mi_zalloc(s);     if (errno == 2) errno = 0; _ptr; })
-#  define u_calloc(c, s)  ({ any_t _ptr = mi_calloc(c, s);  if (errno == 2) errno = 0; _ptr; })
-#  define u_realloc(p, s) ({ any_t _ptr = mi_realloc(p, s); if (errno == 2) errno = 0; _ptr; })
-/* clang-format on */
+fn_compe_def(size_t, (x == y), (x > y));
+fn_compe_def(ssize_t, (x == y), (x > y));
 
-#else
-
-#  define u_free(p) free(p)
-
-#  define u_malloc(s)     malloc(s)
-#  define u_zalloc(s)     calloc(1, s)
-#  define u_calloc(c, s)  calloc(c, s)
-#  define u_realloc(p, s) realloc(p, s)
-
+#ifdef __SIZEOF_INT128__
+fn_compe_def(i128_t, (x == y), (x > y));
+fn_compe_def(u128_t, (x == y), (x > y));
 #endif

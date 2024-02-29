@@ -1,3 +1,27 @@
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
 #include <u/core.h>
 
 /***************************************************************************************************
@@ -339,9 +363,9 @@ static void avl_prev(avl_t* self) {
 u_avl_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
-  u_check_ret(ksize == 0, nullptr);
-  u_check_ret(vsize == 0, nullptr);
-  u_check_ret(cmp_fn == nullptr, nullptr);
+  u_chk_if(ksize == 0, nullptr);
+  u_chk_if(vsize == 0, nullptr);
+  u_chk_if(cmp_fn == nullptr, nullptr);
 
   self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
   u_mem_if(self);
@@ -354,18 +378,18 @@ u_avl_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
 
   infln("avl new(ksize(%zu), vsize(%zu), cmp_fn(%p))", ksize, vsize, cmp_fn);
 
-  return as(self, u_avl_t);
+  return (u_avl_t)self;
 
 err:
   return nullptr;
 }
 
 void avl_clear(u_avl_t _self) {
-  avl_t* self         = as(_self, avl_t*);
+  avl_t* self         = (avl_t*)_self;
   node_t* node        = nullptr;
   uvec(node_t*) nodes = nullptr;
 
-  u_check_nret(self->len == 0);
+  u_nchk_if(self->len == 0);
 
   uv_init(nodes);
 
@@ -392,10 +416,10 @@ void avl_clear(u_avl_t _self) {
 }
 
 void avl_cleanup(u_avl_t _self) {
-  avl_t* self  = as(_self, avl_t*);
+  avl_t* self  = (avl_t*)_self;
   node_t* node = nullptr;
 
-  u_check_nret(self == nullptr);
+  u_nchk_if(self == nullptr);
 
   avl_clear(_self);
 
@@ -410,20 +434,20 @@ void avl_cleanup(u_avl_t _self) {
 }
 
 size_t avl_len(u_avl_t _self) {
-  avl_t* self = as(_self, avl_t*);
+  avl_t* self = (avl_t*)_self;
 
-  u_check_ret(self == nullptr, 0);
+  u_chk_if(self == nullptr, 0);
 
   return self->len;
 }
 
 bool avl_exist(u_avl_t _self, any_t key) {
-  avl_t* self  = as(_self, avl_t*);
+  avl_t* self  = (avl_t*)_self;
   node_t* node = self->root;
   ret_t result = 0;
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(key == nullptr, false);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(key == nullptr, false);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -438,13 +462,13 @@ bool avl_exist(u_avl_t _self, any_t key) {
 }
 
 any_t avl_at(u_avl_t _self, any_t key) {
-  avl_t* self  = as(_self, avl_t*);
+  avl_t* self  = (avl_t*)_self;
   node_t* node = self->root;
   ret_t result = 0;
 
-  u_check_ret(self == nullptr, nullptr);
-  u_check_ret(key == nullptr, nullptr);
-  u_check_ret(self->len == 0, nullptr);
+  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(key == nullptr, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -461,14 +485,14 @@ any_t avl_at(u_avl_t _self, any_t key) {
 }
 
 void avl_pop(u_avl_t _self, any_t key, any_t val) {
-  avl_t* self    = as(_self, avl_t*);
+  avl_t* self    = (avl_t*)_self;
   node_t* node   = self->root;
   node_t* parent = nullptr;
   ret_t result   = 0;
 
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
+  u_nchk_if(self == nullptr);
+  u_nchk_if(key == nullptr);
+  u_nchk_if(val == nullptr);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -499,15 +523,15 @@ void avl_pop(u_avl_t _self, any_t key, any_t val) {
 }
 
 void avl_put(u_avl_t _self, any_t key, any_t val) {
-  avl_t* self    = as(_self, avl_t*);
+  avl_t* self    = (avl_t*)_self;
   node_t** link  = &self->root;
   node_t* parent = nullptr;
   node_t* node   = nullptr;
   ret_t result   = 0;
 
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
+  u_nchk_if(self == nullptr);
+  u_nchk_if(key == nullptr);
+  u_nchk_if(val == nullptr);
 
   while (*link) {
     parent = *link;
@@ -532,9 +556,9 @@ err:
 }
 
 any_t avl_each_init(u_avl_t _self, bool flag) {
-  avl_t* self = as(_self, avl_t*);
+  avl_t* self = (avl_t*)_self;
 
-  u_check_ret(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, nullptr);
 
   self->iter     = nullptr;
   self->flags[1] = flag;
@@ -543,10 +567,10 @@ any_t avl_each_init(u_avl_t _self, bool flag) {
 }
 
 bool avl_each(u_avl_t _self, any_t key, any_t val) {
-  avl_t* self = as(_self, avl_t*);
+  avl_t* self = (avl_t*)_self;
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(self->len == 0, false);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(self->len == 0, false);
 
   (self->flags[1] ? avl_next : avl_prev)(self);
   u_ret_if(self->iter == nullptr, false);

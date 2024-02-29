@@ -4,7 +4,7 @@ extern void vec(size_t);
 extern void tbl(size_t);
 extern void avl(size_t);
 
-int main(int argc, const char** argv) {
+int main(int argc, const str_t argv[]) {
 
   println("benchmark vec: {");
   vec(N10W);

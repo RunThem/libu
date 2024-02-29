@@ -23,10 +23,6 @@
 #include <ucontext.h>
 #include <unistd.h>
 
-#define __typeof(t)     (__builtin_classify_type(t))
-#define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
-#define constexpr(expr) (__builtin_constant_p(expr))
-
 ret_t code = 0;
 
 /*
@@ -35,8 +31,7 @@ ret_t code = 0;
  * uv, ut, ua, ul, us, uf
  * */
 
-int main(int argc, const char** argv) {
-
+int main(int argc, const str_t argv[]) {
   char str[] = "hello";
   int result = typeeq(char[], str);
   infln("result is %d", result);

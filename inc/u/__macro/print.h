@@ -1,9 +1,33 @@
-#define __file__ __FILE__
-#define __line__ __LINE__
-#define __func__ __func__
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
 
-#define print(fmt, ...)   fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define println(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#pragma once
+
+#include "keyword.h"
+#include "type.h"
+
+#include <stddef.h>
 
 #ifdef NDEBUG
 #  define __display(fmt, ...)
@@ -11,26 +35,37 @@
 #  define __display(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
 #endif
 
-#define __INF_FMT       "[INF]\x1b[02m[%s $%d %s]\x1b[0m: "
-#define __inf_args()    __file__, __line__, __func__
-#define inf(fmt, ...)   __display(__INF_FMT fmt, __inf_args() __VA_OPT__(, ) __VA_ARGS__)
-#define infln(fmt, ...) __display(__INF_FMT fmt "\n", __inf_args() __VA_OPT__(, ) __VA_ARGS__)
+#define print(fmt, ...)   fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define println(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 
-#define __ERR_FMT       "[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: "
-#define __err_args()    __file__, __line__, __func__, strerror(errno)
-#define err(fmt, ...)   __display(__ERR_FMT fmt, __err_args() __VA_OPT__(, ) __VA_ARGS__)
-#define errln(fmt, ...) __display(__ERR_FMT fmt "\n", __err_args() __VA_OPT__(, ) __VA_ARGS__)
+#define inf(fmt, ...)                                                                              \
+  __display("[INF]\x1b[02m[%s $%d %s]\x1b[0m: " fmt,                                               \
+            __file__,                                                                              \
+            __line__,                                                                              \
+            __func__ __VA_OPT__(, ) __VA_ARGS__)
 
-extern void __inf_hex(const u8_t* arr, size_t size);
-#define inf_hex(arr, size)                                                                         \
-  do {                                                                                             \
-    infln("\x1b[36;1m%s\x1b[0m(%ld)", #arr, size);                                                 \
-    __inf_hex(as(arr, u8_t*), size);                                                               \
-  } while (0)
+#define infln(fmt, ...)                                                                            \
+  __display("[INF]\x1b[02m[%s $%d %s]\x1b[0m: " fmt "\n",                                          \
+            __file__,                                                                              \
+            __line__,                                                                              \
+            __func__ __VA_OPT__(, ) __VA_ARGS__)
 
-void __inf_bit(const u8_t* buf, size_t size);
-#define inf_bit(arr, size)                                                                         \
-  do {                                                                                             \
-    infln("\x1b[36;1m%s\x1b[0m(%ld)", #arr, size);                                                 \
-    __inf_bit(as(arr, u8_t*), size);                                                               \
-  } while (0)
+#define err(fmt, ...)                                                                              \
+  __display("[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: " fmt,                                          \
+            __file__,                                                                              \
+            __line__,                                                                              \
+            __func__,                                                                              \
+            strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
+
+#define errln(fmt, ...)                                                                            \
+  __display("[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: " fmt "\n",                                     \
+            __file__,                                                                              \
+            __line__,                                                                              \
+            __func__,                                                                              \
+            strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
+
+extern void __printh(str_t name, const u8_t* mem, size_t size);
+extern void __printb(str_t name, const u8_t* mem, size_t size);
+
+#define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
+#define printb(mem, size) __printb(#mem, (u8_t*)mem, size);

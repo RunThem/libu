@@ -1,3 +1,27 @@
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
 #include <u/core.h>
 
 /***************************************************************************************************
@@ -44,7 +68,7 @@ err:
 u_vec_t vec_new(size_t itsize) {
   vec_t* self = nullptr;
 
-  u_check_ret(itsize == 0, nullptr);
+  u_chk_if(itsize == 0, nullptr);
 
   self = u_zalloc(sizeof(vec_t));
   u_mem_if(self);
@@ -57,7 +81,7 @@ u_vec_t vec_new(size_t itsize) {
 
   infln("itsize(%zu)", itsize);
 
-  return as(self, u_vec_t);
+  return (u_vec_t)self;
 
 err:
   u_free_if(self);
@@ -66,43 +90,43 @@ err:
 }
 
 void vec_clear(u_vec_t _self) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
   self->len = 0;
 }
 
 void vec_cleanup(u_vec_t _self) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
   u_free_if(self->items);
   u_free_if(self);
 }
 
 bool vec_exist(u_vec_t _self, size_t idx) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
   return self->len > idx;
 }
 
 size_t vec_len(u_vec_t _self) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
   return self->len;
 }
 
 size_t vec_cap(u_vec_t _self) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
   return self->cap;
 }
 
 any_t vec_at(u_vec_t _self, ssize_t idx) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
-  u_check_ret(self == nullptr, nullptr);
-  u_check_ret(idx > self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
+  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(idx > self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
 
-  idx += (idx < 0) ? as(self->len, ssize_t) : 0;
+  idx += (idx < 0) ? (ssize_t)self->len : 0;
 
   return at(idx);
 }
@@ -115,12 +139,12 @@ any_t vec_at(u_vec_t _self, ssize_t idx) {
  * { -7, -6, -5, -4, -3, -2  -1 }
  * */
 void vec_pop(u_vec_t _self, ssize_t idx, any_t item) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
-  u_check_nret(self == nullptr);
-  u_check_nret(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
+  u_nchk_if(self == nullptr);
+  u_nchk_if(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
-  idx += (idx < 0) ? as(self->len, ssize_t) : 0;
+  idx += (idx < 0) ? (ssize_t)self->len : 0;
   memcpy(item, at(idx), self->itsize);
   if (idx != self->len - 1) {
     memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
@@ -140,16 +164,16 @@ void vec_pop(u_vec_t _self, ssize_t idx, any_t item) {
  * { -8, -7, -6, -5, -4, -3, -2 } -1
  * */
 void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
   ret_t code  = 0;
 
-  u_check_nret(self == nullptr);
-  u_check_nret(idx > as(self->len, ssize_t) || idx < -as(self->len + 1, ssize_t),
-               "idx(%ld), len(%zu)",
-               idx,
-               self->len);
+  u_nchk_if(self == nullptr);
+  u_nchk_if(idx > (ssize_t)self->len || idx < -((ssize_t)self->len + 1),
+            "idx(%ld), len(%zu)",
+            idx,
+            self->len);
 
-  idx += (idx < 0) ? as(1 + self->len, ssize_t) : 0;
+  idx += (idx < 0) ? (ssize_t)self->len + 1 : 0;
   if (self->len == self->cap) {
     code = vec_resize(self);
     u_err_if(code != 0, "resize failed.");
@@ -167,9 +191,9 @@ err:
 }
 
 any_t vec_each_init(u_vec_t _self, bool flag) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
-  u_check_ret(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, nullptr);
 
   self->flags[1] = flag;
   self->flags[2] = true;
@@ -179,15 +203,15 @@ any_t vec_each_init(u_vec_t _self, bool flag) {
 }
 
 bool vec_each(u_vec_t _self, ssize_t* idx, any_t item) {
-  vec_t* self = as(_self, vec_t*);
+  vec_t* self = (vec_t*)_self;
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(self->len == 0, false);
-  u_check_ret(self->flags[3], false);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(self->len == 0, false);
+  u_chk_if(self->flags[3], false);
 
   /* 初始化 */
   if (self->flags[2]) {
-    *idx           = self->flags[1] ? 0 : as(self->len, ssize_t) - 1;
+    *idx           = self->flags[1] ? 0 : (ssize_t)self->len - 1;
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
     *idx += self->flags[1] ? 1 : -1;

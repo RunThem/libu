@@ -1,3 +1,27 @@
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
 #include <u/core.h>
 
 /***************************************************************************************************
@@ -151,8 +175,9 @@ static void tbl_next(tbl_t* self) {
     u_nret_if(self->iter->next != nullptr);
 
     /* end */
-    u_if(self->iter->hash == 0) {
+    if (self->iter->hash == 0) {
       self->iter = nullptr;
+
       return;
     }
 
@@ -210,8 +235,8 @@ err:
 u_tbl_t tbl_new(size_t ksize, size_t vsize) {
   tbl_t* self = nullptr;
 
-  u_check_ret(ksize == 0, nullptr);
-  u_check_ret(vsize == 0, nullptr);
+  u_chk_if(ksize == 0, nullptr);
+  u_chk_if(vsize == 0, nullptr);
 
   self = u_zalloc(sizeof(tbl_t) + ksize + vsize);
   u_mem_if(self);
@@ -226,7 +251,7 @@ u_tbl_t tbl_new(size_t ksize, size_t vsize) {
 
   infln("tbl new(ksize(%zu), vsize(%zu))", ksize, vsize);
 
-  return as(self, u_tbl_t);
+  return (u_tbl_t)self;
 
 err:
   u_free_if(self);
@@ -235,11 +260,11 @@ err:
 }
 
 void tbl_clear(u_tbl_t _self) {
-  tbl_t* self  = as(_self, tbl_t*);
+  tbl_t* self  = (tbl_t*)_self;
   node_t* node = nullptr;
   node_t* list = nullptr;
 
-  u_check_nret(self == nullptr);
+  u_nchk_if(self == nullptr);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     list = self->buckets[i].next;
@@ -263,9 +288,9 @@ void tbl_clear(u_tbl_t _self) {
 }
 
 void tbl_cleanup(u_tbl_t _self) {
-  tbl_t* self = as(_self, tbl_t*);
+  tbl_t* self = (tbl_t*)_self;
 
-  u_check_nret(self == nullptr);
+  u_nchk_if(self == nullptr);
 
   tbl_clear(_self);
 
@@ -274,20 +299,20 @@ void tbl_cleanup(u_tbl_t _self) {
 }
 
 size_t tbl_len(u_tbl_t _self) {
-  tbl_t* self = as(_self, tbl_t*);
+  tbl_t* self = (tbl_t*)_self;
 
-  u_check_ret(self == nullptr, 0);
+  u_chk_if(self == nullptr, 0);
 
   return self->len;
 }
 
 bool tbl_exist(u_tbl_t _self, any_t key) {
-  tbl_t* self    = as(_self, tbl_t*);
+  tbl_t* self    = (tbl_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
-  u_check_ret(self == nullptr, false);
-  u_check_ret(key == nullptr, false);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(key == nullptr, false);
 
   node = tbl_find(self, idx, key);
 
@@ -295,13 +320,13 @@ bool tbl_exist(u_tbl_t _self, any_t key) {
 }
 
 any_t tbl_at(u_tbl_t _self, any_t key) {
-  tbl_t* self    = as(_self, tbl_t*);
+  tbl_t* self    = (tbl_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
-  u_check_ret(self == nullptr, nullptr);
-  u_check_ret(key == nullptr, nullptr);
-  u_check_ret(self->len == 0, nullptr);
+  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(key == nullptr, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   node = tbl_find(self, idx, key);
   u_ret_if(node->next == nullptr, nullptr, "node not exists.");
@@ -310,13 +335,13 @@ any_t tbl_at(u_tbl_t _self, any_t key) {
 }
 
 void tbl_pop(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self    = as(_self, tbl_t*);
+  tbl_t* self    = (tbl_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
+  u_nchk_if(self == nullptr);
+  u_nchk_if(key == nullptr);
+  u_nchk_if(val == nullptr);
 
   node = tbl_find(self, idx, key);
   if (node->next != nullptr) {
@@ -337,16 +362,16 @@ void tbl_pop(u_tbl_t _self, any_t key, any_t val) {
 }
 
 void tbl_put(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self    = as(_self, tbl_t*);
+  tbl_t* self    = (tbl_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
   ret_t code     = 0;
 
-  u_check_nret(self == nullptr);
-  u_check_nret(key == nullptr);
-  u_check_nret(val == nullptr);
+  u_nchk_if(self == nullptr);
+  u_nchk_if(key == nullptr);
+  u_nchk_if(val == nullptr);
 
-  if (self->len >= as(U_RESIZE_RADIO * bucket_sizes[self->bucket_idx], size_t)) {
+  if (self->len >= (size_t)(0.75 * (f64_t)bucket_sizes[self->bucket_idx])) {
     code = tbl_resize(self);
     u_err_if(code != true, "resize failed.");
   }
@@ -374,9 +399,9 @@ err:
 }
 
 any_t tbl_each_init(u_tbl_t _self, bool flag) {
-  tbl_t* self = as(_self, tbl_t*);
+  tbl_t* self = (tbl_t*)_self;
 
-  u_check_ret(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, nullptr);
 
   self->iter = nullptr;
 
@@ -384,9 +409,9 @@ any_t tbl_each_init(u_tbl_t _self, bool flag) {
 }
 
 bool tbl_each(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self = as(_self, tbl_t*);
+  tbl_t* self = (tbl_t*)_self;
 
-  u_check_ret(self == nullptr, false);
+  u_chk_if(self == nullptr, false);
 
   tbl_next(self);
   u_ret_if(self->iter == nullptr, false);

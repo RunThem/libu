@@ -1,6 +1,7 @@
 #include <mut.h>
+#include <u/u.h>
 
-int main(int argc, const char** argv) {
+int main(int argc, const str_t argv[]) {
   mut_init("libu");
 
   mut_add_group(vec, "Generic vec container.");

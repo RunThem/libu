@@ -33,6 +33,8 @@
  *
  * */
 
+#pragma once
+
 #ifdef va_debug
 #  define echo(arg) <><><><><><><><><><><><><><><><><><><><><><><> va_##arg
 #endif

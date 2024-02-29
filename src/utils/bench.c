@@ -22,27 +22,35 @@
  *
  * */
 
-#pragma once
+#include <u/u.h>
 
-#ifdef USE_MIMALLOC
-#  include <mimalloc.h>
+thread_local __err__t __err__ = {};
 
-#  define u_free(p) mi_free(p)
+inline bool __benchmark(__tack_t* tack) {
+  char buf[32] = {0};
 
-/* clang-format off */
-#  define u_malloc(s)     ({ any_t _ptr = mi_malloc(s);     if (errno == 2) errno = 0; _ptr; })
-#  define u_zalloc(s)     ({ any_t _ptr = mi_zalloc(s);     if (errno == 2) errno = 0; _ptr; })
-#  define u_calloc(c, s)  ({ any_t _ptr = mi_calloc(c, s);  if (errno == 2) errno = 0; _ptr; })
-#  define u_realloc(p, s) ({ any_t _ptr = mi_realloc(p, s); if (errno == 2) errno = 0; _ptr; })
-/* clang-format on */
+  if (tack->i == 0) {
+    clock_gettime(CLOCK_REALTIME, &tack->begin);
+    return true;
+  }
 
-#else
+  clock_gettime(CLOCK_REALTIME, &tack->end);
+  tack->diff = ((tack->end.tv_sec * 1000000000 + tack->end.tv_nsec) -
+                (tack->begin.tv_sec * 1000000000 + tack->begin.tv_nsec)) /
+               tack->n;
 
-#  define u_free(p) free(p)
+  if (tack->diff > 1000 * 1000 * 1000) {
+    snprintf(buf, sizeof(buf), "%6.2f\x1b[35ms\x1b[0m", (f64_t)tack->diff / 1000 * 1000 * 1000);
+  } else if (tack->diff > 1000 * 1000) {
+    snprintf(buf, sizeof(buf), "%6.2f\x1b[34mms\x1b[0m", (f64_t)tack->diff / 1000 * 1000);
+  } else if (tack->diff > 1000) {
+    snprintf(buf, sizeof(buf), "%6.2f\x1b[33mus\x1b[0m", (f64_t)tack->diff / 1000);
+  } else {
+    snprintf(buf, sizeof(buf), "%6zu\x1b[32mns\x1b[0m", tack->diff);
+  }
 
-#  define u_malloc(s)     malloc(s)
-#  define u_zalloc(s)     calloc(1, s)
-#  define u_calloc(c, s)  calloc(c, s)
-#  define u_realloc(p, s) realloc(p, s)
+  // #define __INF_FMT       "[INF]\x1b[02m[%s $%d %s]\x1b[0m: "
+  fprintf(stderr, "    { %s }[\x1b[31m%lu\x1b[0m] bench @%s\n", buf, tack->n, tack->msg);
 
-#endif
+  return false;
+}

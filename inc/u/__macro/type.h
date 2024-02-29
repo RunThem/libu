@@ -1,24 +1,48 @@
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
+#pragma once
+
 #include <stdint.h>
 
 #define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
-
-#define typedef(name)                                                                              \
-  typedef struct name name;                                                                        \
-  struct name
 
 /*
  * a >  b  ->  1
  * a == b  ->  0
  * a <  b  -> -1
  * */
-typedef fnt(cmp_fn, int, const void*, const void*);
-typedef fnt(eq_fn, bool, const void*, const void*);
+typedef fnt(u_cmp_fn, int, const void*, const void*);
+typedef fnt(u_eq_fn, bool, const void*, const void*);
+
+typedef typeof(char*) str_t;
 
 /* clang-format off */
-
 typedef int   ret_t;
 typedef void* any_t;
 
+typedef uint8_t  byte_t;
 typedef int8_t   i8_t;
 typedef uint8_t  u8_t;
 typedef int16_t  i16_t;
@@ -48,18 +72,4 @@ typedef __uint128_t u128_t;
 typedef _Atomic(i128_t) atomic_i128_t;
 typedef _Atomic(u128_t) atomic_u128_t;
 #endif
-
 /* clang-format on */
-
-typedef struct {
-  bool is_err;
-  jmp_buf label;
-  const char* file;
-  const char* func;
-  const char* expr;
-  size_t line;
-  error_t error;
-  int id;
-#define U_ERR_MSG_SIZE 2048
-  char msg[U_ERR_MSG_SIZE];
-} __err__t;
