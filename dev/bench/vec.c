@@ -1,64 +1,71 @@
-#include <u/core/vec.h>
+#include <u/u.h>
 
 void vec(size_t N) {
-  u_vec_t(int) v = u_vec_new(int);
+  uvec(int) v = nullptr;
 
-  /* push */
-  benchmark(.n = N, .msg = "vec_push_back()") {
-    u_vec_push_back(v, T.i);
+  uv_init(v);
+
+  /* put */
+  benchmark(.n = N, .msg = "uv_put(-1)") {
+    uv_put(v, -1, T.i);
   };
 
-  benchmark(.n = N, .msg = "vec_push_front()") {
-    u_vec_push_front(v, T.i);
+  benchmark(.n = N, .msg = "uv_put(0)") {
+    uv_put(v, 0, T.i);
   };
 
-  benchmark(.n = N, .msg = "vec_push()") {
-    u_vec_push(v, T.i, T.i);
+  benchmark(.n = N, .msg = "uv_put(...)") {
+    uv_put(v, T.i, T.i);
   }
 
   /* len */
-  benchmark(.n = N, .msg = "vec_len()") {
-    u_vec_len(v);
+  benchmark(.n = N, .msg = "uv_len()") {
+    uv_len(v);
+  }
+
+  /* cap */
+  benchmark(.n = N, .msg = "uv_cap()") {
+    uv_cap(v);
   }
 
   /* at */
-  benchmark(.n = N, .msg = "vec_at_back()") {
-    (void)u_vec_at_back(v);
+  benchmark(.n = N, .msg = "uv_at(-1)") {
+    (void)uv_at(v, -1);
   }
 
-  benchmark(.n = N, .msg = "vec_at_front()") {
-    (void)u_vec_at_front(v);
+  benchmark(.n = N, .msg = "uv_at(0)") {
+    (void)uv_at(v, 0);
   }
 
-  benchmark(.n = N, .msg = "vec_at()") {
-    (void)u_vec_at(v, T.i);
+  benchmark(.n = N, .msg = "uv_at(...)") {
+    (void)uv_at(v, T.i);
   }
 
-  /* re */
-  benchmark(.n = N, .msg = "vec_re_back()") {
-    (void)u_vec_re_back(v, T.i * 2);
+  /* at.re */
+  benchmark(.n = N, .msg = "uv_at.re(-1)") {
+    (void)uv_at(v, -1, T.i * 2);
   }
 
-  benchmark(.n = N, .msg = "vec_re_front()") {
-    (void)u_vec_re_front(v, T.i * 2);
+  benchmark(.n = N, .msg = "uv_at.re(0)") {
+    (void)uv_at(v, 0, T.i * 2);
   }
 
-  benchmark(.n = N, .msg = "vec_re()") {
-    (void)u_vec_re(v, T.i, T.i * 2);
+  benchmark(.n = N, .msg = "uv_at.re(...)") {
+    (void)uv_at(v, T.i, T.i * 2);
   }
 
   /* pop */
-  benchmark(.n = N, .msg = "vec_pop_back()") {
-    (void)u_vec_pop_back(v);
+  benchmark(.n = N, .msg = "uv_pop(-1)") {
+    (void)uv_pop(v, -1);
   }
 
-  benchmark(.n = N, .msg = "vec_pop_front()") {
-    (void)u_vec_pop_front(v);
+  benchmark(.n = N, .msg = "uv_pop(0)") {
+    (void)uv_pop(v, 0);
   }
 
-  benchmark(.n = N, .msg = "vec_pop()") {
-    (void)u_vec_pop(v, T.i);
+  benchmark(.n = N, .msg = "uv_pop(...)") {
+    (void)uv_pop(v, T.i);
   }
 
-  u_vec_cleanup(v);
+  uv_cleanup(v);
 }

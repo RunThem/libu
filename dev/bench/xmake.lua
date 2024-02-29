@@ -4,8 +4,6 @@ target('bench', function()
   set_default('false')
 
   add_deps('u', 'macro')
-
-  add_packages('mimalloc')
 end)
 
 task('bench', function()

@@ -1,12 +1,7 @@
-#include <u/core/avl.h>
-#include <u/core/map.h>
-#include <u/core/queue.h>
-#include <u/core/stack.h>
-#include <u/core/str.h>
 #include <u/u.h>
 
 extern void vec(size_t);
-extern void map(size_t);
+extern void tbl(size_t);
 extern void avl(size_t);
 
 int main(int argc, const char** argv) {
@@ -15,18 +10,18 @@ int main(int argc, const char** argv) {
   vec(N10W);
   println("}\n");
 
-  /* map */
-  println("benchmark map: {");
-  map(N1W);
+  /* tbl */
+  println("benchmark tbl: {");
+  tbl(N1W);
   println();
 
-  map(N10W);
+  tbl(N10W);
   println();
 
-  map(N100W);
+  tbl(N100W);
   println();
 
-  map(N1000W);
+  tbl(N1000W);
   println("}\n");
 
   /* avl tree */
@@ -41,6 +36,9 @@ int main(int argc, const char** argv) {
   println();
 
   avl(N1000W);
+  println();
+
+  avl(N1000W * 10);
   println("}");
 
   return 0;
