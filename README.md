@@ -27,7 +27,7 @@
 #### 配置要求
 
 1. [xmake](https://github.com/xmake-io/xmake) 项目构建工具
-2. [c2x compiler](https://zh.cppreference.com/w/c/23) 仅支持Clang 16以上的版本, 暂不支持Gcc
+2. [c2x compiler](https://zh.cppreference.com/w/c/23) 仅支持 `Clang 16`, 以及 `Gcc 13` 以上的版本
 
 #### **安装步骤**
 
@@ -41,12 +41,9 @@ xmake lsp && xmake
 
 目前实现的容器:
 - vec
-- map
+- tbl
 - avl
-- list
-- stack
-- queue
-- head
+- lst
 
 ### 作者
 
