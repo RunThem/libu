@@ -98,7 +98,7 @@ mut_test(lst_iterator) {
   });
 
   i = 5;
-  ul_foreach(l, int, it, {
+  ul_rforeach(l, int, it, {
     ;
     mut_assert(*it == i--);
   });
