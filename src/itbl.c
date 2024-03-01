@@ -112,7 +112,7 @@ static node_t* tbl_make_node(tbl_t* self, any_t key, any_t val) {
     self->free_nodes = node->next;
   } else {
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
-    u_mem_if(node);
+    u_nil_if(node);
   }
 
   node->hash = hash_fnv64bit(key, self->ksize);
@@ -147,7 +147,7 @@ static node_t* tbl_make_buckets(size_t bs) {
   node_t* buckets = nullptr;
 
   buckets = u_calloc(bs * 2, sizeof(node_t));
-  u_mem_if(buckets);
+  u_nil_if(buckets);
 
   for (size_t i = 0, j = bs; i < bs; i++, j++) {
     buckets[i].next = &buckets[j];
@@ -203,7 +203,7 @@ static bool tbl_resize(tbl_t* self) {
 
   bucket_idx = bucket_sizes[self->bucket_idx + 1];
   nbuckets   = tbl_make_buckets(bucket_idx);
-  u_mem_if(nbuckets);
+  u_nil_if(nbuckets);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     if (self->buckets[i].hash == 0) {
@@ -239,10 +239,10 @@ u_tbl_t tbl_new(size_t ksize, size_t vsize) {
   u_chk_if(vsize == 0, nullptr);
 
   self = u_zalloc(sizeof(tbl_t) + ksize + vsize);
-  u_mem_if(self);
+  u_nil_if(self);
 
   self->buckets = tbl_make_buckets(bucket_sizes[0]);
-  u_mem_if(self->buckets);
+  u_nil_if(self->buckets);
 
   self->ksize      = ksize;
   self->vsize      = vsize;
@@ -383,7 +383,7 @@ void tbl_put(u_tbl_t _self, any_t key, any_t val) {
     memcpy(val(node), val, self->vsize);
   } else {
     node = tbl_make_node(self, key, val);
-    u_mem_if(node);
+    u_nil_if(node);
 
     node->next   = idx[0]->next;
     idx[0]->next = node;

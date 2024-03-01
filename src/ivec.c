@@ -52,7 +52,7 @@ static ret_t vec_resize(vec_t* self) {
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
 
   items = u_realloc(self->items, self->itsize * cap);
-  u_mem_if(items);
+  u_nil_if(items);
 
   infln("vec resize(cap(%zu -> %zu))", self->cap, cap);
 
@@ -71,10 +71,10 @@ u_vec_t vec_new(size_t itsize) {
   u_chk_if(itsize == 0, nullptr);
 
   self = u_zalloc(sizeof(vec_t));
-  u_mem_if(self);
+  u_nil_if(self);
 
   self->items = u_zalloc(itsize * 16);
-  u_mem_if(self->items);
+  u_nil_if(self->items);
 
   self->itsize = itsize;
   self->cap    = 16;

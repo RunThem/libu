@@ -73,7 +73,7 @@
     goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
-#define u_mem_if(mem, ...)                                                                         \
+#define u_nil_if(mem, ...)                                                                         \
   if ((mem) == nullptr) {                                                                          \
     errln("(%s == nullptr) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));           \
     goto va_0th(err, __VA_ARGS__);                                                                 \

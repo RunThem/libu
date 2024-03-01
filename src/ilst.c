@@ -47,10 +47,10 @@ u_lst_t lst_new() {
   lst_t* self = nullptr;
 
   self = u_zalloc(sizeof(lst_t));
-  u_mem_if(self);
+  u_nil_if(self);
 
   uv_init(self->items);
-  u_mem_if(self->items);
+  u_nil_if(self->items);
 
   self->iter = 0;
 

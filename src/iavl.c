@@ -81,7 +81,7 @@ static node_t* avl_node(avl_t* self, node_t* parent, any_t key, any_t val) {
     self->free_nodes = node->parent;
   } else {
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
-    u_mem_if(node);
+    u_nil_if(node);
   }
 
   node->left   = nullptr;
@@ -368,7 +368,7 @@ u_avl_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   u_chk_if(cmp_fn == nullptr, nullptr);
 
   self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
-  u_mem_if(self);
+  u_nil_if(self);
 
   self->ksize  = ksize;
   self->vsize  = vsize;
@@ -543,7 +543,7 @@ void avl_put(u_avl_t _self, any_t key, any_t val) {
   }
 
   node = avl_node(self, parent, key, val);
-  u_mem_if(node);
+  u_nil_if(node);
 
   *link = node;
   self->len++;
