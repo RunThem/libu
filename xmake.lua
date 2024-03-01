@@ -65,7 +65,7 @@ option('mimalloc', function()
 end)
 
 if has_config('mimalloc') then
-  add_requires('mimalloc')
+  add_requires('mimalloc', { public = true })
   add_defines('USE_MIMALLOC')
 end
 
@@ -73,7 +73,7 @@ end
 add_includedirs('$(projectdir)/inc')
 
 --- Third party library.
-add_requires('tbox', 'libsock')
+add_requires('tbox', 'libsock', { public = true })
 
 --- Main target
 target('u', function()
