@@ -5,7 +5,7 @@ int main(int argc, const str_t argv[]) {
   mut_init("libu");
 
   mut_add_group(vec, "Generic vec container.");
-  mut_add_group(tbl, "Generic tbl container.");
+  mut_add_group(map, "Generic map container.");
   mut_add_group(avl, "Generic avl container.");
   mut_add_group(lst, "Generic lst container.");
 

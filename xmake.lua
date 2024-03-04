@@ -81,10 +81,10 @@ target('u', function()
   add_files('$(projectdir)/src/**.c')
   add_headerfiles('$(projectdir)/inc/(**.h)')
 
-  add_packages('tbox')
+  add_packages('tbox', { public = true })
 
   if has_config('mimalloc') then
-    add_packages('mimalloc')
+    add_packages('mimalloc', { public = true })
   end
 end)
 

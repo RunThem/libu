@@ -1,7 +1,7 @@
 #include <u/u.h>
 
 extern void vec(size_t);
-extern void tbl(size_t);
+extern void map(size_t);
 extern void avl(size_t);
 
 int main(int argc, const str_t argv[]) {
@@ -11,17 +11,17 @@ int main(int argc, const str_t argv[]) {
   println("}\n");
 
   /* tbl */
-  println("benchmark tbl: {");
-  tbl(N1W);
+  println("benchmark map: {");
+  map(N1W);
   println();
 
-  tbl(N10W);
+  map(N10W);
   println();
 
-  tbl(N100W);
+  map(N100W);
   println();
 
-  tbl(N1000W);
+  map(N1000W);
   println("}\n");
 
   /* avl tree */

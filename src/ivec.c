@@ -25,6 +25,11 @@
 #include <u/core.h>
 
 /***************************************************************************************************
+ * Let
+ **************************************************************************************************/
+u_vec_t u_ivec = nullptr;
+
+/***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct vec_t vec_t;
@@ -65,7 +70,7 @@ err:
   return -1;
 }
 
-u_vec_t vec_new(size_t itsize) {
+any_t vec_new(size_t itsize) {
   vec_t* self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
@@ -81,7 +86,7 @@ u_vec_t vec_new(size_t itsize) {
 
   infln("itsize(%zu)", itsize);
 
-  return (u_vec_t)self;
+  return self;
 
 err:
   u_free_if(self);
@@ -89,38 +94,38 @@ err:
   return nullptr;
 }
 
-void vec_clear(u_vec_t _self) {
+void vec_clear(any_t _self) {
   vec_t* self = (vec_t*)_self;
 
   self->len = 0;
 }
 
-void vec_cleanup(u_vec_t _self) {
+void vec_cleanup(any_t _self) {
   vec_t* self = (vec_t*)_self;
 
   u_free_if(self->items);
   u_free_if(self);
 }
 
-bool vec_exist(u_vec_t _self, size_t idx) {
+bool vec_exist(any_t _self, size_t idx) {
   vec_t* self = (vec_t*)_self;
 
   return self->len > idx;
 }
 
-size_t vec_len(u_vec_t _self) {
+size_t vec_len(any_t _self) {
   vec_t* self = (vec_t*)_self;
 
   return self->len;
 }
 
-size_t vec_cap(u_vec_t _self) {
+size_t vec_cap(any_t _self) {
   vec_t* self = (vec_t*)_self;
 
   return self->cap;
 }
 
-any_t vec_at(u_vec_t _self, ssize_t idx) {
+any_t vec_at(any_t _self, ssize_t idx) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
@@ -138,7 +143,7 @@ any_t vec_at(u_vec_t _self, ssize_t idx) {
  * {  0,  1,  2,  3,  4,  5,  6 }
  * { -7, -6, -5, -4, -3, -2  -1 }
  * */
-void vec_pop(u_vec_t _self, ssize_t idx, any_t item) {
+void vec_pop(any_t _self, ssize_t idx, any_t item) {
   vec_t* self = (vec_t*)_self;
 
   u_nchk_if(self == nullptr);
@@ -163,7 +168,7 @@ void vec_pop(u_vec_t _self, ssize_t idx, any_t item) {
  * {  0,  1,  2,  3,  4,  5,  6 }  7
  * { -8, -7, -6, -5, -4, -3, -2 } -1
  * */
-void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
+void vec_put(any_t _self, ssize_t idx, any_t item) {
   vec_t* self = (vec_t*)_self;
   ret_t code  = 0;
 
@@ -190,7 +195,7 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
 err:
 }
 
-void vec_sort(u_vec_t _self, u_cmp_fn cmp_fn) {
+void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
   vec_t* self = (vec_t*)_self;
 
   u_nchk_if(self == nullptr);
@@ -200,7 +205,7 @@ void vec_sort(u_vec_t _self, u_cmp_fn cmp_fn) {
   qsort(self->items, self->len, self->itsize, cmp_fn);
 }
 
-bool vec_each_init(u_vec_t _self, bool flag) {
+bool vec_each_init(any_t _self, bool flag) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -214,7 +219,7 @@ bool vec_each_init(u_vec_t _self, bool flag) {
   return true;
 }
 
-bool vec_each(u_vec_t _self, ssize_t* idx, any_t item) {
+bool vec_each(any_t _self, ssize_t* idx, any_t item) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, false);

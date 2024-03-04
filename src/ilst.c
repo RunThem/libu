@@ -25,6 +25,11 @@
 #include <u/core.h>
 
 /***************************************************************************************************
+ * Let
+ **************************************************************************************************/
+u_lst_t u_ilst = nullptr;
+
+/***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct lst_t lst_t;
@@ -42,7 +47,7 @@ struct lst_t {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-u_lst_t lst_new() {
+any_t lst_new() {
 
   lst_t* self = nullptr;
 
@@ -54,7 +59,7 @@ u_lst_t lst_new() {
 
   self->iter = 0;
 
-  return (u_lst_t)self;
+  return self;
 
 err:
   u_free_if(self);
@@ -62,7 +67,7 @@ err:
   return nullptr;
 }
 
-void lst_cleanup(u_lst_t _self) {
+void lst_cleanup(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   uv_cleanup(self->items);
@@ -70,7 +75,7 @@ void lst_cleanup(u_lst_t _self) {
   u_free_if(self);
 }
 
-size_t lst_len(u_lst_t _self) {
+size_t lst_len(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, 0);
@@ -78,7 +83,7 @@ size_t lst_len(u_lst_t _self) {
   return uv_len(self->items);
 }
 
-bool lst_exist(u_lst_t _self, any_t ptr) {
+bool lst_exist(any_t _self, any_t ptr) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -94,7 +99,7 @@ bool lst_exist(u_lst_t _self, any_t ptr) {
   return false;
 }
 
-any_t lst_first(u_lst_t _self) {
+any_t lst_first(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
@@ -103,7 +108,7 @@ any_t lst_first(u_lst_t _self) {
   return uv_at(self->items, 0ul);
 }
 
-any_t lst_last(u_lst_t _self) {
+any_t lst_last(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
@@ -112,7 +117,7 @@ any_t lst_last(u_lst_t _self) {
   return uv_at(self->items, -1ul);
 }
 
-any_t lst_next(u_lst_t _self, any_t idx) {
+any_t lst_next(any_t _self, any_t idx) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
@@ -127,7 +132,7 @@ any_t lst_next(u_lst_t _self, any_t idx) {
   return nullptr;
 }
 
-any_t lst_prev(u_lst_t _self, any_t idx) {
+any_t lst_prev(any_t _self, any_t idx) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
@@ -142,7 +147,7 @@ any_t lst_prev(u_lst_t _self, any_t idx) {
   return nullptr;
 }
 
-void lst_pop(u_lst_t _self, any_t ptr) {
+void lst_pop(any_t _self, any_t ptr) {
   lst_t* self = (lst_t*)_self;
 
   u_nchk_if(self == nullptr);
@@ -157,7 +162,7 @@ void lst_pop(u_lst_t _self, any_t ptr) {
   }
 }
 
-void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
+void lst_put(any_t _self, any_t idx, any_t ptr) {
   lst_t* self = (lst_t*)_self;
 
   u_nchk_if(self == nullptr);
@@ -175,7 +180,7 @@ void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
   }
 }
 
-bool lst_each_init(u_lst_t _self, bool flag) {
+bool lst_each_init(any_t _self, bool flag) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -189,7 +194,7 @@ bool lst_each_init(u_lst_t _self, bool flag) {
   return true;
 }
 
-any_t lst_each(u_lst_t _self) {
+any_t lst_each(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);

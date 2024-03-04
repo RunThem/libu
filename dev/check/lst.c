@@ -81,27 +81,14 @@ mut_test(lst_iterator) {
   ul_put(l, ul_last(l), &a5);
 
   size_t i = 1;
-  int* it  = 0;
-  ul_each(l, it) {
+  ul_for_all(l, it) {
     mut_assert(*it == i++);
   }
 
   i = 5;
-  ul_reach(l, it) {
+  ul_rfor_all(l, it) {
     mut_assert(*it == i--);
   }
-
-  i = 1;
-  ul_foreach(l, int, it, {
-    ;
-    mut_assert(*it == i++);
-  });
-
-  i = 5;
-  ul_rforeach(l, int, it, {
-    ;
-    mut_assert(*it == i--);
-  });
 
   i = 1;
   for (auto it = ul_first(l); it; it = ul_next(l, it)) {

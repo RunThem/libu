@@ -25,6 +25,11 @@
 #include <u/core.h>
 
 /***************************************************************************************************
+ * Let
+ **************************************************************************************************/
+u_avl_t u_iavl = nullptr;
+
+/***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct node_t node_t;
@@ -360,7 +365,7 @@ static void avl_prev(avl_t* self) {
   self->iter = node;
 }
 
-u_avl_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
+any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
@@ -378,13 +383,13 @@ u_avl_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
 
   infln("avl new(ksize(%zu), vsize(%zu), cmp_fn(%p))", ksize, vsize, cmp_fn);
 
-  return (u_avl_t)self;
+  return self;
 
 err:
   return nullptr;
 }
 
-void avl_clear(u_avl_t _self) {
+void avl_clear(any_t _self) {
   avl_t* self         = (avl_t*)_self;
   node_t* node        = nullptr;
   uvec(node_t*) nodes = nullptr;
@@ -415,7 +420,7 @@ void avl_clear(u_avl_t _self) {
   self->len = 0;
 }
 
-void avl_cleanup(u_avl_t _self) {
+void avl_cleanup(any_t _self) {
   avl_t* self  = (avl_t*)_self;
   node_t* node = nullptr;
 
@@ -433,7 +438,7 @@ void avl_cleanup(u_avl_t _self) {
   u_free(self);
 }
 
-size_t avl_len(u_avl_t _self) {
+size_t avl_len(any_t _self) {
   avl_t* self = (avl_t*)_self;
 
   u_chk_if(self == nullptr, 0);
@@ -441,7 +446,7 @@ size_t avl_len(u_avl_t _self) {
   return self->len;
 }
 
-bool avl_exist(u_avl_t _self, any_t key) {
+bool avl_exist(any_t _self, any_t key) {
   avl_t* self  = (avl_t*)_self;
   node_t* node = self->root;
   ret_t result = 0;
@@ -461,7 +466,7 @@ bool avl_exist(u_avl_t _self, any_t key) {
   return node != nullptr;
 }
 
-any_t avl_at(u_avl_t _self, any_t key) {
+any_t avl_at(any_t _self, any_t key) {
   avl_t* self  = (avl_t*)_self;
   node_t* node = self->root;
   ret_t result = 0;
@@ -484,7 +489,7 @@ any_t avl_at(u_avl_t _self, any_t key) {
   return val(node);
 }
 
-void avl_pop(u_avl_t _self, any_t key, any_t val) {
+void avl_pop(any_t _self, any_t key, any_t val) {
   avl_t* self    = (avl_t*)_self;
   node_t* node   = self->root;
   node_t* parent = nullptr;
@@ -522,7 +527,7 @@ void avl_pop(u_avl_t _self, any_t key, any_t val) {
   }
 }
 
-void avl_put(u_avl_t _self, any_t key, any_t val) {
+void avl_put(any_t _self, any_t key, any_t val) {
   avl_t* self    = (avl_t*)_self;
   node_t** link  = &self->root;
   node_t* parent = nullptr;
@@ -555,7 +560,7 @@ void avl_put(u_avl_t _self, any_t key, any_t val) {
 err:
 }
 
-bool avl_each_init(u_avl_t _self, bool flag) {
+bool avl_each_init(any_t _self, bool flag) {
   avl_t* self = (avl_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -568,7 +573,7 @@ bool avl_each_init(u_avl_t _self, bool flag) {
   return true;
 }
 
-bool avl_each(u_avl_t _self, any_t key, any_t val) {
+bool avl_each(any_t _self, any_t key, any_t val) {
   avl_t* self = (avl_t*)_self;
 
   u_chk_if(self == nullptr, false);

@@ -25,9 +25,9 @@
 #include <u/core.h>
 
 /***************************************************************************************************
- * Private
+ * Let
  **************************************************************************************************/
-#define U_RESIZE_RADIO 0.75
+u_map_t u_imap = nullptr;
 
 static size_t bucket_sizes[] = {
     7,         61,         127,        251,        509,        1021,        2039,        4093,
@@ -47,8 +47,8 @@ struct node_t {
   u_hash_t hash;
 };
 
-typedef struct tbl_t tbl_t;
-struct tbl_t {
+typedef struct map_t map_t;
+struct map_t {
   bool flags[4];
   size_t ksize;
   size_t vsize;
@@ -64,6 +64,8 @@ struct tbl_t {
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
+#define U_RESIZE_RADIO 0.75
+
 #undef key
 #define key(node) (any(node) + sizeof(node_t))
 
@@ -74,7 +76,7 @@ struct tbl_t {
  * Function
  **************************************************************************************************/
 /* [idx, len] { 0xffff } { 0xfffe } */
-static void tbl_debug(tbl_t* self) {
+static void map_debug(map_t* self) {
   infln("ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)",
         self->ksize,
         self->vsize,
@@ -104,7 +106,7 @@ static u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
   return hash;
 }
 
-static node_t* tbl_make_node(tbl_t* self, any_t key, any_t val) {
+static node_t* map_make_node(map_t* self, any_t key, any_t val) {
   node_t* node = nullptr;
 
   if (self->free_nodes != nullptr) {
@@ -125,7 +127,7 @@ err:
   return nullptr;
 }
 
-static node_t* tbl_find(tbl_t* self, node_t* idx[2], any_t key) {
+static node_t* map_find(map_t* self, node_t* idx[2], any_t key) {
   u_hash_t hash = 0;
   node_t* node  = nullptr;
 
@@ -143,7 +145,7 @@ static node_t* tbl_find(tbl_t* self, node_t* idx[2], any_t key) {
   return node;
 }
 
-static node_t* tbl_make_buckets(size_t bs) {
+static node_t* map_make_buckets(size_t bs) {
   node_t* buckets = nullptr;
 
   buckets = u_calloc(bs * 2, sizeof(node_t));
@@ -165,7 +167,7 @@ err:
   return nullptr;
 }
 
-static void tbl_next(tbl_t* self) {
+static void map_next(map_t* self) {
   size_t idx = 0;
 
   if (self->iter != nullptr) {
@@ -193,7 +195,7 @@ static void tbl_next(tbl_t* self) {
   }
 }
 
-static bool tbl_resize(tbl_t* self) {
+static bool map_resize(map_t* self) {
   node_t* nbuckets  = nullptr;
   node_t* node      = nullptr;
   node_t* tmp       = nullptr;
@@ -202,7 +204,7 @@ static bool tbl_resize(tbl_t* self) {
   size_t bucket_idx = 0;
 
   bucket_idx = bucket_sizes[self->bucket_idx + 1];
-  nbuckets   = tbl_make_buckets(bucket_idx);
+  nbuckets   = map_make_buckets(bucket_idx);
   u_nil_if(nbuckets);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
@@ -232,16 +234,16 @@ err:
   return false;
 }
 
-u_tbl_t tbl_new(size_t ksize, size_t vsize) {
-  tbl_t* self = nullptr;
+any_t map_new(size_t ksize, size_t vsize) {
+  map_t* self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
   u_chk_if(vsize == 0, nullptr);
 
-  self = u_zalloc(sizeof(tbl_t) + ksize + vsize);
+  self = u_zalloc(sizeof(map_t) + ksize + vsize);
   u_nil_if(self);
 
-  self->buckets = tbl_make_buckets(bucket_sizes[0]);
+  self->buckets = map_make_buckets(bucket_sizes[0]);
   u_nil_if(self->buckets);
 
   self->ksize      = ksize;
@@ -249,9 +251,9 @@ u_tbl_t tbl_new(size_t ksize, size_t vsize) {
   self->len        = 0;
   self->bucket_idx = 0;
 
-  infln("tbl new(ksize(%zu), vsize(%zu))", ksize, vsize);
+  infln("map new(ksize(%zu), vsize(%zu))", ksize, vsize);
 
-  return (u_tbl_t)self;
+  return self;
 
 err:
   u_free_if(self);
@@ -259,8 +261,8 @@ err:
   return nullptr;
 }
 
-void tbl_clear(u_tbl_t _self) {
-  tbl_t* self  = (tbl_t*)_self;
+void map_clear(any_t _self) {
+  map_t* self  = (map_t*)_self;
   node_t* node = nullptr;
   node_t* list = nullptr;
 
@@ -287,40 +289,40 @@ void tbl_clear(u_tbl_t _self) {
   self->len = 0;
 }
 
-void tbl_cleanup(u_tbl_t _self) {
-  tbl_t* self = (tbl_t*)_self;
+void map_cleanup(any_t _self) {
+  map_t* self = (map_t*)_self;
 
   u_nchk_if(self == nullptr);
 
-  tbl_clear(_self);
+  map_clear(_self);
 
   u_free_if(self->buckets);
   u_free_if(self);
 }
 
-size_t tbl_len(u_tbl_t _self) {
-  tbl_t* self = (tbl_t*)_self;
+size_t map_len(any_t _self) {
+  map_t* self = (map_t*)_self;
 
   u_chk_if(self == nullptr, 0);
 
   return self->len;
 }
 
-bool tbl_exist(u_tbl_t _self, any_t key) {
-  tbl_t* self    = (tbl_t*)_self;
+bool map_exist(any_t _self, any_t key) {
+  map_t* self    = (map_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
   u_chk_if(self == nullptr, false);
   u_chk_if(key == nullptr, false);
 
-  node = tbl_find(self, idx, key);
+  node = map_find(self, idx, key);
 
   return node->next != nullptr;
 }
 
-any_t tbl_at(u_tbl_t _self, any_t key) {
-  tbl_t* self    = (tbl_t*)_self;
+any_t map_at(any_t _self, any_t key) {
+  map_t* self    = (map_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
@@ -328,14 +330,14 @@ any_t tbl_at(u_tbl_t _self, any_t key) {
   u_chk_if(key == nullptr, nullptr);
   u_chk_if(self->len == 0, nullptr);
 
-  node = tbl_find(self, idx, key);
+  node = map_find(self, idx, key);
   u_ret_if(node->next == nullptr, nullptr, "node not exists.");
 
   return val(node);
 }
 
-void tbl_pop(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self    = (tbl_t*)_self;
+void map_pop(any_t _self, any_t key, any_t val) {
+  map_t* self    = (map_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
 
@@ -343,7 +345,7 @@ void tbl_pop(u_tbl_t _self, any_t key, any_t val) {
   u_nchk_if(key == nullptr);
   u_nchk_if(val == nullptr);
 
-  node = tbl_find(self, idx, key);
+  node = map_find(self, idx, key);
   if (node->next != nullptr) {
     idx[0]->next = node->next;
     idx[1]->hash--;
@@ -361,8 +363,8 @@ void tbl_pop(u_tbl_t _self, any_t key, any_t val) {
   bzero(val, self->vsize);
 }
 
-void tbl_put(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self    = (tbl_t*)_self;
+void map_put(any_t _self, any_t key, any_t val) {
+  map_t* self    = (map_t*)_self;
   node_t* node   = nullptr;
   node_t* idx[2] = {};
   ret_t code     = 0;
@@ -372,17 +374,17 @@ void tbl_put(u_tbl_t _self, any_t key, any_t val) {
   u_nchk_if(val == nullptr);
 
   if (self->len >= (size_t)(0.75 * (f64_t)bucket_sizes[self->bucket_idx])) {
-    code = tbl_resize(self);
+    code = map_resize(self);
     u_err_if(code != true, "resize failed.");
   }
 
-  node = tbl_find(self, idx, key);
+  node = map_find(self, idx, key);
 
   /* node already exists */
   if (node->next != nullptr) {
     memcpy(val(node), val, self->vsize);
   } else {
-    node = tbl_make_node(self, key, val);
+    node = map_make_node(self, key, val);
     u_nil_if(node);
 
     node->next   = idx[0]->next;
@@ -398,8 +400,8 @@ err:
   u_free_if(node);
 }
 
-bool tbl_each_init(u_tbl_t _self, bool flag) {
-  tbl_t* self = (tbl_t*)_self;
+bool map_each_init(any_t _self, bool flag) {
+  map_t* self = (map_t*)_self;
 
   u_chk_if(self == nullptr, false);
   u_chk_if(self->flags[0], false);
@@ -410,12 +412,12 @@ bool tbl_each_init(u_tbl_t _self, bool flag) {
   return true;
 }
 
-bool tbl_each(u_tbl_t _self, any_t key, any_t val) {
-  tbl_t* self = (tbl_t*)_self;
+bool map_each(any_t _self, any_t key, any_t val) {
+  map_t* self = (map_t*)_self;
 
   u_chk_if(self == nullptr, false);
 
-  tbl_next(self);
+  map_next(self);
   u_ret_if(self->iter == nullptr, false);
 
   memcpy(key, key(self->iter), self->ksize);

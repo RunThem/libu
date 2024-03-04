@@ -34,3 +34,16 @@ task('check', function()
     end
   end)
 end)
+
+task('test', function()
+  set_menu({
+    usage = 'xmake test',
+    description = 'Run test',
+  })
+
+  on_run(function()
+    os.exec('xmake f -m release --mimalloc=y')
+    os.exec('xmake build -v check')
+    os.exec('xmake run -v check')
+  end)
+end)
