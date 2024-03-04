@@ -56,6 +56,6 @@ xmake lsp && xmake
 ### 鸣谢
 
 - [xmake](https://github.com/xmake-io/xmake)
-- [koanlogic/libu](https://github.com/koanlogic/libu)
+- [libu](https://github.com/koanlogic/libu)
 - [mimalloc](https://github.com/microsoft/mimalloc)
 - [avlmini](https://github.com/skywind3000/avlmini)
