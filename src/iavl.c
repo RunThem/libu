@@ -397,7 +397,6 @@ void avl_clear(any_t _self) {
   u_nchk_if(self->len == 0);
 
   uv_init(nodes);
-
   uv_put(nodes, self->root);
 
   while (!uv_empty(nodes)) {
@@ -566,11 +565,11 @@ bool avl_each_init(any_t _self, bool flag) {
   u_chk_if(self == nullptr, false);
   u_chk_if(self->flags[0], false);
 
-  self->flags[0] = true;
+  self->flags[0] = !self->flags[0];
   self->flags[1] = flag;
   self->iter     = nullptr;
 
-  return true;
+  return self->flags[0];
 }
 
 bool avl_each(any_t _self, any_t key, any_t val) {

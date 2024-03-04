@@ -184,14 +184,13 @@ bool lst_each_init(any_t _self, bool flag) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, false);
-  u_chk_if(self->flags[0], false);
 
-  self->flags[0] = true;
+  self->flags[0] = !self->flags[0];
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;
 
-  return true;
+  return self->flags[0];
 }
 
 any_t lst_each(any_t _self) {

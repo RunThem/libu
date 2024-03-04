@@ -29,10 +29,10 @@ ret_t code = 0;
 /*
  * namespace
  *
- * uv, ut, ua, ul, us, uf
+ * uv, um, ut, ul, u_thrdpl
  * */
 
-uvec(size_t) prime(size_t N, u8_t step) {
+uvec(size_t) prime(size_t N) {
   bool is_prime = false;
   size_t square = 0;
 
@@ -40,7 +40,7 @@ uvec(size_t) prime(size_t N, u8_t step) {
 
   uv_put(tbl, 2);
 
-  for (size_t num = 3; num < N; num += step) {
+  for (size_t num = 3; num < N; num++) {
     is_prime = true;
     square   = (size_t)sqrt((f64_t)num);
 
@@ -68,25 +68,13 @@ int main(int argc, const str_t argv[]) {
   int result = typeeq(char[], str);
   infln("result is %d", result);
 
-#if 0
-  uvec(size_t) prime_table = prime(100000000, 1);
+#if 1
+  uvec(size_t) prime_table = prime(30);
 
-  uv_foreach(prime_table, ssize_t, i, size_t, it, {
-    ;
+  uv_for_all(prime_table, i, it) {
     println("%zu", it);
-  });
-#endif
-
-  auto v = uv_new(int);
-
-  uv_put(v, 232);
-  uv_put(v, 3);
-  uv_put(v, 22);
-  uv_put(v, 23);
-
-  uv_for_all(v, i, it) {
-    println("%d", it);
   }
+#endif
 
   return EXIT_SUCCESS;
 err:

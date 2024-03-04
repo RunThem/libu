@@ -404,12 +404,11 @@ bool map_each_init(any_t _self, bool flag) {
   map_t* self = (map_t*)_self;
 
   u_chk_if(self == nullptr, false);
-  u_chk_if(self->flags[0], false);
 
-  self->flags[0] = true;
+  self->flags[0] = !self->flags[0];
   self->iter     = nullptr;
 
-  return true;
+  return self->flags[0];
 }
 
 bool map_each(any_t _self, any_t key, any_t val) {
