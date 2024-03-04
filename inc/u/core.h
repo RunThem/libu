@@ -89,6 +89,8 @@ extern void tbl_put(u_tbl_t, any_t, any_t);
 extern void avl_put(u_avl_t, any_t, any_t);
 extern void lst_put(u_lst_t, any_t, any_t);
 
+extern void vec_sort(u_vec_t _self, u_cmp_fn cmp_fn);
+
 extern any_t vec_each_init(u_vec_t, bool);
 extern any_t tbl_each_init(u_tbl_t, bool);
 extern any_t avl_each_init(u_avl_t, bool);
@@ -117,6 +119,13 @@ extern any_t lst_each(u_lst_t _self);
     u = any(vec_new(sizeof(typeof(**u(nullptr, 0, nullptr))) /                                     \
                     sizeof(typeof(***u(nullptr, 0, nullptr)))));                                   \
   } while (0)
+
+#define uv_new(u)                                                                                  \
+  ({                                                                                               \
+    uv_init(u);                                                                                    \
+                                                                                                   \
+    u;                                                                                             \
+  })
 
 #define uv_len(u)                                                                                  \
   ({                                                                                               \
@@ -244,6 +253,15 @@ extern any_t lst_each(u_lst_t _self);
     vec_put((u_vec_t)u, _a, &_b);                                                                  \
   } while (0)
 
+#define uv_sort(u, ...)                                                                            \
+  do {                                                                                             \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+                                                                                                   \
+    typeof(u((u_vec_t){nullptr}, 0, nullptr)) _m = nullptr;                                        \
+                                                                                                   \
+    vec_sort((u_vec_t)u, va_at(0, __VA_ARGS__));                                                   \
+  } while (0)
+
 #define uv_each(u, i, it)                                                                          \
   for (typeof(u((u_vec_t){nullptr}, i, &it)) $ = vec_each_init((u_vec_t)u, 1);                     \
        vec_each((u_vec_t)u, &i, &it);)
@@ -284,6 +302,13 @@ extern any_t lst_each(u_lst_t _self);
                     sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                               \
                         sizeof(typeof(***u(nullptr, nullptr, nullptr)))));                         \
   } while (0)
+
+#define ut_new(u)                                                                                  \
+  ({                                                                                               \
+    ut_init(u);                                                                                    \
+                                                                                                   \
+    u;                                                                                             \
+  })
 
 #define ut_len(u)                                                                                  \
   ({                                                                                               \
@@ -447,6 +472,13 @@ extern any_t lst_each(u_lst_t _self);
                     va_at(0, __VA_ARGS__)));                                                       \
   } while (0)
 
+#define ua_new(u, ...)                                                                             \
+  ({                                                                                               \
+    ua_init(u, __VA_ARGS__);                                                                       \
+                                                                                                   \
+    u;                                                                                             \
+  })
+
 #define ua_len(u)                                                                                  \
   ({                                                                                               \
     typeof(u((u_avl_t){nullptr}, nullptr, nullptr)) _m = nullptr;                                  \
@@ -603,6 +635,13 @@ extern any_t lst_each(u_lst_t _self);
                                                                                                    \
     u = any(lst_new());                                                                            \
   } while (0)
+
+#define ul_new(u)                                                                                  \
+  ({                                                                                               \
+    ul_init(u);                                                                                    \
+                                                                                                   \
+    u;                                                                                             \
+  })
 
 #define ul_len(u)                                                                                  \
   ({                                                                                               \

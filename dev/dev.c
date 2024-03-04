@@ -1,5 +1,6 @@
 /* third libs */
 #include <libsock.h>
+#include <math.h>
 #include <tbox/tbox.h>
 #include <u/u.h>
 
@@ -31,10 +32,51 @@ ret_t code = 0;
  * uv, ut, ua, ul, us, uf
  * */
 
+uvec(size_t) prime(size_t N, u8_t step) {
+  bool is_prime = false;
+  size_t square = 0;
+
+  uvec(size_t) tbl = uv_new(tbl);
+
+  uv_put(tbl, -1, 2);
+
+  for (size_t num = 3; num < N; num += step) {
+    is_prime = true;
+    square   = (size_t)sqrt((f64_t)num);
+
+    uv_foreach(tbl, ssize_t, i, size_t, it, {
+      ;
+      if (it >= square) {
+        break;
+      }
+
+      if (num % it == 0) {
+        is_prime = false;
+        break;
+      }
+    });
+
+    if (is_prime) {
+      uv_put(tbl, -1, num);
+    }
+  }
+
+  return tbl;
+}
+
 int main(int argc, const str_t argv[]) {
   char str[] = "hello";
   int result = typeeq(char[], str);
   infln("result is %d", result);
+
+#if 0
+  uvec(size_t) prime_table = prime(100000000, 1);
+
+  uv_foreach(prime_table, ssize_t, i, size_t, it, {
+    ;
+    println("%zu", it);
+  });
+#endif
 
   return EXIT_SUCCESS;
 err:

@@ -190,6 +190,16 @@ void vec_put(u_vec_t _self, ssize_t idx, any_t item) {
 err:
 }
 
+void vec_sort(u_vec_t _self, u_cmp_fn cmp_fn) {
+  vec_t* self = (vec_t*)_self;
+
+  u_nchk_if(self == nullptr);
+  u_nchk_if(cmp_fn == nullptr);
+  u_nchk_if(self->len < 2);
+
+  qsort(self->items, self->len, self->itsize, cmp_fn);
+}
+
 any_t vec_each_init(u_vec_t _self, bool flag) {
   vec_t* self = (vec_t*)_self;
 
