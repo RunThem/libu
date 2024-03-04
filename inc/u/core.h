@@ -186,15 +186,15 @@ extern any_t lst_each(any_t);
 
 /* clang-format off */
 #define uv_at(u, ...)                                                                              \
-  va_elseif(va_size_is(1, __VA_ARGS__)) (                                                          \
+  va_elseif(va_size_is(2, __VA_ARGS__)) (                                                          \
     ({                                                                                             \
       static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
       bool _ret                      = false;                                                      \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u(u_ivec, _a, nullptr))* _b = {};                                      \
+      typeof(***u(u_ivec, _a, nullptr))* _b = {};                                                  \
                                                                                                    \
-      _b = vec_at(u, _a);                                                             \
+      _b = vec_at(u, _a);                                                                          \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
         *_b = va_at(1, __VA_ARGS__);                                                               \
@@ -208,10 +208,10 @@ extern any_t lst_each(any_t);
       static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u(u_ivec, _a, nullptr)) _it = {};                                      \
-      typeof(***u(u_ivec, _a, nullptr))* _b = {};                                      \
+      typeof(***u(u_ivec, _a, nullptr)) _it = {};                                                  \
+      typeof(***u(u_ivec, _a, nullptr))* _b = {};                                                  \
                                                                                                    \
-      _b = vec_at(u, _a);                                                             \
+      _b = vec_at(u, _a);                                                                          \
                                                                                                    \
       if (_b == nullptr) {                                                                         \
         _b = &_it;                                                                                 \
@@ -241,12 +241,19 @@ extern any_t lst_each(any_t);
     _ret;                                                                                          \
   })
 
+/* clang-format off */
 #define uv_pop(u, ...)                                                                             \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 0),                       \
+                  "The number of '...' is 1 or 0.");                                               \
                                                                                                    \
-    auto _a                              = va_at(0, __VA_ARGS__);                                  \
-    typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                     \
+    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+      auto _a                              = va_at(0, __VA_ARGS__);                                \
+      typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                   \
+    ) (                                                                                            \
+      auto _a                              = -1;                                                   \
+      typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                   \
+    )                                                                                              \
                                                                                                    \
     vec_pop(u, _a, &_b);                                                                           \
                                                                                                    \
@@ -255,13 +262,20 @@ extern any_t lst_each(any_t);
 
 #define uv_put(u, ...)                                                                             \
   do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 2),                       \
+                  "The number of '...' is 1 or 2.");                                               \
                                                                                                    \
-    auto _a                              = va_at(0, __VA_ARGS__);                                  \
-    typeof(***u(u_ivec, _a, nullptr)) _b = va_at(1, __VA_ARGS__);                                  \
+    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+      auto _a                              = va_at(0, __VA_ARGS__);                                \
+      typeof(***u(u_ivec, _a, nullptr)) _b = va_at(1, __VA_ARGS__);                                \
+    ) (                                                                                            \
+      auto _a                              = -1;                                                   \
+      typeof(***u(u_ivec, _a, nullptr)) _b = va_at(0, __VA_ARGS__);                                \
+    )                                                                                              \
                                                                                                    \
     vec_put(u, _a, &_b);                                                                           \
   } while (0)
+/* clang-format on */
 
 #define uv_sort(u, ...)                                                                            \
   do {                                                                                             \
@@ -344,15 +358,15 @@ extern any_t lst_each(any_t);
 
 /* clang-format off */
 #define um_at(u, ...)                                                                              \
-  va_elseif(va_size_is(1, __VA_ARGS__)) (                                                          \
+  va_elseif(va_size_is(2, __VA_ARGS__)) (                                                          \
     ({                                                                                             \
       static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
       bool _ret                      = false;                                                      \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u(u_imap, &_a, nullptr))* _b = {};                                     \
+      typeof(***u(u_imap, &_a, nullptr))* _b = {};                                                 \
                                                                                                    \
-      _b = map_at(u, &_a);                                                            \
+      _b = map_at(u, &_a);                                                                         \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
         *_b = va_at(1, __VA_ARGS__);                                                               \
@@ -366,10 +380,10 @@ extern any_t lst_each(any_t);
       static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u(u_imap, &_a, nullptr)) _it = {};                                     \
-      typeof(***u(u_imap, &_a, nullptr))* _b = {};                                     \
+      typeof(***u(u_imap, &_a, nullptr)) _it = {};                                                 \
+      typeof(***u(u_imap, &_a, nullptr))* _b = {};                                                 \
                                                                                                    \
-      _b = map_at(u, &_a);                                                            \
+      _b = map_at(u, &_a);                                                                         \
                                                                                                    \
       if (_b == nullptr) {                                                                         \
         _b = &_it;                                                                                 \
@@ -497,15 +511,15 @@ extern any_t lst_each(any_t);
 
 /* clang-format off */
 #define ut_at(u, ...)                                                                              \
-  va_elseif(va_size_is(1, __VA_ARGS__)) (                                                          \
+  va_elseif(va_size_is(2, __VA_ARGS__)) (                                                          \
     ({                                                                                             \
       static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
       bool _ret                      = false;                                                      \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u(u_iavl, &_a, nullptr))* _b = {};                                     \
+      typeof(***u(u_iavl, &_a, nullptr))* _b = {};                                                 \
                                                                                                    \
-      _b = avl_at(u, &_a);                                                            \
+      _b = avl_at(u, &_a);                                                                         \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
         *_b = va_at(1, __VA_ARGS__);                                                               \
@@ -519,10 +533,10 @@ extern any_t lst_each(any_t);
       static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
       auto _a                        = va_at(0, __VA_ARGS__);                                      \
-      typeof(***u(u_iavl, &_a, nullptr)) _it = {};                                     \
-      typeof(***u(u_iavl, &_a, nullptr))* _b = {};                                     \
+      typeof(***u(u_iavl, &_a, nullptr)) _it = {};                                                 \
+      typeof(***u(u_iavl, &_a, nullptr))* _b = {};                                                 \
                                                                                                    \
-      _b = avl_at(u, &_a);                                                            \
+      _b = avl_at(u, &_a);                                                                         \
                                                                                                    \
       if (_b == nullptr) {                                                                         \
         _b = &_it;                                                                                 \
@@ -693,15 +707,23 @@ extern any_t lst_each(any_t);
     _a;                                                                                            \
   })
 
+/* clang-format off */
 #define ul_put(u, ...)                                                                             \
   do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 2),                       \
+                  "The number of '...' is 1 or 2.");                                               \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
-    typeof(u(u_ilst)) _b = va_at(1, __VA_ARGS__);                                                  \
+    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+      typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                \
+      typeof(u(u_ilst)) _b = va_at(1, __VA_ARGS__);                                                \
+    ) (                                                                                            \
+      typeof(u(u_ilst)) _a = lst_last(u);                                                          \
+      typeof(u(u_ilst)) _b = va_at(0, __VA_ARGS__);                                                \
+    )                                                                                              \
                                                                                                    \
     lst_put(u, _a, _b);                                                                            \
   } while (0)
+/* clang-format on */
 
 #define ul_for_all(u, it)                                                                          \
   for (; lst_each_init(u, 1);)                                                                     \

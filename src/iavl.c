@@ -398,16 +398,16 @@ void avl_clear(any_t _self) {
 
   uv_init(nodes);
 
-  uv_put(nodes, -1, self->root);
+  uv_put(nodes, self->root);
 
   while (!uv_empty(nodes)) {
     node = uv_at(nodes, 0);
 
     if (node->left) {
-      uv_put(nodes, -1, node->left);
+      uv_put(nodes, node->left);
     }
     if (node->right) {
-      uv_put(nodes, -1, node->right);
+      uv_put(nodes, node->right);
     }
 
     u_free(node);

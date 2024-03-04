@@ -38,7 +38,7 @@ uvec(size_t) prime(size_t N, u8_t step) {
 
   auto tbl = uv_new(size_t);
 
-  uv_put(tbl, -1, 2);
+  uv_put(tbl, 2);
 
   for (size_t num = 3; num < N; num += step) {
     is_prime = true;
@@ -56,7 +56,7 @@ uvec(size_t) prime(size_t N, u8_t step) {
     }
 
     if (is_prime) {
-      uv_put(tbl, -1, num);
+      uv_put(tbl, num);
     }
   }
 
@@ -79,10 +79,10 @@ int main(int argc, const str_t argv[]) {
 
   auto v = uv_new(int);
 
-  uv_put(v, -1, 232);
-  uv_put(v, -1, 3);
-  uv_put(v, -1, 22);
-  uv_put(v, -1, 23);
+  uv_put(v, 232);
+  uv_put(v, 3);
+  uv_put(v, 22);
+  uv_put(v, 23);
 
   uv_for_all(v, i, it) {
     println("%d", it);

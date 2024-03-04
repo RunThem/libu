@@ -95,24 +95,24 @@ mut_test(map_interface) {
 }
 
 mut_test(map_iterator) {
-  umap(int, char) t = nullptr;
-  um_init(t);
+  umap(int, char) m = nullptr;
+  um_init(m);
 
-  mut_assert(true == um_empty(t));
+  mut_assert(true == um_empty(m));
 
   each(i, N) {
-    um_put(t, (int)i, 'a' + i);
+    um_put(m, (int)i, 'a' + i);
   }
 
-  um_for_all(t, k, v, int) {
+  um_for_all(m, k, v, int) {
     mut_assert(k + 'a' == +v);
   }
 
-  um_rfor_all(t, k, v, int) {
+  um_rfor_all(m, k, v, int) {
     mut_assert(k + 'a' == +v);
   }
 
-  um_cleanup(t);
+  um_cleanup(m);
 }
 
 mut_group(map) {

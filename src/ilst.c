@@ -114,7 +114,7 @@ any_t lst_last(any_t _self) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(uv_empty(self->items), nullptr);
 
-  return uv_at(self->items, -1ul);
+  return uv_at(self->items, -1);
 }
 
 any_t lst_next(any_t _self, any_t idx) {
