@@ -68,14 +68,6 @@ int main(int argc, const str_t argv[]) {
   int result = typeeq(char[], str);
   infln("result is %d", result);
 
-#if 1
-  uvec(size_t) prime_table = prime(30);
-
-  uv_for_all(prime_table, i, it) {
-    println("%zu", it);
-  }
-#endif
-
   return EXIT_SUCCESS;
 err:
   errln("failed.");

@@ -1,9 +1,3 @@
-target('macro', function()
-  set_kind('phony')
-
-  add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', 'N1000W=10000000', { public = true })
-end)
-
 add_requires('miniz', 'libsock')
 
 target('dev.c', function()
@@ -12,7 +6,9 @@ target('dev.c', function()
   add_files('dev.c')
   set_rundir('$(projectdir)')
 
-  add_deps('u', 'macro')
+  add_deps('u')
+
+  add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', 'N1000W=10000000')
 
   add_packages('miniz', 'libsock', 'tbox')
 end)
@@ -29,5 +25,3 @@ task('dev', function()
     os.exec('xmake run dev.c')
   end)
 end)
-
-includes('bench', 'check')

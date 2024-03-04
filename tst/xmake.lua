@@ -5,15 +5,17 @@ target('check', function()
   add_files('*.c')
   set_default('false')
 
-  add_packages('mini-unit-test')
+  add_deps('u')
 
-  add_deps('u', 'macro')
+  add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', 'N1000W=10000000')
+
+  add_packages('mini-unit-test')
 end)
 
-task('check', function()
+task('mcheck', function()
   set_menu({
-    usage = 'xmake check',
-    description = 'Run check',
+    usage = 'xmake mcheck',
+    description = 'Run mem check',
   })
 
   on_run(function()
@@ -35,10 +37,10 @@ task('check', function()
   end)
 end)
 
-task('test', function()
+task('ucheck', function()
   set_menu({
-    usage = 'xmake test',
-    description = 'Run test',
+    usage = 'xmake ucheck',
+    description = 'Run unit check',
   })
 
   on_run(function()
