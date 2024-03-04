@@ -99,15 +99,15 @@ extern void lst_put(any_t, any_t, any_t);
 
 extern void vec_sort(any_t, u_cmp_fn);
 
-extern bool vec_each_init(any_t, bool);
-extern bool map_each_init(any_t, bool);
-extern bool avl_each_init(any_t, bool);
-extern bool lst_each_init(any_t, bool);
+extern bool vec_for_init(any_t, bool);
+extern bool map_for_init(any_t, bool);
+extern bool avl_for_init(any_t, bool);
+extern bool lst_for_init(any_t, bool);
 
-extern bool vec_each(any_t, ssize_t*, any_t);
-extern bool map_each(any_t, any_t, any_t);
-extern bool avl_each(any_t, any_t, any_t);
-extern any_t lst_each(any_t);
+extern bool vec_for(any_t, ssize_t*, any_t);
+extern bool map_for(any_t, any_t, any_t);
+extern bool avl_for(any_t, any_t, any_t);
+extern any_t lst_for(any_t);
 
 /***************************************************************************************************
  * iType
@@ -287,12 +287,12 @@ extern any_t lst_each(any_t);
   } while (0)
 
 #define uv_for_all(u, i, it)                                                                       \
-  for (ssize_t i = 0; vec_each_init(u, 1);)                                                        \
-    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_each(u, &i, &it);)
+  for (ssize_t i = 0; vec_for_init(u, 1);)                                                         \
+    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
 
 #define uv_rfor_all(u, i, it)                                                                      \
-  for (ssize_t i = 0; vec_each_init(u, 0);)                                                        \
-    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_each(u, &i, &it);)
+  for (ssize_t i = 0; vec_for_init(u, 0);)                                                         \
+    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
 
 /***************************************************************************************************
  * iApi map
@@ -436,12 +436,12 @@ extern any_t lst_each(any_t);
   } while (0)
 
 #define um_for_all(u, k, v, K)                                                                     \
-  for (K k = {}; map_each_init(u, 1);)                                                             \
-    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_each(u, &k, &v);)
+  for (K k = {}; map_for_init(u, 1);)                                                              \
+    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
 
 #define um_rfor_all(u, k, v, K)                                                                    \
-  for (K k = {}; map_each_init(u, 0);)                                                             \
-    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_each(u, &k, &v);)
+  for (K k = {}; map_for_init(u, 0);)                                                              \
+    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
 
 /***************************************************************************************************
  * iApi avl
@@ -589,12 +589,12 @@ extern any_t lst_each(any_t);
   } while (0)
 
 #define ut_for_all(u, k, v, K)                                                                     \
-  for (K k = {}; avl_each_init(u, 1);)                                                             \
-    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_each(u, &k, &v);)
+  for (K k = {}; avl_for_init(u, 1);)                                                              \
+    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
 
 #define ut_rfor_all(u, k, v, K)                                                                    \
-  for (K k = {}; avl_each_init(u, 0);)                                                             \
-    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_each(u, &k, &v);)
+  for (K k = {}; avl_for_init(u, 0);)                                                              \
+    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
 
 /***************************************************************************************************
  * iApi lst
@@ -726,9 +726,9 @@ extern any_t lst_each(any_t);
 /* clang-format on */
 
 #define ul_for_all(u, it)                                                                          \
-  for (; lst_each_init(u, 1);)                                                                     \
-    for (typeof(u(u_ilst)) it = {}; (it = lst_each(u));)
+  for (; lst_for_init(u, 1);)                                                                      \
+    for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
 
 #define ul_rfor_all(u, it)                                                                         \
-  for (; lst_each_init(u, 0);)                                                                     \
-    for (typeof(u(u_ilst)) it = {}; (it = lst_each(u));)
+  for (; lst_for_init(u, 0);)                                                                      \
+    for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)

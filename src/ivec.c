@@ -205,7 +205,7 @@ void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
   qsort(self->items, self->len, self->itsize, cmp_fn);
 }
 
-bool vec_each_init(any_t _self, bool flag) {
+bool vec_for_init(any_t _self, bool flag) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -218,7 +218,7 @@ bool vec_each_init(any_t _self, bool flag) {
   return self->flags[0];
 }
 
-bool vec_each(any_t _self, ssize_t* idx, any_t item) {
+bool vec_for(any_t _self, ssize_t* idx, any_t item) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, false);

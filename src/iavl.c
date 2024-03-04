@@ -559,7 +559,7 @@ void avl_put(any_t _self, any_t key, any_t val) {
 err:
 }
 
-bool avl_each_init(any_t _self, bool flag) {
+bool avl_for_init(any_t _self, bool flag) {
   avl_t* self = (avl_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -572,7 +572,7 @@ bool avl_each_init(any_t _self, bool flag) {
   return self->flags[0];
 }
 
-bool avl_each(any_t _self, any_t key, any_t val) {
+bool avl_for(any_t _self, any_t key, any_t val) {
   avl_t* self = (avl_t*)_self;
 
   u_chk_if(self == nullptr, false);

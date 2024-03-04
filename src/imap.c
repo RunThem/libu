@@ -400,7 +400,7 @@ err:
   u_free_if(node);
 }
 
-bool map_each_init(any_t _self, bool flag) {
+bool map_for_init(any_t _self, bool flag) {
   map_t* self = (map_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -411,7 +411,7 @@ bool map_each_init(any_t _self, bool flag) {
   return self->flags[0];
 }
 
-bool map_each(any_t _self, any_t key, any_t val) {
+bool map_for(any_t _self, any_t key, any_t val) {
   map_t* self = (map_t*)_self;
 
   u_chk_if(self == nullptr, false);

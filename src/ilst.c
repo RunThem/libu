@@ -180,7 +180,7 @@ void lst_put(any_t _self, any_t idx, any_t ptr) {
   }
 }
 
-bool lst_each_init(any_t _self, bool flag) {
+bool lst_for_init(any_t _self, bool flag) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -193,7 +193,7 @@ bool lst_each_init(any_t _self, bool flag) {
   return self->flags[0];
 }
 
-any_t lst_each(any_t _self) {
+any_t lst_for(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
