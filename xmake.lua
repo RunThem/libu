@@ -88,5 +88,5 @@ target('u', function()
   end
 end)
 
---- Dev mode
+--- Dev
 includes('dev')
