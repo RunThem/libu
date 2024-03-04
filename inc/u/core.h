@@ -120,8 +120,10 @@ extern any_t lst_each(u_lst_t _self);
                     sizeof(typeof(***u(nullptr, 0, nullptr)))));                                   \
   } while (0)
 
-#define uv_new(u)                                                                                  \
+#define uv_new(T)                                                                                  \
   ({                                                                                               \
+    uvec(T) u = nullptr;                                                                           \
+                                                                                                   \
     uv_init(u);                                                                                    \
                                                                                                    \
     u;                                                                                             \
@@ -303,8 +305,10 @@ extern any_t lst_each(u_lst_t _self);
                         sizeof(typeof(***u(nullptr, nullptr, nullptr)))));                         \
   } while (0)
 
-#define ut_new(u)                                                                                  \
+#define ut_new(K, V)                                                                               \
   ({                                                                                               \
+    utbl(K, V) u = nullptr;                                                                        \
+                                                                                                   \
     ut_init(u);                                                                                    \
                                                                                                    \
     u;                                                                                             \
@@ -472,9 +476,13 @@ extern any_t lst_each(u_lst_t _self);
                     va_at(0, __VA_ARGS__)));                                                       \
   } while (0)
 
-#define ua_new(u, ...)                                                                             \
+#define ua_new(K, V, ...)                                                                          \
   ({                                                                                               \
-    ua_init(u, __VA_ARGS__);                                                                       \
+    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+                                                                                                   \
+    uavl(K, V) u = nullptr;                                                                        \
+                                                                                                   \
+    ua_init(u, va_at(0, __VA_ARGS__));                                                             \
                                                                                                    \
     u;                                                                                             \
   })
@@ -636,8 +644,10 @@ extern any_t lst_each(u_lst_t _self);
     u = any(lst_new());                                                                            \
   } while (0)
 
-#define ul_new(u)                                                                                  \
+#define ul_new(T)                                                                                  \
   ({                                                                                               \
+    ulst(T) u = nullptr;                                                                           \
+                                                                                                   \
     ul_init(u);                                                                                    \
                                                                                                    \
     u;                                                                                             \

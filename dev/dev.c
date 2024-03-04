@@ -36,7 +36,7 @@ uvec(size_t) prime(size_t N, u8_t step) {
   bool is_prime = false;
   size_t square = 0;
 
-  uvec(size_t) tbl = uv_new(tbl);
+  auto tbl = uv_new(size_t);
 
   uv_put(tbl, -1, 2);
 
