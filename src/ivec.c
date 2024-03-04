@@ -200,16 +200,18 @@ void vec_sort(u_vec_t _self, u_cmp_fn cmp_fn) {
   qsort(self->items, self->len, self->itsize, cmp_fn);
 }
 
-any_t vec_each_init(u_vec_t _self, bool flag) {
+bool vec_each_init(u_vec_t _self, bool flag) {
   vec_t* self = (vec_t*)_self;
 
-  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(self->flags[0], false);
 
+  self->flags[0] = true;
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;
 
-  return nullptr;
+  return true;
 }
 
 bool vec_each(u_vec_t _self, ssize_t* idx, any_t item) {

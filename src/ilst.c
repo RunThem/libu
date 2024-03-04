@@ -85,11 +85,11 @@ bool lst_exist(u_lst_t _self, any_t ptr) {
   u_chk_if(ptr == nullptr, false);
   u_chk_if(uv_empty(self->items), false);
 
-  uv_foreach(self->items, ssize_t, i, any_t, node, {
+  uv_for_all(self->items, i, node) {
     if (node == ptr) {
       return true;
     }
-  });
+  }
 
   return false;
 }
@@ -118,11 +118,11 @@ any_t lst_next(u_lst_t _self, any_t idx) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx == nullptr, nullptr);
 
-  uv_foreach(self->items, ssize_t, i, any_t, node, {
+  uv_for_all(self->items, i, node) {
     if (node == idx) {
       return uv_at(self->items, i + 1);
     }
-  });
+  }
 
   return nullptr;
 }
@@ -133,11 +133,11 @@ any_t lst_prev(u_lst_t _self, any_t idx) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx == nullptr, nullptr);
 
-  uv_foreach(self->items, ssize_t, i, any_t, node, {
+  uv_for_all(self->items, i, node) {
     if (node == idx) {
       return (i == 0) ? nullptr : uv_at(self->items, i - 1);
     }
-  });
+  };
 
   return nullptr;
 }
@@ -149,12 +149,12 @@ void lst_pop(u_lst_t _self, any_t ptr) {
   u_nchk_if(ptr == nullptr);
   u_nchk_if(uv_empty(self->items));
 
-  uv_foreach(self->items, ssize_t, i, any_t, node, {
+  uv_for_all(self->items, i, node) {
     if (node == ptr) {
       uv_pop(self->items, i);
       break;
     }
-  });
+  }
 }
 
 void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
@@ -166,25 +166,27 @@ void lst_put(u_lst_t _self, any_t idx, any_t ptr) {
   if (idx == nullptr) {
     uv_put(self->items, 0, ptr);
   } else {
-    uv_foreach(self->items, ssize_t, i, any_t, node, {
+    uv_for_all(self->items, i, node) {
       if (node == idx) {
         uv_put(self->items, i + 1, ptr);
         break;
       }
-    });
+    }
   }
 }
 
-any_t lst_each_init(u_lst_t _self, bool flag) {
+bool lst_each_init(u_lst_t _self, bool flag) {
   lst_t* self = (lst_t*)_self;
 
-  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(self->flags[0], false);
 
+  self->flags[0] = true;
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;
 
-  return nullptr;
+  return true;
 }
 
 any_t lst_each(u_lst_t _self) {

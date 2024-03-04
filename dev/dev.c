@@ -44,8 +44,7 @@ uvec(size_t) prime(size_t N, u8_t step) {
     is_prime = true;
     square   = (size_t)sqrt((f64_t)num);
 
-    uv_foreach(tbl, ssize_t, i, size_t, it, {
-      ;
+    uv_for_all(tbl, i, it) {
       if (it >= square) {
         break;
       }
@@ -54,7 +53,7 @@ uvec(size_t) prime(size_t N, u8_t step) {
         is_prime = false;
         break;
       }
-    });
+    }
 
     if (is_prime) {
       uv_put(tbl, -1, num);
@@ -77,6 +76,17 @@ int main(int argc, const str_t argv[]) {
     println("%zu", it);
   });
 #endif
+
+  auto v = uv_new(int);
+
+  uv_put(v, -1, 232);
+  uv_put(v, -1, 3);
+  uv_put(v, -1, 22);
+  uv_put(v, -1, 23);
+
+  uv_for_all(v, i, it) {
+    println("%d", it);
+  }
 
   return EXIT_SUCCESS;
 err:

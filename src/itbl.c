@@ -398,14 +398,16 @@ err:
   u_free_if(node);
 }
 
-any_t tbl_each_init(u_tbl_t _self, bool flag) {
+bool tbl_each_init(u_tbl_t _self, bool flag) {
   tbl_t* self = (tbl_t*)_self;
 
-  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(self->flags[0], false);
 
-  self->iter = nullptr;
+  self->flags[0] = true;
+  self->iter     = nullptr;
 
-  return nullptr;
+  return true;
 }
 
 bool tbl_each(u_tbl_t _self, any_t key, any_t val) {

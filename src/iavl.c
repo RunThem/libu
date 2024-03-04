@@ -555,15 +555,17 @@ void avl_put(u_avl_t _self, any_t key, any_t val) {
 err:
 }
 
-any_t avl_each_init(u_avl_t _self, bool flag) {
+bool avl_each_init(u_avl_t _self, bool flag) {
   avl_t* self = (avl_t*)_self;
 
-  u_chk_if(self == nullptr, nullptr);
+  u_chk_if(self == nullptr, false);
+  u_chk_if(self->flags[0], false);
 
-  self->iter     = nullptr;
+  self->flags[0] = true;
   self->flags[1] = flag;
+  self->iter     = nullptr;
 
-  return nullptr;
+  return true;
 }
 
 bool avl_each(u_avl_t _self, any_t key, any_t val) {
