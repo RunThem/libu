@@ -27,6 +27,7 @@
 #ifndef U_TYPE_H__
 #  define U_TYPE_H__
 
+#  include <stdint.h>
 #  include <stdlib.h>
 
 #  define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
