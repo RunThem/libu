@@ -88,4 +88,4 @@ target('u', function()
   end
 end)
 
-includes('dev', 'tst', 'test')
+includes('dev', 'tst')
