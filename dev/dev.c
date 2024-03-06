@@ -1,13 +1,11 @@
 /* third libs */
-#include <libsock.h>
-#include <math.h>
-#include <tbox/tbox.h>
 #include <u/u.h>
 
 /* system libs */
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <math.h>
 #include <net/ethernet.h>
 #include <net/if.h>
 #include <netinet/if_ether.h>
@@ -66,6 +64,7 @@ uvec(size_t) prime(size_t N) {
 int main(int argc, const str_t argv[]) {
   char str[] = "hello";
   int result = typeeq(char[], str);
+
   infln("result is %d", result);
 
   return EXIT_SUCCESS;
