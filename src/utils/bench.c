@@ -22,9 +22,8 @@
  *
  * */
 
-#include <u/u.h>
-
-thread_local __err__t __err__ = {};
+#include <stdio.h>
+#include <u/__macro/bench.h>
 
 inline bool __benchmark(__tack_t* tack) {
   char buf[32] = {0};

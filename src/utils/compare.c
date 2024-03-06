@@ -22,7 +22,8 @@
  *
  * */
 
-#include <u/u.h>
+#include <u/__macro/misc.h>
+#include <u/__macro/type.h>
 
 /*
  * cmp & eq func from base type

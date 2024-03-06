@@ -24,7 +24,10 @@
 
 #pragma once
 
-#include <u/u.h>
+#ifndef U_CORE_H__
+#  define U_CORE_H__
+
+#  include <u/u.h>
 
 /***************************************************************************************************
  * Type
@@ -112,77 +115,77 @@ extern any_t lst_for(any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define uvec(T)    typeof(T(*(*)(u_vec_t, ssize_t, T*))[sizeof(ssize_t)][sizeof(T)])
-#define umap(K, V) typeof(V(*(*)(u_map_t, K*, V*))[sizeof(K)][sizeof(V)])
-#define uavl(K, V) typeof(V(*(*)(u_avl_t, K*, V*))[sizeof(K)][sizeof(V)])
-#define ulst(T)    typeof(T(*(*)(u_lst_t)))
+#  define uvec(T)    typeof(T(*(*)(u_vec_t, ssize_t, T*))[sizeof(ssize_t)][sizeof(T)])
+#  define umap(K, V) typeof(V(*(*)(u_map_t, K*, V*))[sizeof(K)][sizeof(V)])
+#  define uavl(K, V) typeof(V(*(*)(u_avl_t, K*, V*))[sizeof(K)][sizeof(V)])
+#  define ulst(T)    typeof(T(*(*)(u_lst_t)))
 
 /***************************************************************************************************
  * iApi vec
  **************************************************************************************************/
-#define uv_init(u)                                                                                 \
-  do {                                                                                             \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+#  define uv_init(u)                                                                               \
+    do {                                                                                           \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    u = vec_new(sizeof(typeof(**u(nullptr, 0, nullptr))) /                                         \
-                sizeof(typeof(***u(nullptr, 0, nullptr))));                                        \
-  } while (0)
+      u = vec_new(sizeof(typeof(**u(nullptr, 0, nullptr))) /                                       \
+                  sizeof(typeof(***u(nullptr, 0, nullptr))));                                      \
+    } while (0)
 
-#define uv_new(T)                                                                                  \
-  ({                                                                                               \
-    uvec(T) u = nullptr;                                                                           \
+#  define uv_new(T)                                                                                \
+    ({                                                                                             \
+      uvec(T) u = nullptr;                                                                         \
                                                                                                    \
-    uv_init(u);                                                                                    \
+      uv_init(u);                                                                                  \
                                                                                                    \
-    u;                                                                                             \
-  })
+      u;                                                                                           \
+    })
 
-#define uv_len(u)                                                                                  \
-  ({                                                                                               \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+#  define uv_len(u)                                                                                \
+    ({                                                                                             \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    vec_len(u);                                                                                    \
-  })
+      vec_len(u);                                                                                  \
+    })
 
-#define uv_cap(u)                                                                                  \
-  ({                                                                                               \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+#  define uv_cap(u)                                                                                \
+    ({                                                                                             \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    vec_cap(u);                                                                                    \
-  })
+      vec_cap(u);                                                                                  \
+    })
 
-#define uv_empty(u)                                                                                \
-  ({                                                                                               \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+#  define uv_empty(u)                                                                              \
+    ({                                                                                             \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    0 == vec_len(u);                                                                               \
-  })
+      0 == vec_len(u);                                                                             \
+    })
 
-#define uv_exist(u, ...)                                                                           \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+#  define uv_exist(u, ...)                                                                         \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
-    auto _a                              = va_at(0, __VA_ARGS__);                                  \
-    typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                     \
+      auto _a                              = va_at(0, __VA_ARGS__);                                \
+      typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                   \
                                                                                                    \
-    vec_exist(u, _a);                                                                              \
-  })
+      vec_exist(u, _a);                                                                            \
+    })
 
-#define uv_clear(u)                                                                                \
-  do {                                                                                             \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+#  define uv_clear(u)                                                                              \
+    do {                                                                                           \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    vec_clear(u);                                                                                  \
-  } while (0)
+      vec_clear(u);                                                                                \
+    } while (0)
 
-#define uv_cleanup(u)                                                                              \
-  do {                                                                                             \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+#  define uv_cleanup(u)                                                                            \
+    do {                                                                                           \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    vec_cleanup(u);                                                                                \
+      vec_cleanup(u);                                                                              \
                                                                                                    \
-    u = nullptr;                                                                                   \
-  } while (0)
+      u = nullptr;                                                                                 \
+    } while (0)
 
 /* clang-format off */
 #define uv_at(u, ...)                                                                              \
@@ -222,24 +225,24 @@ extern any_t lst_for(any_t);
   )
 /* clang-format on */
 
-#define uv_try(u, ...)                                                                             \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+#  define uv_try(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
-    bool _ret                             = false;                                                 \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_ivec, _a, nullptr))* it = {};                                                    \
+      bool _ret                             = false;                                               \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_ivec, _a, nullptr))* it = {};                                                  \
                                                                                                    \
-    it = vec_at(u, _a);                                                                            \
+      it = vec_at(u, _a);                                                                          \
                                                                                                    \
-    if (it != nullptr) {                                                                           \
-      _ret = true;                                                                                 \
+      if (it != nullptr) {                                                                         \
+        _ret = true;                                                                               \
                                                                                                    \
-      va_at(1, __VA_ARGS__)                                                                        \
-    }                                                                                              \
+        va_at(1, __VA_ARGS__)                                                                      \
+      }                                                                                            \
                                                                                                    \
-    _ret;                                                                                          \
-  })
+      _ret;                                                                                        \
+    })
 
 /* clang-format off */
 #define uv_pop(u, ...)                                                                             \
@@ -277,84 +280,84 @@ extern any_t lst_for(any_t);
   } while (0)
 /* clang-format on */
 
-#define uv_sort(u, ...)                                                                            \
-  do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+#  define uv_sort(u, ...)                                                                          \
+    do {                                                                                           \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+      typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                  \
                                                                                                    \
-    vec_sort(u, va_at(0, __VA_ARGS__));                                                            \
-  } while (0)
+      vec_sort(u, va_at(0, __VA_ARGS__));                                                          \
+    } while (0)
 
-#define uv_for_all(u, i, it)                                                                       \
-  for (ssize_t i = 0; vec_for_init(u, 1);)                                                         \
-    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
+#  define uv_for_all(u, i, it)                                                                     \
+    for (ssize_t i = 0; vec_for_init(u, 1);)                                                       \
+      for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
 
-#define uv_rfor_all(u, i, it)                                                                      \
-  for (ssize_t i = 0; vec_for_init(u, 0);)                                                         \
-    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
+#  define uv_rfor_all(u, i, it)                                                                    \
+    for (ssize_t i = 0; vec_for_init(u, 0);)                                                       \
+      for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
 
 /***************************************************************************************************
  * iApi map
  **************************************************************************************************/
-#define um_init(u)                                                                                 \
-  do {                                                                                             \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+#  define um_init(u)                                                                               \
+    do {                                                                                           \
+      typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    u = map_new(sizeof(typeof(*u(nullptr, nullptr, nullptr))) /                                    \
-                    sizeof(typeof(**u(nullptr, nullptr, nullptr))),                                \
-                sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                                   \
-                    sizeof(typeof(***u(nullptr, nullptr, nullptr))));                              \
-  } while (0)
+      u = map_new(sizeof(typeof(*u(nullptr, nullptr, nullptr))) /                                  \
+                      sizeof(typeof(**u(nullptr, nullptr, nullptr))),                              \
+                  sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                                 \
+                      sizeof(typeof(***u(nullptr, nullptr, nullptr))));                            \
+    } while (0)
 
-#define um_new(K, V)                                                                               \
-  ({                                                                                               \
-    umap(K, V) u = nullptr;                                                                        \
+#  define um_new(K, V)                                                                             \
+    ({                                                                                             \
+      umap(K, V) u = nullptr;                                                                      \
                                                                                                    \
-    um_init(u);                                                                                    \
+      um_init(u);                                                                                  \
                                                                                                    \
-    u;                                                                                             \
-  })
+      u;                                                                                           \
+    })
 
-#define um_len(u)                                                                                  \
-  ({                                                                                               \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+#  define um_len(u)                                                                                \
+    ({                                                                                             \
+      typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    map_len(u);                                                                                    \
-  })
+      map_len(u);                                                                                  \
+    })
 
-#define um_empty(u)                                                                                \
-  ({                                                                                               \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+#  define um_empty(u)                                                                              \
+    ({                                                                                             \
+      typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    0 == map_len(u);                                                                               \
-  })
+      0 == map_len(u);                                                                             \
+    })
 
-#define um_exist(u, ...)                                                                           \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+#  define um_exist(u, ...)                                                                         \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_imap, &_a, nullptr)) _b = {};                                                    \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_imap, &_a, nullptr)) _b = {};                                                  \
                                                                                                    \
-    map_exist(u, &_a);                                                                             \
-  })
+      map_exist(u, &_a);                                                                           \
+    })
 
-#define um_clear(u)                                                                                \
-  do {                                                                                             \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+#  define um_clear(u)                                                                              \
+    do {                                                                                           \
+      typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    map_clear(u);                                                                                  \
-  } while (0)
+      map_clear(u);                                                                                \
+    } while (0)
 
-#define um_cleanup(u)                                                                              \
-  do {                                                                                             \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+#  define um_cleanup(u)                                                                            \
+    do {                                                                                           \
+      typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    map_cleanup(u);                                                                                \
+      map_cleanup(u);                                                                              \
                                                                                                    \
-    u = nullptr;                                                                                   \
-  } while (0)
+      u = nullptr;                                                                                 \
+    } while (0)
 
 /* clang-format off */
 #define um_at(u, ...)                                                                              \
@@ -394,120 +397,120 @@ extern any_t lst_for(any_t);
   )
 /* clang-format on */
 
-#define um_try(u, ...)                                                                             \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+#  define um_try(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
-    bool _ret                              = false;                                                \
-    auto _a                                = va_at(0, __VA_ARGS__);                                \
-    typeof(***u(u_imap, &_a, nullptr))* it = {};                                                   \
+      bool _ret                              = false;                                              \
+      auto _a                                = va_at(0, __VA_ARGS__);                              \
+      typeof(***u(u_imap, &_a, nullptr))* it = {};                                                 \
                                                                                                    \
-    it = map_at(u, &_a);                                                                           \
+      it = map_at(u, &_a);                                                                         \
                                                                                                    \
-    if (it != nullptr) {                                                                           \
-      _ret = true;                                                                                 \
+      if (it != nullptr) {                                                                         \
+        _ret = true;                                                                               \
                                                                                                    \
-      va_at(1, __VA_ARGS__)                                                                        \
-    }                                                                                              \
+        va_at(1, __VA_ARGS__)                                                                      \
+      }                                                                                            \
                                                                                                    \
-    _ret;                                                                                          \
-  })
+      _ret;                                                                                        \
+    })
 
-#define um_pop(u, ...)                                                                             \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+#  define um_pop(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                       \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_imap, &_a, nullptr)) _b = {};                                                    \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_imap, &_a, nullptr)) _b = {};                                                  \
                                                                                                    \
-    map_pop(u, &_a, &_b);                                                                          \
+      map_pop(u, &_a, &_b);                                                                        \
                                                                                                    \
-    _b;                                                                                            \
-  })
+      _b;                                                                                          \
+    })
 
-#define um_put(u, ...)                                                                             \
-  do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+#  define um_put(u, ...)                                                                           \
+    do {                                                                                           \
+      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_imap, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                 \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_imap, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                               \
                                                                                                    \
-    map_put(u, &_a, &_b);                                                                          \
-  } while (0)
+      map_put(u, &_a, &_b);                                                                        \
+    } while (0)
 
-#define um_for_all(u, k, v, K)                                                                     \
-  for (K k = {}; map_for_init(u, 1);)                                                              \
-    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
+#  define um_for_all(u, k, v, K)                                                                   \
+    for (K k = {}; map_for_init(u, 1);)                                                            \
+      for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
 
-#define um_rfor_all(u, k, v, K)                                                                    \
-  for (K k = {}; map_for_init(u, 0);)                                                              \
-    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
+#  define um_rfor_all(u, k, v, K)                                                                  \
+    for (K k = {}; map_for_init(u, 0);)                                                            \
+      for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
 
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#define ut_init(u, ...)                                                                            \
-  do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+#  define ut_init(u, ...)                                                                          \
+    do {                                                                                           \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
+      typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    u = avl_new(sizeof(typeof(*u(nullptr, nullptr, nullptr))) /                                    \
-                    sizeof(typeof(**u(nullptr, nullptr, nullptr))),                                \
-                sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                                   \
-                    sizeof(typeof(***u(nullptr, nullptr, nullptr))),                               \
-                va_at(0, __VA_ARGS__));                                                            \
-  } while (0)
+      u = avl_new(sizeof(typeof(*u(nullptr, nullptr, nullptr))) /                                  \
+                      sizeof(typeof(**u(nullptr, nullptr, nullptr))),                              \
+                  sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                                 \
+                      sizeof(typeof(***u(nullptr, nullptr, nullptr))),                             \
+                  va_at(0, __VA_ARGS__));                                                          \
+    } while (0)
 
-#define ut_new(K, V, ...)                                                                          \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+#  define ut_new(K, V, ...)                                                                        \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
-    uavl(K, V) u = nullptr;                                                                        \
+      uavl(K, V) u = nullptr;                                                                      \
                                                                                                    \
-    ut_init(u, va_at(0, __VA_ARGS__));                                                             \
+      ut_init(u, va_at(0, __VA_ARGS__));                                                           \
                                                                                                    \
-    u;                                                                                             \
-  })
+      u;                                                                                           \
+    })
 
-#define ut_len(u)                                                                                  \
-  ({                                                                                               \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+#  define ut_len(u)                                                                                \
+    ({                                                                                             \
+      typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    avl_len(u);                                                                                    \
-  })
+      avl_len(u);                                                                                  \
+    })
 
-#define ut_empty(u)                                                                                \
-  ({                                                                                               \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+#  define ut_empty(u)                                                                              \
+    ({                                                                                             \
+      typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    0 == avl_len(u);                                                                               \
-  })
+      0 == avl_len(u);                                                                             \
+    })
 
-#define ut_exist(u, ...)                                                                           \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+#  define ut_exist(u, ...)                                                                         \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_iavl, &_a, nullptr)) _b = {};                                                    \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_iavl, &_a, nullptr)) _b = {};                                                  \
                                                                                                    \
-    avl_exist(u, &_a);                                                                             \
-  })
+      avl_exist(u, &_a);                                                                           \
+    })
 
-#define ut_clear(u)                                                                                \
-  do {                                                                                             \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+#  define ut_clear(u)                                                                              \
+    do {                                                                                           \
+      typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    avl_clear(u);                                                                                  \
-  } while (0)
+      avl_clear(u);                                                                                \
+    } while (0)
 
-#define ut_cleanup(u)                                                                              \
-  do {                                                                                             \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+#  define ut_cleanup(u)                                                                            \
+    do {                                                                                           \
+      typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                            \
                                                                                                    \
-    avl_cleanup(u);                                                                                \
+      avl_cleanup(u);                                                                              \
                                                                                                    \
-    u = nullptr;                                                                                   \
-  } while (0)
+      u = nullptr;                                                                                 \
+    } while (0)
 
 /* clang-format off */
 #define ut_at(u, ...)                                                                              \
@@ -547,165 +550,165 @@ extern any_t lst_for(any_t);
   )
 /* clang-format on */
 
-#define ut_try(u, ...)                                                                             \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+#  define ut_try(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
-    bool _ret                              = false;                                                \
-    auto _a                                = va_at(0, __VA_ARGS__);                                \
-    typeof(***u(u_iavl, &_a, nullptr))* it = {};                                                   \
+      bool _ret                              = false;                                              \
+      auto _a                                = va_at(0, __VA_ARGS__);                              \
+      typeof(***u(u_iavl, &_a, nullptr))* it = {};                                                 \
                                                                                                    \
-    it = avl_at(u, &_a);                                                                           \
+      it = avl_at(u, &_a);                                                                         \
                                                                                                    \
-    if (it != nullptr) {                                                                           \
-      _ret = true;                                                                                 \
+      if (it != nullptr) {                                                                         \
+        _ret = true;                                                                               \
                                                                                                    \
-      va_at(1, __VA_ARGS__)                                                                        \
-    }                                                                                              \
+        va_at(1, __VA_ARGS__)                                                                      \
+      }                                                                                            \
                                                                                                    \
-    _ret;                                                                                          \
-  })
+      _ret;                                                                                        \
+    })
 
-#define ut_pop(u, ...)                                                                             \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+#  define ut_pop(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                       \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_iavl, &_a, nullptr)) _b = {};                                                    \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_iavl, &_a, nullptr)) _b = {};                                                  \
                                                                                                    \
-    avl_pop(u, &_a, &_b);                                                                          \
+      avl_pop(u, &_a, &_b);                                                                        \
                                                                                                    \
-    _b;                                                                                            \
-  })
+      _b;                                                                                          \
+    })
 
-#define ut_put(u, ...)                                                                             \
-  do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+#  define ut_put(u, ...)                                                                           \
+    do {                                                                                           \
+      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_iavl, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                 \
+      auto _a                               = va_at(0, __VA_ARGS__);                               \
+      typeof(***u(u_iavl, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                               \
                                                                                                    \
-    avl_put(u, &_a, &_b);                                                                          \
-  } while (0)
+      avl_put(u, &_a, &_b);                                                                        \
+    } while (0)
 
-#define ut_for_all(u, k, v, K)                                                                     \
-  for (K k = {}; avl_for_init(u, 1);)                                                              \
-    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
+#  define ut_for_all(u, k, v, K)                                                                   \
+    for (K k = {}; avl_for_init(u, 1);)                                                            \
+      for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
 
-#define ut_rfor_all(u, k, v, K)                                                                    \
-  for (K k = {}; avl_for_init(u, 0);)                                                              \
-    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
+#  define ut_rfor_all(u, k, v, K)                                                                  \
+    for (K k = {}; avl_for_init(u, 0);)                                                            \
+      for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
 
 /***************************************************************************************************
  * iApi lst
  **************************************************************************************************/
-#define ul_init(u)                                                                                 \
-  do {                                                                                             \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+#  define ul_init(u)                                                                               \
+    do {                                                                                           \
+      typeof(u(u_ilst)) _m = nullptr;                                                              \
                                                                                                    \
-    u = lst_new();                                                                                 \
-  } while (0)
+      u = lst_new();                                                                               \
+    } while (0)
 
-#define ul_new(T)                                                                                  \
-  ({                                                                                               \
-    ulst(T) u = nullptr;                                                                           \
+#  define ul_new(T)                                                                                \
+    ({                                                                                             \
+      ulst(T) u = nullptr;                                                                         \
                                                                                                    \
-    ul_init(u);                                                                                    \
+      ul_init(u);                                                                                  \
                                                                                                    \
-    u;                                                                                             \
-  })
+      u;                                                                                           \
+    })
 
-#define ul_len(u)                                                                                  \
-  ({                                                                                               \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+#  define ul_len(u)                                                                                \
+    ({                                                                                             \
+      typeof(u(u_ilst)) _m = nullptr;                                                              \
                                                                                                    \
-    lst_len(u);                                                                                    \
-  })
+      lst_len(u);                                                                                  \
+    })
 
-#define ul_empty(u)                                                                                \
-  ({                                                                                               \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+#  define ul_empty(u)                                                                              \
+    ({                                                                                             \
+      typeof(u(u_ilst)) _m = nullptr;                                                              \
                                                                                                    \
-    0 == lst_len(u);                                                                               \
-  })
+      0 == lst_len(u);                                                                             \
+    })
 
-#define ul_exist(u, ...)                                                                           \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+#  define ul_exist(u, ...)                                                                         \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
+      typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                \
                                                                                                    \
-    lst_exist(u, _a);                                                                              \
-  })
+      lst_exist(u, _a);                                                                            \
+    })
 
-#define ul_clear(u)                                                                                \
-  do {                                                                                             \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+#  define ul_clear(u)                                                                              \
+    do {                                                                                           \
+      typeof(u(u_ilst)) _m = nullptr;                                                              \
                                                                                                    \
-    lst_clear(u);                                                                                  \
-  } while (0)
+      lst_clear(u);                                                                                \
+    } while (0)
 
-#define ul_cleanup(u)                                                                              \
-  do {                                                                                             \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+#  define ul_cleanup(u)                                                                            \
+    do {                                                                                           \
+      typeof(u(u_ilst)) _m = nullptr;                                                              \
                                                                                                    \
-    lst_cleanup(u);                                                                                \
+      lst_cleanup(u);                                                                              \
                                                                                                    \
-    u = nullptr;                                                                                   \
-  } while (0)
+      u = nullptr;                                                                                 \
+    } while (0)
 
-#define ul_first(u)                                                                                \
-  ({                                                                                               \
-    typeof(u(u_ilst)) _a = {};                                                                     \
+#  define ul_first(u)                                                                              \
+    ({                                                                                             \
+      typeof(u(u_ilst)) _a = {};                                                                   \
                                                                                                    \
-    _a = lst_first(u);                                                                             \
+      _a = lst_first(u);                                                                           \
                                                                                                    \
-    _a;                                                                                            \
-  })
+      _a;                                                                                          \
+    })
 
-#define ul_last(u)                                                                                 \
-  ({                                                                                               \
-    typeof(u(u_ilst)) _a = {};                                                                     \
+#  define ul_last(u)                                                                               \
+    ({                                                                                             \
+      typeof(u(u_ilst)) _a = {};                                                                   \
                                                                                                    \
-    _a = lst_last(u);                                                                              \
+      _a = lst_last(u);                                                                            \
                                                                                                    \
-    _a;                                                                                            \
-  })
+      _a;                                                                                          \
+    })
 
-#define ul_prev(u, ...)                                                                            \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+#  define ul_prev(u, ...)                                                                          \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                       \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
-    typeof(u(u_ilst)) _b = {};                                                                     \
+      typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                \
+      typeof(u(u_ilst)) _b = {};                                                                   \
                                                                                                    \
-    _b = lst_prev(u, _a);                                                                          \
+      _b = lst_prev(u, _a);                                                                        \
                                                                                                    \
-    _b;                                                                                            \
-  })
+      _b;                                                                                          \
+    })
 
-#define ul_next(u, ...)                                                                            \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+#  define ul_next(u, ...)                                                                          \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                       \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
-    typeof(u(u_ilst)) _b = {};                                                                     \
+      typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                \
+      typeof(u(u_ilst)) _b = {};                                                                   \
                                                                                                    \
-    _b = lst_next(u, _a);                                                                          \
+      _b = lst_next(u, _a);                                                                        \
                                                                                                    \
-    _b;                                                                                            \
-  })
+      _b;                                                                                          \
+    })
 
-#define ul_pop(u, ...)                                                                             \
-  ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+#  define ul_pop(u, ...)                                                                           \
+    ({                                                                                             \
+      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                       \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
+      typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                \
                                                                                                    \
-    lst_pop(u, _a);                                                                                \
+      lst_pop(u, _a);                                                                              \
                                                                                                    \
-    _a;                                                                                            \
-  })
+      _a;                                                                                          \
+    })
 
 /* clang-format off */
 #define ul_put(u, ...)                                                                             \
@@ -725,10 +728,12 @@ extern any_t lst_for(any_t);
   } while (0)
 /* clang-format on */
 
-#define ul_for_all(u, it)                                                                          \
-  for (; lst_for_init(u, 1);)                                                                      \
-    for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
+#  define ul_for_all(u, it)                                                                        \
+    for (; lst_for_init(u, 1);)                                                                    \
+      for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
 
-#define ul_rfor_all(u, it)                                                                         \
-  for (; lst_for_init(u, 0);)                                                                      \
-    for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
+#  define ul_rfor_all(u, it)                                                                       \
+    for (; lst_for_init(u, 0);)                                                                    \
+      for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
+
+#endif /* !U_CORE_H__ */

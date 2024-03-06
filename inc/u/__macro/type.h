@@ -24,9 +24,12 @@
 
 #pragma once
 
-#include <stdint.h>
+#ifndef U_TYPE_H__
+#  define U_TYPE_H__
 
-#define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
+#  include <stdlib.h>
+
+#  define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
 
 /*
  * a >  b  ->  1
@@ -65,11 +68,13 @@ typedef _Atomic(u32_t) atomic_u32_t;
 typedef _Atomic(i64_t) atomic_i64_t;
 typedef _Atomic(u64_t) atomic_u64_t;
 
-#ifdef __SIZEOF_INT128__
+#  ifdef __SIZEOF_INT128__
 typedef __int128_t  i128_t;
 typedef __uint128_t u128_t;
 
 typedef _Atomic(i128_t) atomic_i128_t;
 typedef _Atomic(u128_t) atomic_u128_t;
-#endif
+#  endif
 /* clang-format on */
+
+#endif /* !U_TYPE_H__ */

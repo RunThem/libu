@@ -24,86 +24,93 @@
 
 #pragma once
 
-#define u_die_if(expr, ...)                                                                        \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#ifndef U_DEBUG_H__
+#  define U_DEBUG_H__
+
+#  include "print.h"
+
+#  define u_die_if(expr, ...)                                                                      \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    exit(EXIT_FAILURE);                                                                            \
-  }
+      exit(EXIT_FAILURE);                                                                          \
+    }
 
-#define u_chk_if(expr, code, ...)                                                                  \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_chk_if(expr, code, ...)                                                                \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    return code;                                                                                   \
-  }
+      return code;                                                                                 \
+    }
 
-#define u_nchk_if(expr, ...)                                                                       \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_nchk_if(expr, ...)                                                                     \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    return;                                                                                        \
-  }
+      return;                                                                                      \
+    }
 
-#define u_ret_if(expr, code, ...)                                                                  \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_ret_if(expr, code, ...)                                                                \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    return code;                                                                                   \
-  }
+      return code;                                                                                 \
+    }
 
-#define u_nret_if(expr, ...)                                                                       \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_nret_if(expr, ...)                                                                     \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    return;                                                                                        \
-  }
+      return;                                                                                      \
+    }
 
-#define u_err_if(expr, ...)                                                                        \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_err_if(expr, ...)                                                                      \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    goto err;                                                                                      \
-  }
+      goto err;                                                                                    \
+    }
 
-#define u_errs_if(expr, ...)                                                                       \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_1th("", __VA_ARGS__) " ", #expr va_list(2, __VA_ARGS__));                     \
+#  define u_errs_if(expr, ...)                                                                     \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_1th("", __VA_ARGS__) " ", #expr va_list(2, __VA_ARGS__));                   \
                                                                                                    \
-    goto va_0th(err, __VA_ARGS__);                                                                 \
-  }
+      goto va_0th(err, __VA_ARGS__);                                                               \
+    }
 
-#define u_nil_if(mem, ...)                                                                         \
-  if ((mem) == nullptr) {                                                                          \
-    errln("(%s == nullptr) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));           \
-    goto va_0th(err, __VA_ARGS__);                                                                 \
-  }
+#  define u_nil_if(mem, ...)                                                                       \
+    if ((mem) == nullptr) {                                                                        \
+      errln("(%s == nullptr) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));         \
+      goto va_0th(err, __VA_ARGS__);                                                               \
+    }
 
-#define u_brk_if(expr)                                                                             \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_brk_if(expr)                                                                           \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    break;                                                                                         \
-  }
+      break;                                                                                       \
+    }
 
-#define u_ctu_if(expr)                                                                             \
-  if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+#  define u_ctu_if(expr)                                                                           \
+    if (expr) {                                                                                    \
+      errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                   \
                                                                                                    \
-    continue;                                                                                      \
-  }
+      continue;                                                                                    \
+    }
 
-#define u_free_if(mem)                                                                             \
-  if (mem != nullptr) {                                                                            \
-    u_free(mem);                                                                                   \
-  }
+#  define u_free_if(mem)                                                                           \
+    if (mem != nullptr) {                                                                          \
+      u_free(mem);                                                                                 \
+    }
 
-#define u_close_if(fd)                                                                             \
-  if (fd != 0) {                                                                                   \
-    close(fd);                                                                                     \
-  }
+#  define u_close_if(fd)                                                                           \
+    if (fd != 0) {                                                                                 \
+      close(fd);                                                                                   \
+    }
 
-#define u_fclose_if(fp)                                                                            \
-  if (fp != nullptr) {                                                                             \
-    fclose(fp);                                                                                    \
-  }
+#  define u_fclose_if(fp)                                                                          \
+    if (fp != nullptr) {                                                                           \
+      fclose(fp);                                                                                  \
+    }
+
+#endif /* !U_DEBUG_H__ */

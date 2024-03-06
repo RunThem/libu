@@ -22,7 +22,9 @@
  *
  * */
 
-#include <u/u.h>
+#include <ctype.h>
+#include <u/__macro/misc.h>
+#include <u/__macro/print.h>
 
 void __printh(str_t name, const u8_t* mem, size_t size) {
   char buf[17] = {0};

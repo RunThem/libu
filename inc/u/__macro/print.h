@@ -24,48 +24,53 @@
 
 #pragma once
 
-#include "keyword.h"
-#include "type.h"
+#ifndef U_PRINT_H__
+#  define U_PRINT_H__
 
-#include <stddef.h>
+#  include "type.h"
 
-#ifdef NDEBUG
-#  define __display(fmt, ...)
-#else
-#  define __display(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
-#endif
+#  include <stddef.h>
+#  include <stdio.h>
 
-#define print(fmt, ...)   fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define println(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  ifdef NDEBUG
+#    define __display(fmt, ...)
+#  else
+#    define __display(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
+#  endif
 
-#define inf(fmt, ...)                                                                              \
-  __display("[INF]\x1b[02m[%s $%d %s]\x1b[0m: " fmt,                                               \
-            __file__,                                                                              \
-            __line__,                                                                              \
-            __func__ __VA_OPT__(, ) __VA_ARGS__)
+#  define print(fmt, ...)   fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
+#  define println(fmt, ...) fprintf(stderr, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 
-#define infln(fmt, ...)                                                                            \
-  __display("[INF]\x1b[02m[%s $%d %s]\x1b[0m: " fmt "\n",                                          \
-            __file__,                                                                              \
-            __line__,                                                                              \
-            __func__ __VA_OPT__(, ) __VA_ARGS__)
+#  define inf(fmt, ...)                                                                            \
+    __display("[INF]\x1b[02m[%s $%d %s]\x1b[0m: " fmt,                                             \
+              __file__,                                                                            \
+              __line__,                                                                            \
+              __func__ __VA_OPT__(, ) __VA_ARGS__)
 
-#define err(fmt, ...)                                                                              \
-  __display("[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: " fmt,                                          \
-            __file__,                                                                              \
-            __line__,                                                                              \
-            __func__,                                                                              \
-            strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
+#  define infln(fmt, ...)                                                                          \
+    __display("[INF]\x1b[02m[%s $%d %s]\x1b[0m: " fmt "\n",                                        \
+              __file__,                                                                            \
+              __line__,                                                                            \
+              __func__ __VA_OPT__(, ) __VA_ARGS__)
 
-#define errln(fmt, ...)                                                                            \
-  __display("[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: " fmt "\n",                                     \
-            __file__,                                                                              \
-            __line__,                                                                              \
-            __func__,                                                                              \
-            strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
+#  define err(fmt, ...)                                                                            \
+    __display("[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: " fmt,                                        \
+              __file__,                                                                            \
+              __line__,                                                                            \
+              __func__,                                                                            \
+              strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
+
+#  define errln(fmt, ...)                                                                          \
+    __display("[ERR]\x1b[02m[%s $%d %s]\x1b[0m {%s}: " fmt "\n",                                   \
+              __file__,                                                                            \
+              __line__,                                                                            \
+              __func__,                                                                            \
+              strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
 
 extern void __printh(str_t name, const u8_t* mem, size_t size);
 extern void __printb(str_t name, const u8_t* mem, size_t size);
 
-#define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
-#define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
+#  define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
+#  define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
+
+#endif /* !U_PRINT_H__ */

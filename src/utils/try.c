@@ -22,31 +22,6 @@
  *
  * */
 
-#pragma once
+#include <u/__macro/try.h>
 
-#ifndef U_BENCH_H__
-#  define U_BENCH_H__
-
-#  include "type.h"
-
-#  include <time.h>
-
-typedef struct {
-  str_t msg;
-  struct timespec begin;
-  struct timespec end;
-  size_t diff;
-
-  size_t i;
-  size_t n;
-} __tack_t;
-
-#  define nsec_of(tv)         ((tv).tv_sec * 1000000000 + (tv).tv_nsec) /* timespec */
-#  define nsec_diff(tv1, tv2) (nsec_of(tv1) - nsec_of(tv2))
-
-extern bool __benchmark(__tack_t* tack);
-
-#  define benchmark(...)                                                                           \
-    for (__tack_t T = {__VA_ARGS__}; (T.i != 0 && T.i != T.n) || __benchmark(&T); T.i++)
-
-#endif /* !U_BENCH_H__ */
+thread_local __err__t __err__ = {};

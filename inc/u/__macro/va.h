@@ -33,13 +33,16 @@
  *
  * */
 
+/* clang-format off */
+
 #pragma once
 
-#ifdef va_debug
-#  define echo(arg) <><><><><><><><><><><><><><><><><><><><><><><> va_##arg
-#endif
+#ifndef U_VA_H__
+#define U_VA_H__
 
-/* clang-format off */
+#ifdef va_debug
+#define echo(arg) <><><><><><><><><><><><><><><><><><><><><><><> va_##arg
+#endif
 
 /*
  * cat
@@ -759,3 +762,5 @@ va_mapof(_b, 1, 2)              /* : (1), (2),           */
 va_mapof(_b, 1, 2, 3)           /* : (1), (2), (3),      */
 va_mapof(_b, 1, 2, 3, 4)        /* : (1), (2), (3), (4), */
 #endif
+
+#endif /* !U_VA_H__ */
