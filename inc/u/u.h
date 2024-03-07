@@ -35,6 +35,9 @@
 #    error "Please use the GCC.v13 or later toolchain."
 #  endif
 
+/*
+ * System library
+ * */
 #  include <assert.h>
 #  include <ctype.h>
 #  include <errno.h>
@@ -51,23 +54,12 @@
 #  include <threads.h>
 #  include <time.h>
 
-/* clang-format off */
-#  include "__macro/va.h"
-#  include "__macro/keyword.h"
-#  include "__macro/type.h"
-#  include "__macro/alloc.h"
-#  include "__macro/print.h"
-#  include "__macro/debug.h"
-#  include "__macro/misc.h"
-#  include "__macro/try.h"
-#  include "__macro/bench.h"
-
-#  include "core.h"
-/* clang-format on */
-
 /*
  * Third party library
  * */
 #  include <tbox/tbox.h>
+
+/**/
+#  include "core.h"
 
 #endif /* !U_H__ */

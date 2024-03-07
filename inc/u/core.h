@@ -27,7 +27,17 @@
 #ifndef U_CORE_H__
 #  define U_CORE_H__
 
-#  include <u/u.h>
+/* clang-format off */
+#  include "__macro/va.h"
+#  include "__macro/keyword.h"
+#  include "__macro/type.h"
+#  include "__macro/alloc.h"
+#  include "__macro/print.h"
+#  include "__macro/debug.h"
+#  include "__macro/misc.h"
+#  include "__macro/try.h"
+#  include "__macro/bench.h"
+/* clang-foramt on */
 
 /***************************************************************************************************
  * Type
