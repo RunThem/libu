@@ -42,7 +42,7 @@ end)
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
-  add_files('dev.c')
+  add_files('*.c')
   set_rundir('$(projectdir)')
 
   add_deps('u')
