@@ -27,39 +27,8 @@ ret_t code = 0;
 /*
  * namespace
  *
- * uv, um, ut, ul, u_thrdpl
+ * uv, um, ut, ul
  * */
-
-uvec(size_t) prime(size_t N) {
-  bool is_prime = false;
-  size_t square = 0;
-
-  auto tbl = uv_new(size_t);
-
-  uv_put(tbl, 2);
-
-  for (size_t num = 3; num < N; num++) {
-    is_prime = true;
-    square   = (size_t)sqrt((f64_t)num);
-
-    uv_for_all(tbl, i, it) {
-      if (it >= square) {
-        break;
-      }
-
-      if (num % it == 0) {
-        is_prime = false;
-        break;
-      }
-    }
-
-    if (is_prime) {
-      uv_put(tbl, num);
-    }
-  }
-
-  return tbl;
-}
 
 int main(int argc, const str_t argv[]) {
   char str[] = "hello";
