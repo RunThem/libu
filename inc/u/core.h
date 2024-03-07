@@ -230,24 +230,8 @@ extern any_t lst_for(any_t);
     )
 /* clang-format on */
 
-#  define uv_try(u, ...)                                                                           \
-    ({                                                                                             \
-      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
-                                                                                                   \
-      bool _ret                             = false;                                               \
-      auto _a                               = va_at(0, __VA_ARGS__);                               \
-      typeof(***u(u_ivec, _a, nullptr))* it = {};                                                  \
-                                                                                                   \
-      it = vec_at(u, _a);                                                                          \
-                                                                                                   \
-      if (it != nullptr) {                                                                         \
-        _ret = true;                                                                               \
-                                                                                                   \
-        va_at(1, __VA_ARGS__)                                                                      \
-      }                                                                                            \
-                                                                                                   \
-      _ret;                                                                                        \
-    })
+#  define uv_try(u, i)                                                                             \
+    for (typeof(***u(u_ivec, i, nullptr))* it = vec_at(u, i); it != nullptr; it = nullptr)
 
 /* clang-format off */
 #  define uv_pop(u, ...)                                                                           \
@@ -402,24 +386,10 @@ extern any_t lst_for(any_t);
     )
 /* clang-format on */
 
-#  define um_try(u, ...)                                                                           \
-    ({                                                                                             \
-      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
-                                                                                                   \
-      bool _ret                              = false;                                              \
-      auto _a                                = va_at(0, __VA_ARGS__);                              \
-      typeof(***u(u_imap, &_a, nullptr))* it = {};                                                 \
-                                                                                                   \
-      it = map_at(u, &_a);                                                                         \
-                                                                                                   \
-      if (it != nullptr) {                                                                         \
-        _ret = true;                                                                               \
-                                                                                                   \
-        va_at(1, __VA_ARGS__)                                                                      \
-      }                                                                                            \
-                                                                                                   \
-      _ret;                                                                                        \
-    })
+#  define um_try(u, k)                                                                             \
+    for (typeof(***u(u_imap, &(typeof(k)){k}, nullptr))* it = map_at(u, &(typeof(k)){k});          \
+         it != nullptr;                                                                            \
+         it = nullptr)
 
 #  define um_pop(u, ...)                                                                           \
     ({                                                                                             \
@@ -555,24 +525,10 @@ extern any_t lst_for(any_t);
     )
 /* clang-format on */
 
-#  define ut_try(u, ...)                                                                           \
-    ({                                                                                             \
-      static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                       \
-                                                                                                   \
-      bool _ret                              = false;                                              \
-      auto _a                                = va_at(0, __VA_ARGS__);                              \
-      typeof(***u(u_iavl, &_a, nullptr))* it = {};                                                 \
-                                                                                                   \
-      it = avl_at(u, &_a);                                                                         \
-                                                                                                   \
-      if (it != nullptr) {                                                                         \
-        _ret = true;                                                                               \
-                                                                                                   \
-        va_at(1, __VA_ARGS__)                                                                      \
-      }                                                                                            \
-                                                                                                   \
-      _ret;                                                                                        \
-    })
+#  define ut_try(u, k)                                                                             \
+    for (typeof(***u(u_iavl, &(typeof(k)){k}, nullptr))* it = avl_at(u, &(typeof(k)){k});          \
+         it != nullptr;                                                                            \
+         it = nullptr)
 
 #  define ut_pop(u, ...)                                                                           \
     ({                                                                                             \
