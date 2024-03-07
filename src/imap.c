@@ -49,7 +49,7 @@ struct node_t {
 
 typedef struct map_t map_t;
 struct map_t {
-  bool flags[4];
+  u8_t flags[4];
   size_t ksize;
   size_t vsize;
   size_t len;
@@ -405,10 +405,23 @@ bool map_for_init(any_t _self, bool flag) {
 
   u_chk_if(self == nullptr, false);
 
-  self->flags[0] = !self->flags[0];
-  self->iter     = nullptr;
+  if (self->flags[0] == 0) {
+    self->flags[0] = 1;
+  } else if (self->flags[0] == 2) {
+    self->flags[0] = 0;
+  }
+
+  self->iter = nullptr;
 
   return self->flags[0];
+}
+
+void map_for_end(any_t _self) {
+  map_t* self = (map_t*)_self;
+
+  u_nchk_if(self == nullptr);
+
+  self->flags[0] = 2;
 }
 
 bool map_for(any_t _self, any_t key, any_t val) {

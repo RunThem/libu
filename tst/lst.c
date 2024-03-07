@@ -58,6 +58,8 @@ mut_test(lst_interface) {
   mut_assert(&a5 == ul_last(l));
   mut_assert(&a4 == ul_next(l, &a2));
   mut_assert(&a4 == ul_prev(l, &a5));
+  mut_assert(nullptr == ul_next(l, &a5));
+  mut_assert(nullptr == ul_prev(l, &a2));
 
   ul_cleanup(l);
 }

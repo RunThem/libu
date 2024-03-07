@@ -34,7 +34,7 @@ u_lst_t u_ilst = nullptr;
  **************************************************************************************************/
 typedef struct lst_t lst_t;
 struct lst_t {
-  bool flags[4];
+  u8_t flags[4];
   uvec(any_t) items;
 
   size_t iter;
@@ -125,7 +125,7 @@ any_t lst_next(any_t _self, any_t idx) {
 
   uv_for_all(self->items, i, node) {
     if (node == idx) {
-      return uv_at(self->items, i + 1);
+      return i == uv_len(self->items) - 1 ? nullptr : uv_at(self->items, i + 1);
     }
   }
 
@@ -191,6 +191,14 @@ bool lst_for_init(any_t _self, bool flag) {
   self->flags[3] = false;
 
   return self->flags[0];
+}
+
+void lst_for_end(any_t _self) {
+  lst_t* self = (lst_t*)_self;
+
+  u_nchk_if(self == nullptr);
+
+  self->flags[0] = 2;
 }
 
 any_t lst_for(any_t _self) {

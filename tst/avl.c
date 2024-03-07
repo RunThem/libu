@@ -93,7 +93,7 @@ mut_test(avl_iterator) {
     mut_assert(k + 'a' == +v);
   }
 
-  ut_for_all(t, k, v, int) {
+  ut_rfor_all(t, k, v, int) {
     mut_assert(k + 'a' == +v);
   }
 

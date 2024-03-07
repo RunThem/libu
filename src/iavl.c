@@ -42,7 +42,7 @@ struct node_t {
 
 typedef struct avl_t avl_t;
 struct avl_t {
-  bool flags[4];
+  u8_t flags[4];
   size_t ksize;
   size_t vsize;
   size_t len;
@@ -563,13 +563,25 @@ bool avl_for_init(any_t _self, bool flag) {
   avl_t* self = (avl_t*)_self;
 
   u_chk_if(self == nullptr, false);
-  u_chk_if(self->flags[0], false);
 
-  self->flags[0] = !self->flags[0];
+  if (self->flags[0] == 0) {
+    self->flags[0] = 1;
+  } else if (self->flags[0] == 2) {
+    self->flags[0] = 0;
+  }
+
   self->flags[1] = flag;
   self->iter     = nullptr;
 
   return self->flags[0];
+}
+
+void avl_for_end(any_t _self) {
+  avl_t* self = (avl_t*)_self;
+
+  u_nchk_if(self == nullptr);
+
+  self->flags[0] = 2;
 }
 
 bool avl_for(any_t _self, any_t key, any_t val) {

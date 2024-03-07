@@ -21,7 +21,6 @@
  * SOFTWARE.
  *
  * */
-
 #include <u/core.h>
 
 /***************************************************************************************************
@@ -34,7 +33,7 @@ u_vec_t u_ivec = nullptr;
  **************************************************************************************************/
 typedef struct vec_t vec_t;
 struct vec_t {
-  bool flags[4];
+  u8_t flags[4];
   size_t itsize;
   size_t len;
   size_t cap;
@@ -210,12 +209,25 @@ bool vec_for_init(any_t _self, bool flag) {
 
   u_chk_if(self == nullptr, false);
 
-  self->flags[0] = !self->flags[0];
+  if (self->flags[0] == 0) {
+    self->flags[0] = 1;
+  } else if (self->flags[0] == 2) {
+    self->flags[0] = 0;
+  }
+
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;
 
   return self->flags[0];
+}
+
+void vec_for_end(any_t _self) {
+  vec_t* self = (vec_t*)_self;
+
+  u_nchk_if(self == nullptr);
+
+  self->flags[0] = 2;
 }
 
 bool vec_for(any_t _self, ssize_t* idx, any_t item) {
