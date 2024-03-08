@@ -1,5 +1,3 @@
-add_requires('miniz', 'libsock')
-
 --[[
 target('cg', function()
   on_load(function(target)
@@ -39,6 +37,8 @@ target('cg', function()
 end)
 --]]
 
+add_requires('miniz', 'libsock')
+
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
@@ -49,7 +49,7 @@ target('dev.c', function()
 
   add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', 'N1000W=10000000')
 
-  add_packages('miniz', 'libsock', 'tbox')
+  add_packages('miniz', 'libsock')
 end)
 
 task('dev', function()

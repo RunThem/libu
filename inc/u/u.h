@@ -54,11 +54,6 @@
 #  include <threads.h>
 #  include <time.h>
 
-/*
- * Third party library
- * */
-#  include <tbox/tbox.h>
-
 /**/
 #  include "core.h"
 

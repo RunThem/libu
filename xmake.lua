@@ -73,15 +73,12 @@ end
 add_includedirs('$(projectdir)/inc')
 
 --- Third party library.
-add_requires('tbox')
 
 --- Main target
 target('u', function()
   set_kind('static')
   add_files('$(projectdir)/src/**.c')
   add_headerfiles('$(projectdir)/inc/(**.h)')
-
-  add_packages('tbox', { public = true })
 
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })
