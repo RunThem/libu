@@ -22,14 +22,15 @@
  *
  * */
 
-#include <u/__macro/misc.h>
-#include <u/__macro/type.h>
+#include <u/utils/misc.h>
+#include <u/utils/type.h>
 
 /*
  * cmp & eq func from base type
  * */
 fn_compe_def(char, (x == y), (x > y));
 fn_compe_def(int, (x == y), (x > y));
+fn_compe_def(uint, (x == y), (x > y));
 
 fn_compe_def(byte_t, (x == y), (x > y));
 fn_compe_def(i8_t, (x == y), (x > y));

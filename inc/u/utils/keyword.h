@@ -22,31 +22,16 @@
  *
  * */
 
-#pragma once
+#ifndef U_KEYWORD_H__
+#define U_KEYWORD_H__
 
-#ifndef U_BENCH_H__
-#  define U_BENCH_H__
+#define __file__ __FILE__
+#define __line__ __LINE__
+#define __func__ __func__
 
-#  include "type.h"
+#define auto __auto_type
 
-#  include <time.h>
+#define typeclassify(t) (__builtin_classify_type(t))
+#define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
 
-typedef struct {
-  str_t msg;
-  struct timespec begin;
-  struct timespec end;
-  size_t diff;
-
-  size_t i;
-  size_t n;
-} __tack_t;
-
-#  define nsec_of(tv)         ((tv).tv_sec * 1000000000 + (tv).tv_nsec) /* timespec */
-#  define nsec_diff(tv1, tv2) (nsec_of(tv1) - nsec_of(tv2))
-
-extern bool __benchmark(__tack_t* tack);
-
-#  define benchmark(...)                                                                           \
-    for (__tack_t T = {__VA_ARGS__}; (T.i != 0 && T.i != T.n) || __benchmark(&T); T.i++)
-
-#endif /* !U_BENCH_H__ */
+#endif /* !U_KEYWORD_H__ */

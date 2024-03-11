@@ -22,7 +22,10 @@
  *
  * */
 
-#include <u/u.h>
+#include <u/imap.h>
+#include <u/utils/alloc.h>
+#include <u/utils/debug.h>
+#include <u/utils/misc.h>
 
 /***************************************************************************************************
  * Let

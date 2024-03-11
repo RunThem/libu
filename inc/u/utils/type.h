@@ -22,15 +22,14 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_TYPE_H__
-#  define U_TYPE_H__
+#define U_TYPE_H__
 
-#  include <stdint.h>
-#  include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
-#  define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
+#define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
 
 /*
  * a >  b  ->  1

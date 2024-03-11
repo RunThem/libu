@@ -23,8 +23,8 @@
  * */
 
 #include <ctype.h>
-#include <u/__macro/misc.h>
-#include <u/__macro/print.h>
+#include <u/utils/misc.h>
+#include <u/utils/print.h>
 
 void __printh(str_t name, const u8_t* mem, size_t size) {
   char buf[17] = {0};
@@ -41,7 +41,7 @@ void __printh(str_t name, const u8_t* mem, size_t size) {
 
     print("%02x %s", mem[pos] & 0xff, (pos % 16) == 7 ? " " : "");
     if ((pos % 16) == 15) {
-      for (i = 0; i < array_size(buf); i++) {
+      for (i = 0; i < arrlen(buf); i++) {
         idx    = pos - 16 + i;
         buf[i] = isprint(mem[idx]) ? mem[idx] : '.';
       }

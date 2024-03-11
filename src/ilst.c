@@ -22,7 +22,10 @@
  *
  * */
 
-#include <u/u.h>
+#include <u/ilst.h>
+#include <u/ivec.h>
+#include <u/utils/alloc.h>
+#include <u/utils/debug.h>
 
 /***************************************************************************************************
  * Let

@@ -22,7 +22,11 @@
  *
  * */
 
-#include <u/u.h>
+#include <u/iavl.h>
+#include <u/ivec.h>
+#include <u/utils/alloc.h>
+#include <u/utils/debug.h>
+#include <u/utils/misc.h>
 
 /***************************************************************************************************
  * Let

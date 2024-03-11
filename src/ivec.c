@@ -21,7 +21,11 @@
  * SOFTWARE.
  *
  * */
-#include <u/u.h>
+
+#include <u/ivec.h>
+#include <u/utils/alloc.h>
+#include <u/utils/debug.h>
+#include <u/utils/print.h>
 
 /***************************************************************************************************
  * Let

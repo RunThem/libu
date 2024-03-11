@@ -2,25 +2,31 @@
 #include <u/u.h>
 
 /* system libs */
-#include <arpa/inet.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <math.h>
-#include <net/ethernet.h>
-#include <net/if.h>
-#include <netinet/if_ether.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h>
-#include <netpacket/packet.h>
-#include <regex.h>
-#include <sys/ioctl.h>
-#include <sys/resource.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <ucontext.h>
-#include <unistd.h>
+#include <ctype.h>
+#include <stdarg.h>
+
+#if 0
+#  include <arpa/inet.h>
+#  include <ctype.h>
+#  include <dirent.h>
+#  include <fcntl.h>
+#  include <math.h>
+#  include <net/ethernet.h>
+#  include <net/if.h>
+#  include <netinet/if_ether.h>
+#  include <netinet/in.h>
+#  include <netinet/ip.h>
+#  include <netinet/ip_icmp.h>
+#  include <netpacket/packet.h>
+#  include <regex.h>
+#  include <sys/ioctl.h>
+#  include <sys/resource.h>
+#  include <sys/socket.h>
+#  include <sys/time.h>
+#  include <sys/wait.h>
+#  include <ucontext.h>
+#  include <unistd.h>
+#endif
 
 ret_t code = 0;
 
@@ -67,8 +73,6 @@ static u32_t _atoi(u_cstr_t* str) {
 
   return i;
 }
-
-#define ch(c) ((char)(#c[0]))
 
 #define u_builtin_basetypeid(t)                                                                    \
   ({                                                                                               \
@@ -136,6 +140,7 @@ size_t _u_vprintf(u_cstr_t buf, size_t maxl, u_cstr_t fmt, va_list va) {
   uint width     = 0;
   uint precision = 0;
   uint format    = 0;
+  uint base      = 0;
   uint n         = 0;
   size_t idx     = 0;
   bool isfmt     = false;
@@ -208,30 +213,44 @@ size_t _u_vprintf(u_cstr_t buf, size_t maxl, u_cstr_t fmt, va_list va) {
       }
     }
 
+    base = 0;
     /* evaluate format field */
-    switch (fmt[0]) {
-      case 'x':
-      case 'X':
-      case 'o':
-      case 'b': {
-        uint base = 0;
-        if (fmt[0] == 'X') {
-          base = 16;
-          flags |= FLAGS_UPPERCASE;
-        } else if (fmt[0] == 'x') {
-          base = 16;
-        } else if (fmt[0] == 'o') {
-          base = 8;
-        } else if (fmt[0] == 'b') {
-          base = 2;
-        } else {
-          base = 10;
-          flags &= ~FLAGS_HASH;
-        }
-      }
+    if (fmt[0] == 'X') {
+      base = 16;
+      flags |= FLAGS_UPPERCASE;
+    } else if (fmt[0] == 'x') {
+      base = 16;
+    } else if (fmt[0] == 'o') {
+      base = 8;
+    } else if (fmt[0] == 'b') {
+      base = 2;
+    } else if (fmt[0] == 'E') {
+      /* TODO */
+      flags |= FLAGS_UPPERCASE;
+    } else if (fmt[0] == 'e') {
+      /* TODO */
+    } else {
+      base = 10;
+      flags &= ~FLAGS_HASH;
+    }
 
-      default:
-        break;
+    if (fmt[0] != '}') {
+      /* XXX: */
+      continue;
+    }
+
+    fmt++;
+
+    int type = va_arg(va, int);
+
+    if (type == 1) {
+    } else if (type == 2) {
+    } else if (3 <= type && type <= 12) {
+    } else if (13 <= type && type <= 15) {
+    } else if (type == 128) {
+    } else if (type == 129) {
+    } else {
+      /* XXX: */
     }
   }
 
@@ -286,6 +305,16 @@ int main(int argc, const u_cstr_t argv[]) {
   infln("result is %d", result);
 
   u_str_t us = &me(struct u_str_t, .len = 5, .cap = 16, .data = str);
+
+  auto v = uv_new(int);
+
+  uv_put(v, 12);
+
+  uv_put(v, 3);
+
+  println("%zu", uv_len(v));
+
+  uv_cleanup(v);
 
   // char buf[100];
   // u_snprintf(buf, 100, "{}, {}", 1, 2);

@@ -22,39 +22,30 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_H__
-#  define U_H__
+#define U_H__
 
-#  if defined(__clang__) && __clang_major__ < 16
-#    error "Please use the Clang.v16 or later toolchain."
-#  endif
+#if defined(__clang__) && __clang_major__ < 16
+#  error "Please use the Clang.v16 or later toolchain."
+#endif
 
-#  if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#    error "Please use the GCC.v13 or later toolchain."
-#  endif
+#if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
+#  error "Please use the GCC.v13 or later toolchain."
+#endif
 
-/*
- * System library
- * */
-#  include <assert.h>
-#  include <ctype.h>
-#  include <errno.h>
-#  include <setjmp.h>
-#  include <stdalign.h>
-#  include <stdarg.h>
-#  include <stdatomic.h>
-#  include <stdbool.h>
-#  include <stddef.h>
-#  include <stdint.h>
-#  include <stdio.h>
-#  include <stdlib.h>
-#  include <string.h>
-#  include <threads.h>
-#  include <time.h>
+#include "utils/alloc.h"
+#include "utils/debug.h"
+#include "utils/keyword.h"
+#include "utils/misc.h"
+#include "utils/print.h"
+#include "utils/type.h"
+#include "utils/va.h"
 
 /**/
-#  include "core.h"
+
+#include "iavl.h"
+#include "ilst.h"
+#include "imap.h"
+#include "ivec.h"
 
 #endif /* !U_H__ */

@@ -35,8 +35,6 @@
 
 /* clang-format off */
 
-#pragma once
-
 #ifndef U_VA_H__
 #define U_VA_H__
 
