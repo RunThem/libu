@@ -22,31 +22,21 @@
  *
  * */
 
-#ifndef U_H__
-#define U_H__
+#ifndef U_ISTR_H__
+#define U_ISTR_H__
 
-#if defined(__clang__) && __clang_major__ < 16
-#  error "Please use the Clang.v16 or later toolchain."
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#  error "Please use the GCC.v13 or later toolchain."
+/***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+typedef struct {
+}* u_str_t;
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
-#include "utils/alloc.h"
-#include "utils/debug.h"
-#include "utils/io.h"
-#include "utils/keyword.h"
-#include "utils/misc.h"
-#include "utils/print.h"
-#include "utils/type.h"
-#include "utils/va.h"
-
-/**/
-
-#include "iavl.h"
-#include "ilst.h"
-#include "imap.h"
-#include "ivec.h"
-
-#endif /* !U_H__ */
+#endif /* !U_ISTR_H__ */

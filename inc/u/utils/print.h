@@ -67,8 +67,8 @@
             __func__,                                                                              \
             strerror(errno) __VA_OPT__(, ) __VA_ARGS__)
 
-extern void __printh(str_t name, const u8_t* mem, size_t size);
-extern void __printb(str_t name, const u8_t* mem, size_t size);
+extern void __printh(u_cstr_t name, const u8_t* mem, size_t size);
+extern void __printb(u_cstr_t name, const u8_t* mem, size_t size);
 
 #define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
 #define printb(mem, size) __printb(#mem, (u8_t*)mem, size);

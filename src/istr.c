@@ -22,31 +22,17 @@
  *
  * */
 
-#ifndef U_H__
-#define U_H__
+#include <u/istr.h>
+#include <u/utils/alloc.h>
+#include <u/utils/debug.h>
+#include <u/utils/print.h>
 
-#if defined(__clang__) && __clang_major__ < 16
-#  error "Please use the Clang.v16 or later toolchain."
-#endif
-
-#if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#  error "Please use the GCC.v13 or later toolchain."
-#endif
-
-#include "utils/alloc.h"
-#include "utils/debug.h"
-#include "utils/io.h"
-#include "utils/keyword.h"
-#include "utils/misc.h"
-#include "utils/print.h"
-#include "utils/type.h"
-#include "utils/va.h"
-
-/**/
-
-#include "iavl.h"
-#include "ilst.h"
-#include "imap.h"
-#include "ivec.h"
-
-#endif /* !U_H__ */
+/***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+typedef struct str_t str_t;
+struct str_t {
+  size_t len;
+  size_t cap;
+  u_cstr_t data;
+};

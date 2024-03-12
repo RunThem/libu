@@ -22,31 +22,20 @@
  *
  * */
 
-#ifndef U_H__
-#define U_H__
+#include <stdio.h>
+#include <u/utils/io.h>
 
-#if defined(__clang__) && __clang_major__ < 16
-#  error "Please use the Clang.v16 or later toolchain."
-#endif
+size_t __printf(u_cstr_t fmt, ...) {
+  size_t ret;
+  va_list ap;
+  char buf[4096] = {0};
+  size_t maxl    = 4096;
 
-#if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#  error "Please use the GCC.v13 or later toolchain."
-#endif
+  va_start(ap, fmt);
+  ret = __vsnprintf(buf, maxl, fmt, ap);
+  va_end(ap);
 
-#include "utils/alloc.h"
-#include "utils/debug.h"
-#include "utils/io.h"
-#include "utils/keyword.h"
-#include "utils/misc.h"
-#include "utils/print.h"
-#include "utils/type.h"
-#include "utils/va.h"
+  ret = fwrite(buf, sizeof(char), ret, stdout);
 
-/**/
-
-#include "iavl.h"
-#include "ilst.h"
-#include "imap.h"
-#include "ivec.h"
-
-#endif /* !U_H__ */
+  return ret;
+}

@@ -39,7 +39,7 @@
 typedef fnt(u_cmp_fn, int, const void*, const void*);
 typedef fnt(u_eq_fn, bool, const void*, const void*);
 
-typedef typeof(char*) str_t;
+typedef typeof(char*) u_cstr_t;
 
 /* clang-format off */
 typedef int   ret_t;

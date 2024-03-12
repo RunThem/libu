@@ -22,31 +22,33 @@
  *
  * */
 
-#ifndef U_H__
-#define U_H__
+#include <u/utils/misc.h>
+#include <u/utils/print.h>
 
-#if defined(__clang__) && __clang_major__ < 16
-#  error "Please use the Clang.v16 or later toolchain."
-#endif
+void __printb(u_cstr_t name, const u8_t* mem, size_t size) {
+  u8_t byte = 0;
 
-#if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#  error "Please use the GCC.v13 or later toolchain."
-#endif
+  println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);
 
-#include "utils/alloc.h"
-#include "utils/debug.h"
-#include "utils/io.h"
-#include "utils/keyword.h"
-#include "utils/misc.h"
-#include "utils/print.h"
-#include "utils/type.h"
-#include "utils/va.h"
+  for (ssize_t i = (ssize_t)size - 1; i >= 0; i--) {
+    byte = mem[i];
 
-/**/
+    print("    %u%u%u%u%u%u%u%u",
+          bit(byte, 7),
+          bit(byte, 6),
+          bit(byte, 7),
+          bit(byte, 4),
+          bit(byte, 3),
+          bit(byte, 2),
+          bit(byte, 1),
+          bit(byte, 0));
 
-#include "iavl.h"
-#include "ilst.h"
-#include "imap.h"
-#include "ivec.h"
+    if (i != 0 && (i + 1) % 2) {
+      print("\n");
+    } else {
+      print(" ");
+    }
+  }
 
-#endif /* !U_H__ */
+  println();
+}

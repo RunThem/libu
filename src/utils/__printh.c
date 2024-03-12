@@ -26,7 +26,7 @@
 #include <u/utils/misc.h>
 #include <u/utils/print.h>
 
-void __printh(str_t name, const u8_t* mem, size_t size) {
+void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
   char buf[17] = {0};
   size_t i     = 0;
   size_t pos   = 0;
@@ -60,32 +60,4 @@ void __printh(str_t name, const u8_t* mem, size_t size) {
     buf[i - 1] = '\0';
     println("%*s", 47 - 3 * ((int)pos % 16) + (int)i, buf);
   }
-}
-
-void __printb(str_t name, const u8_t* mem, size_t size) {
-  u8_t byte = 0;
-
-  println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);
-
-  for (ssize_t i = (ssize_t)size - 1; i >= 0; i--) {
-    byte = mem[i];
-
-    print("    %u%u%u%u%u%u%u%u",
-          bit(byte, 7),
-          bit(byte, 6),
-          bit(byte, 7),
-          bit(byte, 4),
-          bit(byte, 3),
-          bit(byte, 2),
-          bit(byte, 1),
-          bit(byte, 0));
-
-    if (i != 0 && (i + 1) % 2) {
-      print("\n");
-    } else {
-      print(" ");
-    }
-  }
-
-  println();
 }

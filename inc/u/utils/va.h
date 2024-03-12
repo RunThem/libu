@@ -717,7 +717,9 @@ va_last(1, 2, 3, 4, 5)        /* : 5 */
     va_eval(va_defer(1, __va_map)(macro, va_lcut(__VA_ARGS__)))                                    \
   )                                                                                                \
                                                                                                    \
-  macro(va_last(__VA_ARGS__))
+  va_if(va_has(__VA_ARGS__)) (                                                                     \
+    macro(va_last(__VA_ARGS__))                                                                    \
+  )
 #define __va_map_ok_11         0
 #define __va_map_ok_10         1
 #define __va_map_ok_01         0
@@ -733,6 +735,7 @@ va_last(1, 2, 3, 4, 5)        /* : 5 */
 #ifdef va_debug
 echo(map)
 #  define _a(n) (n)
+va_map(_a)                      /* :                         */
 va_map(_a, 1)                   /* : (1)                     */
 va_map(_a, 1, 2)                /* : (1), (2)                */
 va_map(_a, 1, 2, 3)             /* : (1), (2), (3)           */
@@ -744,7 +747,9 @@ va_map(_a, 1, 2, 3, 4, 5)       /* : (1), (2), (3), (4), (5) */
 /*
  * mapof
  * */
-#define va_mapof(macro, ...) va_eval(__va_mapof(macro, __VA_ARGS__))
+#define va_mapof(macro, ...) va_if(va_has(__VA_ARGS__)) (                                          \
+    va_eval(__va_mapof(macro, __VA_ARGS__))                                                        \
+  )
 #define __va_mapof_def()     __va_mapof
 #define __va_mapof(macro, first, ...)                                                              \
   macro(first)                                                                                     \
@@ -755,6 +760,7 @@ va_map(_a, 1, 2, 3, 4, 5)       /* : (1), (2), (3), (4), (5) */
 #ifdef va_debug
 echo(mapof)
 #  define _b(n) (n),
+va_mapof(_b)                    /* :                     */
 va_mapof(_b, 1)                 /* : (1),                */
 va_mapof(_b, 1, 2)              /* : (1), (2),           */
 va_mapof(_b, 1, 2, 3)           /* : (1), (2), (3),      */

@@ -32,6 +32,35 @@
 
 #define each(i, num) for (size_t i = 0; (i) < (num); (i)++)
 
+#define __builtin_basetypeid(t)                                                                    \
+  ({                                                                                               \
+    uint _s = 0;                                                                                    \
+                                                                                                   \
+    if (__builtin_classify_type(t) == 5) {                                                         \
+      _s = _Generic(t, u_cstr_t: 128, default: 129);                                               \
+    } else {                                                                                       \
+      _s = _Generic(t,                                                                             \
+          default: 0,                                                                              \
+          bool: 1,                                                                                 \
+          char: 2,                                                                                 \
+          i8_t: 3,                                                                                 \
+          u8_t: 4,                                                                                 \
+          i16_t: 5,                                                                                \
+          u16_t: 6,                                                                                \
+          i32_t: 7,                                                                                \
+          u32_t: 8,                                                                                \
+          i64_t: 9,                                                                                \
+          u64_t: 10,                                                                               \
+          i128_t: 11,                                                                              \
+          u128_t: 12,                                                                              \
+          f32_t: 13,                                                                               \
+          f64_t: 14,                                                                               \
+          f128_t: 15);                                                                             \
+    }                                                                                              \
+                                                                                                   \
+    _s;                                                                                            \
+  })
+
 /***************************************************************************************************
  * Misc macro
  **************************************************************************************************/
@@ -54,9 +83,9 @@
 typedef struct {
   bool is_err;
   jmp_buf label;
-  str_t file;
-  str_t func;
-  str_t expr;
+  u_cstr_t file;
+  u_cstr_t func;
+  u_cstr_t expr;
   size_t line;
   error_t error;
   int id;

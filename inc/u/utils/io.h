@@ -1,3 +1,4 @@
+
 /* MIT License
  *
  * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
@@ -22,31 +23,32 @@
  *
  * */
 
-#ifndef U_H__
-#define U_H__
+#ifndef U_IO_H__
+#define U_IO_H__
 
-#if defined(__clang__) && __clang_major__ < 16
-#  error "Please use the Clang.v16 or later toolchain."
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#  error "Please use the GCC.v13 or later toolchain."
+#include "misc.h"
+#include "type.h"
+
+#include <stdarg.h>
+
+#define __vsnprintf_map(v) __builtin_basetypeid(v), v
+extern size_t __vsnprintf(u_cstr_t buf, size_t maxl, u_cstr_t fmt, va_list va);
+
+extern size_t __printf(u_cstr_t fmt, ...);
+#define u_printf(fmt, ...) __printf(fmt __VA_OPT__(, ) va_map(__vsnprintf_map, __VA_ARGS__))
+
+// extern void __printh(u_cstr_t name, const u8_t* mem, size_t size);
+// extern void __printb(u_cstr_t name, const u8_t* mem, size_t size);
+
+// #define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
+// #define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
+
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
 
-#include "utils/alloc.h"
-#include "utils/debug.h"
-#include "utils/io.h"
-#include "utils/keyword.h"
-#include "utils/misc.h"
-#include "utils/print.h"
-#include "utils/type.h"
-#include "utils/va.h"
-
-/**/
-
-#include "iavl.h"
-#include "ilst.h"
-#include "imap.h"
-#include "ivec.h"
-
-#endif /* !U_H__ */
+#endif /* !U_IO_H__ */
