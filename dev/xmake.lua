@@ -52,6 +52,19 @@ target('dev.c', function()
   add_packages('miniz', 'libsock')
 end)
 
+add_requires('fmt')
+
+target('dev.cpp', function()
+  set_kind('binary')
+  set_default('false')
+  add_files('*.cpp')
+  set_rundir('$(projectdir)')
+
+  add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', 'N1000W=10000000')
+
+  add_packages('fmt', { system = false })
+end)
+
 task('dev', function()
   set_menu({
     usage = 'xmake dev',

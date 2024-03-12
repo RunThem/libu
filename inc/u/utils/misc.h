@@ -34,10 +34,10 @@
 
 #define __builtin_basetypeid(t)                                                                    \
   ({                                                                                               \
-    uint _s = 0;                                                                                    \
+    uint _s = 0;                                                                                   \
                                                                                                    \
     if (__builtin_classify_type(t) == 5) {                                                         \
-      _s = _Generic(t, u_cstr_t: 128, default: 129);                                               \
+      _s = _Generic(t, u_cstr_t: 128, u_str_t: 129);                                               \
     } else {                                                                                       \
       _s = _Generic(t,                                                                             \
           default: 0,                                                                              \

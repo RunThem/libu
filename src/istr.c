@@ -25,7 +25,6 @@
 #include <u/istr.h>
 #include <u/utils/alloc.h>
 #include <u/utils/debug.h>
-#include <u/utils/print.h>
 
 /***************************************************************************************************
  * Type
@@ -36,3 +35,42 @@ struct str_t {
   size_t cap;
   u_cstr_t data;
 };
+
+/***************************************************************************************************
+ * Function
+ **************************************************************************************************/
+u_str_t str_new() {
+  str_t* self = nullptr;
+
+  self = u_zalloc(sizeof(str_t));
+  u_nil_if(self);
+
+  self->data = u_zalloc(16);
+  u_nil_if(self->data);
+
+  self->len = 0;
+  self->cap = 16;
+
+  return (u_str_t)self;
+
+err:
+  u_free_if(self);
+
+  return nullptr;
+}
+
+size_t str_len(u_str_t _self) {
+  str_t* self = (str_t*)_self;
+
+  u_chk_if(self == nullptr, 0);
+
+  return self->len;
+}
+
+u_cstr_t str_tocstr(u_str_t _self) {
+  str_t* self = (str_t*)_self;
+
+  u_chk_if(self == nullptr, nullptr);
+
+  return self->data;
+}
