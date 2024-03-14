@@ -30,42 +30,56 @@ extern "C" {
 #endif
 
 #include "utils/type.h"
-#include "utils/va.h"
-
-#include <u/istr.h>
-
-/***************************************************************************************************
- * Type
- **************************************************************************************************/
-typedef typeof(char*) u_cstr_t;
-
-typedef struct {
-}* u_str_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern u_str_t str_new();
+extern u_str_t str_new_char(char);
+extern u_str_t str_new_cstr(u_cstr_t);
+extern u_str_t str_new_str(u_str_t);
 
-extern size_t str_len(u_str_t);
+extern size_t str_len(u_str_t*);
 
-extern u_cstr_t str_tocstr(u_str_t);
+extern void str_put_char(u_str_t*, char);
+extern void str_put_cstr(u_str_t*, u_cstr_t);
+extern void str_put_str(u_str_t*, u_str_t);
+
+extern void str_ins_char(u_str_t*, size_t, char);
+extern void str_ins_cstr(u_str_t*, size_t, u_cstr_t);
+extern void str_ins_str(u_str_t*, size_t, u_str_t);
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
+/* clang-format off */
+#define us_new(s)                                                                                \
+  ({                                                                                               \
+    auto _fn = _Generic(s, int: str_new_char, u_cstr_t: str_new_cstr, u_str_t: str_new_str);       \
+                                                                                                   \
+    _fn(s);                                                                                        \
+  })
+/* clang-format on */
+
 #define us_len(s)                                                                                  \
   ({                                                                                               \
-    size_t _len = 0;                                                                               \
+    auto _fn = _Generic(s, u_cstr_t: strlen, u_str_t: str_len);                                    \
                                                                                                    \
-    if (__builtin_basetypeid(s) == 128) {                                                          \
-      _len = strlen(s);                                                                            \
-    } else if (__builtin_basetypeid(s) == 129) {                                                   \
-      _len = str_len(s);                                                                           \
-    }                                                                                              \
-                                                                                                   \
-    _len;                                                                                          \
+    _fn(&s);                                                                                       \
   })
+
+#define us_put(s, _s)                                                                              \
+  do {                                                                                             \
+    auto _fn = _Generic(_s, int: str_put_char, u_cstr_t: str_put_cstr, u_str_t: str_put_str);      \
+                                                                                                   \
+    _fn(&s, _s);                                                                                   \
+  } while (0)
+
+#define us_ins(s, i, _s)                                                                           \
+  do {                                                                                             \
+    auto _fn = _Generic(_s, int: str_ins_char, u_cstr_t: str_ins_cstr, u_str_t: str_ins_str);      \
+                                                                                                   \
+    _fn(&s, i, _s);                                                                                \
+  } while (0)
 
 #ifdef __cplusplus
 } /* extern "C" */

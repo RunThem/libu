@@ -41,6 +41,9 @@ typedef fnt(u_eq_fn, bool, const void*, const void*);
 
 typedef typeof(char*) u_cstr_t;
 
+typedef struct {
+}* u_str_t;
+
 /* clang-format off */
 typedef int   ret_t;
 typedef void* any_t;

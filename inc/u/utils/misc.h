@@ -37,21 +37,21 @@
     uint _s = 0;                                                                                   \
                                                                                                    \
     if (__builtin_classify_type(t) == 5) {                                                         \
-      _s = _Generic(t, u_cstr_t: 128, u_str_t: 129);                                               \
+      _s = _Generic(t, default: 255, u_cstr_t: 128, u_str_t: 129);                                 \
     } else {                                                                                       \
       _s = _Generic(t,                                                                             \
           default: 0,                                                                              \
           bool: 1,                                                                                 \
           char: 2,                                                                                 \
           i8_t: 3,                                                                                 \
-          u8_t: 4,                                                                                 \
-          i16_t: 5,                                                                                \
-          u16_t: 6,                                                                                \
-          i32_t: 7,                                                                                \
-          u32_t: 8,                                                                                \
-          i64_t: 9,                                                                                \
-          u64_t: 10,                                                                               \
-          i128_t: 11,                                                                              \
+          i16_t: 4,                                                                                \
+          i32_t: 5,                                                                                \
+          i64_t: 6,                                                                                \
+          i128_t: 7,                                                                               \
+          u8_t: 8,                                                                                 \
+          u16_t: 9,                                                                                \
+          u32_t: 10,                                                                               \
+          u64_t: 11,                                                                               \
           u128_t: 12,                                                                              \
           f32_t: 13,                                                                               \
           f64_t: 14,                                                                               \
@@ -68,6 +68,14 @@
 #define ch(c)         ((char)(#c[0]))
 #define me(type, ...) ((type){__VA_ARGS__})
 #define bit(byte, n)  (((byte) >> (n)) & 1)
+
+#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
+
+#define container_of(ptr, type, member)                                                            \
+  ({                                                                                               \
+    const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \
+    (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
+  })
 
 /* linux array size macro */
 #define __same_type(a, b)      __builtin_types_compatible_p(typeof(a), typeof(b))

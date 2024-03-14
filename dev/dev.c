@@ -47,6 +47,28 @@ int main(int argc, const u_cstr_t argv[]) {
   int result = typeeq(char[], str);
   infln("result is %d", result);
 
+  u_str_t s = us_new("");
+
+  println("len is %zu, '%s'", us_len(s), (u_cstr_t)s);
+
+  u_str_t l = us_new("");
+
+  us_put(l, "world");
+  println("len is %zu, '%s'", us_len(l), (u_cstr_t)l);
+
+  us_put(s, 'h');
+  us_put(s, "ello");
+  us_put(s, ' ');
+  us_put(s, l);
+  us_put(s, '!');
+
+  us_ins(s, 0, '"');
+  us_put(s, '"');
+
+  us_ins(s, 6, "<>");
+
+  println("len is %zu, '%s'", us_len(s), (u_cstr_t)s);
+
   return EXIT_SUCCESS;
 err:
   errln("failed.");

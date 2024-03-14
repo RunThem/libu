@@ -47,6 +47,7 @@
 #include "iavl.h"
 #include "ilst.h"
 #include "imap.h"
+#include "istr.h"
 #include "ivec.h"
 
 #endif /* !U_H__ */
