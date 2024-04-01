@@ -51,10 +51,14 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-/* clang-format off */
-#define us_new(s)                                                                                \
+/* clang-format  */
+#define us_new(s)                                                                                  \
   ({                                                                                               \
-    auto _fn = _Generic(s, int: str_new_char, u_cstr_t: str_new_cstr, u_str_t: str_new_str);       \
+    auto _fn = _Generic(s,                                                                         \
+        char: str_new_char,                                                                        \
+        int: str_new_char,                                                                         \
+        u_cstr_t: str_new_cstr,                                                                    \
+        u_str_t: str_new_str);                                                                     \
                                                                                                    \
     _fn(s);                                                                                        \
   })
@@ -69,14 +73,22 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
 
 #define us_put(s, _s)                                                                              \
   do {                                                                                             \
-    auto _fn = _Generic(_s, int: str_put_char, u_cstr_t: str_put_cstr, u_str_t: str_put_str);      \
+    auto _fn = _Generic(_s,                                                                        \
+        char: str_put_char,                                                                        \
+        int: str_put_char,                                                                         \
+        u_cstr_t: str_put_cstr,                                                                    \
+        u_str_t: str_put_str);                                                                     \
                                                                                                    \
     _fn(&s, _s);                                                                                   \
   } while (0)
 
 #define us_ins(s, i, _s)                                                                           \
   do {                                                                                             \
-    auto _fn = _Generic(_s, int: str_ins_char, u_cstr_t: str_ins_cstr, u_str_t: str_ins_str);      \
+    auto _fn = _Generic(_s,                                                                        \
+        char: str_ins_char,                                                                        \
+        int: str_ins_char,                                                                         \
+        u_cstr_t: str_ins_cstr,                                                                    \
+        u_str_t: str_ins_str);                                                                     \
                                                                                                    \
     _fn(&s, i, _s);                                                                                \
   } while (0)

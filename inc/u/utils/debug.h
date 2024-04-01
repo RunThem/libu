@@ -78,18 +78,18 @@
 
 #define u_nil_if(mem, ...)                                                                         \
   if ((mem) == nullptr) {                                                                          \
-    errln("(%s == nullptr) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));           \
+    errln("(%s == null) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));              \
     goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
-#define u_brk_if(expr)                                                                             \
+#define u_brk_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \
     errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
                                                                                                    \
     break;                                                                                         \
   }
 
-#define u_ctu_if(expr)                                                                             \
+#define u_ctu_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \
     errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
                                                                                                    \

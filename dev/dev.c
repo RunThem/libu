@@ -1,3 +1,7 @@
+#define NDEBUG
+
+/* c:codegen std */
+
 /* third libs */
 #include <u/u.h>
 
@@ -48,6 +52,8 @@ int main(int argc, const u_cstr_t argv[]) {
   char str[] = "hello";
   int result = typeeq(char[], str);
   infln("result is %d", result);
+
+  infln("%lu", sizeof(enum {T, F}));
 
   return EXIT_SUCCESS;
 err:
