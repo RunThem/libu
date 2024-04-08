@@ -1,4 +1,6 @@
 #include <mut.h>
+
+#define umap_def ((int, char))
 #include <u/u.h>
 
 #define N 26
@@ -21,13 +23,13 @@ mut_test(map_interface) {
 
   um_init(m);
 
-  mut_assert(true == um_empty(m));
+  mut_assert(true == um_is_empty(m));
 
   each(i, N) {
     um_put(m, (int)i, 'a' + i);
   }
 
-  mut_assert(false == um_empty(m));
+  mut_assert(false == um_is_empty(m));
   mut_assert(N == um_len(m));
 
   each(i, N) {
@@ -40,7 +42,7 @@ mut_test(map_interface) {
     mut_assert('a' + i == um_pop(m, (int)i));
   }
 
-  mut_assert(true == um_empty(m));
+  mut_assert(true == um_is_empty(m));
   mut_assert(0 == um_len(m));
 
   um_cleanup(m);
@@ -98,17 +100,17 @@ mut_test(map_iterator) {
   umap(int, char) m = nullptr;
   um_init(m);
 
-  mut_assert(true == um_empty(m));
+  mut_assert(true == um_is_empty(m));
 
   each(i, N) {
     um_put(m, (int)i, 'a' + i);
   }
 
-  um_for_all(m, k, v, int) {
+  um_for_all(m, k, v) {
     mut_assert(k + 'a' == +v);
   }
 
-  um_rfor_all(m, k, v, int) {
+  um_rfor_all(m, k, v) {
     mut_assert(k + 'a' == +v);
   }
 

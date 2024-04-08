@@ -22,6 +22,7 @@
  *
  * */
 
+#include <stdlib.h>
 #include <u/ivec.h>
 #include <u/utils/alloc.h>
 #include <u/utils/debug.h>

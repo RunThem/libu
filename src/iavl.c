@@ -22,6 +22,8 @@
  *
  * */
 
+#define uvec_def (node_t*)
+
 #include <u/iavl.h>
 #include <u/ivec.h>
 #include <u/utils/alloc.h>
@@ -403,7 +405,7 @@ void avl_clear(any_t _self) {
   uv_init(nodes);
   uv_put(nodes, self->root);
 
-  while (!uv_empty(nodes)) {
+  while (!uv_is_empty(nodes)) {
     node = uv_at(nodes, 0);
 
     if (node->left) {

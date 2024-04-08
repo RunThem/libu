@@ -35,11 +35,6 @@ typedef struct {
 }* u_avl_t;
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-extern u_avl_t u_iavl;
-
-/***************************************************************************************************
  * Api
  ***************s***********************************************************************************/
 extern any_t avl_new(size_t, size_t, u_cmp_fn);
@@ -67,68 +62,75 @@ extern bool avl_for(any_t, any_t, any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define uavl(K, V) typeof(V(*(*)(u_avl_t, K*, V*))[sizeof(K)][sizeof(V)])
+#define uavl(K, V) typeof(u_avl_t(*)(K, V))
+
+#define __uavl_def(K, V)                                                                           \
+  uavl(K, V) :                                                                                     \
+      (struct {                                                                                    \
+        K k;                                                                                       \
+        V v;                                                                                       \
+      }) {                                                                                         \
+  }
+
+#define _uavl_def(arg) __uavl_def arg
+
+#define ut_type(u, arg)     typeof(_Generic(typeof(u), va_map(_uavl_def, va_unpack(uavl_def))).arg)
+#define ut_type_val(u, arg) _Generic(typeof(u), va_map(_uavl_def, va_unpack(uavl_def))).arg
+#define ut_type_check(u)    static_assert(typeeq((u_avl_t){}, u(ut_type_val(u, k), ut_type_val(u, v))))
 
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#define ut_init(u, ...)                                                                            \
+#define ut_init(u, fn)                                                                             \
   do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+    ut_type_check(u);                                                                              \
                                                                                                    \
-    u = avl_new(sizeof(typeof(*u(nullptr, nullptr, nullptr))) /                                    \
-                    sizeof(typeof(**u(nullptr, nullptr, nullptr))),                                \
-                sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                                   \
-                    sizeof(typeof(***u(nullptr, nullptr, nullptr))),                               \
-                va_at(0, __VA_ARGS__));                                                            \
+    u = avl_new(sizeof(ut_type(u, k)), sizeof(ut_type(u, v)), fn);                                 \
   } while (0)
 
-#define ut_new(K, V, ...)                                                                          \
+#define ut_new(K, V, fn)                                                                           \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
-                                                                                                   \
     uavl(K, V) u = nullptr;                                                                        \
                                                                                                    \
-    ut_init(u, va_at(0, __VA_ARGS__));                                                             \
+    ut_init(u, fn);                                                                                \
                                                                                                    \
     u;                                                                                             \
   })
 
 #define ut_len(u)                                                                                  \
   ({                                                                                               \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+    ut_type_check(u);                                                                              \
                                                                                                    \
     avl_len(u);                                                                                    \
   })
 
-#define ut_empty(u)                                                                                \
+#define ut_is_empty(u)                                                                             \
   ({                                                                                               \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+    ut_type_check(u);                                                                              \
                                                                                                    \
     0 == avl_len(u);                                                                               \
   })
 
-#define ut_exist(u, ...)                                                                           \
+#define ut_is_exist(u, _k)                                                                         \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+    ut_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_iavl, &_a, nullptr)) _b = {};                                                    \
+    ut_type(u, k) _a = _k;                                                                         \
+    ut_type(u, v) _b = {};                                                                         \
                                                                                                    \
     avl_exist(u, &_a);                                                                             \
   })
 
 #define ut_clear(u)                                                                                \
   do {                                                                                             \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+    ut_type_check(u);                                                                              \
                                                                                                    \
     avl_clear(u);                                                                                  \
   } while (0)
 
 #define ut_cleanup(u)                                                                              \
   do {                                                                                             \
-    typeof(u(u_iavl, nullptr, nullptr)) _m = nullptr;                                              \
+    ut_type_check(u);                                                                              \
                                                                                                    \
     avl_cleanup(u);                                                                                \
                                                                                                    \
@@ -136,19 +138,19 @@ extern bool avl_for(any_t, any_t, any_t);
   } while (0)
 
 /* clang-format off */
-#  define ut_at(u, ...)                                                                            \
-    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+#  define ut_at(u, _k, ...)                                                                        \
+    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
       ({                                                                                           \
-        static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                     \
+        ut_type_check(u);                                                                          \
                                                                                                    \
-        bool _ret                      = false;                                                    \
-        auto _a                        = va_at(0, __VA_ARGS__);                                    \
-        typeof(***u(u_iavl, &_a, nullptr))* _b = {};                                               \
+        bool _ret         = false;                                                                 \
+        ut_type(u, k) _a  = _k;                                                                    \
+        ut_type(u, v)* _b = {};                                                                    \
                                                                                                    \
         _b = avl_at(u, &_a);                                                                       \
                                                                                                    \
         if (_b != nullptr) {                                                                       \
-          *_b = va_at(1, __VA_ARGS__);                                                             \
+          *_b = va_at(0, __VA_ARGS__);                                                             \
           _ret = true;                                                                             \
         }                                                                                          \
                                                                                                    \
@@ -156,11 +158,11 @@ extern bool avl_for(any_t, any_t, any_t);
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
-        static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                     \
+        ut_type_check(u);                                                                          \
                                                                                                    \
-        auto _a                        = va_at(0, __VA_ARGS__);                                    \
-        typeof(***u(u_iavl, &_a, nullptr)) _it = {};                                               \
-        typeof(***u(u_iavl, &_a, nullptr))* _b = {};                                               \
+        ut_type(u, k) _a  = _k;                                                                    \
+        ut_type(u, v) _it = {};                                                                    \
+        ut_type(u, v)* _b = {};                                                                    \
                                                                                                    \
         _b = avl_at(u, &_a);                                                                       \
                                                                                                    \
@@ -173,39 +175,37 @@ extern bool avl_for(any_t, any_t, any_t);
     )
 /* clang-format on */
 
-#define ut_try(u, k)                                                                               \
-  for (typeof(***u(u_iavl, &(typeof(k)){k}, nullptr))* it = avl_at(u, &(typeof(k)){k});            \
-       it != nullptr;                                                                              \
-       it = nullptr)
+#define ut_try(u, _k)                                                                              \
+  for (ut_type(u, v)* it = avl_at(u, &(ut_type(u, k)){_k}); it != nullptr; it = nullptr)
 
-#define ut_pop(u, ...)                                                                             \
+#define ut_pop(u, _k)                                                                              \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+    ut_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_iavl, &_a, nullptr)) _b = {};                                                    \
+    ut_type(u, k) _a = _k;                                                                         \
+    ut_type(u, v) _b = {};                                                                         \
                                                                                                    \
     avl_pop(u, &_a, &_b);                                                                          \
                                                                                                    \
     _b;                                                                                            \
   })
 
-#define ut_put(u, ...)                                                                             \
+#define ut_put(u, _k, _v)                                                                          \
   do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+    ut_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_iavl, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                 \
+    ut_type(u, k) _a = _k;                                                                         \
+    ut_type(u, v) _b = _v;                                                                         \
                                                                                                    \
     avl_put(u, &_a, &_b);                                                                          \
   } while (0)
 
-#define ut_for_all(u, k, v, K)                                                                     \
-  for (K k = {}; avl_for_init(u, 1); avl_for_end(u))                                               \
-    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
+#define ut_for_all(u, _k, _v)                                                                      \
+  for (ut_type(u, k) _k = {}; avl_for_init(u, 1); avl_for_end(u))                                  \
+    for (ut_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
 
-#define ut_rfor_all(u, k, v, K)                                                                    \
-  for (K k = {}; avl_for_init(u, 0); avl_for_end(u))                                               \
-    for (typeof(***u(u_iavl, &k, nullptr)) v = {}; avl_for(u, &k, &v);)
+#define ut_rfor_all(u, _k, _v)                                                                     \
+  for (ut_type(u, k) _k = {}; avl_for_init(u, 0); avl_for_end(u))                                  \
+    for (ut_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
 
 #endif /* !U_IAVL_H__ */

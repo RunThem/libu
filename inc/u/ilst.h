@@ -35,11 +35,6 @@ typedef struct {
 }* u_lst_t;
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-extern u_lst_t u_ilst;
-
-/***************************************************************************************************
  * Api
  ***************s***********************************************************************************/
 extern any_t lst_new();
@@ -71,14 +66,21 @@ extern any_t lst_for(any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define ulst(T) typeof(T(*(*)(u_lst_t)))
+#define ulst(T) typeof(u_lst_t(*)(T*))
+
+#define __ulst_def(T)                                                                              \
+  ulst(T) : (T*) {                                                                                 \
+  }
+
+#define ul_type(u)       typeof(_Generic(typeof(u), va_map(__ulst_def, va_unpack(ulst_def))))
+#define ul_type_check(u) static_assert(typeeq((u_lst_t){}, u(nullptr)))
 
 /***************************************************************************************************
  * iApi lst
  **************************************************************************************************/
 #define ul_init(u)                                                                                 \
   do {                                                                                             \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+    ul_type_check(u);                                                                              \
                                                                                                    \
     u = lst_new();                                                                                 \
   } while (0)
@@ -94,37 +96,37 @@ extern any_t lst_for(any_t);
 
 #define ul_len(u)                                                                                  \
   ({                                                                                               \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+    ul_type_check(u);                                                                              \
                                                                                                    \
     lst_len(u);                                                                                    \
   })
 
-#define ul_empty(u)                                                                                \
+#define ul_is_empty(u)                                                                             \
   ({                                                                                               \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+    ul_type_check(u);                                                                              \
                                                                                                    \
     0 == lst_len(u);                                                                               \
   })
 
-#define ul_exist(u, ...)                                                                           \
+#define ul_is_exist(u, ptr)                                                                        \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+    ul_type_check(u);                                                                              \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
+    ul_type(u) _a = ptr;                                                                           \
                                                                                                    \
     lst_exist(u, _a);                                                                              \
   })
 
 #define ul_clear(u)                                                                                \
   do {                                                                                             \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+    ul_type_check(u);                                                                              \
                                                                                                    \
     lst_clear(u);                                                                                  \
   } while (0)
 
 #define ul_cleanup(u)                                                                              \
   do {                                                                                             \
-    typeof(u(u_ilst)) _m = nullptr;                                                                \
+    ul_type_check(u);                                                                              \
                                                                                                    \
     lst_cleanup(u);                                                                                \
                                                                                                    \
@@ -133,7 +135,9 @@ extern any_t lst_for(any_t);
 
 #define ul_first(u)                                                                                \
   ({                                                                                               \
-    typeof(u(u_ilst)) _a = {};                                                                     \
+    ul_type_check(u);                                                                              \
+                                                                                                   \
+    ul_type(u) _a = {};                                                                            \
                                                                                                    \
     _a = lst_first(u);                                                                             \
                                                                                                    \
@@ -142,31 +146,33 @@ extern any_t lst_for(any_t);
 
 #define ul_last(u)                                                                                 \
   ({                                                                                               \
-    typeof(u(u_ilst)) _a = {};                                                                     \
+    ul_type_check(u);                                                                              \
+                                                                                                   \
+    ul_type(u) _a = {};                                                                            \
                                                                                                    \
     _a = lst_last(u);                                                                              \
                                                                                                    \
     _a;                                                                                            \
   })
 
-#define ul_prev(u, ...)                                                                            \
+#define ul_prev(u, ptr)                                                                            \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+    ul_type_check(u);                                                                              \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
-    typeof(u(u_ilst)) _b = {};                                                                     \
+    ul_type(u) _a = ptr;                                                                           \
+    ul_type(u) _b = {};                                                                            \
                                                                                                    \
     _b = lst_prev(u, _a);                                                                          \
                                                                                                    \
     _b;                                                                                            \
   })
 
-#define ul_next(u, ...)                                                                            \
+#define ul_next(u, ptr)                                                                            \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+    ul_type_check(u);                                                                              \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
-    typeof(u(u_ilst)) _b = {};                                                                     \
+    ul_type(u) _a = ptr;                                                                           \
+    ul_type(u) _b = {};                                                                            \
                                                                                                    \
     _b = lst_next(u, _a);                                                                          \
                                                                                                    \
@@ -175,39 +181,37 @@ extern any_t lst_for(any_t);
 
 #define ul_pop(u, ...)                                                                             \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+    va_elseif(va_size_is(1, __VA_ARGS__))(ul_type(u) _a = va_at(0, __VA_ARGS__);)(                 \
+        ul_type(u) _a = lst_last(u);)                                                              \
                                                                                                    \
-    typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                                  \
-                                                                                                   \
-    lst_pop(u, _a);                                                                                \
+        lst_pop(u, _a);                                                                            \
                                                                                                    \
     _a;                                                                                            \
   })
 
 /* clang-format off */
-#  define ul_put(u, ...)                                                                           \
-    do {                                                                                           \
-      static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 2),                     \
-                    "The number of '...' is 1 or 2.");                                             \
+#define ul_put(u, ptr, ...)                                                                        \
+  do {                                                                                             \
+    ul_type_check(u);                                                                              \
                                                                                                    \
-      va_elseif(va_size_is(2, __VA_ARGS__)) (                                                      \
-        typeof(u(u_ilst)) _a = va_at(0, __VA_ARGS__);                                              \
-        typeof(u(u_ilst)) _b = va_at(1, __VA_ARGS__);                                              \
-      ) (                                                                                          \
-        typeof(u(u_ilst)) _a = lst_last(u);                                                        \
-        typeof(u(u_ilst)) _b = va_at(0, __VA_ARGS__);                                              \
-      )                                                                                            \
+    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+      ul_type(u) _a = ptr;                                                                         \
+      ul_type(u) _b = va_at(0, __VA_ARGS__);                                                       \
+    ) (                                                                                            \
+      ul_type(u) _a = lst_last(u);                                                                 \
+      ul_type(u) _b = ptr;                                                                         \
+    )                                                                                              \
                                                                                                    \
-      lst_put(u, _a, _b);                                                                          \
-    } while (0)
+    lst_put(u, _a, _b);                                                                            \
+  } while (0)
 /* clang-format on */
 
 #define ul_for_all(u, it)                                                                          \
   for (; lst_for_init(u, 1); lst_for_end(u))                                                       \
-    for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
+    for (ul_type(u) it = {}; (it = lst_for(u));)
 
 #define ul_rfor_all(u, it)                                                                         \
   for (; lst_for_init(u, 0); lst_for_end(u))                                                       \
-    for (typeof(u(u_ilst)) it = {}; (it = lst_for(u));)
+    for (ul_type(u) it = {}; (it = lst_for(u));)
 
 #endif /* !U_ILST_H__ */

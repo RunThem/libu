@@ -44,10 +44,22 @@
 
 /**/
 
-#include "iavl.h"
-#include "ilst.h"
-#include "imap.h"
+#if defined(uvec_def)
+#  include "ivec.h"
+#endif
+
+#if defined(umap_def)
+#  include "imap.h"
+#endif
+
+#if defined(uavl_def)
+#  include "iavl.h"
+#endif
+
+#if defined(ulst_def)
+#  include "ilst.h"
+#endif
+
 #include "istr.h"
-#include "ivec.h"
 
 #endif /* !U_H__ */

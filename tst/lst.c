@@ -1,4 +1,6 @@
 #include <mut.h>
+
+#define ulst_def (int)
 #include <u/u.h>
 
 mut_test(lst_create) {
@@ -22,7 +24,7 @@ mut_test(lst_interface) {
   ulst(int) l = nullptr;
   ul_init(l);
 
-  mut_assert(true == ul_empty(l));
+  mut_assert(true == ul_is_empty(l));
 
   int a1 = 1;
   int a2 = 2;
@@ -45,7 +47,7 @@ mut_test(lst_interface) {
   /* 1, 2, 3, 4, 5 */
   ul_put(l, ul_first(l), &a2);
 
-  mut_assert(false == ul_empty(l));
+  mut_assert(false == ul_is_empty(l));
   mut_assert(5 == ul_len(l));
 
   ul_pop(l, &a3);
@@ -68,7 +70,7 @@ mut_test(lst_iterator) {
   ulst(int) l = nullptr;
   ul_init(l);
 
-  mut_assert(true == ul_empty(l));
+  mut_assert(true == ul_is_empty(l));
 
   int a1 = 1;
   int a2 = 2;

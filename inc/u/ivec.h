@@ -35,11 +35,6 @@ typedef struct {
 }* u_vec_t;
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-extern u_vec_t u_ivec;
-
-/***************************************************************************************************
  * Api
  ***************s***********************************************************************************/
 extern any_t vec_new(size_t);
@@ -71,17 +66,24 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define uvec(T) typeof(T(*(*)(u_vec_t, ssize_t, T*))[sizeof(ssize_t)][sizeof(T)])
+#define uvec(T) typeof(u_vec_t(*)(ssize_t, T))
+
+#define __uvec_def(T)                                                                              \
+  uvec(T) : (T) {                                                                                  \
+  }
+
+#define uv_type(u)       typeof(_Generic(typeof(u), va_map(__uvec_def, va_unpack(uvec_def))))
+#define uv_type_val(u)   _Generic(typeof(u), va_map(__uvec_def, va_unpack(uvec_def)))
+#define uv_type_check(u) static_assert(typeeq((u_vec_t){}, u(0, uv_type_val(u))))
 
 /***************************************************************************************************
  * iApi vec
  **************************************************************************************************/
 #define uv_init(u)                                                                                 \
   do {                                                                                             \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
-    u = vec_new(sizeof(typeof(**u(nullptr, 0, nullptr))) /                                         \
-                sizeof(typeof(***u(nullptr, 0, nullptr))));                                        \
+    u = vec_new(sizeof(uv_type(u)));                                                               \
   } while (0)
 
 #define uv_new(T)                                                                                  \
@@ -95,45 +97,44 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 #define uv_len(u)                                                                                  \
   ({                                                                                               \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
     vec_len(u);                                                                                    \
   })
 
 #define uv_cap(u)                                                                                  \
   ({                                                                                               \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
     vec_cap(u);                                                                                    \
   })
 
-#define uv_empty(u)                                                                                \
+#define uv_is_empty(u)                                                                             \
   ({                                                                                               \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
     0 == vec_len(u);                                                                               \
   })
 
-#define uv_exist(u, ...)                                                                           \
+#define uv_is_exist(u, idx)                                                                        \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+    uv_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                              = va_at(0, __VA_ARGS__);                                  \
-    typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                     \
+    ssize_t _a = idx;                                                                              \
                                                                                                    \
     vec_exist(u, _a);                                                                              \
   })
 
 #define uv_clear(u)                                                                                \
   do {                                                                                             \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
     vec_clear(u);                                                                                  \
   } while (0)
 
 #define uv_cleanup(u)                                                                              \
   do {                                                                                             \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
     vec_cleanup(u);                                                                                \
                                                                                                    \
@@ -141,97 +142,100 @@ extern bool vec_for(any_t, ssize_t*, any_t);
   } while (0)
 
 /* clang-format off */
-#  define uv_at(u, ...)                                                                            \
-    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
-      ({                                                                                           \
-        static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                     \
+#define uv_at(u, ...)                                                                              \
+  va_elseif(va_size_is(2, __VA_ARGS__)) (                                                          \
+    ({                                                                                             \
+      uv_type_check(u);                                                                            \
                                                                                                    \
-        bool _ret                      = false;                                                    \
-        auto _a                        = va_at(0, __VA_ARGS__);                                    \
-        typeof(***u(u_ivec, _a, nullptr))* _b = {};                                                \
+      bool _ret      = false;                                                                      \
+      ssize_t _a     = va_at(0, __VA_ARGS__);                                                      \
+      uv_type(u)* _b = {};                                                                         \
                                                                                                    \
-        _b = vec_at(u, _a);                                                                        \
+      _b = vec_at(u, _a);                                                                          \
                                                                                                    \
-        if (_b != nullptr) {                                                                       \
-          *_b = va_at(1, __VA_ARGS__);                                                             \
-          _ret = true;                                                                             \
-        }                                                                                          \
+      if (_b != nullptr) {                                                                         \
+        *_b = va_at(1, __VA_ARGS__);                                                               \
+        _ret = true;                                                                               \
+      }                                                                                            \
                                                                                                    \
-        _ret;                                                                                      \
-      })                                                                                           \
-    ) (                                                                                            \
-      ({                                                                                           \
-        static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                     \
+      _ret;                                                                                        \
+    })                                                                                             \
+  ) (                                                                                              \
+    ({                                                                                             \
+      uv_type_check(u);                                                                            \
                                                                                                    \
-        auto _a                        = va_at(0, __VA_ARGS__);                                    \
-        typeof(***u(u_ivec, _a, nullptr)) _it = {};                                                \
-        typeof(***u(u_ivec, _a, nullptr))* _b = {};                                                \
+      auto _a        = va_at(0, __VA_ARGS__);                                                      \
+      uv_type(u) _it = {};                                                                         \
+      uv_type(u)* _b = {};                                                                         \
                                                                                                    \
-        _b = vec_at(u, _a);                                                                        \
+      _b = vec_at(u, _a);                                                                          \
                                                                                                    \
-        if (_b == nullptr) {                                                                       \
-          _b = &_it;                                                                               \
-        }                                                                                          \
+      if (_b == nullptr) {                                                                         \
+        _b = &_it;                                                                                 \
+      }                                                                                            \
                                                                                                    \
-        *_b;                                                                                       \
-      })                                                                                           \
-    )
+      *_b;                                                                                         \
+    })                                                                                             \
+  )
 /* clang-format on */
 
-#define uv_try(u, i)                                                                               \
-  for (typeof(***u(u_ivec, i, nullptr))* it = vec_at(u, i); it != nullptr; it = nullptr)
+#define uv_try(u, i) for (uv_type(u)* it = vec_at(u, i); it != nullptr; it = nullptr)
 
 /* clang-format off */
-#  define uv_pop(u, ...)                                                                           \
-    ({                                                                                             \
-      static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 0),                     \
-                    "The number of '...' is 1 or 0.");                                             \
+#define uv_pop(u, ...)                                                                             \
+  ({                                                                                               \
+    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 0),                       \
+                  "The number of '...' is 1 or 0.");                                               \
                                                                                                    \
-      va_elseif(va_size_is(1, __VA_ARGS__)) (                                                      \
-        auto _a                              = va_at(0, __VA_ARGS__);                              \
-        typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                 \
-      ) (                                                                                          \
-        auto _a                              = -1;                                                 \
-        typeof(***u(u_ivec, _a, nullptr)) _b = {};                                                 \
-      )                                                                                            \
+    uv_type_check(u);                                                                              \
                                                                                                    \
-      vec_pop(u, _a, &_b);                                                                         \
+    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+      ssize_t _a    = va_at(0, __VA_ARGS__);                                                       \
+      uv_type(u) _b = {};                                                                          \
+    ) (                                                                                            \
+      ssize_t _a    = -1;                                                                          \
+      uv_type(u) _b = {};                                                                          \
+    )                                                                                              \
                                                                                                    \
-      _b;                                                                                          \
-    })
+    vec_pop(u, _a, &_b);                                                                           \
+                                                                                                   \
+    _b;                                                                                            \
+  })
 
-#  define uv_put(u, ...)                                                                           \
-    do {                                                                                           \
-      static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 2),                     \
-                    "The number of '...' is 1 or 2.");                                             \
+#define uv_put(u, ...)                                                                             \
+  do {                                                                                             \
+    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 2),                       \
+                  "The number of '...' is 1 or 2.");                                               \
                                                                                                    \
-      va_elseif(va_size_is(2, __VA_ARGS__)) (                                                      \
-        auto _a                              = va_at(0, __VA_ARGS__);                              \
-        typeof(***u(u_ivec, _a, nullptr)) _b = va_at(1, __VA_ARGS__);                              \
-      ) (                                                                                          \
-        auto _a                              = -1;                                                 \
-        typeof(***u(u_ivec, _a, nullptr)) _b = va_at(0, __VA_ARGS__);                              \
-      )                                                                                            \
+    uv_type_check(u);                                                                              \
                                                                                                    \
-      vec_put(u, _a, &_b);                                                                         \
-    } while (0)
+    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+      auto _a       = va_at(0, __VA_ARGS__);                                                       \
+      uv_type(u) _b = va_at(1, __VA_ARGS__);                                                       \
+    )(                                                                                             \
+      auto _a       = -1;                                                                          \
+      uv_type(u) _b = va_at(0, __VA_ARGS__);                                                       \
+    )                                                                                              \
+                                                                                                   \
+    vec_put(u, _a, &_b);                                                                           \
+  } while (0)
 /* clang-format on */
 
 #define uv_sort(u, ...)                                                                            \
   do {                                                                                             \
     static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
                                                                                                    \
-    typeof(u(u_ivec, 0, nullptr)) _m = nullptr;                                                    \
+    uv_type_check(u);                                                                              \
                                                                                                    \
     vec_sort(u, va_at(0, __VA_ARGS__));                                                            \
   } while (0)
 
 #define uv_for_all(u, i, it)                                                                       \
   for (ssize_t i = 0; vec_for_init(u, 1); vec_for_end(u))                                          \
-    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
+    for (uv_type(u) it = {}; vec_for(u, &i, &it);)
 
 #define uv_rfor_all(u, i, it)                                                                      \
   for (ssize_t i = 0; vec_for_init(u, 0); vec_for_end(u))                                          \
-    for (typeof(***u(u_ivec, i, nullptr)) it = {}; vec_for(u, &i, &it);)
+    for (uv_type(u) it = {}; vec_for(u, &i, &it);)
 
 #endif /* !U_IVEC_H__ */

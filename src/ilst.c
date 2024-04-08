@@ -22,10 +22,13 @@
  *
  * */
 
+#define uvec_def (any_t)
+
 #include <u/ilst.h>
 #include <u/ivec.h>
 #include <u/utils/alloc.h>
 #include <u/utils/debug.h>
+#include <u/utils/va.h>
 
 /***************************************************************************************************
  * Let
@@ -91,7 +94,7 @@ bool lst_exist(any_t _self, any_t ptr) {
 
   u_chk_if(self == nullptr, false);
   u_chk_if(ptr == nullptr, false);
-  u_chk_if(uv_empty(self->items), false);
+  u_chk_if(uv_is_empty(self->items), false);
 
   uv_for_all(self->items, i, node) {
     if (node == ptr) {
@@ -106,7 +109,7 @@ any_t lst_first(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(uv_empty(self->items), nullptr);
+  u_chk_if(uv_is_empty(self->items), nullptr);
 
   return uv_at(self->items, 0ul);
 }
@@ -115,7 +118,7 @@ any_t lst_last(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(uv_empty(self->items), nullptr);
+  u_chk_if(uv_is_empty(self->items), nullptr);
 
   return uv_at(self->items, -1);
 }
@@ -155,7 +158,7 @@ void lst_pop(any_t _self, any_t ptr) {
 
   u_nchk_if(self == nullptr);
   u_nchk_if(ptr == nullptr);
-  u_nchk_if(uv_empty(self->items));
+  u_nchk_if(uv_is_empty(self->items));
 
   uv_for_all(self->items, i, node) {
     if (node == ptr) {
@@ -208,7 +211,7 @@ any_t lst_for(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(uv_empty(self->items), nullptr);
+  u_chk_if(uv_is_empty(self->items), nullptr);
   u_chk_if(self->flags[3], nullptr);
 
   /* 初始化 */

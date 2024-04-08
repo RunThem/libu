@@ -38,6 +38,7 @@ fn main() {
 ```rust
 pkg main
 
+use std::fmt;
 
 fn main() {
   let x: bool = true;

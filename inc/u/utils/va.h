@@ -95,6 +95,13 @@ va_let(a)       /* : _a_100 */
 #endif
 
 
+/* 
+ * unpack
+ * */
+#define va_unpack(...)   __va_unpack __VA_ARGS__
+#define __va_unpack(...) __VA_ARGS__
+
+
 /*
  * inc
  **/

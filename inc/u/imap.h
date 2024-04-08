@@ -35,11 +35,6 @@ typedef struct {
 }* u_map_t;
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-extern u_map_t u_imap;
-
-/***************************************************************************************************
  * Api
  ***************s***********************************************************************************/
 extern any_t map_new(size_t, size_t);
@@ -69,19 +64,30 @@ extern bool map_for(any_t, any_t, any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define umap(K, V) typeof(V(*(*)(u_map_t, K*, V*))[sizeof(K)][sizeof(V)])
+#define umap(K, V) typeof(u_map_t(*)(K, V))
+
+#define __umap_def(K, V)                                                                           \
+  umap(K, V) :                                                                                     \
+      (struct {                                                                                    \
+        K k;                                                                                       \
+        V v;                                                                                       \
+      }) {                                                                                         \
+  }
+
+#define _umap_def(arg) __umap_def arg
+
+#define um_type(u, arg)     typeof(_Generic(typeof(u), va_map(_umap_def, va_unpack(umap_def))).arg)
+#define um_type_val(u, arg) _Generic(typeof(u), va_map(_umap_def, va_unpack(umap_def))).arg
+#define um_type_check(u)    static_assert(typeeq((u_map_t){}, u(um_type_val(u, k), um_type_val(u, v))))
 
 /***************************************************************************************************
  * iApi map
  **************************************************************************************************/
 #define um_init(u)                                                                                 \
   do {                                                                                             \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+    um_type_check(u);                                                                              \
                                                                                                    \
-    u = map_new(sizeof(typeof(*u(nullptr, nullptr, nullptr))) /                                    \
-                    sizeof(typeof(**u(nullptr, nullptr, nullptr))),                                \
-                sizeof(typeof(**u(nullptr, nullptr, nullptr))) /                                   \
-                    sizeof(typeof(***u(nullptr, nullptr, nullptr))));                              \
+    u = map_new(sizeof(um_type(u, k)), sizeof(um_type(u, v)));                                     \
   } while (0)
 
 #define um_new(K, V)                                                                               \
@@ -95,38 +101,38 @@ extern bool map_for(any_t, any_t, any_t);
 
 #define um_len(u)                                                                                  \
   ({                                                                                               \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+    um_type_check(u);                                                                              \
                                                                                                    \
     map_len(u);                                                                                    \
   })
 
-#define um_empty(u)                                                                                \
+#define um_is_empty(u)                                                                             \
   ({                                                                                               \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+    um_type_check(u);                                                                              \
                                                                                                    \
     0 == map_len(u);                                                                               \
   })
 
-#define um_exist(u, ...)                                                                           \
+#define um_is_exist(u, _k)                                                                         \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                         \
+    um_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_imap, &_a, nullptr)) _b = {};                                                    \
+    um_type(u, k) _a = _k;                                                                         \
+    um_type(u, v) _b = {};                                                                         \
                                                                                                    \
     map_exist(u, &_a);                                                                             \
   })
 
 #define um_clear(u)                                                                                \
   do {                                                                                             \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+    um_type_check(u);                                                                              \
                                                                                                    \
     map_clear(u);                                                                                  \
   } while (0)
 
 #define um_cleanup(u)                                                                              \
   do {                                                                                             \
-    typeof(u(u_imap, nullptr, nullptr)) _m = nullptr;                                              \
+    um_type_check(u);                                                                              \
                                                                                                    \
     map_cleanup(u);                                                                                \
                                                                                                    \
@@ -134,19 +140,19 @@ extern bool map_for(any_t, any_t, any_t);
   } while (0)
 
 /* clang-format off */
-#  define um_at(u, ...)                                                                            \
+#  define um_at(u, _k, ...)                                                                        \
     va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
       ({                                                                                           \
-        static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                     \
+        um_type_check(u);                                                                          \
                                                                                                    \
-        bool _ret                      = false;                                                    \
-        auto _a                        = va_at(0, __VA_ARGS__);                                    \
-        typeof(***u(u_imap, &_a, nullptr))* _b = {};                                               \
+        bool _ret         = false;                                                                 \
+        um_type(u, k) _a  = _k;                                                                    \
+        um_type(u, v)* _b = {};                                                                    \
                                                                                                    \
         _b = map_at(u, &_a);                                                                       \
                                                                                                    \
         if (_b != nullptr) {                                                                       \
-          *_b = va_at(1, __VA_ARGS__);                                                             \
+          *_b = va_at(0, __VA_ARGS__);                                                             \
           _ret = true;                                                                             \
         }                                                                                          \
                                                                                                    \
@@ -154,11 +160,11 @@ extern bool map_for(any_t, any_t, any_t);
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
-        static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                     \
+        um_type_check(u);                                                                          \
                                                                                                    \
-        auto _a                        = va_at(0, __VA_ARGS__);                                    \
-        typeof(***u(u_imap, &_a, nullptr)) _it = {};                                               \
-        typeof(***u(u_imap, &_a, nullptr))* _b = {};                                               \
+        um_type(u, k) _a  = _k;                                                                    \
+        um_type(u, v) _it = {};                                                                    \
+        um_type(u, v)* _b = {};                                                                    \
                                                                                                    \
         _b = map_at(u, &_a);                                                                       \
                                                                                                    \
@@ -171,39 +177,37 @@ extern bool map_for(any_t, any_t, any_t);
     )
 /* clang-format on */
 
-#define um_try(u, k)                                                                               \
-  for (typeof(***u(u_imap, &(typeof(k)){k}, nullptr))* it = map_at(u, &(typeof(k)){k});            \
-       it != nullptr;                                                                              \
-       it = nullptr)
+#define um_try(u, _k)                                                                              \
+  for (um_type(u, v)* it = map_at(u, &(um_type(u, k)){_k}); it != nullptr; it = nullptr)
 
-#define um_pop(u, ...)                                                                             \
+#define um_pop(u, _k)                                                                              \
   ({                                                                                               \
-    static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 2.");                         \
+    um_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_imap, &_a, nullptr)) _b = {};                                                    \
+    um_type(u, k) _a = _k;                                                                         \
+    um_type(u, v) _b = {};                                                                         \
                                                                                                    \
     map_pop(u, &_a, &_b);                                                                          \
                                                                                                    \
     _b;                                                                                            \
   })
 
-#define um_put(u, ...)                                                                             \
+#define um_put(u, _k, _v)                                                                          \
   do {                                                                                             \
-    static_assert(va_size(__VA_ARGS__) == 2, "The number of '...' is 2.");                         \
+    um_type_check(u);                                                                              \
                                                                                                    \
-    auto _a                               = va_at(0, __VA_ARGS__);                                 \
-    typeof(***u(u_imap, &_a, nullptr)) _b = va_at(1, __VA_ARGS__);                                 \
+    um_type(u, k) _a = _k;                                                                         \
+    um_type(u, v) _b = _v;                                                                         \
                                                                                                    \
     map_put(u, &_a, &_b);                                                                          \
   } while (0)
 
-#define um_for_all(u, k, v, K)                                                                     \
-  for (K k = {}; map_for_init(u, 1); map_for_end(u))                                               \
-    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
+#define um_for_all(u, _k, _v)                                                                      \
+  for (um_type(u, k) _k = {}; map_for_init(u, 1); map_for_end(u))                                  \
+    for (um_type(u, v) _v = {}; map_for(u, &_k, &_v);)
 
-#define um_rfor_all(u, k, v, K)                                                                    \
-  for (K k = {}; map_for_init(u, 0); map_for_end(u))                                               \
-    for (typeof(***u(u_imap, &k, nullptr)) v = {}; map_for(u, &k, &v);)
+#define um_rfor_all(u, _k, _v)                                                                     \
+  for (um_type(u, k) _k = {}; map_for_init(u, 0); map_for_end(u))                                  \
+    for (um_type(u, v) _v = {}; map_for(u, &_k, &_v);)
 
 #endif /* !U_IMAP_H__ */

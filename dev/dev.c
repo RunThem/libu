@@ -1,8 +1,7 @@
+#include "u/imap.h"
 #define NDEBUG
-
-/* c:codegen std */
-
-/* third libs */
+#define uvec_def (bool, int)
+#define umap_def ((int, bool), (int, char))
 #include <u/u.h>
 
 /* system libs */
@@ -45,8 +44,6 @@ ret_t code = 0;
  * ug: log
  * un: network
  * */
-
-#define kvec(T) typeof(u_vec_t(*)(ssize_t, T))
 
 int main(int argc, const u_cstr_t argv[]) {
   char str[] = "hello";

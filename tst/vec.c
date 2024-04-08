@@ -1,4 +1,7 @@
+
+
 #include <mut.h>
+#define uvec_def (int)
 #include <u/u.h>
 
 #define N 10
@@ -25,7 +28,7 @@ mut_test(vec_interface) {
   uvec(int) v = nullptr;
   uv_init(v);
 
-  mut_assert(true == uv_empty(v));
+  mut_assert(true == uv_is_empty(v));
 
   /* 31, 30, ..., 1, 0 */
   each(i, N) {
@@ -51,7 +54,7 @@ mut_test(vec_interface) {
    * 31, 30, ..., 1, 0, 0, 1, ..., 30, 31, 31, 30, ..., 1, 0, 0, 1, ..., 30, 31
    * */
 
-  mut_assert(false == uv_empty(v));
+  mut_assert(false == uv_is_empty(v));
   mut_assert(N * 4 == uv_len(v));
 
   mut_assert(N - 1 == uv_at(v, 0));
@@ -119,7 +122,7 @@ mut_test(vec_iterator) {
   uvec(int) v = nullptr;
   uv_init(v);
 
-  mut_assert(true == uv_empty(v));
+  mut_assert(true == uv_is_empty(v));
 
   /* 0, 1, ..., 30, 31 */
   each(i, N) {
