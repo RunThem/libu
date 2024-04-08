@@ -6,54 +6,36 @@
 -->
 
   <h3 align="center">libu</h3>
-  <p align="center">基于C23标准 & 逗号表达式的基础容器库!</p>
+  <p align="center">A basic container library based on the `C23` standard!</p>
 </p>
 <br />
 
-使用 `C23` 标准的特性与逗号表达式, 再使用宏进行封装, 实现的比较好用的泛型容器,
-缺点那就还是老生常谈的问题了, 此处就不过多介绍了.
+**libu** is a small, usability-oriented generic container library for C that provides **vectors**, **doubly linked lists**, **unordered maps**, and **avl tree**.
+
+It requires C23, compiler support for `typeof`.
  
-## 目录
+## Project Requirements
 
-- [上手指南](#上手指南)
-  - [配置要求](#配置要求)
-  - [安装步骤](#安装步骤)
-  - [容器](#容器)
-- [作者](#作者)
-- [鸣谢](#鸣谢)
+1. [xmake](https://github.com/xmake-io/xmake) Build tool
+2. [c2x compiler](https://zh.cppreference.com/w/c/23) equires Clang 16 or Gcc 13 or higher.
 
-### 上手指南
+## Installation
 
-#### 配置要求
-
-1. [xmake](https://github.com/xmake-io/xmake) 项目构建工具
-2. [c2x compiler](https://zh.cppreference.com/w/c/23) 仅支持 `Clang 16`, 以及 `Gcc 13` 以上的版本
-
-#### **安装步骤**
-
-```shell
-git clone https://github.com/RunThem/libu.git
-cd libu
-xmake lsp && xmake
+```sh
+git clone https://github.com/RunThem/libu.git && cd libu
+xmake && xmake install --admin -v
 ```
 
-#### 容器
+## Examples
 
-目前实现的容器:
-- vec
-- map
-- avl
-- lst
+Check out the test code in the `tst` directory.
 
-### 作者
+## MIT LICENSE
 
-<a href="mailto:iccy.fun@outlook.com">RunThem</a>
+The project signed a [`MIT`](https://opensource.org/license/mit) license.
+for details.
 
-### 版权说明
-
-该项目签署了 `MIT` 授权许可, 详情请参阅 [LICENSE](https://github.com/RunThem/libu/blob/master/LICENSE)
-
-### 鸣谢
+### Express Gratitude
 
 - [xmake](https://github.com/xmake-io/xmake)
 - [libu](https://github.com/koanlogic/libu)

@@ -1,10 +1,10 @@
-#include "u/imap.h"
-#define NDEBUG
 #define uvec_def (bool, int)
 #define umap_def ((int, bool), (int, char))
 #include <u/u.h>
 
 /* system libs */
+
+#include <stdlib.h>
 
 #if 0
 #  include <arpa/inet.h>
