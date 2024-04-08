@@ -44,7 +44,18 @@ fn main() {
   let x: bool = true;
   let y: bool = false;
 
-  fmt::println("{}", x);
-  fmt::println("{}", y);
+  let ni8:   i8 = 0;
+  let ni16:  i16 = 0;
+  let ni32:  i32 = 0;
+  let ni64:  i64 = 0;
+  let ni128: i128 = 0;
+
+  let nu8:   u8 = 0;
+  let nu16:  u16 = 0;
+  let nu32:  u32 = 0;
+  let nu64:  u64 = 0;
+  let nu128: u128 = 0;
+
+  let s: str = 'hello';
 }
 ```
