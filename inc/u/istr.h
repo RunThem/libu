@@ -51,7 +51,6 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-/* clang-format  */
 #define us_new(s)                                                                                  \
   ({                                                                                               \
     auto _fn = _Generic(s,                                                                         \
@@ -62,7 +61,6 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
                                                                                                    \
     _fn(s);                                                                                        \
   })
-/* clang-format on */
 
 #define us_len(s)                                                                                  \
   ({                                                                                               \

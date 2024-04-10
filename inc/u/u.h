@@ -60,6 +60,6 @@
 #  include "ilst.h"
 #endif
 
-#include "istr.h"
+/* #include "istr.h" */
 
 #endif /* !U_H__ */
