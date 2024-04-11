@@ -47,6 +47,10 @@ ret_t code = 0;
 
 #define mtx_block(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
 
+#define u_check(expr, ...)                                                                         \
+  if (expr)                                                                                        \
+  __VA_OPT__({ __VA_ARGS__; })
+
 #define STACK_SIZE 1024
 
 ucontext_t uctx_main        = {};
@@ -67,10 +71,21 @@ void fun2() {
   println("fun 2 ending");
 }
 
-int main(int argc, const u_cstr_t argv[]) {
+/* 全新版本的字符串原始实现 */
+typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
+
+int main(int argc, const u_string_t argv) {
   char str[] = "hello";
   int result = typeeq(char[], str);
   infln("result is %d", result);
+
+  for (size_t i = 0; i < argc; i++) {
+    println("%s", argv[i]);
+  }
+
+  u_string_t ss = {"hello"};
+
+  println("%s, %p", *ss, ss[1]);
 
   infln("%lu", sizeof(enum {T, F}));
 
