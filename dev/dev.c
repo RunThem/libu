@@ -1,12 +1,14 @@
 #define uvec_def (bool, int)
 #define umap_def ((int, bool), (int, char))
+
 #include <u/u.h>
 
 /* system libs */
 
+#include <limits.h>
 #include <stdlib.h>
 
-#if 1
+#if 0
 #  include <arpa/inet.h>
 #  include <dirent.h>
 #  include <fcntl.h>
@@ -51,59 +53,91 @@ ret_t code = 0;
   if (expr)                                                                                        \
   __VA_OPT__({ __VA_ARGS__; })
 
-#define STACK_SIZE 1024
-
-ucontext_t uctx_main        = {};
-ucontext_t uctx_fun1        = {};
-ucontext_t uctx_fun2        = {};
-char fun1_stack[STACK_SIZE] = {};
-char fun2_stack[STACK_SIZE] = {};
-
-void fun1() {
-  println("fun 1 running");
-  swapcontext(&uctx_fun1, &uctx_fun2);
-  println("fun 1 ending");
-}
-
-void fun2() {
-  println("fun 2 running");
-  swapcontext(&uctx_fun2, &uctx_fun1);
-  println("fun 2 ending");
-}
-
 /* 全新版本的字符串原始实现 */
 typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
 
-int main(int argc, const u_string_t argv) {
-  char str[] = "hello";
-  int result = typeeq(char[], str);
-  infln("result is %d", result);
+typedef struct {
+  int id;
+  int cost;
+} side;
 
-  for (size_t i = 0; i < argc; i++) {
-    println("%s", argv[i]);
-  }
+typedef struct {
+  int id;
+  side sub[4];
+} node;
 
-  u_string_t ss = {"hello"};
+typedef struct {
+  int id;
+  bool isuse;
+  int cost;
+  int prev;
+} item;
 
-  println("%s, %p", *ss, ss[1]);
+node graph[] = {
+    {0, {{1, 4}, {7, 8}, {-1, 0}, {-1, 0}} },
+    {1, {{0, 4}, {7, 11}, {2, 8}, {-1, 0}} },
+    {2, {{1, 8}, {8, 2}, {5, 4}, {3, 7}}   },
+    {3, {{2, 7}, {5, 14}, {4, 9}, {-1, 0}} },
+    {4, {{3, 9}, {5, 10}, {-1, 0}, {-1, 0}}},
+    {5, {{6, 2}, {2, 4}, {3, 14}, {4, 10}} },
+    {6, {{7, 1}, {8, 6}, {5, 2}, {-1, 0}}  },
+    {7, {{0, 8}, {1, 11}, {8, 7}, {6, 1}}  },
+    {8, {{7, 7}, {6, 6}, {2, 2}, {-1, 0}}  },
+};
 
+item table[] = {
+    {0, false, 0,       -1},
+    {1, false, INT_MAX, -1},
+    {2, false, INT_MAX, -1},
+    {3, false, INT_MAX, -1},
+    {4, false, INT_MAX, -1},
+    {5, false, INT_MAX, -1},
+    {6, false, INT_MAX, -1},
+    {7, false, INT_MAX, -1},
+    {8, false, INT_MAX, -1},
+};
+
+#define u_arr_for(arr, i, it)                                                                      \
+  for (size_t i = 0; i < arrlen(arr); i++)                                                         \
+    for (auto it = &arr[i]; it; it = nullptr)
+
+void next(int* idx, int* cost) {
+}
+
+int main(int argc, const u_cstr_t argv[]) {
   infln("%lu", sizeof(enum {T, F}));
 
-  getcontext(&uctx_fun1);
-  uctx_fun1.uc_link          = &uctx_main;
-  uctx_fun1.uc_stack.ss_sp   = fun1_stack;
-  uctx_fun1.uc_stack.ss_size = STACK_SIZE;
-  makecontext(&uctx_fun1, fun1, 0);
+  int idx  = 0;
+  int cost = 0;
+  u_arr_for(table, i, _) {
+    // 找到最优节点, 未被使用的节点中开销最小
+    cost = INT_MAX;
+    u_arr_for(table, i, it) {
+      if (!it->isuse && it->cost < cost) {
+        idx  = it->id;
+        cost = it->cost;
+      }
+    }
 
-  getcontext(&uctx_fun2);
-  uctx_fun2.uc_link          = &uctx_main;
-  uctx_fun2.uc_stack.ss_sp   = fun2_stack;
-  uctx_fun2.uc_stack.ss_size = STACK_SIZE;
-  makecontext(&uctx_fun2, fun2, 0);
+    // 标记该节点已被使用
+    table[idx].isuse = true;
 
-  swapcontext(&uctx_main, &uctx_fun1);
+    // 更新所有子节点
+    u_arr_for(graph[idx].sub, i, it) {
+      if (table[it->id].isuse) {
+        continue;
+      }
 
-  println("Main program ending");
+      if (cost + it->cost < table[it->id].cost) {
+        table[it->id].cost = cost + it->cost;
+        table[it->id].prev = idx;
+      }
+    }
+  }
+
+  u_arr_for(table, i, it) {
+    printf("id %d, cost %d, prev %d\n", it->id, it->cost, it->prev);
+  }
 
   return EXIT_SUCCESS;
 err:
