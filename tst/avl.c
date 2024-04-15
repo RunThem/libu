@@ -1,5 +1,3 @@
-#include "u/iavl.h"
-
 #include <mut.h>
 
 #define uavl_def ((size_t, int), (int, char))
