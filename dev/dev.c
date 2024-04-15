@@ -7,6 +7,7 @@
 
 #include <limits.h>
 #include <stdlib.h>
+// #include <task.h>
 
 #if 0
 #  include <arpa/inet.h>
@@ -101,12 +102,7 @@ item table[] = {
   for (size_t i = 0; i < arrlen(arr); i++)                                                         \
     for (auto it = &arr[i]; it; it = nullptr)
 
-void next(int* idx, int* cost) {
-}
-
-int main(int argc, const u_cstr_t argv[]) {
-  infln("%lu", sizeof(enum {T, F}));
-
+void spf() {
   int idx  = 0;
   int cost = 0;
   u_arr_for(table, i, _) {
@@ -138,8 +134,15 @@ int main(int argc, const u_cstr_t argv[]) {
   u_arr_for(table, i, it) {
     printf("id %d, cost %d, prev %d\n", it->id, it->cost, it->prev);
   }
+}
+
+int main(int argc, const u_cstr_t argv[]) {
+  infln("%lu", sizeof(enum {T, F}));
+
+  spf();
 
   return EXIT_SUCCESS;
+
 err:
   errln("failed.");
 
