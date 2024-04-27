@@ -96,7 +96,7 @@ extern bool map_for(any_t, any_t, any_t);
     u = map_new(sizeof(u_map_type(u, k)), sizeof(u_map_type(u, v)));                               \
   } while (0)
 
-#define u_map_new()                                                                                \
+#define u_map_new(...)                                                                             \
   ({                                                                                               \
     u_map_t(__VA_ARGS__) u = nullptr;                                                              \
                                                                                                    \
