@@ -506,6 +506,8 @@ void avl_pop(any_t _self, any_t key, any_t val) {
     node = (result < 0) ? node->left : node->right;
   }
 
+  u_nchk_if(node == nullptr);
+
   if (node->left && node->right) {
     parent = avl_pop_left_and_right(self, node);
   } else {
