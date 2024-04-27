@@ -54,6 +54,10 @@
 #  include "imap.h"
 #endif
 
+#if defined(u_set_defs)
+#  include "iset.h"
+#endif
+
 #if defined(u_tree_defs)
 #  include "iavl.h"
 #endif

@@ -366,7 +366,9 @@ any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   avl_t* self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
+#if 0 /* support set */
   u_chk_if(vsize == 0, nullptr);
+#endif
   u_chk_if(cmp_fn == nullptr, nullptr);
 
   self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
@@ -554,6 +556,14 @@ void avl_put(any_t _self, any_t key, any_t val) {
   return;
 
 err:
+}
+
+extern u_cmp_fn avl_fn(any_t _self) {
+  avl_t* self = (avl_t*)_self;
+
+  u_chk_if(self == nullptr, nullptr);
+
+  return self->cmp_fn;
 }
 
 bool avl_for_init(any_t _self, bool flag) {

@@ -1,5 +1,10 @@
-#define u_vec_def (bool, int)
-#define u_map_def ((int, bool), (int, char))
+#define NDEBUG
+
+#define u_vec_defs  u_defs(vec, bool, int)
+#define u_set_defs  u_defs(set, item)
+#define u_map_defs  u_defs(map, (int, bool), (int, char))
+#define u_tree_defs u_defs(tree, (int, bool), (int, char), (int, u_zero_size_type_t))
+#define u_list_defs u_defs(list, bool, int)
 
 #include <u/u.h>
 
@@ -138,12 +143,76 @@ void spf() {
 }
 #endif
 
+typedef struct {
+  const u_cstr_t ptr;
+} _u_str_t;
+
+void set(any_t _self) {
+  ((any_t*)_self)[0] = nullptr;
+}
+
+#include <u/utils/va.h>
+
+typedef struct {
+  int a;
+  int b;
+} item;
+
+fn_compe_def(item, x.a == y.a, x.a > y.a);
+fn_compe_dec(item);
+
 int main(int argc, const u_cstr_t argv[]) {
   infln("%lu", sizeof(enum {T, F}));
 
-  u_vec_t(int) v = u_vec_new(int);
+  _u_str_t str = {"hello"};
 
-  u_vec_cleanup(v);
+  println("%p", str.ptr);
+
+  set(&str);
+
+  println("%p", str.ptr);
+
+  u_set_t(item) s = u_set_new(item, fn_cmp(item));
+
+  // u_set_init(s, fn_cmp(item));
+
+  println("len is %zu", u_set_len(s));
+  println("empty is %d", u_set_is_empty(s));
+
+  u_set_put(s, me(item, .a = 12, .b = 100));
+  u_set_put(s, me(item, .a = 13, .b = 200));
+
+  println("len is %zu", u_set_len(s));
+  println("empty is %d", u_set_is_empty(s));
+
+  println("%d", u_set_at(s, me(item, .a = 12)).b);
+  println("%d", u_set_at(s, me(item, .a = 13)).b);
+
+  u_set_at(s, me(item, .a = 12), me(item, .a = 13, .b = 300));
+
+  println("len is %zu", u_set_len(s));
+  println("empty is %d", u_set_is_empty(s));
+
+  println("%d", u_set_at(s, me(item, .a = 12)).b);
+  println("%d", u_set_at(s, me(item, .a = 13)).b);
+
+  item sodf = {.a = 12};
+
+  u_set_try(s, sodf) {
+    println("%p", it);
+    println("%d", it->a);
+    println("%d", it->b);
+  }
+
+  // println("%d", u_set_pop(s, me(item, .a = 14)).a);
+
+  u_set_for(s, it) {
+    println("%d, %d", it.a, it.b);
+  }
+
+  u_set_clear(s);
+
+  u_set_cleanup(s);
 
   return EXIT_SUCCESS;
 
