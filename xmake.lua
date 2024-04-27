@@ -2,7 +2,7 @@
 set_project('libu')
 
 --- Project version
-set_version('3.0.0')
+set_version('1.0.0')
 
 --- xmake configure
 set_xmakever('2.6.1')
@@ -33,9 +33,6 @@ add_cflags('-Wno-reserved-macro-identifier', '-Wno-reserved-identifier')
 
 --- Disable VLA extensons
 add_cflags('-Werror=vla')
-
---- DWARF v4
-add_cflags('-gdwarf-4')
 
 --- Toolchain
 set_toolchains('clang')
