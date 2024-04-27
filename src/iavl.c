@@ -22,13 +22,9 @@
  *
  * */
 
-#define u_vec_def (node_t*)
+#define u_vec_defs u_defs(vec, node_t*)
 
-#include <u/iavl.h>
-#include <u/ivec.h>
-#include <u/utils/alloc.h>
-#include <u/utils/debug.h>
-#include <u/utils/misc.h>
+#include <u/u.h>
 
 /***************************************************************************************************
  * Type

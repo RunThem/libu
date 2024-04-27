@@ -53,6 +53,8 @@ extern void avl_pop(any_t, any_t, any_t);
 
 extern void avl_put(any_t, any_t, any_t);
 
+extern u_cmp_fn avl_fn(any_t);
+
 extern bool avl_for_init(any_t, bool);
 
 extern void avl_for_end(any_t);
@@ -64,7 +66,7 @@ extern bool avl_for(any_t, any_t, any_t);
  **************************************************************************************************/
 #define u_tree_t(...) typeof(__u_tree_t(*)(__VA_ARGS__))
 
-#define __u_tree_def(K, V)                                                                         \
+#define __u_tree_defs(K, V)                                                                        \
   u_tree_t(K, V) :                                                                                 \
       (struct {                                                                                    \
         K k;                                                                                       \
@@ -72,13 +74,17 @@ extern bool avl_for(any_t, any_t, any_t);
       }) {                                                                                         \
   }
 
-#define _u_tree_def(arg) __u_tree_def arg
+#define _u_tree_defs(arg) __u_tree_defs arg
 
-#define u_tree_type(u, arg)                                                                        \
-  typeof(_Generic(typeof(u), va_map(_u_tree_def, va_unpack(u_tree_def))).arg)
-#define u_tree_type_val(u, arg) _Generic(typeof(u), va_map(_u_tree_def, va_unpack(u_tree_def))).arg
-#define u_tree_type_check(u)                                                                       \
-  static_assert(typeeq((__u_tree_t){}, u(u_tree_type_val(u, k), u_tree_type_val(u, v))))
+#define u_tree_type(u, arg)     typeof(_Generic(typeof(u), u_tree_defs).arg)
+#define u_tree_type_val(u, arg) _Generic(typeof(u), u_tree_defs).arg
+
+#if defined(NDEBUG)
+#  define u_tree_type_check(u)
+#else
+#  define u_tree_type_check(u)                                                                     \
+    static_assert(typeeq((__u_tree_t){}, u(u_tree_type_val(u, k), u_tree_type_val(u, v))))
+#endif
 
 /***************************************************************************************************
  * iApi avl

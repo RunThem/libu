@@ -1,6 +1,6 @@
 #include <mut.h>
 
-#define u_list_def (int)
+#define u_list_defs u_defs(list, int)
 #include <u/u.h>
 
 mut_test(lst_create) {

@@ -1,6 +1,6 @@
 #include <mut.h>
 
-#define u_vec_def (int)
+#define u_vec_defs u_defs(vec, int)
 #include <u/u.h>
 
 #define N 10

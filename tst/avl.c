@@ -1,6 +1,6 @@
 #include <mut.h>
 
-#define u_tree_def ((size_t, int), (int, char))
+#define u_tree_defs u_defs(tree, (size_t, int), (int, char))
 #include <u/u.h>
 
 #define N 20

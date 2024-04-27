@@ -1,6 +1,6 @@
 #include <mut.h>
 
-#define u_map_def ((int, char))
+#define u_map_defs u_defs(map, (int, char))
 #include <u/u.h>
 
 #define N 26

@@ -22,13 +22,9 @@
  *
  * */
 
-#define u_vec_def (any_t)
+#define u_vec_defs u_defs(vec, any_t)
 
-#include <u/ilst.h>
-#include <u/ivec.h>
-#include <u/utils/alloc.h>
-#include <u/utils/debug.h>
-#include <u/utils/va.h>
+#include <u/u.h>
 
 /***************************************************************************************************
  * Type

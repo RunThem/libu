@@ -68,13 +68,18 @@ extern bool vec_for(any_t, ssize_t*, any_t);
  **************************************************************************************************/
 #define u_vec_t(...) typeof(__u_vec_t(*)(ssize_t, __VA_ARGS__))
 
-#define __u_vec_def(T)                                                                             \
+#define _u_vec_defs(T)                                                                             \
   u_vec_t(T) : (T) {                                                                               \
   }
 
-#define u_vec_type(u)       typeof(_Generic(typeof(u), va_map(__u_vec_def, va_unpack(u_vec_def))))
-#define u_vec_type_val(u)   _Generic(typeof(u), va_map(__u_vec_def, va_unpack(u_vec_def)))
-#define u_vec_type_check(u) static_assert(typeeq((__u_vec_t){}, u(0, u_vec_type_val(u))))
+#define u_vec_type(u)     typeof(_Generic(typeof(u), u_vec_defs))
+#define u_vec_type_val(u) _Generic(typeof(u), u_vec_defs)
+
+#if defined(NDEBUG)
+#  define u_vec_type_check(u)
+#else
+#  define u_vec_type_check(u) static_assert(typeeq((__u_vec_t){}, u(0, u_vec_type_val(u))))
+#endif
 
 /***************************************************************************************************
  * iApi vec

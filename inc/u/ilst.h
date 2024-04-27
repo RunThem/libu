@@ -68,12 +68,17 @@ extern any_t lst_for(any_t);
  **************************************************************************************************/
 #define u_list_t(...) typeof(__u_list_t(*)(__VA_ARGS__*))
 
-#define __u_list_def(...)                                                                          \
-  u_list_t(__VA_ARGS__) : (__VA_ARGS__*) {                                                         \
+#define _u_list_defs(T)                                                                            \
+  u_list_t(T) : (T*) {                                                                             \
   }
 
-#define u_list_type(u)       typeof(_Generic(typeof(u), va_map(__u_list_def, va_unpack(u_list_def))))
-#define u_list_type_check(u) static_assert(typeeq((__u_list_t){}, u(nullptr)))
+#define u_list_type(u) typeof(_Generic(typeof(u), u_list_defs))
+
+#if defined(NDEBUG)
+#  define u_list_type_check(u)
+#else
+#  define u_list_type_check(u) static_assert(typeeq((__u_list_t){}, u(nullptr)))
+#endif
 
 /***************************************************************************************************
  * iApi lst

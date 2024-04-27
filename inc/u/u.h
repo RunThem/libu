@@ -44,19 +44,21 @@
 
 /**/
 
-#if defined(u_vec_def)
+#define u_defs(type, ...) va_map(_u_##type##_defs, __VA_ARGS__)
+
+#if defined(u_vec_defs)
 #  include "ivec.h"
 #endif
 
-#if defined(u_map_def)
+#if defined(u_map_defs)
 #  include "imap.h"
 #endif
 
-#if defined(u_tree_def)
+#if defined(u_tree_defs)
 #  include "iavl.h"
 #endif
 
-#if defined(u_list_def)
+#if defined(u_list_defs)
 #  include "ilst.h"
 #endif
 

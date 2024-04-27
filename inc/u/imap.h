@@ -66,20 +66,25 @@ extern bool map_for(any_t, any_t, any_t);
  **************************************************************************************************/
 #define u_map_t(...) typeof(__u_map_t(*)(__VA_ARGS__))
 
-#define __u_map_def(...)                                                                           \
-  u_map_t(__VA_ARGS__) :                                                                           \
+#define __u_map_defs(K, V)                                                                         \
+  u_map_t(K, V) :                                                                                  \
       (struct {                                                                                    \
-        va_at(0, __VA_ARGS__) k;                                                                   \
-        va_at(1, __VA_ARGS__) v;                                                                   \
+        K k;                                                                                       \
+        V v;                                                                                       \
       }) {                                                                                         \
   }
 
-#define _u_map_def(arg) __u_map_def arg
+#define _u_map_defs(arg) __u_map_defs arg
 
-#define u_map_type(u, arg)     typeof(_Generic(typeof(u), va_map(_u_map_def, va_unpack(u_map_def))).arg)
-#define u_map_type_val(u, arg) _Generic(typeof(u), va_map(_u_map_def, va_unpack(u_map_def))).arg
-#define u_map_type_check(u)                                                                        \
-  static_assert(typeeq((__u_map_t){}, u(u_map_type_val(u, k), u_map_type_val(u, v))))
+#define u_map_type(u, arg)     typeof(_Generic(typeof(u), u_map_defs).arg)
+#define u_map_type_val(u, arg) _Generic(typeof(u), u_map_defs).arg
+
+#if defined(NDEBUG)
+#  define u_map_type_check(u)
+#else
+#  define u_map_type_check(u)                                                                      \
+    static_assert(typeeq((__u_map_t){}, u(u_map_type_val(u, k), u_map_type_val(u, v))))
+#endif
 
 /***************************************************************************************************
  * iApi map

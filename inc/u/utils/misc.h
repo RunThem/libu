@@ -69,7 +69,7 @@
 #define me(type, ...) ((type){__VA_ARGS__})
 #define bit(byte, n)  (((byte) >> (n)) & 1)
 
-#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
+#define align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
@@ -187,12 +187,12 @@ extern thread_local __err__t __err__;
   extern int fn_cmp_##type(const void*, const void*)
 
 #define fn_compe_def(type, eq, cmp)                                                                \
-  inline bool fn_eq_##type(const void* _x, const void* _y) {                                       \
+  bool fn_eq_##type(const void* _x, const void* _y) {                                              \
     type x = *(type*)_x, y = *(type*)_y;                                                           \
     return (eq);                                                                                   \
   }                                                                                                \
                                                                                                    \
-  inline int fn_cmp_##type(const void* _x, const void* _y) {                                       \
+  int fn_cmp_##type(const void* _x, const void* _y) {                                              \
     type x = *(type*)_x, y = *(type*)_y;                                                           \
     return (eq) ? 0 : ((cmp) ? 1 : -1);                                                            \
   }
