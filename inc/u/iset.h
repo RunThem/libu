@@ -76,8 +76,7 @@ extern bool avl_for(any_t, any_t, any_t);
 #if defined(NDEBUG)
 #  define u_set_type_check(u)
 #else
-#  define u_set_type_check(u)                                                                      \
-    static_assert(typeeq((__u_set_t){}, u(u_set_type_val(u), u_set_type_val(u))))
+#  define u_set_type_check(u) static_assert(typeeq((__u_set_t){}, u(u_set_type_val(u))))
 #endif
 
 /***************************************************************************************************
