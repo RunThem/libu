@@ -25,11 +25,41 @@
 #ifndef U_ISET_H__
 #define U_ISET_H__
 
+#include "utils/type.h"
+#include "utils/va.h"
+
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct {
 } __u_set_t;
+
+/***************************************************************************************************
+ * Api
+ ***************s***********************************************************************************/
+extern any_t avl_new(size_t, size_t, u_cmp_fn);
+
+extern size_t avl_len(any_t);
+
+extern bool avl_exist(any_t, any_t);
+
+extern void avl_clear(any_t);
+
+extern void avl_cleanup(any_t);
+
+extern any_t avl_at(any_t, any_t);
+
+extern void avl_pop(any_t, any_t, any_t);
+
+extern void avl_put(any_t, any_t, any_t);
+
+extern u_cmp_fn avl_fn(any_t);
+
+extern bool avl_for_init(any_t, bool);
+
+extern void avl_for_end(any_t);
+
+extern bool avl_for(any_t, any_t, any_t);
 
 /***************************************************************************************************
  * iType
