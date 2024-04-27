@@ -22,7 +22,7 @@
  *
  * */
 
-#define uvec_def (any_t)
+#define u_vec_def (any_t)
 
 #include <u/ilst.h>
 #include <u/ivec.h>
@@ -31,17 +31,12 @@
 #include <u/utils/va.h>
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-u_lst_t u_ilst = nullptr;
-
-/***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct lst_t lst_t;
 struct lst_t {
   u8_t flags[4];
-  uvec(any_t) items;
+  u_vec_t(any_t) items;
 
   size_t iter;
 };
@@ -60,7 +55,7 @@ any_t lst_new() {
   self = u_zalloc(sizeof(lst_t));
   u_nil_if(self);
 
-  uv_init(self->items);
+  u_vec_init(self->items);
   u_nil_if(self->items);
 
   self->iter = 0;
@@ -76,7 +71,7 @@ err:
 void lst_cleanup(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
-  uv_cleanup(self->items);
+  u_vec_cleanup(self->items);
 
   u_free_if(self);
 }
@@ -86,7 +81,7 @@ size_t lst_len(any_t _self) {
 
   u_chk_if(self == nullptr, 0);
 
-  return uv_len(self->items);
+  return u_vec_len(self->items);
 }
 
 bool lst_exist(any_t _self, any_t ptr) {
@@ -94,9 +89,9 @@ bool lst_exist(any_t _self, any_t ptr) {
 
   u_chk_if(self == nullptr, false);
   u_chk_if(ptr == nullptr, false);
-  u_chk_if(uv_is_empty(self->items), false);
+  u_chk_if(u_vec_is_empty(self->items), false);
 
-  uv_for_all(self->items, i, node) {
+  u_vec_for(self->items, i, node) {
     if (node == ptr) {
       return true;
     }
@@ -109,18 +104,18 @@ any_t lst_first(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(uv_is_empty(self->items), nullptr);
+  u_chk_if(u_vec_is_empty(self->items), nullptr);
 
-  return uv_at(self->items, 0ul);
+  return u_vec_at(self->items, 0ul);
 }
 
 any_t lst_last(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(uv_is_empty(self->items), nullptr);
+  u_chk_if(u_vec_is_empty(self->items), nullptr);
 
-  return uv_at(self->items, -1);
+  return u_vec_at(self->items, -1);
 }
 
 any_t lst_next(any_t _self, any_t idx) {
@@ -129,9 +124,9 @@ any_t lst_next(any_t _self, any_t idx) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx == nullptr, nullptr);
 
-  uv_for_all(self->items, i, node) {
+  u_vec_for(self->items, i, node) {
     if (node == idx) {
-      return i == uv_len(self->items) - 1 ? nullptr : uv_at(self->items, i + 1);
+      return i == u_vec_len(self->items) - 1 ? nullptr : u_vec_at(self->items, i + 1);
     }
   }
 
@@ -144,9 +139,9 @@ any_t lst_prev(any_t _self, any_t idx) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx == nullptr, nullptr);
 
-  uv_for_all(self->items, i, node) {
+  u_vec_for(self->items, i, node) {
     if (node == idx) {
-      return (i == 0) ? nullptr : uv_at(self->items, i - 1);
+      return (i == 0) ? nullptr : u_vec_at(self->items, i - 1);
     }
   };
 
@@ -158,11 +153,11 @@ void lst_pop(any_t _self, any_t ptr) {
 
   u_nchk_if(self == nullptr);
   u_nchk_if(ptr == nullptr);
-  u_nchk_if(uv_is_empty(self->items));
+  u_nchk_if(u_vec_is_empty(self->items));
 
-  uv_for_all(self->items, i, node) {
+  u_vec_for(self->items, i, node) {
     if (node == ptr) {
-      uv_pop(self->items, i);
+      u_vec_pop(self->items, i);
       break;
     }
   }
@@ -175,11 +170,11 @@ void lst_put(any_t _self, any_t idx, any_t ptr) {
   u_nchk_if(ptr == nullptr);
 
   if (idx == nullptr) {
-    uv_put(self->items, 0, ptr);
+    u_vec_put(self->items, 0, ptr);
   } else {
-    uv_for_all(self->items, i, node) {
+    u_vec_for(self->items, i, node) {
       if (node == idx) {
-        uv_put(self->items, i + 1, ptr);
+        u_vec_put(self->items, i + 1, ptr);
         break;
       }
     }
@@ -211,21 +206,21 @@ any_t lst_for(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(uv_is_empty(self->items), nullptr);
+  u_chk_if(u_vec_is_empty(self->items), nullptr);
   u_chk_if(self->flags[3], nullptr);
 
   /* 初始化 */
   if (self->flags[2]) {
-    self->iter     = self->flags[1] ? 0 : uv_len(self->items) - 1;
+    self->iter     = self->flags[1] ? 0 : u_vec_len(self->items) - 1;
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
     self->iter += (self->flags[1] ? +1 : -1);
 
     /* 判断是否继续迭代 */
-    if (self->iter == 0 || self->iter == uv_len(self->items) - 1) {
+    if (self->iter == 0 || self->iter == u_vec_len(self->items) - 1) {
       self->flags[3] = true;
     }
   }
 
-  return uv_at(self->items, self->iter);
+  return u_vec_at(self->items, self->iter);
 }

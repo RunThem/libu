@@ -32,7 +32,7 @@
  * Type
  **************************************************************************************************/
 typedef struct {
-}* u_lst_t;
+}* __u_list_t;
 
 /***************************************************************************************************
  * Api
@@ -66,123 +66,123 @@ extern any_t lst_for(any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define ulst(T) typeof(u_lst_t(*)(T*))
+#define u_list_t(...) typeof(__u_list_t(*)(__VA_ARGS__*))
 
-#define __ulst_def(T)                                                                              \
-  ulst(T) : (T*) {                                                                                 \
+#define __u_list_def(...)                                                                          \
+  u_list_t(__VA_ARGS__) : (__VA_ARGS__*) {                                                         \
   }
 
-#define ul_type(u)       typeof(_Generic(typeof(u), va_map(__ulst_def, va_unpack(ulst_def))))
-#define ul_type_check(u) static_assert(typeeq((u_lst_t){}, u(nullptr)))
+#define u_list_type(u)       typeof(_Generic(typeof(u), va_map(__u_list_def, va_unpack(u_list_def))))
+#define u_list_type_check(u) static_assert(typeeq((__u_list_t){}, u(nullptr)))
 
 /***************************************************************************************************
  * iApi lst
  **************************************************************************************************/
-#define ul_init(u)                                                                                 \
+#define u_list_init(u)                                                                             \
   do {                                                                                             \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
     u = lst_new();                                                                                 \
   } while (0)
 
-#define ul_new(T)                                                                                  \
+#define u_list_new(...)                                                                            \
   ({                                                                                               \
-    ulst(T) u = nullptr;                                                                           \
+    u_list_t(__VA_ARGS__) u = nullptr;                                                             \
                                                                                                    \
-    ul_init(u);                                                                                    \
+    u_list_init(u);                                                                                \
                                                                                                    \
     u;                                                                                             \
   })
 
-#define ul_len(u)                                                                                  \
+#define u_list_len(u)                                                                              \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
     lst_len(u);                                                                                    \
   })
 
-#define ul_is_empty(u)                                                                             \
+#define u_list_is_empty(u)                                                                         \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
     0 == lst_len(u);                                                                               \
   })
 
-#define ul_is_exist(u, ptr)                                                                        \
+#define u_list_is_exist(u, ptr)                                                                    \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
-    ul_type(u) _a = ptr;                                                                           \
+    u_list_type(u) _a = ptr;                                                                       \
                                                                                                    \
     lst_exist(u, _a);                                                                              \
   })
 
-#define ul_clear(u)                                                                                \
+#define u_list_clear(u)                                                                            \
   do {                                                                                             \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
     lst_clear(u);                                                                                  \
   } while (0)
 
-#define ul_cleanup(u)                                                                              \
+#define u_list_cleanup(u)                                                                          \
   do {                                                                                             \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
     lst_cleanup(u);                                                                                \
                                                                                                    \
     u = nullptr;                                                                                   \
   } while (0)
 
-#define ul_first(u)                                                                                \
+#define u_list_first(u)                                                                            \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
-    ul_type(u) _a = {};                                                                            \
+    u_list_type(u) _a = {};                                                                        \
                                                                                                    \
     _a = lst_first(u);                                                                             \
                                                                                                    \
     _a;                                                                                            \
   })
 
-#define ul_last(u)                                                                                 \
+#define u_list_last(u)                                                                             \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
-    ul_type(u) _a = {};                                                                            \
+    u_list_type(u) _a = {};                                                                        \
                                                                                                    \
     _a = lst_last(u);                                                                              \
                                                                                                    \
     _a;                                                                                            \
   })
 
-#define ul_prev(u, ptr)                                                                            \
+#define u_list_prev(u, ptr)                                                                        \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
-    ul_type(u) _a = ptr;                                                                           \
-    ul_type(u) _b = {};                                                                            \
+    u_list_type(u) _a = ptr;                                                                       \
+    u_list_type(u) _b = {};                                                                        \
                                                                                                    \
     _b = lst_prev(u, _a);                                                                          \
                                                                                                    \
     _b;                                                                                            \
   })
 
-#define ul_next(u, ptr)                                                                            \
+#define u_list_next(u, ptr)                                                                        \
   ({                                                                                               \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
-    ul_type(u) _a = ptr;                                                                           \
-    ul_type(u) _b = {};                                                                            \
+    u_list_type(u) _a = ptr;                                                                       \
+    u_list_type(u) _b = {};                                                                        \
                                                                                                    \
     _b = lst_next(u, _a);                                                                          \
                                                                                                    \
     _b;                                                                                            \
   })
 
-#define ul_pop(u, ...)                                                                             \
+#define u_list_pop(u, ...)                                                                         \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__))(ul_type(u) _a = va_at(0, __VA_ARGS__);)(                 \
-        ul_type(u) _a = lst_last(u);)                                                              \
+    va_elseif(va_size_is(1, __VA_ARGS__))(u_list_type(u) _a = va_at(0, __VA_ARGS__);)(             \
+        u_list_type(u) _a = lst_last(u);)                                                          \
                                                                                                    \
         lst_pop(u, _a);                                                                            \
                                                                                                    \
@@ -190,28 +190,28 @@ extern any_t lst_for(any_t);
   })
 
 /* clang-format off */
-#define ul_put(u, ptr, ...)                                                                        \
+#define u_list_put(u, ptr, ...)                                                                    \
   do {                                                                                             \
-    ul_type_check(u);                                                                              \
+    u_list_type_check(u);                                                                          \
                                                                                                    \
     va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      ul_type(u) _a = ptr;                                                                         \
-      ul_type(u) _b = va_at(0, __VA_ARGS__);                                                       \
+      u_list_type(u) _a = ptr;                                                                     \
+      u_list_type(u) _b = va_at(0, __VA_ARGS__);                                                   \
     ) (                                                                                            \
-      ul_type(u) _a = lst_last(u);                                                                 \
-      ul_type(u) _b = ptr;                                                                         \
+      u_list_type(u) _a = lst_last(u);                                                             \
+      u_list_type(u) _b = ptr;                                                                     \
     )                                                                                              \
                                                                                                    \
     lst_put(u, _a, _b);                                                                            \
   } while (0)
 /* clang-format on */
 
-#define ul_for_all(u, it)                                                                          \
+#define u_list_for_all(u, it)                                                                      \
   for (; lst_for_init(u, 1); lst_for_end(u))                                                       \
-    for (ul_type(u) it = {}; (it = lst_for(u));)
+    for (u_list_type(u) it = {}; (it = lst_for(u));)
 
-#define ul_rfor_all(u, it)                                                                         \
+#define u_list_rfor_all(u, it)                                                                     \
   for (; lst_for_init(u, 0); lst_for_end(u))                                                       \
-    for (ul_type(u) it = {}; (it = lst_for(u));)
+    for (u_list_type(u) it = {}; (it = lst_for(u));)
 
 #endif /* !U_ILST_H__ */

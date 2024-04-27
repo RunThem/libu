@@ -1,18 +1,18 @@
 #include <mut.h>
 
-#define ulst_def (int)
+#define u_list_def (int)
 #include <u/u.h>
 
 mut_test(lst_create) {
-  ulst(int) v = nullptr;
+  u_list_t(int) v = nullptr;
 
-  ul_init(v);
+  u_list_init(v);
 
   mut_assert(v != nullptr);
 
-  mut_assert(0 == ul_len(v));
+  mut_assert(0 == u_list_len(v));
 
-  ul_cleanup(v);
+  u_list_cleanup(v);
 
   mut_assert(v == nullptr);
 }
@@ -21,10 +21,11 @@ mut_test(lst_interface) {
   /*
    * push back
    * */
-  ulst(int) l = nullptr;
-  ul_init(l);
+  u_list_t(int) l = nullptr;
 
-  mut_assert(true == ul_is_empty(l));
+  u_list_init(l);
+
+  mut_assert(true == u_list_is_empty(l));
 
   int a1 = 1;
   int a2 = 2;
@@ -33,44 +34,45 @@ mut_test(lst_interface) {
   int a5 = 5;
 
   /* 3 */
-  ul_put(l, nullptr, &a3);
+  u_list_put(l, nullptr, &a3);
 
   /* 3, 5 */
-  ul_put(l, ul_last(l), &a5);
+  u_list_put(l, u_list_last(l), &a5);
 
   /* 1, 3, 5 */
-  ul_put(l, nullptr, &a1);
+  u_list_put(l, nullptr, &a1);
 
   /* 1, 3, 4, 5 */
-  ul_put(l, &a3, &a4);
+  u_list_put(l, &a3, &a4);
 
   /* 1, 2, 3, 4, 5 */
-  ul_put(l, ul_first(l), &a2);
+  u_list_put(l, u_list_first(l), &a2);
 
-  mut_assert(false == ul_is_empty(l));
-  mut_assert(5 == ul_len(l));
+  mut_assert(false == u_list_is_empty(l));
+  mut_assert(5 == u_list_len(l));
 
-  ul_pop(l, &a3);
+  u_list_pop(l, &a3);
 
-  mut_assert(4 == ul_len(l));
+  mut_assert(4 == u_list_len(l));
 
-  ul_pop(l, &a1);
+  u_list_pop(l, &a1);
 
-  mut_assert(&a2 == ul_first(l));
-  mut_assert(&a5 == ul_last(l));
-  mut_assert(&a4 == ul_next(l, &a2));
-  mut_assert(&a4 == ul_prev(l, &a5));
-  mut_assert(nullptr == ul_next(l, &a5));
-  mut_assert(nullptr == ul_prev(l, &a2));
+  mut_assert(&a2 == u_list_first(l));
+  mut_assert(&a5 == u_list_last(l));
+  mut_assert(&a4 == u_list_next(l, &a2));
+  mut_assert(&a4 == u_list_prev(l, &a5));
+  mut_assert(nullptr == u_list_next(l, &a5));
+  mut_assert(nullptr == u_list_prev(l, &a2));
 
-  ul_cleanup(l);
+  u_list_cleanup(l);
 }
 
 mut_test(lst_iterator) {
-  ulst(int) l = nullptr;
-  ul_init(l);
+  u_list_t(int) l = nullptr;
 
-  mut_assert(true == ul_is_empty(l));
+  u_list_init(l);
+
+  mut_assert(true == u_list_is_empty(l));
 
   int a1 = 1;
   int a2 = 2;
@@ -78,33 +80,33 @@ mut_test(lst_iterator) {
   int a4 = 4;
   int a5 = 5;
 
-  ul_put(l, ul_last(l), &a1);
-  ul_put(l, ul_last(l), &a2);
-  ul_put(l, ul_last(l), &a3);
-  ul_put(l, ul_last(l), &a4);
-  ul_put(l, ul_last(l), &a5);
+  u_list_put(l, u_list_last(l), &a1);
+  u_list_put(l, u_list_last(l), &a2);
+  u_list_put(l, u_list_last(l), &a3);
+  u_list_put(l, u_list_last(l), &a4);
+  u_list_put(l, u_list_last(l), &a5);
 
   size_t i = 1;
-  ul_for_all(l, it) {
+  u_list_for_all(l, it) {
     mut_assert(*it == i++);
   }
 
   i = 5;
-  ul_rfor_all(l, it) {
+  u_list_rfor_all(l, it) {
     mut_assert(*it == i--);
   }
 
   i = 1;
-  for (auto it = ul_first(l); it; it = ul_next(l, it)) {
+  for (auto it = u_list_first(l); it; it = u_list_next(l, it)) {
     mut_assert(*it == i++);
   }
 
   i = 5;
-  for (auto it = ul_last(l); it; it = ul_prev(l, it)) {
+  for (auto it = u_list_last(l); it; it = u_list_prev(l, it)) {
     mut_assert(*it == i--);
   }
 
-  ul_cleanup(l);
+  u_list_cleanup(l);
 }
 
 mut_group(lst) {

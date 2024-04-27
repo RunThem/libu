@@ -1,120 +1,116 @@
 #include <mut.h>
 
-#define umap_def ((int, char))
+#define u_map_def ((int, char))
 #include <u/u.h>
 
 #define N 26
 
 mut_test(map_create) {
-  umap(int, char) m = nullptr;
+  u_map_t(int, char) m = nullptr;
 
-  um_init(m);
+  u_map_init(m);
 
   mut_assert(m != nullptr);
-  mut_assert(0 == um_len(m));
+  mut_assert(0 == u_map_len(m));
 
-  um_cleanup(m);
+  u_map_cleanup(m);
 
   mut_assert(m == nullptr);
 }
 
 mut_test(map_interface) {
-  umap(int, char) m = nullptr;
+  u_map_t(int, char) m = nullptr;
 
-  um_init(m);
+  u_map_init(m);
 
-  mut_assert(true == um_is_empty(m));
+  mut_assert(true == u_map_is_empty(m));
 
   each(i, N) {
-    um_put(m, (int)i, 'a' + i);
+    u_map_put(m, (int)i, 'a' + i);
   }
 
-  mut_assert(false == um_is_empty(m));
-  mut_assert(N == um_len(m));
+  mut_assert(false == u_map_is_empty(m));
+  mut_assert(N == u_map_len(m));
 
   each(i, N) {
-    mut_assert('a' + i == um_at(m, (int)i));
+    mut_assert('a' + i == u_map_at(m, (int)i));
   }
 
-  mut_assert(N == um_len(m));
+  mut_assert(N == u_map_len(m));
 
   each(i, N) {
-    mut_assert('a' + i == um_pop(m, (int)i));
+    mut_assert('a' + i == u_map_pop(m, (int)i));
   }
 
-  mut_assert(true == um_is_empty(m));
-  mut_assert(0 == um_len(m));
+  mut_assert(true == u_map_is_empty(m));
+  mut_assert(0 == u_map_len(m));
 
-  um_cleanup(m);
+  u_map_cleanup(m);
 
-  um_init(m);
+  u_map_init(m);
 
-  mut_assert(0 == um_len(m));
+  mut_assert(0 == u_map_len(m));
 
   each(i, N) {
-    um_at(m, (int)i, 'a' + i);
+    u_map_at(m, (int)i, 'a' + i);
   }
 
-  mut_assert(0 == um_len(m));
+  mut_assert(0 == u_map_len(m));
 
-  um_cleanup(m);
+  u_map_cleanup(m);
 
-  um_init(m);
-
-  each(i, N) {
-    um_put(m, (int)i, 'a' + i);
-  }
+  u_map_init(m);
 
   each(i, N) {
-    um_pop(m, (int)i);
+    u_map_put(m, (int)i, 'a' + i);
   }
 
   each(i, N) {
-    um_put(m, (int)i, 'a' + i);
+    u_map_pop(m, (int)i);
   }
 
   each(i, N) {
-    um_pop(m, (int)i);
+    u_map_put(m, (int)i, 'a' + i);
   }
 
   each(i, N) {
-    um_put(m, (int)i, 'a' + i);
+    u_map_pop(m, (int)i);
   }
 
   each(i, N) {
-    um_pop(m, (int)i);
+    u_map_put(m, (int)i, 'a' + i);
   }
 
   each(i, N) {
-    um_put(m, (int)i, 'a' + i);
+    u_map_pop(m, (int)i);
   }
 
-  um_put(m, 1000, '0');
+  each(i, N) {
+    u_map_put(m, (int)i, 'a' + i);
+  }
 
-  mut_assert(N + 1 == um_len(m));
+  u_map_put(m, 1000, '0');
 
-  um_cleanup(m);
+  mut_assert(N + 1 == u_map_len(m));
+
+  u_map_cleanup(m);
 }
 
 mut_test(map_iterator) {
-  umap(int, char) m = nullptr;
-  um_init(m);
+  u_map_t(int, char) m = nullptr;
+  u_map_init(m);
 
-  mut_assert(true == um_is_empty(m));
+  mut_assert(true == u_map_is_empty(m));
 
   each(i, N) {
-    um_put(m, (int)i, 'a' + i);
+    u_map_put(m, (int)i, 'a' + i);
   }
 
-  um_for_all(m, k, v) {
+  u_map_for(m, k, v) {
     mut_assert(k + 'a' == +v);
   }
 
-  um_rfor_all(m, k, v) {
-    mut_assert(k + 'a' == +v);
-  }
-
-  um_cleanup(m);
+  u_map_cleanup(m);
 }
 
 mut_group(map) {

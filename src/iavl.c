@@ -22,18 +22,13 @@
  *
  * */
 
-#define uvec_def (node_t*)
+#define u_vec_def (node_t*)
 
 #include <u/iavl.h>
 #include <u/ivec.h>
 #include <u/utils/alloc.h>
 #include <u/utils/debug.h>
 #include <u/utils/misc.h>
-
-/***************************************************************************************************
- * Let
- **************************************************************************************************/
-u_avl_t u_iavl = nullptr;
 
 /***************************************************************************************************
  * Type
@@ -396,31 +391,31 @@ err:
 }
 
 void avl_clear(any_t _self) {
-  avl_t* self         = (avl_t*)_self;
-  node_t* node        = nullptr;
-  uvec(node_t*) nodes = nullptr;
+  avl_t* self            = (avl_t*)_self;
+  node_t* node           = nullptr;
+  u_vec_t(node_t*) nodes = nullptr;
 
   u_nchk_if(self->len == 0);
 
-  uv_init(nodes);
-  uv_put(nodes, self->root);
+  u_vec_init(nodes);
+  u_vec_put(nodes, self->root);
 
-  while (!uv_is_empty(nodes)) {
-    node = uv_at(nodes, 0);
+  while (!u_vec_is_empty(nodes)) {
+    node = u_vec_at(nodes, 0);
 
     if (node->left) {
-      uv_put(nodes, node->left);
+      u_vec_put(nodes, node->left);
     }
     if (node->right) {
-      uv_put(nodes, node->right);
+      u_vec_put(nodes, node->right);
     }
 
     u_free(node);
 
-    uv_pop(nodes, 0);
+    u_vec_pop(nodes, 0);
   }
 
-  uv_cleanup(nodes);
+  u_vec_cleanup(nodes);
 
   self->len = 0;
 }

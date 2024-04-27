@@ -1,35 +1,36 @@
-#define uvec_def (bool, int)
-#define umap_def ((int, bool), (int, char))
+#define u_vec_def (bool, int)
+#define u_map_def ((int, bool), (int, char))
 
 #include <u/u.h>
 
 /* system libs */
 
-#include <limits.h>
-#include <stdlib.h>
+#if 0
+#  include <limits.h>
+#  include <stdlib.h>
 // #include <task.h>
 
-#if 0
-#  include <arpa/inet.h>
-#  include <dirent.h>
-#  include <fcntl.h>
-#  include <net/ethernet.h>
-#  include <net/if.h>
-#  include <netinet/if_ether.h>
-#  include <netinet/in.h>
-#  include <netinet/ip.h>
-#  include <netinet/ip_icmp.h>
-#  include <netpacket/packet.h>
-#  include <regex.h>
-#  include <sys/ioctl.h>
-#  include <sys/resource.h>
-#  include <sys/socket.h>
-#  include <sys/time.h>
-#  include <sys/wait.h>
-#  include <threads.h>
-#  include <ucontext.h>
-#  include <unistd.h>
-#endif
+#  if 0
+#    include <arpa/inet.h>
+#    include <dirent.h>
+#    include <fcntl.h>
+#    include <net/ethernet.h>
+#    include <net/if.h>
+#    include <netinet/if_ether.h>
+#    include <netinet/in.h>
+#    include <netinet/ip.h>
+#    include <netinet/ip_icmp.h>
+#    include <netpacket/packet.h>
+#    include <regex.h>
+#    include <sys/ioctl.h>
+#    include <sys/resource.h>
+#    include <sys/socket.h>
+#    include <sys/time.h>
+#    include <sys/wait.h>
+#    include <threads.h>
+#    include <ucontext.h>
+#    include <unistd.h>
+#  endif
 
 ret_t code = 0;
 
@@ -48,11 +49,11 @@ ret_t code = 0;
  * un: net
  * */
 
-#define mtx_block(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
+#  define mtx_block(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
 
-#define u_check(expr, ...)                                                                         \
-  if (expr)                                                                                        \
-  __VA_OPT__({ __VA_ARGS__; })
+#  define u_check(expr, ...)                                                                       \
+    if (expr)                                                                                      \
+    __VA_OPT__({ __VA_ARGS__; })
 
 /* 全新版本的字符串原始实现 */
 typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
@@ -98,9 +99,9 @@ item table[] = {
     {8, false, INT_MAX, -1},
 };
 
-#define u_arr_for(arr, i, it)                                                                      \
-  for (size_t i = 0; i < arrlen(arr); i++)                                                         \
-    for (auto it = &arr[i]; it; it = nullptr)
+#  define u_arr_for(arr, i, it)                                                                    \
+    for (size_t i = 0; i < arrlen(arr); i++)                                                       \
+      for (auto it = &arr[i]; it; it = nullptr)
 
 void spf() {
   int idx  = 0;
@@ -135,11 +136,14 @@ void spf() {
     printf("id %d, cost %d, prev %d\n", it->id, it->cost, it->prev);
   }
 }
+#endif
 
 int main(int argc, const u_cstr_t argv[]) {
   infln("%lu", sizeof(enum {T, F}));
 
-  spf();
+  u_vec_t(int) v = u_vec_new(int);
+
+  u_vec_cleanup(v);
 
   return EXIT_SUCCESS;
 

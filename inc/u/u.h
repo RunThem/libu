@@ -44,19 +44,19 @@
 
 /**/
 
-#if defined(uvec_def)
+#if defined(u_vec_def)
 #  include "ivec.h"
 #endif
 
-#if defined(umap_def)
+#if defined(u_map_def)
 #  include "imap.h"
 #endif
 
-#if defined(uavl_def)
+#if defined(u_tree_def)
 #  include "iavl.h"
 #endif
 
-#if defined(ulst_def)
+#if defined(u_list_def)
 #  include "ilst.h"
 #endif
 

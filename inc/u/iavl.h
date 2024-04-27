@@ -32,7 +32,7 @@
  * Type
  **************************************************************************************************/
 typedef struct {
-}* u_avl_t;
+}* __u_tree_t;
 
 /***************************************************************************************************
  * Api
@@ -62,75 +62,77 @@ extern bool avl_for(any_t, any_t, any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define uavl(K, V) typeof(u_avl_t(*)(K, V))
+#define u_tree_t(...) typeof(__u_tree_t(*)(__VA_ARGS__))
 
-#define __uavl_def(K, V)                                                                           \
-  uavl(K, V) :                                                                                     \
+#define __u_tree_def(K, V)                                                                         \
+  u_tree_t(K, V) :                                                                                 \
       (struct {                                                                                    \
         K k;                                                                                       \
         V v;                                                                                       \
       }) {                                                                                         \
   }
 
-#define _uavl_def(arg) __uavl_def arg
+#define _u_tree_def(arg) __u_tree_def arg
 
-#define ut_type(u, arg)     typeof(_Generic(typeof(u), va_map(_uavl_def, va_unpack(uavl_def))).arg)
-#define ut_type_val(u, arg) _Generic(typeof(u), va_map(_uavl_def, va_unpack(uavl_def))).arg
-#define ut_type_check(u)    static_assert(typeeq((u_avl_t){}, u(ut_type_val(u, k), ut_type_val(u, v))))
+#define u_tree_type(u, arg)                                                                        \
+  typeof(_Generic(typeof(u), va_map(_u_tree_def, va_unpack(u_tree_def))).arg)
+#define u_tree_type_val(u, arg) _Generic(typeof(u), va_map(_u_tree_def, va_unpack(u_tree_def))).arg
+#define u_tree_type_check(u)                                                                       \
+  static_assert(typeeq((__u_tree_t){}, u(u_tree_type_val(u, k), u_tree_type_val(u, v))))
 
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#define ut_init(u, fn)                                                                             \
+#define u_tree_init(u, fn)                                                                         \
   do {                                                                                             \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
-    u = avl_new(sizeof(ut_type(u, k)), sizeof(ut_type(u, v)), fn);                                 \
+    u = avl_new(sizeof(u_tree_type(u, k)), sizeof(u_tree_type(u, v)), fn);                         \
   } while (0)
 
-#define ut_new(K, V, fn)                                                                           \
+#define u_tree_new(...)                                                                            \
   ({                                                                                               \
-    uavl(K, V) u = nullptr;                                                                        \
+    u_tree_t(va_at(0, __VA_ARGS__), va_at(1, __VA_ARGS__)) u = nullptr;                            \
                                                                                                    \
-    ut_init(u, fn);                                                                                \
+    u_tree_init(u, va_at(2, __VA_ARGS__));                                                         \
                                                                                                    \
     u;                                                                                             \
   })
 
-#define ut_len(u)                                                                                  \
+#define u_tree_len(u)                                                                              \
   ({                                                                                               \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
     avl_len(u);                                                                                    \
   })
 
-#define ut_is_empty(u)                                                                             \
+#define u_tree_is_empty(u)                                                                         \
   ({                                                                                               \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
     0 == avl_len(u);                                                                               \
   })
 
-#define ut_is_exist(u, _k)                                                                         \
+#define u_tree_is_exist(u, _k)                                                                     \
   ({                                                                                               \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
-    ut_type(u, k) _a = _k;                                                                         \
-    ut_type(u, v) _b = {};                                                                         \
+    u_tree_type(u, k) _a = _k;                                                                     \
+    u_tree_type(u, v) _b = {};                                                                     \
                                                                                                    \
     avl_exist(u, &_a);                                                                             \
   })
 
-#define ut_clear(u)                                                                                \
+#define u_tree_clear(u)                                                                            \
   do {                                                                                             \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
     avl_clear(u);                                                                                  \
   } while (0)
 
-#define ut_cleanup(u)                                                                              \
+#define u_tree_cleanup(u)                                                                          \
   do {                                                                                             \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
     avl_cleanup(u);                                                                                \
                                                                                                    \
@@ -138,14 +140,14 @@ extern bool avl_for(any_t, any_t, any_t);
   } while (0)
 
 /* clang-format off */
-#  define ut_at(u, _k, ...)                                                                        \
+#  define u_tree_at(u, _k, ...)                                                                    \
     va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
       ({                                                                                           \
-        ut_type_check(u);                                                                          \
+        u_tree_type_check(u);                                                                      \
                                                                                                    \
         bool _ret         = false;                                                                 \
-        ut_type(u, k) _a  = _k;                                                                    \
-        ut_type(u, v)* _b = {};                                                                    \
+        u_tree_type(u, k) _a  = _k;                                                                \
+        u_tree_type(u, v)* _b = {};                                                                \
                                                                                                    \
         _b = avl_at(u, &_a);                                                                       \
                                                                                                    \
@@ -158,11 +160,11 @@ extern bool avl_for(any_t, any_t, any_t);
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
-        ut_type_check(u);                                                                          \
+        u_tree_type_check(u);                                                                      \
                                                                                                    \
-        ut_type(u, k) _a  = _k;                                                                    \
-        ut_type(u, v) _it = {};                                                                    \
-        ut_type(u, v)* _b = {};                                                                    \
+        u_tree_type(u, k) _a  = _k;                                                                \
+        u_tree_type(u, v) _it = {};                                                                \
+        u_tree_type(u, v)* _b = {};                                                                \
                                                                                                    \
         _b = avl_at(u, &_a);                                                                       \
                                                                                                    \
@@ -175,37 +177,37 @@ extern bool avl_for(any_t, any_t, any_t);
     )
 /* clang-format on */
 
-#define ut_try(u, _k)                                                                              \
-  for (ut_type(u, v)* it = avl_at(u, &(ut_type(u, k)){_k}); it != nullptr; it = nullptr)
+#define u_tree_try(u, _k)                                                                          \
+  for (u_tree_type(u, v)* it = avl_at(u, &(u_tree_type(u, k)){_k}); it != nullptr; it = nullptr)
 
-#define ut_pop(u, _k)                                                                              \
+#define u_tree_pop(u, _k)                                                                          \
   ({                                                                                               \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
-    ut_type(u, k) _a = _k;                                                                         \
-    ut_type(u, v) _b = {};                                                                         \
+    u_tree_type(u, k) _a = _k;                                                                     \
+    u_tree_type(u, v) _b = {};                                                                     \
                                                                                                    \
     avl_pop(u, &_a, &_b);                                                                          \
                                                                                                    \
     _b;                                                                                            \
   })
 
-#define ut_put(u, _k, _v)                                                                          \
+#define u_tree_put(u, _k, _v)                                                                      \
   do {                                                                                             \
-    ut_type_check(u);                                                                              \
+    u_tree_type_check(u);                                                                          \
                                                                                                    \
-    ut_type(u, k) _a = _k;                                                                         \
-    ut_type(u, v) _b = _v;                                                                         \
+    u_tree_type(u, k) _a = _k;                                                                     \
+    u_tree_type(u, v) _b = _v;                                                                     \
                                                                                                    \
     avl_put(u, &_a, &_b);                                                                          \
   } while (0)
 
-#define ut_for_all(u, _k, _v)                                                                      \
-  for (ut_type(u, k) _k = {}; avl_for_init(u, 1); avl_for_end(u))                                  \
-    for (ut_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
+#define u_tree_for(u, _k, _v)                                                                      \
+  for (u_tree_type(u, k) _k = {}; avl_for_init(u, 1); avl_for_end(u))                              \
+    for (u_tree_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
 
-#define ut_rfor_all(u, _k, _v)                                                                     \
-  for (ut_type(u, k) _k = {}; avl_for_init(u, 0); avl_for_end(u))                                  \
-    for (ut_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
+#define u_tree_rfor(u, _k, _v)                                                                     \
+  for (u_tree_type(u, k) _k = {}; avl_for_init(u, 0); avl_for_end(u))                              \
+    for (u_tree_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
 
 #endif /* !U_IAVL_H__ */
