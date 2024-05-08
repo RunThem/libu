@@ -69,7 +69,7 @@
 #define me(type, ...) ((type){__VA_ARGS__})
 #define bit(byte, n)  (((byte) >> (n)) & 1)
 
-#define align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
+#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
