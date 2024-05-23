@@ -51,7 +51,7 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#define us_new(s)                                                                                  \
+#define u_str_new(s)                                                                               \
   ({                                                                                               \
     auto _fn = _Generic(s,                                                                         \
         char: str_new_char,                                                                        \
@@ -62,14 +62,14 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
     _fn(s);                                                                                        \
   })
 
-#define us_len(s)                                                                                  \
+#define u_str_len(s)                                                                               \
   ({                                                                                               \
     auto _fn = _Generic(s, u_cstr_t: strlen, u_str_t: str_len);                                    \
                                                                                                    \
     _fn(&s);                                                                                       \
   })
 
-#define us_put(s, _s)                                                                              \
+#define u_str_put(s, _s)                                                                           \
   do {                                                                                             \
     auto _fn = _Generic(_s,                                                                        \
         char: str_put_char,                                                                        \
@@ -80,7 +80,7 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
     _fn(&s, _s);                                                                                   \
   } while (0)
 
-#define us_ins(s, i, _s)                                                                           \
+#define u_str_ins(s, i, _s)                                                                        \
   do {                                                                                             \
     auto _fn = _Generic(_s,                                                                        \
         char: str_ins_char,                                                                        \

@@ -1,6 +1,6 @@
 #define NDEBUG
 
-#define u_vec_defs  u_defs(vec, bool, int)
+#define u_vec_defs  u_defs(vec, bool, int, u_vec_t(int))
 #define u_set_defs  u_defs(set, item)
 #define u_map_defs  u_defs(map, (int, bool), (int, char))
 #define u_tree_defs u_defs(tree, (int, bool), (int, char), (int, u_zero_size_type_t))
@@ -10,7 +10,7 @@
 
 /* system libs */
 
-#if 0
+#if 1
 #  include <limits.h>
 #  include <stdlib.h>
 // #include <task.h>
@@ -151,16 +151,20 @@ void set(any_t _self) {
   ((any_t*)_self)[0] = nullptr;
 }
 
+typedef struct {
+  // buf;
+  // idx;
+  // cap;
+} u_buf_t;
+
 int main(int argc, const u_cstr_t argv[]) {
   infln("%lu", sizeof(enum {T, F}));
 
-  _u_str_t str = {"hello"};
+#define range(i, s, e) for (size_t i = s; i < e; i++)
 
-  println("%p", str.ptr);
-
-  set(&str);
-
-  println("%p", str.ptr);
+  range(i, 0, 16) {
+    println("%zx_ is %zu", i, i * 16);
+  }
 
   return EXIT_SUCCESS;
 
