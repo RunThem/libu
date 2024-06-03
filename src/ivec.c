@@ -23,6 +23,7 @@
  * */
 
 #include <stdlib.h>
+#include <string.h>
 #include <u/ivec.h>
 #include <u/utils/alloc.h>
 #include <u/utils/debug.h>
@@ -58,7 +59,7 @@ static ret_t vec_resize(vec_t* self) {
   items = u_realloc(self->items, self->itsize * cap);
   u_nil_if(items);
 
-  infln("vec resize(cap(%zu -> %zu))", self->cap, cap);
+  inf("vec resize(cap(%zu -> %zu))", self->cap, cap);
 
   self->items = items;
   self->cap   = cap;
@@ -83,7 +84,7 @@ any_t vec_new(size_t itsize) {
   self->itsize = itsize;
   self->cap    = 16;
 
-  infln("itsize(%zu)", itsize);
+  inf("itsize(%zu)", itsize);
 
   return self;
 

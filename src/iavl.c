@@ -22,6 +22,7 @@
  *
  * */
 
+#include <string.h>
 #define u_vec_defs u_defs(vec, node_t*)
 
 #include <u/u.h>
@@ -380,7 +381,7 @@ any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   self->cmp_fn = cmp_fn;
   self->root   = nullptr;
 
-  infln("avl new(ksize(%zu), vsize(%zu), cmp_fn(%p))", ksize, vsize, cmp_fn);
+  inf("avl new(ksize(%zu), vsize(%zu), cmp_fn(%p))", ksize, vsize, cmp_fn);
 
   return self;
 

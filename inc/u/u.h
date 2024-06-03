@@ -35,7 +35,6 @@
 
 #include "utils/alloc.h"
 #include "utils/debug.h"
-#include "utils/io.h"
 #include "utils/keyword.h"
 #include "utils/misc.h"
 #include "utils/print.h"

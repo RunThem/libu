@@ -54,12 +54,6 @@ ret_t code = 0;
  * un: net
  * */
 
-#  define mtx_block(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
-
-#  define u_check(expr, ...)                                                                       \
-    if (expr)                                                                                      \
-    __VA_OPT__({ __VA_ARGS__; })
-
 /* 全新版本的字符串原始实现 */
 typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
 
@@ -158,18 +152,16 @@ typedef struct {
 } u_buf_t;
 
 int main(int argc, const u_cstr_t argv[]) {
-  infln("%lu", sizeof(enum {T, F}));
+  inf("%lu", sizeof(enum {T, F}));
 
-#define range(i, s, e) for (size_t i = s; i < e; i++)
-
-  range(i, 0, 16) {
+  each(i, 0, 16) {
     println("%zx_ is %zu", i, i * 16);
   }
 
   return EXIT_SUCCESS;
 
 err:
-  errln("failed.");
+  inf("failed.");
 
   return EXIT_FAILURE;
 }

@@ -26,7 +26,7 @@
 #include <u/utils/misc.h>
 #include <u/utils/print.h>
 
-void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
+void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
   char buf[17] = {0};
   size_t i     = 0;
   size_t pos   = 0;

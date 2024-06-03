@@ -29,24 +29,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
-
-/*
- * a >  b  ->  1
- * a == b  ->  0
- * a <  b  -> -1
- * */
-typedef fnt(u_cmp_fn, int, const void*, const void*);
-typedef fnt(u_eq_fn, bool, const void*, const void*);
-
-typedef typeof(char*) u_cstr_t;
-
-typedef struct {
-}* u_str_t;
-
 /* clang-format off */
-typedef int   ret_t;
-typedef void* any_t;
+typedef int ret_t;
+
+typedef void*       any_t;
+typedef const void* cany_t;
 
 typedef uint8_t  byte_t;
 typedef int8_t   i8_t;
@@ -61,6 +48,20 @@ typedef uint64_t u64_t;
 typedef float       f32_t;
 typedef double      f64_t;
 typedef long double f128_t;
+
+typedef const uint8_t  cbyte_t;
+typedef const int8_t   ci8_t;
+typedef const uint8_t  cu8_t;
+typedef const int16_t  ci16_t;
+typedef const uint16_t cu16_t;
+typedef const int32_t  ci32_t;
+typedef const uint32_t cu32_t;
+typedef const int64_t  ci64_t;
+typedef const uint64_t cu64_t;
+
+typedef const float       cf32_t;
+typedef const double      cf64_t;
+typedef const long double cf128_t;
 
 typedef _Atomic(i8_t)  atomic_i8_t;
 typedef _Atomic(u8_t)  atomic_u8_t;
@@ -79,5 +80,24 @@ typedef _Atomic(i128_t) atomic_i128_t;
 typedef _Atomic(u128_t) atomic_u128_t;
 #  endif
 /* clang-format on */
+
+#define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
+
+/*
+ * a >  b  ->  1
+ * a == b  ->  0
+ * a <  b  -> -1
+ * */
+typedef fnt(u_cmp_fn, int, cany_t, cany_t);
+typedef fnt(u_eq_fn, bool, cany_t, cany_t);
+
+typedef typeof(char*) u_cstr_t;
+
+typedef struct {
+}* u_str_t;
+
+typedef u64_t u_hash_t;
+
+typedef fnt(u_hash_fn, u_hash_t, cu8_t*, size_t);
 
 #endif /* !U_TYPE_H__ */

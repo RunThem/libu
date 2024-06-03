@@ -37,7 +37,7 @@ typedef struct {
 /***************************************************************************************************
  * Api
  ***************s***********************************************************************************/
-extern any_t map_new(size_t, size_t);
+extern any_t map_new(size_t, size_t, u_hash_fn);
 
 extern size_t map_len(any_t);
 
@@ -93,7 +93,7 @@ extern bool map_for(any_t, any_t, any_t);
   do {                                                                                             \
     u_map_type_check(u);                                                                           \
                                                                                                    \
-    u = map_new(sizeof(u_map_type(u, k)), sizeof(u_map_type(u, v)));                               \
+    u = map_new(sizeof(u_map_type(u, k)), sizeof(u_map_type(u, v)), nullptr);                      \
   } while (0)
 
 #define u_map_new(...)                                                                             \

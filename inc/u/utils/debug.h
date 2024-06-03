@@ -29,69 +29,69 @@
 
 #define u_die_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     exit(EXIT_FAILURE);                                                                            \
   }
 
 #define u_chk_if(expr, code, ...)                                                                  \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     return code;                                                                                   \
   }
 
 #define u_nchk_if(expr, ...)                                                                       \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     return;                                                                                        \
   }
 
 #define u_ret_if(expr, code, ...)                                                                  \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     return code;                                                                                   \
   }
 
 #define u_nret_if(expr, ...)                                                                       \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     return;                                                                                        \
   }
 
 #define u_err_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     goto err;                                                                                      \
   }
 
 #define u_errs_if(expr, ...)                                                                       \
   if (expr) {                                                                                      \
-    errln("(%s) " va_1th("", __VA_ARGS__) " ", #expr va_list(2, __VA_ARGS__));                     \
+    inf("(%s) " va_1th("", __VA_ARGS__) " ", #expr va_list(2, __VA_ARGS__));                       \
                                                                                                    \
     goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
 #define u_nil_if(mem, ...)                                                                         \
   if ((mem) == nullptr) {                                                                          \
-    errln("(%s == null) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));              \
+    inf("(%s == null) " va_0th("", __VA_ARGS__) " ", #mem va_list(1, __VA_ARGS__));                \
     goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
 #define u_brk_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     break;                                                                                         \
   }
 
 #define u_ctu_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \
-    errln("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                     \
+    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
                                                                                                    \
     continue;                                                                                      \
   }

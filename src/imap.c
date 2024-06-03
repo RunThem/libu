@@ -22,6 +22,7 @@
  *
  * */
 
+#include <string.h>
 #include <u/imap.h>
 #include <u/utils/alloc.h>
 #include <u/utils/debug.h>
@@ -52,6 +53,8 @@ struct map_t {
   size_t vsize;
   size_t len;
 
+  u_hash_fn hash_fn;
+
   node_t* iter;
   node_t* free_nodes;
 
@@ -75,11 +78,11 @@ struct map_t {
  **************************************************************************************************/
 /* [idx, len] { 0xffff } { 0xfffe } */
 static void map_debug(map_t* self) {
-  infln("ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)",
-        self->ksize,
-        self->vsize,
-        self->len,
-        bucket_sizes[self->bucket_idx]);
+  inf("ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)",
+      self->ksize,
+      self->vsize,
+      self->len,
+      bucket_sizes[self->bucket_idx]);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     print("[%zu, %zu] ", i, self->buckets[i].hash);
@@ -93,7 +96,7 @@ static void map_debug(map_t* self) {
 }
 
 /* fnv 64-bit hash function */
-static u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
+static u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   u_hash_t hash = 14695981039346656037U;
 
   for (size_t i = 0; i < len; ++i) {
@@ -115,7 +118,7 @@ static node_t* map_make_node(map_t* self, any_t key, any_t val) {
     u_nil_if(node);
   }
 
-  node->hash = hash_fnv64bit(key, self->ksize);
+  node->hash = self->hash_fn(key, self->ksize);
   memcpy(key(node), key, self->ksize);
   memcpy(val(node), val, self->vsize);
 
@@ -129,7 +132,7 @@ static node_t* map_find(map_t* self, node_t* idx[2], any_t key) {
   u_hash_t hash = 0;
   node_t* node  = nullptr;
 
-  hash   = hash_fnv64bit(key, self->ksize);
+  hash   = self->hash_fn(key, self->ksize);
   idx[0] = &self->buckets[hash % bucket_sizes[self->bucket_idx]];
 
   for (idx[1] = idx[0], node = (idx[0])->next; node->next != nullptr;
@@ -232,7 +235,7 @@ err:
   return false;
 }
 
-any_t map_new(size_t ksize, size_t vsize) {
+any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   map_t* self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
@@ -248,8 +251,9 @@ any_t map_new(size_t ksize, size_t vsize) {
   self->vsize      = vsize;
   self->len        = 0;
   self->bucket_idx = 0;
+  self->hash_fn    = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
 
-  infln("map new(ksize(%zu), vsize(%zu))", ksize, vsize);
+  inf("map new(ksize(%zu), vsize(%zu))", ksize, vsize);
 
   return self;
 

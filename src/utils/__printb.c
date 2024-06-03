@@ -25,7 +25,7 @@
 #include <u/utils/misc.h>
 #include <u/utils/print.h>
 
-void __printb(u_cstr_t name, const u8_t* mem, size_t size) {
+void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
   u8_t byte = 0;
 
   println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);

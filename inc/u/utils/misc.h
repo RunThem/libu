@@ -30,37 +30,6 @@
 #include <errno.h>
 #include <setjmp.h>
 
-#define each(i, num) for (size_t i = 0; (i) < (num); (i)++)
-
-#define __builtin_basetypeid(t)                                                                    \
-  ({                                                                                               \
-    uint _s = 0;                                                                                   \
-                                                                                                   \
-    if (__builtin_classify_type(t) == 5) {                                                         \
-      _s = _Generic(t, default: 255, u_cstr_t: 128, u_str_t: 129);                                 \
-    } else {                                                                                       \
-      _s = _Generic(t,                                                                             \
-          default: 0,                                                                              \
-          bool: 1,                                                                                 \
-          char: 2,                                                                                 \
-          i8_t: 3,                                                                                 \
-          i16_t: 4,                                                                                \
-          i32_t: 5,                                                                                \
-          i64_t: 6,                                                                                \
-          i128_t: 7,                                                                               \
-          u8_t: 8,                                                                                 \
-          u16_t: 9,                                                                                \
-          u32_t: 10,                                                                               \
-          u64_t: 11,                                                                               \
-          u128_t: 12,                                                                              \
-          f32_t: 13,                                                                               \
-          f64_t: 14,                                                                               \
-          f128_t: 15);                                                                             \
-    }                                                                                              \
-                                                                                                   \
-    _s;                                                                                            \
-  })
-
 /***************************************************************************************************
  * Misc macro
  **************************************************************************************************/
@@ -68,6 +37,16 @@
 #define ch(c)         ((char)(#c[0]))
 #define me(type, ...) ((type){__VA_ARGS__})
 #define bit(byte, n)  (((byte) >> (n)) & 1)
+
+/* clang-format off */
+#define each(i, n, ...) va_elseif(va_size_is(1, __VA_ARGS__)) (                                    \
+      for (size_t i = n; i < va_at(0, __VA_ARGS__); i++)                                           \
+    )(                                                                                             \
+      for (size_t i = 0; i < n; i++)                                                               \
+    )
+/* clang-format on */
+
+#define mtx_if(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
 
 #define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 
@@ -183,16 +162,16 @@ extern thread_local __err__t __err__;
 /* clang-format on */
 
 #define fn_compe_dec(type)                                                                         \
-  extern bool fn_eq_##type(const void*, const void*);                                              \
-  extern int fn_cmp_##type(const void*, const void*)
+  extern bool fn_eq_##type(cany_t, cany_t);                                                        \
+  extern int fn_cmp_##type(cany_t, cany_t)
 
 #define fn_compe_def(type, eq, cmp)                                                                \
-  bool fn_eq_##type(const void* _x, const void* _y) {                                              \
+  bool fn_eq_##type(cany_t _x, cany_t _y) {                                                        \
     type x = *(type*)_x, y = *(type*)_y;                                                           \
     return (eq);                                                                                   \
   }                                                                                                \
                                                                                                    \
-  int fn_cmp_##type(const void* _x, const void* _y) {                                              \
+  int fn_cmp_##type(cany_t _x, cany_t _y) {                                                        \
     type x = *(type*)_x, y = *(type*)_y;                                                           \
     return (eq) ? 0 : ((cmp) ? 1 : -1);                                                            \
   }
