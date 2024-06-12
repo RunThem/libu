@@ -48,7 +48,7 @@
 
 #define mtx_if(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
 
-#define align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
+#define align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
 #define container_of(ptr, type, member)                                                            \
   ({                                                                                               \
@@ -66,6 +66,8 @@
  * Try catch
  **************************************************************************************************/
 #define U_ERR_MSG_SIZE 2048
+
+typedef int error_t;
 
 typedef struct {
   bool is_err;
