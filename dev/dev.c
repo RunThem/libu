@@ -98,10 +98,6 @@ item table[] = {
     {8, false, INT_MAX, -1},
 };
 
-#  define u_arr_for(arr, i, it)                                                                    \
-    for (size_t i = 0; i < arrlen(arr); i++)                                                       \
-      for (auto it = &arr[i]; it; it = nullptr)
-
 void spf() {
   int idx  = 0;
   int cost = 0;
@@ -138,7 +134,7 @@ void spf() {
 #endif
 
 typedef struct {
-  const u_cstr_t ptr;
+  u_cstr_t ptr;
 } _u_str_t;
 
 void set(any_t _self) {
@@ -151,10 +147,17 @@ typedef struct {
   // cap;
 } u_buf_t;
 
+/*
+ * net
+ * file
+ *
+ *
+ * */
+
 int main(int argc, const u_cstr_t argv[]) {
   inf("%lu", sizeof(enum {T, F}));
 
-  each(i, 0, 16) {
+  u_each(i, 0, 16) {
     println("%zx_ is %zu", i, i * 16);
   }
 

@@ -82,20 +82,6 @@
     goto va_0th(err, __VA_ARGS__);                                                                 \
   }
 
-#define u_brk_if(expr, ...)                                                                        \
-  if (expr) {                                                                                      \
-    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
-                                                                                                   \
-    break;                                                                                         \
-  }
-
-#define u_ctu_if(expr, ...)                                                                        \
-  if (expr) {                                                                                      \
-    inf("(%s) " va_0th("", __VA_ARGS__) " ", #expr va_list(1, __VA_ARGS__));                       \
-                                                                                                   \
-    continue;                                                                                      \
-  }
-
 #define u_free_if(mem)                                                                             \
   if (mem != nullptr) {                                                                            \
     u_free(mem);                                                                                   \

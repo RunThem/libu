@@ -25,20 +25,20 @@ mut_test(map_interface) {
 
   mut_assert(true == u_map_is_empty(m));
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_put(m, (int)i, 'a' + i);
   }
 
   mut_assert(false == u_map_is_empty(m));
   mut_assert(N == u_map_len(m));
 
-  each(i, N) {
+  u_each(i, N) {
     mut_assert('a' + i == u_map_at(m, (int)i));
   }
 
   mut_assert(N == u_map_len(m));
 
-  each(i, N) {
+  u_each(i, N) {
     mut_assert('a' + i == u_map_pop(m, (int)i));
   }
 
@@ -51,7 +51,7 @@ mut_test(map_interface) {
 
   mut_assert(0 == u_map_len(m));
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_at(m, (int)i, 'a' + i);
   }
 
@@ -61,31 +61,31 @@ mut_test(map_interface) {
 
   u_map_init(m);
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_put(m, (int)i, 'a' + i);
   }
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_pop(m, (int)i);
   }
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_put(m, (int)i, 'a' + i);
   }
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_pop(m, (int)i);
   }
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_put(m, (int)i, 'a' + i);
   }
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_pop(m, (int)i);
   }
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_put(m, (int)i, 'a' + i);
   }
 
@@ -102,7 +102,7 @@ mut_test(map_iterator) {
 
   mut_assert(true == u_map_is_empty(m));
 
-  each(i, N) {
+  u_each(i, N) {
     u_map_put(m, (int)i, 'a' + i);
   }
 

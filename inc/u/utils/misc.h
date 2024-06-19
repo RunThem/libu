@@ -39,18 +39,18 @@
 #define bit(byte, n)  (((byte) >> (n)) & 1)
 
 /* clang-format off */
-#define each(i, n, ...) va_elseif(va_size_is(1, __VA_ARGS__)) (                                    \
+#define u_each(i, n, ...) va_elseif(va_size_is(1, __VA_ARGS__)) (                                  \
       for (size_t i = n; i < va_at(0, __VA_ARGS__); i++)                                           \
     )(                                                                                             \
       for (size_t i = 0; i < n; i++)                                                               \
     )
 /* clang-format on */
 
-#define mtx_if(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
+#define u_mtx_if(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
 
-#define align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
+#define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
-#define container_of(ptr, type, member)                                                            \
+#define u_container_of(ptr, type, member)                                                          \
   ({                                                                                               \
     const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \
     (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
@@ -60,7 +60,11 @@
 #define __same_type(a, b)      __builtin_types_compatible_p(typeof(a), typeof(b))
 #define __build_bug_on_zero(e) (sizeof(struct { int : -!!(e); }))
 #define __must_be_array(a)     __build_bug_on_zero(__same_type((a), &(a)[0]))
-#define arrlen(arr)            (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+#define u_arr_len(arr)         (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+
+#define u_arr_for(arr, i, it)                                                                      \
+  for (size_t i = 0; i < u_arr_len(arr); i++)                                                      \
+    for (auto it = &arr[i]; it; it = nullptr)
 
 /***************************************************************************************************
  * Try catch
