@@ -13,6 +13,7 @@
 #if 1
 #  include <limits.h>
 #  include <stdlib.h>
+#  include <threads.h>
 // #include <task.h>
 
 #  if 0
@@ -101,10 +102,10 @@ item table[] = {
 void spf() {
   int idx  = 0;
   int cost = 0;
-  u_arr_for(table, i, _) {
+  u_arr_for (table, i, _) {
     // 找到最优节点, 未被使用的节点中开销最小
     cost = INT_MAX;
-    u_arr_for(table, i, it) {
+    u_arr_for (table, i, it) {
       if (!it->isuse && it->cost < cost) {
         idx  = it->id;
         cost = it->cost;
@@ -115,7 +116,7 @@ void spf() {
     table[idx].isuse = true;
 
     // 更新所有子节点
-    u_arr_for(graph[idx].sub, i, it) {
+    u_arr_for (graph[idx].sub, i, it) {
       if (table[it->id].isuse) {
         continue;
       }
@@ -127,7 +128,7 @@ void spf() {
     }
   }
 
-  u_arr_for(table, i, it) {
+  u_arr_for (table, i, it) {
     printf("id %d, cost %d, prev %d\n", it->id, it->cost, it->prev);
   }
 }
@@ -157,7 +158,7 @@ typedef struct {
 int main(int argc, const u_cstr_t argv[]) {
   inf("%lu", sizeof(enum {T, F}));
 
-  u_each(i, 0, 16) {
+  u_each (i, 16) {
     println("%zx_ is %zu", i, i * 16);
   }
 

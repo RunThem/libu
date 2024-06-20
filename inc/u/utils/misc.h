@@ -29,6 +29,7 @@
 
 #include <errno.h>
 #include <setjmp.h>
+#include <strings.h>
 
 /***************************************************************************************************
  * Misc macro
@@ -48,7 +49,7 @@
 
 #define u_mtx_if(mtx) for (bool _ = true; _ && !mtx_lock(mtx); _ = false, mtx_unlock(mtx))
 
-#define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
+#define u_align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
 
 #define u_container_of(ptr, type, member)                                                          \
   ({                                                                                               \

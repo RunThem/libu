@@ -87,7 +87,7 @@ mut_test(set_iterator) {
   u_set_put(s, a);
   u_set_put(s, d);
 
-  u_set_for(s, it) {
+  u_set_for (s, it) {
     mut_assert(it.b == (it.a + 1) * 1000);
   }
 

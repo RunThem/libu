@@ -87,7 +87,7 @@ bool lst_exist(any_t _self, any_t ptr) {
   u_chk_if(ptr == nullptr, false);
   u_chk_if(u_vec_is_empty(self->items), false);
 
-  u_vec_for(self->items, i, node) {
+  u_vec_for (self->items, i, node) {
     if (node == ptr) {
       return true;
     }
@@ -120,7 +120,7 @@ any_t lst_next(any_t _self, any_t idx) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx == nullptr, nullptr);
 
-  u_vec_for(self->items, i, node) {
+  u_vec_for (self->items, i, node) {
     if (node == idx) {
       return i == u_vec_len(self->items) - 1 ? nullptr : u_vec_at(self->items, i + 1);
     }
@@ -135,7 +135,7 @@ any_t lst_prev(any_t _self, any_t idx) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx == nullptr, nullptr);
 
-  u_vec_for(self->items, i, node) {
+  u_vec_for (self->items, i, node) {
     if (node == idx) {
       return (i == 0) ? nullptr : u_vec_at(self->items, i - 1);
     }
@@ -151,7 +151,7 @@ void lst_pop(any_t _self, any_t ptr) {
   u_nchk_if(ptr == nullptr);
   u_nchk_if(u_vec_is_empty(self->items));
 
-  u_vec_for(self->items, i, node) {
+  u_vec_for (self->items, i, node) {
     if (node == ptr) {
       u_vec_pop(self->items, i);
       break;
@@ -168,7 +168,7 @@ void lst_put(any_t _self, any_t idx, any_t ptr) {
   if (idx == nullptr) {
     u_vec_put(self->items, 0, ptr);
   } else {
-    u_vec_for(self->items, i, node) {
+    u_vec_for (self->items, i, node) {
       if (node == idx) {
         u_vec_put(self->items, i + 1, ptr);
         break;

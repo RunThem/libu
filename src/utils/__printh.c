@@ -41,7 +41,7 @@ void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
 
     print("%02x %s", mem[pos] & 0xff, (pos % 16) == 7 ? " " : "");
     if ((pos % 16) == 15) {
-      u_arr_for(buf, i, it) {
+      u_arr_for (buf, i, it) {
         idx = pos - 16 + i;
         *it = isprint(mem[idx]) ? mem[idx] : '.';
       }

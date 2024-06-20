@@ -25,20 +25,20 @@ mut_test(avl_interface) {
 
   mut_assert(true == u_tree_is_empty(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_tree_put(t, i, i * 2);
   }
 
   mut_assert(false == u_tree_is_empty(t));
   mut_assert(N == u_tree_len(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(i * 2 == u_tree_at(t, i));
   }
 
   mut_assert(N == u_tree_len(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(i * 2 == u_tree_pop(t, i));
   }
 
@@ -51,30 +51,30 @@ mut_test(avl_interface) {
 
   mut_assert(0 == u_tree_len(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_tree_at(t, i, i * 3);
   }
 
   mut_assert(0 == u_tree_len(t));
   mut_assert(true == u_tree_is_empty(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_tree_put(t, i, i * 2);
   }
 
   mut_assert(N == u_tree_len(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_tree_at(t, i, i * 3);
   }
 
   mut_assert(N == u_tree_len(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(i * 3 == u_tree_at(t, i));
   }
 
-  u_tree_for(t, k, v) {
+  u_tree_for (t, k, v) {
     mut_assert(k * 3 == v);
   }
 
@@ -87,11 +87,11 @@ mut_test(avl_iterator) {
 
   mut_assert(true == u_tree_is_empty(t));
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_tree_put(t, (int)i, 'a' + i);
   }
 
-  u_tree_for(t, k, v) {
+  u_tree_for (t, k, v) {
     mut_assert(k + 'a' == +v);
   }
 

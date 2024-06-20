@@ -30,22 +30,22 @@ mut_test(vec_interface) {
   mut_assert(true == u_vec_is_empty(v));
 
   /* 31, 30, ..., 1, 0 */
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_put(v, 0, i);
   }
 
   /* <- 0, 1, ..., 30, 31 */
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_put(v, -1, i);
   }
 
   /* <- 0, 1, ..., 30, 31 -> */
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_put(v, N + i, i);
   }
 
   /* <- 31, 30, ..., 1, 0 -> */
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_put(v, N * 2, i);
   }
 
@@ -59,37 +59,37 @@ mut_test(vec_interface) {
   mut_assert(N - 1 == u_vec_at(v, 0));
   mut_assert(N - 1 == u_vec_at(v, -1));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(N - 1 - i == u_vec_at(v, i));
   }
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_pop(v, N * 2 + i);
   }
 
   mut_assert(N * 3 == u_vec_len(v));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(N - 1 - i == u_vec_at(v, i));
   }
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_pop(v, 0ul);
   }
 
   mut_assert(N * 2 == u_vec_len(v));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(i == u_vec_at(v, i));
   }
 
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_pop(v, -1);
   }
 
   mut_assert(N == u_vec_len(v));
 
-  u_each(i, N) {
+  u_each (i, N) {
     mut_assert(i == u_vec_at(v, i));
   }
 
@@ -98,7 +98,7 @@ mut_test(vec_interface) {
   mut_assert(0 == u_vec_len(v));
 
   /* 0, 1, 2, 3 */
-  u_each(i, 4) {
+  u_each (i, 4) {
     u_vec_put(v, -1, i);
   }
 
@@ -110,7 +110,7 @@ mut_test(vec_interface) {
 
   mut_assert(4 == u_vec_len(v));
 
-  u_each(i, 4) {
+  u_each (i, 4) {
     mut_assert(4 - 1 - i == u_vec_at(v, i));
   }
 
@@ -124,11 +124,11 @@ mut_test(vec_iterator) {
   mut_assert(true == u_vec_is_empty(v));
 
   /* 0, 1, ..., 30, 31 */
-  u_each(i, N) {
+  u_each (i, N) {
     u_vec_put(v, -1, i);
   }
 
-  u_vec_for(v, i, it) {
+  u_vec_for (v, i, it) {
     mut_assert(i == it);
   }
 
