@@ -27,6 +27,7 @@ BitFieldColonSpacing: After
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: AfterColon
 BreakStringLiterals: false
+BreakAfterAttributes: Always
 
 IncludeBlocks: Regroup
 
