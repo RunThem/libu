@@ -44,6 +44,7 @@
 /**/
 
 #include "ibuf.h"
+#include "ilock.h"
 
 #define u_defs(type, ...) va_map(_u_##type##_defs, __VA_ARGS__)
 
