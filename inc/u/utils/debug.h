@@ -26,6 +26,7 @@
 #define U_DEBUG_H__
 
 #include "print.h"
+#include "va.h"
 
 #define u_die_if(expr, ...)                                                                        \
   if (expr) {                                                                                      \

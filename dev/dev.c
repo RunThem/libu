@@ -1,4 +1,4 @@
-#define NDEBUG
+// #define NDEBUG
 
 #define u_vec_defs  u_defs(vec, bool, int, u_vec_t(int))
 #define u_set_defs  u_defs(set, item)
@@ -12,6 +12,7 @@
 
 #if 1
 #  include <limits.h>
+#  include <memory.h>
 #  include <stdlib.h>
 #  include <threads.h>
 // #include <task.h>
@@ -142,25 +143,41 @@ void set(any_t _self) {
   ((any_t*)_self)[0] = nullptr;
 }
 
-typedef struct {
-  // buf;
-  // idx;
-  // cap;
-} u_buf_t;
-
-/*
- * net
- * file
- *
- *
- * */
-
 int main(int argc, const u_cstr_t argv[]) {
   inf("%lu", sizeof(enum {T, F}));
 
-  u_each (i, 16) {
-    println("%zx_ is %zu", i, i * 16);
-  }
+  // u_each (i, 16) {
+  //   println("%zx_ is %zu", i, i * 16);
+  // }
+
+  u_buf_t buf = {};
+  u_buf_init(&buf);
+
+  u_buf_put(&buf, me(u8_t, 23));
+
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+  u_buf_put(&buf, me(int, 0x2'32'81'34));
+
+  inf("%zu, %zu ", buf.len, buf.cap);
+
+  printh(buf.buf, buf.len);
+
+  println("%d", u_buf_pop(&buf, char));
+  println("0x%x", u_buf_pop(&buf, int));
+
+  u_buf_cleanup(&buf);
 
   return EXIT_SUCCESS;
 

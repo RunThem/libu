@@ -43,6 +43,8 @@
 
 /**/
 
+#include "ibuf.h"
+
 #define u_defs(type, ...) va_map(_u_##type##_defs, __VA_ARGS__)
 
 #if defined(u_vec_defs)
