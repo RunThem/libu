@@ -179,11 +179,14 @@ int main(int argc, const u_cstr_t argv[]) {
 
   u_buf_cleanup(&buf);
 
+  mtx_t mtx       = {};
   u_spmtx_t smtx  = {};
   u_rwmtx_t rwmtx = {};
 
-  u_smtx_if(&smtx) {
-    print("dd");
+  u_mtx_if (&mtx) {
+  }
+
+  u_spmtx_if(&smtx) {
   }
 
   u_rwmtx_if(&rwmtx, w) {
