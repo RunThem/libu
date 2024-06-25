@@ -22,11 +22,7 @@
  *
  * */
 
-#include <string.h>
-#include <u/imap.h>
-#include <u/utils/alloc.h>
-#include <u/utils/debug.h>
-#include <u/utils/misc.h>
+#include <u/u.h>
 
 static size_t bucket_sizes[] = {
     7,
@@ -105,20 +101,21 @@ struct map_t {
  **************************************************************************************************/
 /* [idx, len] { 0xffff } { 0xfffe } */
 static void map_debug(map_t* self) {
-  inf("ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)",
-      self->ksize,
-      self->vsize,
-      self->len,
-      bucket_sizes[self->bucket_idx]);
+  fprintf(stderr,
+          "ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)\n",
+          self->ksize,
+          self->vsize,
+          self->len,
+          bucket_sizes[self->bucket_idx]);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
-    print("[%zu, %zu] ", i, self->buckets[i].hash);
+    fprintf(stderr, "[%zu, %zu] ", i, self->buckets[i].hash);
 
     for (node_t* node = &self->buckets[i]; node != nullptr; node = node->next) {
-      print("{ %p } ", node);
+      fprintf(stderr, "{ %p } ", node);
     }
 
-    println();
+    fprintf(stderr, "\n");
   }
 }
 
@@ -279,8 +276,6 @@ any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   self->len        = 0;
   self->bucket_idx = 0;
   self->hash_fn    = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
-
-  inf("map new(ksize(%zu), vsize(%zu))", ksize, vsize);
 
   return self;
 

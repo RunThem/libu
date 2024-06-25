@@ -28,6 +28,7 @@
 void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
   u8_t byte = 0;
 
+#if 0
   println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);
 
   for (ssize_t i = (ssize_t)size - 1; i >= 0; i--) {
@@ -51,4 +52,5 @@ void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
   }
 
   println();
+#endif
 }

@@ -76,8 +76,8 @@ extern bool avl_for(any_t, any_t, any_t);
 
 #define _u_tree_defs(arg) __u_tree_defs arg
 
-#define u_tree_type(u, arg)     typeof(_Generic(typeof(u), u_tree_defs).arg)
-#define u_tree_type_val(u, arg) _Generic(typeof(u), u_tree_defs).arg
+#define u_tree_type(u, arg)     typeof(_Generic(u, u_tree_defs).arg)
+#define u_tree_type_val(u, arg) _Generic(u, u_tree_defs).arg
 
 #if defined(NDEBUG)
 #  define u_tree_type_check(u)

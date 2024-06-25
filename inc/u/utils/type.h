@@ -32,6 +32,8 @@
 /* clang-format off */
 typedef int ret_t;
 
+typedef char* u_cstr_t;
+
 typedef void*       any_t;
 typedef const void* cany_t;
 
@@ -78,6 +80,9 @@ typedef __uint128_t u128_t;
 
 typedef _Atomic(i128_t) atomic_i128_t;
 typedef _Atomic(u128_t) atomic_u128_t;
+
+typedef const __int128_t  ci128_t;
+typedef const __uint128_t cu128_t;
 #  endif
 /* clang-format on */
 
@@ -90,8 +95,6 @@ typedef _Atomic(u128_t) atomic_u128_t;
  * */
 typedef fnt(u_cmp_fn, int, cany_t, cany_t);
 typedef fnt(u_eq_fn, bool, cany_t, cany_t);
-
-typedef typeof(char*) u_cstr_t;
 
 typedef struct {
 }* u_str_t;

@@ -76,8 +76,8 @@ extern bool map_for(any_t, any_t, any_t);
 
 #define _u_map_defs(arg) __u_map_defs arg
 
-#define u_map_type(u, arg)     typeof(_Generic(typeof(u), u_map_defs).arg)
-#define u_map_type_val(u, arg) _Generic(typeof(u), u_map_defs).arg
+#define u_map_type(u, arg)     typeof(_Generic(u, u_map_defs).arg)
+#define u_map_type_val(u, arg) _Generic(u, u_map_defs).arg
 
 #if defined(NDEBUG)
 #  define u_map_type_check(u)

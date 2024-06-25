@@ -10,34 +10,32 @@
 
 /* system libs */
 
-#if 1
-#  include <limits.h>
-#  include <memory.h>
-#  include <stdlib.h>
-#  include <threads.h>
-// #include <task.h>
+#include <limits.h>
+#include <threads.h>
 
-#  if 0
-#    include <arpa/inet.h>
-#    include <dirent.h>
-#    include <fcntl.h>
-#    include <net/ethernet.h>
-#    include <net/if.h>
-#    include <netinet/if_ether.h>
-#    include <netinet/in.h>
-#    include <netinet/ip.h>
-#    include <netinet/ip_icmp.h>
-#    include <netpacket/packet.h>
-#    include <regex.h>
-#    include <sys/ioctl.h>
-#    include <sys/resource.h>
-#    include <sys/socket.h>
-#    include <sys/time.h>
-#    include <sys/wait.h>
-#    include <threads.h>
-#    include <ucontext.h>
-#    include <unistd.h>
-#  endif
+#if 0
+#  include <arpa/inet.h>
+#  include <dirent.h>
+#  include <fcntl.h>
+#  include <net/ethernet.h>
+#  include <net/if.h>
+#  include <netinet/if_ether.h>
+#  include <netinet/in.h>
+#  include <netinet/ip.h>
+#  include <netinet/ip_icmp.h>
+#  include <netpacket/packet.h>
+#  include <regex.h>
+#  include <sys/ioctl.h>
+#  include <sys/resource.h>
+#  include <sys/socket.h>
+#  include <sys/time.h>
+#  include <sys/wait.h>
+#  include <threads.h>
+#  include <ucontext.h>
+#  include <unistd.h>
+#endif
+
+#if 0
 
 ret_t code = 0;
 
@@ -144,61 +142,19 @@ void set(any_t _self) {
 }
 
 int main(int argc, const u_cstr_t argv[]) {
-  inf("%lu", sizeof(enum {T, F}));
+  u_log_init();
+
+  u_inf("%lu", sizeof(enum {T, F}));
 
   // u_each (i, 16) {
   //   println("%zx_ is %zu", i, i * 16);
   // }
 
-  u_buf_t buf = {};
-  u_buf_init(&buf);
-
-  u_buf_put(&buf, me(u8_t, 23));
-
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-  u_buf_put(&buf, me(int, 0x2'32'81'34));
-
-  inf("%zu, %zu ", buf.len, buf.cap);
-
-  printh(buf.buf, buf.len);
-
-  println("%d", u_buf_pop(&buf, char));
-  println("0x%x", u_buf_pop(&buf, int));
-
-  u_buf_cleanup(&buf);
-
-  mtx_t mtx       = {};
-  u_spmtx_t smtx  = {};
-  u_rwmtx_t rwmtx = {};
-
-  u_mtx_if (&mtx) {
-  }
-
-  u_spmtx_if(&smtx) {
-  }
-
-  u_rwmtx_if(&rwmtx, w) {
-  }
-
-  u_rwmtx_if(&rwmtx, r) {
-  }
+  u_log_deinit();
 
   return EXIT_SUCCESS;
 
 err:
-  inf("failed.");
 
   return EXIT_FAILURE;
 }

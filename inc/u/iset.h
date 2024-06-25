@@ -70,8 +70,8 @@ extern bool avl_for(any_t, any_t, any_t);
   u_set_t(T) : (T) {                                                                               \
   }
 
-#define u_set_type(u)     typeof(_Generic(typeof(u), u_set_defs))
-#define u_set_type_val(u) _Generic(typeof(u), u_set_defs)
+#define u_set_type(u)     typeof(_Generic(u, u_set_defs))
+#define u_set_type_val(u) _Generic(u, u_set_defs)
 
 #if defined(NDEBUG)
 #  define u_set_type_check(u)

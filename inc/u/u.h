@@ -33,6 +33,14 @@
 #  error "Please use the GCC.v13 or later toolchain."
 #endif
 
+#include "iavl.h"
+#include "ibuf.h"
+#include "ilock.h"
+#include "ilog.h"
+#include "ilst.h"
+#include "imap.h"
+#include "iset.h"
+#include "ivec.h"
 #include "utils/alloc.h"
 #include "utils/debug.h"
 #include "utils/keyword.h"
@@ -41,32 +49,22 @@
 #include "utils/type.h"
 #include "utils/va.h"
 
+#include <ctype.h>
+#include <errno.h>
+#include <stdalign.h>
+#include <stdarg.h>
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <time.h>
 /**/
 
-#include "ibuf.h"
-#include "ilock.h"
-
 #define u_defs(type, ...) va_map(_u_##type##_defs, __VA_ARGS__)
-
-#if defined(u_vec_defs)
-#  include "ivec.h"
-#endif
-
-#if defined(u_map_defs)
-#  include "imap.h"
-#endif
-
-#if defined(u_set_defs)
-#  include "iset.h"
-#endif
-
-#if defined(u_tree_defs)
-#  include "iavl.h"
-#endif
-
-#if defined(u_list_defs)
-#  include "ilst.h"
-#endif
 
 /* #include "istr.h" */
 

@@ -32,6 +32,7 @@ void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
   size_t pos   = 0;
   size_t idx   = 0;
 
+#if 0
   println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);
 
   for (; pos < size; pos++) {
@@ -60,4 +61,5 @@ void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
     buf[i - 1] = '\0';
     println("%*s", 47 - 3 * ((int)pos % 16) + (int)i, buf);
   }
+#endif
 }

@@ -22,9 +22,7 @@
  *
  * */
 
-#include <stdatomic.h>
-#include <u/ilock.h>
-#include <u/utils/debug.h>
+#include <u/u.h>
 
 void u_spmtx_init(u_spmtx_t* self) {
   u_nchk_if(self == nullptr);

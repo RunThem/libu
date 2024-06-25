@@ -25,6 +25,7 @@
 #ifndef U_IVEC_H__
 #define U_IVEC_H__
 
+#include "utils/keyword.h"
 #include "utils/type.h"
 #include "utils/va.h"
 
@@ -72,8 +73,8 @@ extern bool vec_for(any_t, ssize_t*, any_t);
   u_vec_t(T) : (T) {                                                                               \
   }
 
-#define u_vec_type(u)     typeof(_Generic(typeof(u), u_vec_defs))
-#define u_vec_type_val(u) _Generic(typeof(u), u_vec_defs)
+#define u_vec_type(u)     typeof(_Generic(u, u_vec_defs))
+#define u_vec_type_val(u) _Generic(u, u_vec_defs)
 
 #if defined(NDEBUG)
 #  define u_vec_type_check(u)

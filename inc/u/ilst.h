@@ -72,7 +72,7 @@ extern any_t lst_for(any_t);
   u_list_t(T) : (T*) {                                                                             \
   }
 
-#define u_list_type(u) typeof(_Generic(typeof(u), u_list_defs))
+#define u_list_type(u) typeof(_Generic(u, u_list_defs))
 
 #if defined(NDEBUG)
 #  define u_list_type_check(u)

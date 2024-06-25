@@ -22,10 +22,7 @@
  *
  * */
 
-#include <string.h>
-#include <u/ibuf.h>
-#include <u/utils/alloc.h>
-#include <u/utils/debug.h>
+#include <u/u.h>
 
 /***************************************************************************************************
  * Function

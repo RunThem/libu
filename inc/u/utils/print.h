@@ -25,27 +25,7 @@
 #ifndef U_PRINT_H__
 #define U_PRINT_H__
 
-#include "keyword.h"
 #include "type.h"
-
-#include <errno.h>
-#include <stdio.h>
-
-#define print(fmt, ...)   printf(fmt __VA_OPT__(, ) __VA_ARGS__)
-#define println(fmt, ...) printf(fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-
-#ifdef NDEBUG
-#  define __display(fmt, ...)
-#else
-#  define __display(fmt, ...) fprintf(stderr, fmt __VA_OPT__(, ) __VA_ARGS__)
-#endif
-
-#define inf(fmt, ...)                                                                              \
-  __display("> \x1b[02m[%s $%d %s]\x1b[0m {%d}: " fmt "\n",                                        \
-            __file__,                                                                              \
-            __line__,                                                                              \
-            __func__,                                                                              \
-            errno __VA_OPT__(, ) __VA_ARGS__)
 
 extern void __printh(u_cstr_t name, cu8_t* mem, size_t size);
 extern void __printb(u_cstr_t name, cu8_t* mem, size_t size);
