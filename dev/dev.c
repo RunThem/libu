@@ -146,15 +146,12 @@ int main(int argc, const u_cstr_t argv[]) {
 
   u_inf("%lu", sizeof(enum {T, F}));
 
-  // u_each (i, 16) {
-  //   println("%zx_ is %zu", i, i * 16);
-  // }
-
-  u_log_deinit();
+  u_each (i, 16) {
+    u_inf("%zx_ is %zu", i, i * 16);
+  }
 
   return EXIT_SUCCESS;
 
 err:
-
   return EXIT_FAILURE;
 }

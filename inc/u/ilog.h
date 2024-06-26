@@ -25,7 +25,6 @@
 #ifndef U_ILOG_H__
 #define U_ILOG_H__
 
-#include <errno.h>
 #include <u/utils/keyword.h>
 #include <u/utils/va.h>
 
@@ -36,7 +35,7 @@ extern void log_init(const char*);
 
 extern void log_deinit();
 
-extern void log_write(int, int, const char*, int, const char*, ...);
+extern void log_write(int, const char*, int, const char*, ...);
 
 /***************************************************************************************************
  * iApi
@@ -51,9 +50,9 @@ extern void log_write(int, int, const char*, int, const char*, ...);
     log_deinit();                                                                                  \
   } while (0)
 
-#define u_err(fmt, ...) log_write(0, errno, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#define u_war(fmt, ...) log_write(1, errno, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#define u_inf(fmt, ...) log_write(2, errno, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#define u_dbg(fmt, ...) log_write(2, errno, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define u_err(fmt, ...) log_write(0, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define u_war(fmt, ...) log_write(1, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define u_inf(fmt, ...) log_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#define u_dbg(fmt, ...) log_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 
 #endif /* !U_ILOG_H__ */

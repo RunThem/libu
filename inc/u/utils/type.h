@@ -103,4 +103,15 @@ typedef u64_t u_hash_t;
 
 typedef fnt(u_hash_fn, u_hash_t, cu8_t*, size_t);
 
+typedef struct {
+  u32_t type;
+  u32_t len;
+  u8_t val[0];
+} u_tlv_t;
+
+typedef struct {
+  u32_t len;
+  u8_t buf[0];
+} u_msg_t;
+
 #endif /* !U_TYPE_H__ */

@@ -40,7 +40,6 @@ static const char* log_color[] = {"\x1b[31m", "\x1b[33m", "\x1b[32m", "\x1b[36m"
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-
 void log_init(const char* out) {
   if (out == nullptr) {
     loger.fp = stdout;
@@ -59,7 +58,7 @@ void log_deinit() {
   }
 }
 
-void log_write(int level, int err, const char* file, int line, const char* fmt, ...) {
+void log_write(int level, const char* file, int line, const char* fmt, ...) {
   char protmp[256] = {};
   char buf[4096]   = {};
   char timebuf[64] = {};
@@ -67,10 +66,13 @@ void log_write(int level, int err, const char* file, int line, const char* fmt, 
   time_t t         = {};
   struct tm* tm    = {};
   va_list ap       = {};
+  error_t err      = {};
 
   if (loger.fp == nullptr) {
     return;
   }
+
+  err = errno;
 
   t  = time(nullptr);
   tm = localtime(&t);
@@ -82,13 +84,13 @@ void log_write(int level, int err, const char* file, int line, const char* fmt, 
   if (loger.file == nullptr) {
     timebuf[strftime(timebuf, sizeof(timebuf), "%H:%M:%S", tm)] = '\0';
 
-#define FMT "%s %s%s\x1b[0m \x1b[02m%s/%d\x1b[0m"
+#define FMT "%s %s%s\x1b[0m \x1b[02m%s:%d\x1b[0m"
     snprintf(protmp, sizeof(protmp), FMT, timebuf, log_color[level], log_level[level], file, line);
 #undef FMT
   } else {
     timebuf[strftime(timebuf, sizeof(timebuf), "%Y-%m-%d %H:%M:%S", tm)] = '\0';
 
-#define FMT "%s %s %s/%d"
+#define FMT "%s %s %s:%d"
     snprintf(protmp, sizeof(protmp), FMT, timebuf, log_level[level], file, line);
 #undef FMT
   }
