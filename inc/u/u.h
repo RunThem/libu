@@ -33,6 +33,7 @@
 #  error "Please use the GCC.v13 or later toolchain."
 #endif
 
+#include "iatomic.h"
 #include "iavl.h"
 #include "ibuf.h"
 #include "ilock.h"
