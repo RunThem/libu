@@ -39,6 +39,13 @@ typedef struct atomic_flag u_atomic_flag_t;
  * iApi
  ***************s***********************************************************************************/
 /* clang-format off */
+#define u_once_call_def(fun) once_flag _##fun##__once_call_flag = ONCE_FLAG_INIT;
+
+#define u_once_call(fun)                                                                           \
+  do {                                                                                             \
+    call_once(&_##fun##__once_call_flag, fun);                                                     \
+  } while (0)
+
 #define u_atomic_init(obj, v)                                                                      \
   do {                                                                                             \
     atomic_init(obj, v);                                                                           \
