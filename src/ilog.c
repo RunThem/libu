@@ -95,7 +95,7 @@ void log_write(int level, const char* file, int line, const char* fmt, ...) {
 #undef FMT
   }
 
-  u_spmtx_if(&loger.mtx) {
+  u_spmtx_if (&loger.mtx) {
     if (err == 0) {
       fprintf(loger.fp, "%s: %s", protmp, buf);
     } else {
