@@ -53,5 +53,5 @@ SpacesInLineCommentPrefix:
   Maximum: 1
 
 ForEachMacros: [ 'u_each', 'u_arr_for', 'u_vec_for', 'u_set_for', 'u_map_for', 'u_tree_for', 'u_list_for' ]
-IfMacros: [ 'u_mtx_if' ]
+IfMacros: [ 'u_mtx_if', 'u_spmtx_if', 'u_rwmtx_if' ]
 ...
