@@ -22,14 +22,14 @@
  *
  * */
 
+#pragma once
+
 #ifndef U_ISTR_H__
-#define U_ISTR_H__
+#  define U_ISTR_H__
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 extern "C" {
-#endif
-
-#include "utils/type.h"
+#  endif
 
 /***************************************************************************************************
  * Api
@@ -51,48 +51,48 @@ extern void str_ins_str(u_str_t*, size_t, u_str_t);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#define u_str_new(s)                                                                               \
-  ({                                                                                               \
-    auto _fn = _Generic(s,                                                                         \
-        char: str_new_char,                                                                        \
-        int: str_new_char,                                                                         \
-        u_cstr_t: str_new_cstr,                                                                    \
-        u_str_t: str_new_str);                                                                     \
+#  define u_str_new(s)                                                                             \
+    ({                                                                                             \
+      auto _fn = _Generic(s,                                                                       \
+          char: str_new_char,                                                                      \
+          int: str_new_char,                                                                       \
+          u_cstr_t: str_new_cstr,                                                                  \
+          u_str_t: str_new_str);                                                                   \
                                                                                                    \
-    _fn(s);                                                                                        \
-  })
+      _fn(s);                                                                                      \
+    })
 
-#define u_str_len(s)                                                                               \
-  ({                                                                                               \
-    auto _fn = _Generic(s, u_cstr_t: strlen, u_str_t: str_len);                                    \
+#  define u_str_len(s)                                                                             \
+    ({                                                                                             \
+      auto _fn = _Generic(s, u_cstr_t: strlen, u_str_t: str_len);                                  \
                                                                                                    \
-    _fn(&s);                                                                                       \
-  })
+      _fn(&s);                                                                                     \
+    })
 
-#define u_str_put(s, _s)                                                                           \
-  do {                                                                                             \
-    auto _fn = _Generic(_s,                                                                        \
-        char: str_put_char,                                                                        \
-        int: str_put_char,                                                                         \
-        u_cstr_t: str_put_cstr,                                                                    \
-        u_str_t: str_put_str);                                                                     \
+#  define u_str_put(s, _s)                                                                         \
+    do {                                                                                           \
+      auto _fn = _Generic(_s,                                                                      \
+          char: str_put_char,                                                                      \
+          int: str_put_char,                                                                       \
+          u_cstr_t: str_put_cstr,                                                                  \
+          u_str_t: str_put_str);                                                                   \
                                                                                                    \
-    _fn(&s, _s);                                                                                   \
-  } while (0)
+      _fn(&s, _s);                                                                                 \
+    } while (0)
 
-#define u_str_ins(s, i, _s)                                                                        \
-  do {                                                                                             \
-    auto _fn = _Generic(_s,                                                                        \
-        char: str_ins_char,                                                                        \
-        int: str_ins_char,                                                                         \
-        u_cstr_t: str_ins_cstr,                                                                    \
-        u_str_t: str_ins_str);                                                                     \
+#  define u_str_ins(s, i, _s)                                                                      \
+    do {                                                                                           \
+      auto _fn = _Generic(_s,                                                                      \
+          char: str_ins_char,                                                                      \
+          int: str_ins_char,                                                                       \
+          u_cstr_t: str_ins_cstr,                                                                  \
+          u_str_t: str_ins_str);                                                                   \
                                                                                                    \
-    _fn(&s, i, _s);                                                                                \
-  } while (0)
+      _fn(&s, i, _s);                                                                              \
+    } while (0)
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 } /* extern "C" */
-#endif
+#  endif
 
 #endif /* !U_ISTR_H__ */

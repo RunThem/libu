@@ -22,16 +22,26 @@
  *
  * */
 
+#pragma once
+
 #ifndef U_KEYWORD_H__
-#define U_KEYWORD_H__
+#  define U_KEYWORD_H__
 
-#define __file__ __FILE__
-#define __line__ __LINE__
-#define __func__ __func__
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
-#define auto __auto_type
+#  define __file__ __FILE__
+#  define __line__ __LINE__
+#  define __func__ __func__
 
-#define typeclassify(t) (__builtin_classify_type(t))
-#define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#  define auto __auto_type
+
+#  define typeclassify(t) (__builtin_classify_type(t))
+#  define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_KEYWORD_H__ */

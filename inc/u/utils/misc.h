@@ -22,22 +22,22 @@
  *
  * */
 
+#pragma once
+
 #ifndef U_MISC_H__
-#define U_MISC_H__
+#  define U_MISC_H__
 
-#include "type.h"
-
-#include <errno.h>
-#include <setjmp.h>
-#include <strings.h>
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 /***************************************************************************************************
  * Misc macro
  **************************************************************************************************/
-#define any(p)        ((any_t)(p))
-#define ch(c)         ((char)(#c[0]))
-#define me(type, ...) ((type){__VA_ARGS__})
-#define bit(byte, n)  (((byte) >> (n)) & 1)
+#  define any(p)        ((any_t)(p))
+#  define ch(c)         ((char)(#c[0]))
+#  define me(type, ...) ((type){__VA_ARGS__})
+#  define bit(byte, n)  (((byte) >> (n)) & 1)
 
 /* clang-format off */
 #define u_each(i, n, ...) va_elseif(va_size_is(1, __VA_ARGS__)) (                                  \
@@ -47,28 +47,28 @@
     )
 /* clang-format on */
 
-#define u_align_of(addr, size) ({ ((addr) + (size)-1) & (~((size)-1)); })
+#  define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
-#define u_container_of(ptr, type, member)                                                          \
-  ({                                                                                               \
-    const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \
-    (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
-  })
+#  define u_container_of(ptr, type, member)                                                        \
+    ({                                                                                             \
+      const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                            \
+      (type*)((char*)_container_of__mptr - offsetof(type, member));                                \
+    })
 
 /* linux array size macro */
-#define __same_type(a, b)      __builtin_types_compatible_p(typeof(a), typeof(b))
-#define __build_bug_on_zero(e) (sizeof(struct { int : -!!(e); }))
-#define __must_be_array(a)     __build_bug_on_zero(__same_type((a), &(a)[0]))
-#define u_arr_len(arr)         (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+#  define __same_type(a, b)      __builtin_types_compatible_p(typeof(a), typeof(b))
+#  define __build_bug_on_zero(e) (sizeof(struct { int : -!!(e); }))
+#  define __must_be_array(a)     __build_bug_on_zero(__same_type((a), &(a)[0]))
+#  define u_arr_len(arr)         (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-#define u_arr_for(arr, i, it)                                                                      \
-  for (size_t i = 0; i < u_arr_len(arr); i++)                                                      \
-    for (auto it = &arr[i]; it; it = nullptr)
+#  define u_arr_for(arr, i, it)                                                                    \
+    for (size_t i = 0; i < u_arr_len(arr); i++)                                                    \
+      for (auto it = &arr[i]; it; it = nullptr)
 
 /***************************************************************************************************
  * Try catch
  **************************************************************************************************/
-#define U_ERR_MSG_SIZE 2048
+#  define U_ERR_MSG_SIZE 2048
 
 typedef int error_t;
 
@@ -110,36 +110,36 @@ extern thread_local __err__t __err__;
 /***************************************************************************************************
  * Swap
  **************************************************************************************************/
-#define swap(a, b)                                                                                 \
-  do {                                                                                             \
-    auto _swap__tmp = a;                                                                           \
+#  define swap(a, b)                                                                               \
+    do {                                                                                           \
+      auto _swap__tmp = a;                                                                         \
                                                                                                    \
-    (a) = (b);                                                                                     \
-    (b) = (_swap__tmp);                                                                            \
-  } while (0)
+      (a) = (b);                                                                                   \
+      (b) = (_swap__tmp);                                                                          \
+    } while (0)
 
 /***************************************************************************************************
  * Compe
  **************************************************************************************************/
-#define min(x, y)                                                                                  \
-  ({                                                                                               \
-    auto __min_x__ = (x);                                                                          \
-    auto __min_y__ = (y);                                                                          \
+#  define min(x, y)                                                                                \
+    ({                                                                                             \
+      auto __min_x__ = (x);                                                                        \
+      auto __min_y__ = (y);                                                                        \
                                                                                                    \
-    (void)(&__min_x__ == &__min_y__);                                                              \
+      (void)(&__min_x__ == &__min_y__);                                                            \
                                                                                                    \
-    __min_x__ < __min_y__ ? __min_x__ : __min_y__;                                                 \
-  })
+      __min_x__ < __min_y__ ? __min_x__ : __min_y__;                                               \
+    })
 
-#define max(x, y)                                                                                  \
-  ({                                                                                               \
-    auto __max_x__ = (x);                                                                          \
-    auto __max_y__ = (y);                                                                          \
+#  define max(x, y)                                                                                \
+    ({                                                                                             \
+      auto __max_x__ = (x);                                                                        \
+      auto __max_y__ = (y);                                                                        \
                                                                                                    \
-    (void)(&__max_x__ == &__max_y__);                                                              \
+      (void)(&__max_x__ == &__max_y__);                                                            \
                                                                                                    \
-    __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                                 \
-  })
+      __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                               \
+    })
 
 /* clang-format off */
 /*
@@ -166,20 +166,20 @@ extern thread_local __err__t __err__;
   )
 /* clang-format on */
 
-#define fn_compe_dec(type)                                                                         \
-  extern bool fn_eq_##type(cany_t, cany_t);                                                        \
-  extern int fn_cmp_##type(cany_t, cany_t)
+#  define fn_compe_dec(type)                                                                       \
+    extern bool fn_eq_##type(cany_t, cany_t);                                                      \
+    extern int fn_cmp_##type(cany_t, cany_t)
 
-#define fn_compe_def(type, eq, cmp)                                                                \
-  bool fn_eq_##type(cany_t _x, cany_t _y) {                                                        \
-    type x = *(type*)_x, y = *(type*)_y;                                                           \
-    return (eq);                                                                                   \
-  }                                                                                                \
+#  define fn_compe_def(type, eq, cmp)                                                              \
+    bool fn_eq_##type(cany_t _x, cany_t _y) {                                                      \
+      type x = *(type*)_x, y = *(type*)_y;                                                         \
+      return (eq);                                                                                 \
+    }                                                                                              \
                                                                                                    \
-  int fn_cmp_##type(cany_t _x, cany_t _y) {                                                        \
-    type x = *(type*)_x, y = *(type*)_y;                                                           \
-    return (eq) ? 0 : ((cmp) ? 1 : -1);                                                            \
-  }
+    int fn_cmp_##type(cany_t _x, cany_t _y) {                                                      \
+      type x = *(type*)_x, y = *(type*)_y;                                                         \
+      return (eq) ? 0 : ((cmp) ? 1 : -1);                                                          \
+    }
 
 fn_compe_dec(char);
 fn_compe_dec(int);
@@ -198,9 +198,13 @@ fn_compe_dec(u64_t);
 fn_compe_dec(size_t);
 fn_compe_dec(ssize_t);
 
-#ifdef __SIZEOF_INT128__
+#  ifdef __SIZEOF_INT128__
 fn_compe_dec(i128_t);
 fn_compe_dec(u128_t);
-#endif
+#  endif
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_MISC_H__ */

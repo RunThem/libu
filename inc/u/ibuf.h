@@ -22,11 +22,14 @@
  *
  * */
 
-#ifndef U_IBUF_H__
-#define U_IBUF_H__
+#pragma once
 
-#include "utils/type.h"
-#include "utils/va.h"
+#ifndef U_IBUF_H__
+#  define U_IBUF_H__
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 /***************************************************************************************************
  * Type
@@ -75,32 +78,32 @@ extern void buf_put(u_buf_t*, any_t, size_t);
   } while (0)
 /* clang-format on */
 
-#define u_buf_len(u)                                                                               \
-  ({                                                                                               \
-    ;                                                                                              \
-    buf_len(u);                                                                                    \
-  })
+#  define u_buf_len(u)                                                                             \
+    ({                                                                                             \
+      ;                                                                                            \
+      buf_len(u);                                                                                  \
+    })
 
-#define u_buf_is_empty(u)                                                                          \
-  ({                                                                                               \
-    ;                                                                                              \
-    0 == buf_len(u);                                                                               \
-  })
+#  define u_buf_is_empty(u)                                                                        \
+    ({                                                                                             \
+      ;                                                                                            \
+      0 == buf_len(u);                                                                             \
+    })
 
-#define u_buf_clear(u)                                                                             \
-  do {                                                                                             \
-    buf_clear(u);                                                                                  \
-  } while (0)
+#  define u_buf_clear(u)                                                                           \
+    do {                                                                                           \
+      buf_clear(u);                                                                                \
+    } while (0)
 
-#define u_buf_cleanup(u)                                                                           \
-  do {                                                                                             \
-    buf_cleanup(u);                                                                                \
-  } while (0)
+#  define u_buf_cleanup(u)                                                                         \
+    do {                                                                                           \
+      buf_cleanup(u);                                                                              \
+    } while (0)
 
-#define u_buf_skip(u, len)                                                                         \
-  do {                                                                                             \
-    buf_skip(u, len);                                                                              \
-  } while (0)
+#  define u_buf_skip(u, len)                                                                       \
+    do {                                                                                           \
+      buf_skip(u, len);                                                                            \
+    } while (0)
 
 /* clang-format off */
 #define u_buf_pop(u, ...)                                                                          \
@@ -129,5 +132,9 @@ extern void buf_put(u_buf_t*, any_t, size_t);
     )                                                                                              \
   })
 /* clang-format on */
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_IBUF_H__ */

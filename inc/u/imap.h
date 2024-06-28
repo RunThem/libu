@@ -21,12 +21,14 @@
  * SOFTWARE.
  *
  * */
+#pragma once
 
 #ifndef U_IMAP_H__
-#define U_IMAP_H__
+#  define U_IMAP_H__
 
-#include "utils/type.h"
-#include "utils/va.h"
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 /***************************************************************************************************
  * Type
@@ -64,86 +66,86 @@ extern bool map_for(any_t, any_t, any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#define u_map_t(...) typeof(__u_map_t(*)(__VA_ARGS__))
+#  define u_map_t(...) typeof(__u_map_t(*)(__VA_ARGS__))
 
-#define __u_map_defs(K, V)                                                                         \
-  u_map_t(K, V) :                                                                                  \
-      (struct {                                                                                    \
-        K k;                                                                                       \
-        V v;                                                                                       \
-      }) {                                                                                         \
-  }
+#  define __u_map_defs(K, V)                                                                       \
+    u_map_t(K, V) :                                                                                \
+        (struct {                                                                                  \
+          K k;                                                                                     \
+          V v;                                                                                     \
+        }) {                                                                                       \
+    }
 
-#define _u_map_defs(arg) __u_map_defs arg
+#  define _u_map_defs(arg) __u_map_defs arg
 
-#define u_map_type(u, arg)     typeof(_Generic(u, u_map_defs).arg)
-#define u_map_type_val(u, arg) _Generic(u, u_map_defs).arg
+#  define u_map_type(u, arg)     typeof(_Generic(u, u_map_defs).arg)
+#  define u_map_type_val(u, arg) _Generic(u, u_map_defs).arg
 
-#if defined(NDEBUG)
-#  define u_map_type_check(u)
-#else
-#  define u_map_type_check(u)                                                                      \
-    static_assert(typeeq((__u_map_t){}, u(u_map_type_val(u, k), u_map_type_val(u, v))))
-#endif
+#  if defined(NDEBUG)
+#    define u_map_type_check(u)
+#  else
+#    define u_map_type_check(u)                                                                    \
+      static_assert(typeeq((__u_map_t){}, u(u_map_type_val(u, k), u_map_type_val(u, v))))
+#  endif
 
 /***************************************************************************************************
  * iApi map
  **************************************************************************************************/
-#define u_map_init(u)                                                                              \
-  do {                                                                                             \
-    u_map_type_check(u);                                                                           \
+#  define u_map_init(u)                                                                            \
+    do {                                                                                           \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    u = map_new(sizeof(u_map_type(u, k)), sizeof(u_map_type(u, v)), nullptr);                      \
-  } while (0)
+      u = map_new(sizeof(u_map_type(u, k)), sizeof(u_map_type(u, v)), nullptr);                    \
+    } while (0)
 
-#define u_map_new(...)                                                                             \
-  ({                                                                                               \
-    u_map_t(__VA_ARGS__) u = nullptr;                                                              \
+#  define u_map_new(...)                                                                           \
+    ({                                                                                             \
+      u_map_t(__VA_ARGS__) u = nullptr;                                                            \
                                                                                                    \
-    u_map_init(u);                                                                                 \
+      u_map_init(u);                                                                               \
                                                                                                    \
-    u;                                                                                             \
-  })
+      u;                                                                                           \
+    })
 
-#define u_map_len(u)                                                                               \
-  ({                                                                                               \
-    u_map_type_check(u);                                                                           \
+#  define u_map_len(u)                                                                             \
+    ({                                                                                             \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    map_len(u);                                                                                    \
-  })
+      map_len(u);                                                                                  \
+    })
 
-#define u_map_is_empty(u)                                                                          \
-  ({                                                                                               \
-    u_map_type_check(u);                                                                           \
+#  define u_map_is_empty(u)                                                                        \
+    ({                                                                                             \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    0 == map_len(u);                                                                               \
-  })
+      0 == map_len(u);                                                                             \
+    })
 
-#define u_map_is_exist(u, _k)                                                                      \
-  ({                                                                                               \
-    u_map_type_check(u);                                                                           \
+#  define u_map_is_exist(u, _k)                                                                    \
+    ({                                                                                             \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    u_map_type(u, k) _a = _k;                                                                      \
-    u_map_type(u, v) _b = {};                                                                      \
+      u_map_type(u, k) _a = _k;                                                                    \
+      u_map_type(u, v) _b = {};                                                                    \
                                                                                                    \
-    map_exist(u, &_a);                                                                             \
-  })
+      map_exist(u, &_a);                                                                           \
+    })
 
-#define u_map_clear(u)                                                                             \
-  do {                                                                                             \
-    u_map_type_check(u);                                                                           \
+#  define u_map_clear(u)                                                                           \
+    do {                                                                                           \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    map_clear(u);                                                                                  \
-  } while (0)
+      map_clear(u);                                                                                \
+    } while (0)
 
-#define u_map_cleanup(u)                                                                           \
-  do {                                                                                             \
-    u_map_type_check(u);                                                                           \
+#  define u_map_cleanup(u)                                                                         \
+    do {                                                                                           \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    map_cleanup(u);                                                                                \
+      map_cleanup(u);                                                                              \
                                                                                                    \
-    u = nullptr;                                                                                   \
-  } while (0)
+      u = nullptr;                                                                                 \
+    } while (0)
 
 /* clang-format off */
 #  define u_map_at(u, _k, ...)                                                                     \
@@ -183,33 +185,37 @@ extern bool map_for(any_t, any_t, any_t);
     )
 /* clang-format on */
 
-#define u_map_try(u, _k)                                                                           \
-  for (u_map_type(u, v)* it = map_at(u, &(u_map_type(u, k)){_k}); it != nullptr; it = nullptr)
+#  define u_map_try(u, _k)                                                                         \
+    for (u_map_type(u, v)* it = map_at(u, &(u_map_type(u, k)){_k}); it != nullptr; it = nullptr)
 
-#define u_map_pop(u, _k)                                                                           \
-  ({                                                                                               \
-    u_map_type_check(u);                                                                           \
+#  define u_map_pop(u, _k)                                                                         \
+    ({                                                                                             \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    u_map_type(u, k) _a = _k;                                                                      \
-    u_map_type(u, v) _b = {};                                                                      \
+      u_map_type(u, k) _a = _k;                                                                    \
+      u_map_type(u, v) _b = {};                                                                    \
                                                                                                    \
-    map_pop(u, &_a, &_b);                                                                          \
+      map_pop(u, &_a, &_b);                                                                        \
                                                                                                    \
-    _b;                                                                                            \
-  })
+      _b;                                                                                          \
+    })
 
-#define u_map_put(u, _k, _v)                                                                       \
-  do {                                                                                             \
-    u_map_type_check(u);                                                                           \
+#  define u_map_put(u, _k, _v)                                                                     \
+    do {                                                                                           \
+      u_map_type_check(u);                                                                         \
                                                                                                    \
-    u_map_type(u, k) _a = _k;                                                                      \
-    u_map_type(u, v) _b = _v;                                                                      \
+      u_map_type(u, k) _a = _k;                                                                    \
+      u_map_type(u, v) _b = _v;                                                                    \
                                                                                                    \
-    map_put(u, &_a, &_b);                                                                          \
-  } while (0)
+      map_put(u, &_a, &_b);                                                                        \
+    } while (0)
 
-#define u_map_for(u, _k, _v)                                                                       \
-  for (u_map_type(u, k) _k = {}; map_for_init(u, 1); map_for_end(u))                               \
-    for (u_map_type(u, v) _v = {}; map_for(u, &_k, &_v);)
+#  define u_map_for(u, _k, _v)                                                                     \
+    for (u_map_type(u, k) _k = {}; map_for_init(u, 1); map_for_end(u))                             \
+      for (u_map_type(u, v) _v = {}; map_for(u, &_k, &_v);)
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_IMAP_H__ */

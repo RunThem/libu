@@ -22,13 +22,14 @@
  *
  * */
 
+#pragma once
+
 #ifndef U_IATOMIC_H__
-#define U_IATOMIC_H__
+#  define U_IATOMIC_H__
 
-#include "utils/va.h"
-
-#include <stdatomic.h>
-#include <threads.h>
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 /***************************************************************************************************
  * Type
@@ -157,5 +158,9 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   } while (0)
 /* clang-format on */
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_IATOMIC_H__ */

@@ -22,15 +22,23 @@
  *
  * */
 
-#ifndef U_PRINT_H__
-#define U_PRINT_H__
+#pragma once
 
-#include "type.h"
+#ifndef U_PRINT_H__
+#  define U_PRINT_H__
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 extern void __printh(u_cstr_t name, cu8_t* mem, size_t size);
 extern void __printb(u_cstr_t name, cu8_t* mem, size_t size);
 
-#define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
-#define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
+#  define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
+#  define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_PRINT_H__ */

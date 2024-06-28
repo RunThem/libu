@@ -22,11 +22,14 @@
  *
  * */
 
-#ifndef U_ILOCK_H__
-#define U_ILOCK_H__
+#pragma once
 
-#include "utils/type.h"
-#include "utils/va.h"
+#ifndef U_ILOCK_H__
+#  define U_ILOCK_H__
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 /***************************************************************************************************
  * Type
@@ -62,11 +65,16 @@ extern void u_rwmtx_wunlock(u_rwmtx_t*);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#define u_mtx_if(mtx) for (bool _ = (mtx_lock(mtx), true); _; _ = false, mtx_unlock(mtx))
+#  define u_mtx_if(mtx) for (bool _ = (mtx_lock(mtx), true); _; _ = false, mtx_unlock(mtx))
 
-#define u_spmtx_if(mtx) for (bool _ = (u_spmtx_lock(mtx), true); _; _ = false, u_spmtx_unlock(mtx))
+#  define u_spmtx_if(mtx)                                                                          \
+    for (bool _ = (u_spmtx_lock(mtx), true); _; _ = false, u_spmtx_unlock(mtx))
 
-#define u_rwmtx_if(mtx, m)                                                                         \
-  for (bool _ = (u_rwmtx_##m##lock(mtx), true); _; _ = false, u_rwmtx_##m##unlock(mtx))
+#  define u_rwmtx_if(mtx, m)                                                                       \
+    for (bool _ = (u_rwmtx_##m##lock(mtx), true); _; _ = false, u_rwmtx_##m##unlock(mtx))
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_ILOCK_H__ */

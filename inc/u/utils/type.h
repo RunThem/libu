@@ -22,12 +22,14 @@
  *
  * */
 
-#ifndef U_TYPE_H__
-#define U_TYPE_H__
+#pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <sys/types.h>
+#ifndef U_TYPE_H__
+#  define U_TYPE_H__
+
+#  ifdef __cplusplus
+extern "C" {
+#  endif
 
 /* clang-format off */
 typedef int ret_t;
@@ -86,7 +88,7 @@ typedef const __uint128_t cu128_t;
 #  endif
 /* clang-format on */
 
-#define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
+#  define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
 
 /*
  * a >  b  ->  1
@@ -113,5 +115,9 @@ typedef struct {
   u32_t len;
   u8_t buf[0];
 } u_msg_t;
+
+#  ifdef __cplusplus
+} /* extern "C" */
+#  endif
 
 #endif /* !U_TYPE_H__ */
