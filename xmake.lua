@@ -76,4 +76,4 @@ target('u', function()
   end
 end)
 
-includes('dev', 'tst')
+includes('dev', 'tst', 'chibicc')
