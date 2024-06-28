@@ -5,7 +5,7 @@ assert() {
   input="$2"
 
   ./chibicc "$input" >tmp.s || exit
-  gcc -static -o tmp tmp.s
+  gcc -Wl,-w -Wa,--noexecstack -static -o tmp tmp.s
   ./tmp
   actual="$?"
 
@@ -19,5 +19,6 @@ assert() {
 
 assert 0 0
 assert 42 42
+assert 21 '5+20-4'
 
 echo OK
