@@ -56,7 +56,7 @@ extern void log_write(int, const char*, int, const char*, ...);
 #  define u_err(fmt, ...) log_write(0, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 #  define u_war(fmt, ...) log_write(1, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 #  define u_inf(fmt, ...) log_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#  define u_dbg(fmt, ...) log_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  define u_dbg(fmt, ...) log_write(3, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
 
 #  ifdef __cplusplus
 } /* extern "C" */
