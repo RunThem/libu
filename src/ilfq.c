@@ -47,10 +47,10 @@ any_t lfq_new() {
   lfq_t* self      = nullptr;
   lfq_node_t* node = nullptr;
 
-  self = u_zalloc(sizeof(lfq_t));
+  self = u_talloc(lfq_t);
   u_nil_if(self);
 
-  node = u_zalloc(sizeof(lfq_node_t));
+  node = u_talloc(lfq_node_t);
   u_nil_if(node);
 
   u_atomic_init(&self->len, 0);
@@ -92,7 +92,7 @@ bool lfq_put(any_t _self, any_t obj) {
   u_chk_if(self == nullptr, false);
   u_chk_if(obj == nullptr, false);
 
-  node = u_zalloc(sizeof(lfq_node_t));
+  node = u_talloc(lfq_node_t);
   u_nil_if(node);
 
   node->item = obj;

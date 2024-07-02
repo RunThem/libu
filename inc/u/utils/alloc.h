@@ -52,6 +52,14 @@ extern "C" {
         _ptr;                                                                                      \
       })
 
+#    define u_talloc(t)                                                                            \
+      ({                                                                                           \
+        any_t _ptr = mi_zalloc(sizeof(typeof(t)));                                                 \
+        if (errno == 2)                                                                            \
+          errno = 0;                                                                               \
+        _ptr;                                                                                      \
+      })
+
 #    define u_calloc(c, s)                                                                         \
       ({                                                                                           \
         any_t _ptr = mi_calloc(c, s);                                                              \
@@ -73,6 +81,7 @@ extern "C" {
 #    define u_free(p) free(p)
 
 #    define u_malloc(s)     malloc(s)
+#    define u_talloc(t)     calloc(1, sizeof(typeof(t)))
 #    define u_zalloc(s)     calloc(1, s)
 #    define u_calloc(c, s)  calloc(c, s)
 #    define u_realloc(p, s) realloc(p, s)
