@@ -74,6 +74,7 @@ extern "C" {
 #  include "imap.h"
 #  include "iset.h"
 #  include "ivec.h"
+#  include "ilfq.h"
 /* clang-format on */
 
 /* #include "istr.h" */

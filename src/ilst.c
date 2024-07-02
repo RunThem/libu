@@ -47,7 +47,7 @@ any_t lst_new() {
 
   lst_t* self = nullptr;
 
-  self = u_zalloc(sizeof(lst_t));
+  self = u_talloc(lst_t);
   u_nil_if(self);
 
   u_vec_init(self->items);

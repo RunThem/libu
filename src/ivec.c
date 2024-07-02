@@ -68,10 +68,10 @@ any_t vec_new(size_t itsize) {
 
   u_chk_if(itsize == 0, nullptr);
 
-  self = u_zalloc(sizeof(vec_t));
+  self = u_talloc(vec_t);
   u_nil_if(self);
 
-  self->items = u_zalloc(itsize * 16);
+  self->items = u_calloc(16, itsize);
   u_nil_if(self->items);
 
   self->itsize = itsize;

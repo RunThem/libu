@@ -38,6 +38,7 @@ extern void log_init(const char*);
 
 extern void log_deinit();
 
+[[gnu::format(printf, 4, 5)]]
 extern void log_write(int, const char*, int, const char*, ...);
 
 /***************************************************************************************************
