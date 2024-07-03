@@ -3,8 +3,8 @@
 #define u_vec_defs  u_defs(vec, bool, int, u_vec_t(int))
 #define u_set_defs  u_defs(set, item)
 #define u_map_defs  u_defs(map, (int, bool), (int, char))
-#define u_tree_defs u_defs(tree, (int, bool), (int, char), (int, u_zero_size_type_t))
-#define u_list_defs u_defs(list, bool, int)
+#define u_tree_defs u_defs(tree, (int, bool), (int, char), (int, task_t*))
+#define u_list_defs u_defs(list, bool, int, task_t*)
 
 #include <u/u.h>
 
@@ -12,6 +12,7 @@
 
 #include <limits.h>
 #include <threads.h>
+#include <ucontext.h>
 
 #if 0
 #  include <arpa/inet.h>
@@ -141,14 +142,99 @@ void set(any_t _self) {
   ((any_t*)_self)[0] = nullptr;
 }
 
+typedef struct {
+  size_t id;
+  any_t fun;      /* 协程执行入口 */
+  u8_t* stack;    /* 栈帧 */
+  size_t stksize; /* 栈帧大小 */
+  ucontext_t ctx; /* 上下文 */
+} task_t;
+
+size_t id                    = 1;
+size_t count                 = 0;
+ucontext_t ctx               = {};
+task_t* run                  = nullptr;
+u_list_t(task_t*) run_queue  = nullptr;
+u_tree_t(int, task_t*) rwait = nullptr;
+u_tree_t(int, task_t*) wwait = nullptr;
+
+void task_init() {
+  run_queue = u_list_new(task_t*);
+
+  rwait = u_tree_new(int, task_t*, fn_cmp(int));
+  wwait = u_tree_new(int, task_t*, fn_cmp(int));
+}
+
+task_t* task_new(any_t fun) {
+  task_t* self = nullptr;
+
+  self = u_talloc(task_t);
+  u_nil_if(self);
+
+  self->stksize = 8192 * 4;
+  self->stack   = u_zalloc(self->stksize);
+  u_nil_if(self->stack);
+
+  self->id  = id++;
+  self->fun = fun;
+
+  getcontext(&self->ctx);
+
+  self->ctx.uc_stack.ss_sp   = self->stack;
+  self->ctx.uc_stack.ss_size = self->stksize;
+
+  return self;
+
+err:
+  u_free_if(self);
+
+  return nullptr;
+}
+
+#define u_task_new(fun, ...)                                                                       \
+  do {                                                                                             \
+    task_t* _t = task_new(fun);                                                                    \
+                                                                                                   \
+    makecontext(&_t->ctx, any(fun), va_size(__VA_ARGS__) va_list(0, __VA_ARGS__));                 \
+                                                                                                   \
+    u_list_put(run_queue, _t);                                                                     \
+    count++;                                                                                       \
+                                                                                                   \
+    u_inf("task count is %zd", count);                                                             \
+  } while (0)
+
+void task_scheduler() {
+  while (true) {
+    u_err_if(count == 0);
+
+    run = u_list_pop(run_queue);
+    u_die_if(run == nullptr);
+
+    u_inf("run id %zu", run->id);
+
+    swapcontext(&ctx, &run->ctx);
+    run = nullptr;
+  }
+
+err:
+  u_inf("end");
+}
+
+void __fun() {
+  u_dbg("task");
+}
+
 int main(int argc, const u_cstr_t argv[]) {
   u_log_init();
 
-  u_inf("%lu", sizeof(enum {T, F}));
+  task_init();
 
-  u_each (i, 16) {
-    u_inf("%zx_ is %zu", i, i * 16);
-  }
+  u_task_new(__fun, 1, 2);
+  u_task_new(__fun, 1, 2);
+  u_task_new(__fun, 1, 2);
+  u_task_new(__fun, 1, 2);
+
+  task_scheduler();
 
   return EXIT_SUCCESS;
 
