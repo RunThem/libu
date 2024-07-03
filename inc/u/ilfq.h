@@ -38,26 +38,23 @@ typedef struct {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t lfq_new();
+extern u_lfq_t lfq_new();
 
-extern void lfq_cleanup(any_t);
+extern void lfq_cleanup(u_lfq_t);
 
-extern size_t lfq_len(any_t);
+extern size_t lfq_len(u_lfq_t);
 
-extern bool lfq_put(any_t, any_t);
+extern bool lfq_put(u_lfq_t, any_t);
 
-extern void* lfq_pop(any_t);
+extern void* lfq_pop(u_lfq_t);
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
 #define u_lfq_new()                                                                                \
   ({                                                                                               \
-    u_lfq_t u = nullptr;                                                                           \
-                                                                                                   \
-    u = lfq_new();                                                                                 \
-                                                                                                   \
-    u;                                                                                             \
+    ;                                                                                              \
+    lfq_new();                                                                                     \
   })
 
 #define u_lfq_len(u)                                                                               \

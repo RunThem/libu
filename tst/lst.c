@@ -1,10 +1,10 @@
 #include <mut.h>
 
-#define u_list_defs u_defs(list, int)
+#define u_list_defs u_defs(list, int*)
 #include <u/u.h>
 
 mut_test(lst_create) {
-  u_list_t(int) v = nullptr;
+  u_list_t(int*) v = nullptr;
 
   u_list_init(v);
 
@@ -21,7 +21,7 @@ mut_test(lst_interface) {
   /*
    * push back
    * */
-  u_list_t(int) l = nullptr;
+  u_list_t(int*) l = nullptr;
 
   u_list_init(l);
 
@@ -68,7 +68,7 @@ mut_test(lst_interface) {
 }
 
 mut_test(lst_iterator) {
-  u_list_t(int) l = nullptr;
+  u_list_t(int*) l = nullptr;
 
   u_list_init(l);
 
