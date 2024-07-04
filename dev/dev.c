@@ -205,12 +205,7 @@ int _main(int argc, const u_cstr_t argv[]) {
 int main(int argc, const u_cstr_t argv[]) {
   // u_log_init();
 
-  u_task_new(_main, argc, argv);
-
-  u_task_loop();
+  u_task_loop(_main, argc, argv);
 
   return EXIT_SUCCESS;
-
-err:
-  return EXIT_FAILURE;
 }

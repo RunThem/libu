@@ -77,11 +77,23 @@ extern any_t task_new(any_t);
 
 extern void task_loop();
 
-extern int task_accept(int, __SOCKADDR_ARG, __socklen_t* restrict);
+extern int task_socket(int, int, int);
+
+extern int task_accept(int, struct sockaddr*, socklen_t*);
+
+extern int task_connect(int, struct sockaddr*, socklen_t);
+
+extern ssize_t task_read(int, void*, size_t);
 
 extern ssize_t task_recv(int, void*, size_t, int);
 
+extern ssize_t task_recvfrom(int, void*, size_t, int, struct sockaddr*, socklen_t*);
+
+extern ssize_t task_write(int, const void*, size_t);
+
 extern ssize_t task_send(int, const void*, size_t, int);
+
+extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*, socklen_t);
 
 /***************************************************************************************************
  * iApi
@@ -93,8 +105,10 @@ extern ssize_t task_send(int, const void*, size_t, int);
       makecontext(&_t->ctx, any(fun), va_size(__VA_ARGS__) va_list(0, __VA_ARGS__));               \
     } while (0)
 
-#  define u_task_loop()                                                                            \
+#  define u_task_loop(start, ...)                                                                  \
     do {                                                                                           \
+      u_task_new(start __VA_OPT__(, ) __VA_ARGS__);                                                \
+                                                                                                   \
       task_loop();                                                                                 \
     } while (0)
 
