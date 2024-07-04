@@ -33,6 +33,7 @@ rule('codegen', function()
 end)
 --]]
 
+add_requires('libsock')
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
@@ -42,6 +43,11 @@ target('dev.c', function()
   -- add_rules('codegen')
 
   add_deps('u')
+  add_packages('libsock')
+
+  -- after_build(function(target)
+  --   os.trycp('$(projectdir)/$(buildir)/$(plat)/$(arch)/$(mode)/' .. target:name(), '$(projectdir)')
+  -- end)
 end)
 
 task('dev', function()
@@ -51,7 +57,7 @@ task('dev', function()
   })
 
   on_run(function()
-    os.exec('xmake f -m debug --mimalloc=n')
+    os.exec('xmake f -m release --mimalloc=y')
     os.exec('xmake build -v dev.c')
     os.exec('xmake run dev.c')
   end)

@@ -1,4 +1,4 @@
-// #define NDEBUG
+// #undef NDEBUG
 
 #define u_vec_defs  u_defs(vec, bool, int, u_vec_t(int))
 #define u_set_defs  u_defs(set, item)
@@ -7,12 +7,14 @@
 #define u_list_defs u_defs(list, bool, int, task_t*)
 
 #include <u/u.h>
+/*  */
+#include "task.h"
+
+#include <libsock.h>
 
 /* system libs */
 
 #include <limits.h>
-#include <threads.h>
-#include <ucontext.h>
 
 #if 0
 #  include <arpa/inet.h>
@@ -142,99 +144,70 @@ void set(any_t _self) {
   ((any_t*)_self)[0] = nullptr;
 }
 
-typedef struct {
-  size_t id;
-  any_t fun;      /* 协程执行入口 */
-  u8_t* stack;    /* 栈帧 */
-  size_t stksize; /* 栈帧大小 */
-  ucontext_t ctx; /* 上下文 */
-} task_t;
+void echo(int fd) {
+  char buf[1024] = {};
+  ssize_t size   = {};
 
-size_t id                    = 1;
-size_t count                 = 0;
-ucontext_t ctx               = {};
-task_t* run                  = nullptr;
-u_list_t(task_t*) run_queue  = nullptr;
-u_tree_t(int, task_t*) rwait = nullptr;
-u_tree_t(int, task_t*) wwait = nullptr;
+  char res_head[]    = "HTTP/1.1 200 OK\n"
+                       "Content-Type: text/html; charset=uft-8\n"
+                       "Content-Length: %zu\n"
+                       "\n"
+                       "%s";
+  char res_buf[4096] = {};
+  size_t res_size =
+      snprintf(res_buf, sizeof(res_buf), res_head, strlen("hello task"), "hello task");
 
-void task_init() {
-  run_queue = u_list_new(task_t*);
+  u_inf("echo fd is %d", fd);
 
-  rwait = u_tree_new(int, task_t*, fn_cmp(int));
-  wwait = u_tree_new(int, task_t*, fn_cmp(int));
-}
-
-task_t* task_new(any_t fun) {
-  task_t* self = nullptr;
-
-  self = u_talloc(task_t);
-  u_nil_if(self);
-
-  self->stksize = 8192 * 4;
-  self->stack   = u_zalloc(self->stksize);
-  u_nil_if(self->stack);
-
-  self->id  = id++;
-  self->fun = fun;
-
-  getcontext(&self->ctx);
-
-  self->ctx.uc_stack.ss_sp   = self->stack;
-  self->ctx.uc_stack.ss_size = self->stksize;
-
-  return self;
-
-err:
-  u_free_if(self);
-
-  return nullptr;
-}
-
-#define u_task_new(fun, ...)                                                                       \
-  do {                                                                                             \
-    task_t* _t = task_new(fun);                                                                    \
-                                                                                                   \
-    makecontext(&_t->ctx, any(fun), va_size(__VA_ARGS__) va_list(0, __VA_ARGS__));                 \
-                                                                                                   \
-    u_list_put(run_queue, _t);                                                                     \
-    count++;                                                                                       \
-                                                                                                   \
-    u_inf("task count is %zd", count);                                                             \
-  } while (0)
-
-void task_scheduler() {
   while (true) {
-    u_err_if(count == 0);
+    size = task_recv(fd, buf, sizeof(buf), 0);
+    u_err_if(size <= 0);
 
-    run = u_list_pop(run_queue);
-    u_die_if(run == nullptr);
+    u_inf("recv is %zu", size);
 
-    u_inf("run id %zu", run->id);
-
-    swapcontext(&ctx, &run->ctx);
-    run = nullptr;
+    task_send(fd, res_buf, res_size, 0);
   }
 
 err:
-  u_inf("end");
 }
 
-void __fun() {
-  u_dbg("task");
+int _main(int argc, const u_cstr_t argv[]) {
+  int cfd                 = {};
+  struct sockaddr_in addr = {};
+  socklen_t addr_len      = {};
+  sock_conf_t conf        = {
+             .type     = SOCK_TYPE_INET4_TCP,
+             .host     = "0.0.0.0",
+             .port     = 8080,
+             .nonblock = true,
+             .listen   = 1000,
+             .opts     = {
+                          {
+                         .opt_id    = SO_REUSEPORT,
+                         .value     = &(int){1},
+                         .value_len = sizeof(int),
+          }, }
+  };
+
+  sock_open(&conf);
+  u_inf("listen %s:%d, fd is %d", conf.host, conf.port, conf.fd);
+
+  while (true) {
+    cfd = task_accept(conf.fd, (struct sockaddr*)&addr, &addr_len);
+    u_inf("client is %d", cfd);
+
+    u_task_new(echo, cfd);
+  }
+
+  sock_close(&conf);
 }
 
 int main(int argc, const u_cstr_t argv[]) {
-  u_log_init();
+  // u_log_init();
 
-  task_init();
+  u_task_new(_main, argc, argv);
 
-  u_task_new(__fun, 1, 2);
-  u_task_new(__fun, 1, 2);
-  u_task_new(__fun, 1, 2);
-  u_task_new(__fun, 1, 2);
-
-  task_scheduler();
+  u_task_loop();
 
   return EXIT_SUCCESS;
 
