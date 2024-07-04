@@ -62,3 +62,40 @@ task('dev', function()
     os.exec('xmake run dev.c')
   end)
 end)
+
+task('perf', function()
+  set_menu({
+    usage = 'xmake perf',
+    description = 'perf',
+    options = {
+      { 'p', 'perfdata', 'kv', 'build/perf.data', 'perf output filename' },
+    },
+  })
+
+  on_run(function()
+    import('core.base.option')
+    import('devel.git')
+    import('privilege.sudo')
+
+    local pd = option.get('perfdata')
+    local fd = vformat('$(buildir)/FlameGraph')
+
+    print(pd)
+
+    if not os.exists(pd) then
+      cprint('${bright green}usage: sudo perf record -e cpu-clock -g -o $(buildir)/perf.data -p 1234')
+
+      return
+    end
+
+    -- download [FlameGraph](https://github.com/brendangregg/FlameGraph)
+    if not os.exists(fd) then
+      git.clone('https://github.com/brendangregg/FlameGraph', { depth = 1, outputdir = fd })
+    end
+
+    cprint('perf script -i %s &> $(buildir)/perf.unfold', pd)
+    -- sudo.run('perf script -i %s &> $(buildir)/perf.unfold', pd)
+    -- sudo.run('%s/stackcollapse-perf.pl $(buildir)/perf.unfold &> $(buildir)/perf.folded', fd)
+    -- sudo.run('%s/flamegraph.pl $(buildir)/perf.folded > perf.svg', fd)
+  end)
+end)
