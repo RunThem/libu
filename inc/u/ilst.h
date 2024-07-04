@@ -187,17 +187,20 @@ extern any_t lst_for(any_t);
       _b;                                                                                          \
     })
 
-#  define u_list_pop(u, ...)                                                                       \
-    ({                                                                                             \
-      va_elseif(va_size_is(1, __VA_ARGS__))(u_list_type(u) _a = va_at(0, __VA_ARGS__);)(           \
-          u_list_type(u) _a = lst_last(u);)                                                        \
-                                                                                                   \
-          lst_pop(u, _a);                                                                          \
-                                                                                                   \
-      _a;                                                                                          \
-    })
-
 /* clang-format off */
+#define u_list_pop(u, ...)                                                                         \
+  ({                                                                                               \
+    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+      u_list_type(u) _a = va_at(0, __VA_ARGS__);                                                   \
+    ) (                                                                                            \
+      u_list_type(u) _a = lst_last(u);                                                             \
+    )                                                                                              \
+                                                                                                   \
+    lst_pop(u, _a);                                                                                \
+                                                                                                   \
+    _a;                                                                                            \
+  })                                                                                               \
+
 #define u_list_put(u, ptr, ...)                                                                    \
   do {                                                                                             \
     u_list_type_check(u);                                                                          \
