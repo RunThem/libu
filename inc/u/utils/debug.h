@@ -138,7 +138,7 @@ extern "C" {
     }
 
 #  define u_close_if(fd)                                                                           \
-    if (fd != 0) {                                                                                 \
+    if (fd >= 0) {                                                                                 \
       close(fd);                                                                                   \
     }
 
