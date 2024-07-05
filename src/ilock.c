@@ -27,62 +27,63 @@
 void u_spmtx_init(u_spmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  atomic_init(&self->locked, false);
+  u_atomic_init(&self->locked, false);
 }
 
 void u_spmtx_lock(u_spmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  while (atomic_exchange(&self->locked, true))
+  while (u_atomic_swap(&self->locked, true))
     ;
 }
 
 void u_spmtx_unlock(u_spmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  atomic_exchange(&self->locked, false);
+  u_atomic_swap(&self->locked, false);
 }
 
 void u_rwmtx_init(u_rwmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  atomic_init(&self->cnt, 0);
-  atomic_init(&self->rwlock, false);
+  u_atomic_init(&self->cnt, 0);
+  u_atomic_init(&self->rwlock, false);
 }
 
 void u_rwmtx_rlock(u_rwmtx_t* self) {
   u_nchk_if(self == nullptr);
 
   while (true) {
-    while (atomic_load(&self->rwlock))
+    while (u_atomic_pop(&self->rwlock))
       ;
 
-    atomic_fetch_add(&self->cnt, 1);
-    if (!atomic_load(&self->rwlock)) {
+    u_atomic_add(&self->cnt, 1);
+    if (!u_atomic_pop(&self->rwlock)) {
       break;
     }
 
-    atomic_fetch_sub(&self->cnt, 1);
+    u_atomic_sub(&self->cnt, 1);
   }
 }
 
 void u_rwmtx_runlock(u_rwmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  atomic_fetch_sub(&self->cnt, 1);
+  u_atomic_sub(&self->cnt, 1);
 }
 
 void u_rwmtx_wlock(u_rwmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  while (atomic_exchange(&self->rwlock, true))
+  while (u_atomic_swap(&self->rwlock, true))
     ;
-  while (atomic_load(&self->cnt))
+
+  while (u_atomic_pop(&self->cnt))
     ;
 }
 
 void u_rwmtx_wunlock(u_rwmtx_t* self) {
   u_nchk_if(self == nullptr);
 
-  atomic_exchange(&self->rwlock, false);
+  u_atomic_swap(&self->rwlock, false);
 }
