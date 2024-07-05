@@ -42,19 +42,19 @@ typedef struct {
  ***************************************************************************************************/
 extern any_t lst_new();
 
+extern void lst_cleanup(any_t);
+
 extern size_t lst_len(any_t);
 
 extern bool lst_exist(any_t, any_t);
 
-extern void lst_cleanup(any_t);
+extern any_t lst_head(any_t);
 
-extern any_t lst_first(any_t);
-
-extern any_t lst_last(any_t);
-
-extern any_t lst_next(any_t, any_t);
+extern any_t lst_tail(any_t);
 
 extern any_t lst_prev(any_t, any_t);
+
+extern any_t lst_next(any_t, any_t);
 
 extern void lst_pop(any_t, any_t);
 
@@ -125,13 +125,6 @@ extern any_t lst_for(any_t);
       lst_exist(u, _a);                                                                            \
     })
 
-#  define u_list_clear(u)                                                                          \
-    do {                                                                                           \
-      u_list_type_check(u);                                                                        \
-                                                                                                   \
-      lst_clear(u);                                                                                \
-    } while (0)
-
 #  define u_list_cleanup(u)                                                                        \
     do {                                                                                           \
       u_list_type_check(u);                                                                        \
@@ -141,24 +134,24 @@ extern any_t lst_for(any_t);
       u = nullptr;                                                                                 \
     } while (0)
 
-#  define u_list_first(u)                                                                          \
+#  define u_list_head(u)                                                                           \
     ({                                                                                             \
       u_list_type_check(u);                                                                        \
                                                                                                    \
       u_list_type(u) _a = {};                                                                      \
                                                                                                    \
-      _a = lst_first(u);                                                                           \
+      _a = lst_head(u);                                                                            \
                                                                                                    \
       _a;                                                                                          \
     })
 
-#  define u_list_last(u)                                                                           \
+#  define u_list_tail(u)                                                                           \
     ({                                                                                             \
       u_list_type_check(u);                                                                        \
                                                                                                    \
       u_list_type(u) _a = {};                                                                      \
                                                                                                    \
-      _a = lst_last(u);                                                                            \
+      _a = lst_tail(u);                                                                            \
                                                                                                    \
       _a;                                                                                          \
     })
@@ -193,7 +186,7 @@ extern any_t lst_for(any_t);
     va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
       u_list_type(u) _a = va_at(0, __VA_ARGS__);                                                   \
     ) (                                                                                            \
-      u_list_type(u) _a = lst_last(u);                                                             \
+      u_list_type(u) _a = lst_head(u);                                                             \
     )                                                                                              \
                                                                                                    \
     lst_pop(u, _a);                                                                                \
@@ -209,7 +202,7 @@ extern any_t lst_for(any_t);
       u_list_type(u) _a = ptr;                                                                     \
       u_list_type(u) _b = va_at(0, __VA_ARGS__);                                                   \
     ) (                                                                                            \
-      u_list_type(u) _a = lst_last(u);                                                             \
+      u_list_type(u) _a = lst_tail(u);                                                             \
       u_list_type(u) _b = ptr;                                                                     \
     )                                                                                              \
                                                                                                    \

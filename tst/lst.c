@@ -34,10 +34,10 @@ mut_test(lst_interface) {
   int a5 = 5;
 
   /* 3 */
-  u_list_put(l, nullptr, &a3);
+  u_list_put(l, &a3);
 
   /* 3, 5 */
-  u_list_put(l, u_list_last(l), &a5);
+  u_list_put(l, &a5);
 
   /* 1, 3, 5 */
   u_list_put(l, nullptr, &a1);
@@ -46,7 +46,7 @@ mut_test(lst_interface) {
   u_list_put(l, &a3, &a4);
 
   /* 1, 2, 3, 4, 5 */
-  u_list_put(l, u_list_first(l), &a2);
+  u_list_put(l, u_list_head(l), &a2);
 
   mut_assert(false == u_list_is_empty(l));
   mut_assert(5 == u_list_len(l));
@@ -57,8 +57,8 @@ mut_test(lst_interface) {
 
   u_list_pop(l, &a1);
 
-  mut_assert(&a2 == u_list_first(l));
-  mut_assert(&a5 == u_list_last(l));
+  mut_assert(&a2 == u_list_head(l));
+  mut_assert(&a5 == u_list_tail(l));
   mut_assert(&a4 == u_list_next(l, &a2));
   mut_assert(&a4 == u_list_prev(l, &a5));
   mut_assert(nullptr == u_list_next(l, &a5));
@@ -80,11 +80,11 @@ mut_test(lst_iterator) {
   int a4 = 4;
   int a5 = 5;
 
-  u_list_put(l, u_list_last(l), &a1);
-  u_list_put(l, u_list_last(l), &a2);
-  u_list_put(l, u_list_last(l), &a3);
-  u_list_put(l, u_list_last(l), &a4);
-  u_list_put(l, u_list_last(l), &a5);
+  u_list_put(l, u_list_tail(l), &a1);
+  u_list_put(l, u_list_tail(l), &a2);
+  u_list_put(l, u_list_tail(l), &a3);
+  u_list_put(l, u_list_tail(l), &a4);
+  u_list_put(l, u_list_tail(l), &a5);
 
   size_t i = 1;
   u_list_for_all(l, it) {
@@ -97,12 +97,12 @@ mut_test(lst_iterator) {
   }
 
   i = 1;
-  for (auto it = u_list_first(l); it; it = u_list_next(l, it)) {
+  for (auto it = u_list_head(l); it; it = u_list_next(l, it)) {
     mut_assert(*it == i++);
   }
 
   i = 5;
-  for (auto it = u_list_last(l); it; it = u_list_prev(l, it)) {
+  for (auto it = u_list_tail(l); it; it = u_list_prev(l, it)) {
     mut_assert(*it == i--);
   }
 

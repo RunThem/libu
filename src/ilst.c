@@ -22,38 +22,76 @@
  *
  * */
 
-#define u_vec_defs u_defs(vec, any_t)
 #include <u/u.h>
 
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
+typedef struct node_t node_t;
+struct node_t {
+  node_t* prev;
+  node_t* next;
+  any_t item;
+};
+
 typedef struct lst_t lst_t;
 struct lst_t {
   u8_t flags[4];
-  u_vec_t(any_t) items;
 
-  size_t iter;
+  node_t* head;
+  node_t* tail;
+
+  node_t* free;
+  node_t* iter;
+
+  size_t len;
 };
-
-/***************************************************************************************************
- * Macro
- **************************************************************************************************/
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-any_t lst_new() {
+static node_t* lst_alloc(lst_t* self, any_t ptr) {
+  node_t* node = nullptr;
 
+  if (self->free != nullptr) {
+    node       = self->free;
+    self->free = self->free->next;
+  } else {
+    node = u_talloc(node_t);
+  }
+
+  node->item = ptr;
+
+  return node;
+}
+
+static void lst_free(lst_t* self, node_t* node) {
+  u_nchk_if(node == nullptr);
+
+  bzero(node, sizeof(node_t));
+
+  node->next = self->free;
+  self->free = node;
+}
+
+static node_t* lst_ptr_to_node(lst_t* self, any_t ptr) {
+  node_t* _idx = nullptr;
+
+  for (_idx = self->head; _idx != nullptr && _idx->item != ptr; _idx = _idx->next)
+    ;
+
+  return _idx;
+}
+
+any_t lst_new() {
   lst_t* self = nullptr;
 
   self = u_talloc(lst_t);
   u_nil_if(self);
 
-  u_vec_init(self->items);
-  u_nil_if(self->items);
-
-  self->iter = 0;
+  self->head = nullptr;
+  self->tail = nullptr;
+  self->len  = 0;
 
   return self;
 
@@ -64,9 +102,17 @@ err:
 }
 
 void lst_cleanup(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_t* self  = (lst_t*)_self;
+  node_t* node = nullptr;
 
-  u_vec_cleanup(self->items);
+  u_nchk_if(self == nullptr);
+
+  while (self->free != nullptr) {
+    node       = self->free;
+    self->free = node->next;
+
+    u_free(node);
+  }
 
   u_free_if(self);
 }
@@ -76,7 +122,7 @@ size_t lst_len(any_t _self) {
 
   u_chk_if(self == nullptr, 0);
 
-  return u_vec_len(self->items);
+  return self->len;
 }
 
 bool lst_exist(any_t _self, any_t ptr) {
@@ -84,102 +130,151 @@ bool lst_exist(any_t _self, any_t ptr) {
 
   u_chk_if(self == nullptr, false);
   u_chk_if(ptr == nullptr, false);
-  u_chk_if(u_vec_is_empty(self->items), false);
+  u_chk_if(self->len == 0, false);
 
-  u_vec_for (self->items, i, node) {
-    if (node == ptr) {
-      return true;
-    }
-  }
-
-  return false;
+  return lst_ptr_to_node(self, ptr) != nullptr;
 }
 
-any_t lst_first(any_t _self) {
+any_t lst_head(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(u_vec_is_empty(self->items), nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
-  return u_vec_at(self->items, 0ul);
+  return self->head->item;
 }
 
-any_t lst_last(any_t _self) {
+any_t lst_tail(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(u_vec_is_empty(self->items), nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
-  return u_vec_at(self->items, -1);
+  return self->tail->item;
 }
 
-any_t lst_next(any_t _self, any_t idx) {
-  lst_t* self = (lst_t*)_self;
+any_t lst_prev(any_t _self, any_t ptr) {
+  lst_t* self  = (lst_t*)_self;
+  node_t* node = nullptr;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(idx == nullptr, nullptr);
+  u_chk_if(ptr == nullptr, nullptr);
 
-  u_vec_for (self->items, i, node) {
-    if (node == idx) {
-      return i == u_vec_len(self->items) - 1 ? nullptr : u_vec_at(self->items, i + 1);
-    }
-  }
+  node = lst_ptr_to_node(self, ptr);
+  u_nil_if(node);
+  u_nil_if(node->prev);
 
+  return node->prev->item;
+
+err:
   return nullptr;
 }
 
-any_t lst_prev(any_t _self, any_t idx) {
-  lst_t* self = (lst_t*)_self;
+any_t lst_next(any_t _self, any_t ptr) {
+  lst_t* self  = (lst_t*)_self;
+  node_t* node = nullptr;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(idx == nullptr, nullptr);
+  u_chk_if(ptr == nullptr, nullptr);
 
-  u_vec_for (self->items, i, node) {
-    if (node == idx) {
-      return (i == 0) ? nullptr : u_vec_at(self->items, i - 1);
-    }
-  };
+  node = lst_ptr_to_node(self, ptr);
+  u_nil_if(node);
+  u_nil_if(node->next);
 
+  return node->next->item;
+
+err:
   return nullptr;
 }
 
 void lst_pop(any_t _self, any_t ptr) {
-  lst_t* self = (lst_t*)_self;
+  lst_t* self  = (lst_t*)_self;
+  node_t* node = nullptr;
+  node_t* prev = nullptr;
+  node_t* next = nullptr;
+  node_t* _idx = nullptr;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(ptr == nullptr);
-  u_nchk_if(u_vec_is_empty(self->items));
 
-  u_vec_for (self->items, i, node) {
-    if (node == ptr) {
-      u_vec_pop(self->items, i);
-      break;
-    }
+  _idx = lst_ptr_to_node(self, ptr);
+  u_nil_if(_idx);
+
+  if (_idx->prev != nullptr) {
+    _idx->prev->next = _idx->next;
+  } else {
+    self->head = _idx->next;
   }
+
+  if (_idx->next != nullptr) {
+    _idx->next->prev = _idx->prev;
+  } else {
+    self->tail = _idx->prev;
+  }
+
+  self->len--;
+
+  lst_free(self, _idx);
+
+  return;
+
+err:
 }
 
 void lst_put(any_t _self, any_t idx, any_t ptr) {
-  lst_t* self = (lst_t*)_self;
+  lst_t* self  = (lst_t*)_self;
+  node_t* node = nullptr;
+  node_t* prev = nullptr;
+  node_t* next = nullptr;
+  node_t* _idx = nullptr;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(ptr == nullptr);
 
+  node = lst_alloc(self, ptr);
+  u_nil_if(node);
+
   if (idx == nullptr) {
-    u_vec_put(self->items, 0, ptr);
+    if (self->len == 0) {
+      self->head = self->tail = node;
+    } else {
+      node->next       = self->head;
+      node->next->prev = node;
+      self->head       = node;
+    }
   } else {
-    u_vec_for (self->items, i, node) {
-      if (node == idx) {
-        u_vec_put(self->items, i + 1, ptr);
-        break;
-      }
+    _idx = lst_ptr_to_node(self, idx);
+    u_nil_if(_idx);
+
+    node->next = _idx->next;
+    node->prev = _idx;
+    _idx->next = node;
+
+    if (node->next != nullptr) {
+      node->next->prev = node;
+    } else {
+      self->tail = node;
     }
   }
+
+  self->len++;
+
+  return;
+
+err:
+  lst_free(self, node);
 }
 
 bool lst_for_init(any_t _self, bool flag) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, false);
+
+  if (self->flags[0] == 0) {
+    self->flags[0] = 1;
+  } else if (self->flags[0] == 2) {
+    self->flags[0] = 0;
+  }
 
   self->flags[0] = !self->flags[0];
   self->flags[1] = flag;
@@ -201,21 +296,22 @@ any_t lst_for(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(u_vec_is_empty(self->items), nullptr);
+  u_chk_if(self->len == 0, nullptr);
   u_chk_if(self->flags[3], nullptr);
 
   /* 初始化 */
   if (self->flags[2]) {
-    self->iter     = self->flags[1] ? 0 : u_vec_len(self->items) - 1;
+    self->iter     = self->flags[1] ? self->head : self->tail;
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
-    self->iter += (self->flags[1] ? +1 : -1);
+    self->iter = self->flags[1] ? self->iter->next : self->iter->prev;
 
     /* 判断是否继续迭代 */
-    if (self->iter == 0 || self->iter == u_vec_len(self->items) - 1) {
+    if ((self->flags[1] && self->iter->next == nullptr) ||
+        (!self->flags[1] && self->iter->prev == nullptr)) {
       self->flags[3] = true;
     }
   }
 
-  return u_vec_at(self->items, self->iter);
+  return self->iter->item;
 }
