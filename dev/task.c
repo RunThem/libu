@@ -74,14 +74,13 @@ void task_loop() {
   struct timeval* timeout_ref = nullptr;
 
   while (true) {
-    task = u_list_first(sch.tasks);
+    task = u_list_pop(sch.tasks);
     if (task == nullptr) {
       goto end;
     }
 
     xlog("task(%zu) resume", task->id);
 
-    u_list_pop(sch.tasks, task);
     task->state = 0;
 
     sch.run = task;
