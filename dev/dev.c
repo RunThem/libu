@@ -1,8 +1,5 @@
-#include <u/u.h>
-/*  */
-#include "task.h"
-
 #include <libsock.h>
+#include <u/u.h>
 
 /* system libs */
 
@@ -195,7 +192,7 @@ int _main(int argc, const u_cstr_t argv[]) {
 }
 
 int main(int argc, const u_cstr_t argv[]) {
-  // u_log_init();
+  u_log_init();
 
   u_task_loop(_main, argc, argv);
 

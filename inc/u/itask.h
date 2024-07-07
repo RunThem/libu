@@ -23,52 +23,12 @@
  * */
 
 #pragma once
-#ifndef U_TASK_H__
-#  define U_TASK_H__
-
-#  include <assert.h>
-#  include <fcntl.h>
-#  include <sys/socket.h>
-#  include <ucontext.h>
-#  include <unistd.h>
+#ifndef U_ITASK_H__
+#  define U_ITASK_H__
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif
-
-/***************************************************************************************************
- * Type
- ***************************************************************************************************/
-typedef struct {
-  size_t id;
-  int state;
-  any_t fun;      /* 协程执行入口 */
-  u8_t* stack;    /* 栈帧 */
-  size_t stksize; /* 栈帧大小 */
-  ucontext_t ctx; /* 上下文 */
-  int fd;         /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
-} task_t;
-
-typedef struct {
-  size_t id;
-  size_t cnt;
-  ucontext_t ctx;
-  task_t* run;
-  int state;
-  u_list_t(task_t) tasks;
-  u_list_t(task_t) dead;
-  u_tree_t(int, task_t*) rwait;
-  u_tree_t(int, task_t*) wwait;
-
-  fd_set rfds[2];
-  fd_set wfds[2];
-  int maxfd;
-} scheduler_t;
-
-/***************************************************************************************************
- * Let
- ***************************************************************************************************/
-extern scheduler_t sch;
 
 /***************************************************************************************************
  * Api
@@ -100,9 +60,9 @@ extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*
  ***************************************************************************************************/
 #  define u_task_new(fun, ...)                                                                     \
     do {                                                                                           \
-      task_t* _t = task_new(fun);                                                                  \
+      any_t _t = task_new(fun);                                                                    \
                                                                                                    \
-      makecontext(&_t->ctx, any(fun), va_size(__VA_ARGS__) va_list(0, __VA_ARGS__));               \
+      makecontext(_t, any(fun), va_size(__VA_ARGS__) va_list(0, __VA_ARGS__));                     \
     } while (0)
 
 #  define u_task_loop(start, ...)                                                                  \
@@ -116,4 +76,4 @@ extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*
 } /* extern "C" */
 #  endif
 
-#endif /* !U_TASK_H__ */
+#endif /* !U_ITASK_H__ */

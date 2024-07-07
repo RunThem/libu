@@ -1,14 +1,57 @@
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
 #include <u/u.h>
 
-/*  */
-#include "task.h"
+/***************************************************************************************************
+ * Type
+ ***************************************************************************************************/
+typedef struct {
+  ucontext_t ctx; /* 上下文 */
+  size_t id;
+  int state;
+  any_t fun;      /* 协程执行入口 */
+  u8_t* stack;    /* 栈帧 */
+  size_t stksize; /* 栈帧大小 */
+  int fd;         /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
+} task_t;
 
-// #define DEBUG 1
-#ifdef DEBUG
-#  define xlog(fmt, ...) u_dbg(fmt __VA_OPT__(, ) __VA_ARGS__)
-#else
-#  define xlog(fmt, ...)
-#endif
+typedef struct {
+  size_t id;
+  size_t cnt;
+  ucontext_t ctx;
+  task_t* run;
+  int state;
+  u_list_t(task_t) tasks;
+  u_list_t(task_t) dead;
+  u_tree_t(int, task_t*) rwait;
+  u_tree_t(int, task_t*) wwait;
+
+  fd_set rfds[2];
+  fd_set wfds[2];
+  int maxfd;
+} scheduler_t;
 
 scheduler_t sch = {};
 
@@ -28,7 +71,7 @@ void task_init() {
   FD_ZERO(&sch.rfds[1]);
   FD_ZERO(&sch.wfds[1]);
 
-  xlog("task init");
+  u_dbg("task init");
 }
 
 any_t task_new(any_t fun) {
@@ -52,7 +95,7 @@ any_t task_new(any_t fun) {
 
   sch.cnt++;
 
-  xlog("task new %zu, tatol %zu", self->id, sch.cnt);
+  u_dbg("task new %zu, tatol %zu", self->id, sch.cnt);
 
   return self;
 
@@ -76,7 +119,7 @@ void task_loop() {
       goto end;
     }
 
-    xlog("task(%zu) resume", task->id);
+    u_dbg("task(%zu) resume", task->id);
 
     task->state = 0;
 
@@ -84,14 +127,14 @@ void task_loop() {
     swapcontext(&sch.ctx, &task->ctx);
     sch.run = nullptr;
 
-    xlog("task(%zu) yield, ret %d", task->id, task->state);
+    u_dbg("task(%zu) yield, ret %d", task->id, task->state);
     switch (task->state) {
       /* dead, add to dead queue */
       case 0:
         u_list_put(sch.dead, task);
         sch.cnt--;
 
-        xlog("task(%zu) dead", task->id);
+        u_dbg("task(%zu) dead", task->id);
         break;
 
       /* ready, add to ready queue */
@@ -103,8 +146,8 @@ void task_loop() {
         FD_SET(task->fd, &sch.rfds[0]);
         sch.maxfd = max(sch.maxfd, task->fd);
 
-        xlog("task(%zu) -> R %d", task->id, task->fd);
-        xlog("rwait total %zu", u_tree_len(sch.rwait));
+        u_dbg("task(%zu) -> R %d", task->id, task->fd);
+        u_dbg("rwait total %zu", u_tree_len(sch.rwait));
         break;
 
       /* write wait */
@@ -113,8 +156,8 @@ void task_loop() {
         FD_SET(task->fd, &sch.wfds[0]);
         sch.maxfd = max(sch.maxfd, task->fd);
 
-        xlog("task(%zu) -> W %d", task->id, task->fd);
-        xlog("wwait total %zu", u_tree_len(sch.wwait));
+        u_dbg("task(%zu) -> W %d", task->id, task->fd);
+        u_dbg("wwait total %zu", u_tree_len(sch.wwait));
         break;
 
       default: assert(0);
@@ -131,7 +174,7 @@ void task_loop() {
     timeout_ref = u_list_is_empty(sch.tasks) ? nullptr : &timeout;
     cnt         = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
 
-    xlog("select ret %d, maxfd is %d", cnt, sch.maxfd);
+    u_dbg("select ret %d, maxfd is %d", cnt, sch.maxfd);
 
     if (cnt > 0) {
       for (int fd = 0; fd <= sch.maxfd; fd++) {
@@ -142,7 +185,7 @@ void task_loop() {
           u_list_put(sch.tasks, task);
           FD_CLR(fd, &sch.rfds[0]);
 
-          xlog("task(%zu) <- R %d", task->id, task->fd);
+          u_dbg("task(%zu) <- R %d", task->id, task->fd);
 
           goto reset_maxfd;
         }
@@ -154,7 +197,7 @@ void task_loop() {
           u_list_put(sch.tasks, task);
           FD_CLR(fd, &sch.wfds[0]);
 
-          xlog("task(%zu) <- W %d", task->id, task->fd);
+          u_dbg("task(%zu) <- W %d", task->id, task->fd);
 
           goto reset_maxfd;
         }

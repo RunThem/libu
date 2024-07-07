@@ -41,8 +41,10 @@ extern "C" {
 #    error "Please use the GCC.v13 or later toolchain."
 #  endif
 
+#  include <assert.h>
 #  include <ctype.h>
 #  include <errno.h>
+#  include <fcntl.h>
 #  include <setjmp.h>
 #  include <stdalign.h>
 #  include <stdarg.h>
@@ -54,9 +56,12 @@ extern "C" {
 #  include <stdlib.h>
 #  include <string.h>
 #  include <strings.h>
+#  include <sys/socket.h>
 #  include <sys/types.h>
 #  include <threads.h>
 #  include <time.h>
+#  include <ucontext.h>
+#  include <unistd.h>
 
 /* clang-format off */
 #  include "utils/va.h"
@@ -76,6 +81,7 @@ extern "C" {
 #  include "iset.h"
 #  include "ivec.h"
 #  include "ilfq.h"
+#  include "itask.h"
 /* clang-format on */
 
 /* #include "istr.h" */
