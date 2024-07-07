@@ -23,7 +23,7 @@ task('dev', function()
   })
 
   on_run(function()
-    os.exec('xmake f -m release --mimalloc=y')
+    os.exec('xmake f -m debug --mimalloc=y')
     os.exec('xmake build -v dev.c')
     os.exec('xmake run dev.c')
   end)

@@ -133,66 +133,13 @@ void set(any_t _self) {
   ((any_t*)_self)[0] = nullptr;
 }
 
-void echo(int fd) {
-  char buf[1024] = {};
-  ssize_t size   = {};
-
-  char res_head[]    = "HTTP/1.1 200 OK\n"
-                       "Content-Type: text/html; charset=uft-8\n"
-                       "Content-Length: %zu\n"
-                       "\n"
-                       "%s";
-  char res_buf[4096] = {};
-  size_t res_size =
-      snprintf(res_buf, sizeof(res_buf), res_head, strlen("hello task"), "hello task");
-
-  u_inf("echo fd is %d", fd);
-
-  while (true) {
-    size = task_recv(fd, buf, sizeof(buf), 0);
-    u_err_if(size <= 0);
-
-    u_inf("recv is %zu", size);
-
-    task_send(fd, res_buf, res_size, 0);
-  }
-
-err:
-}
-
 int _main(int argc, const u_cstr_t argv[]) {
-  int cfd                 = {};
-  struct sockaddr_in addr = {};
-  socklen_t addr_len      = {};
-  sock_conf_t conf        = {
-             .type     = SOCK_TYPE_INET4_TCP,
-             .host     = "0.0.0.0",
-             .port     = 8080,
-             .nonblock = true,
-             .listen   = 1000,
-             .opts     = {
-                          {
-                         .opt_id    = SO_REUSEPORT,
-                         .value     = &(int){1},
-                         .value_len = sizeof(int),
-          }, }
-  };
+  u_inf("argc(%d), argv[0](%s), argv[1](%s)", argc, argv[0], argv[1]);
 
-  sock_open(&conf);
-  u_inf("listen %s:%d, fd is %d", conf.host, conf.port, conf.fd);
-
-  while (true) {
-    cfd = task_accept(conf.fd, (struct sockaddr*)&addr, &addr_len);
-    u_inf("client is %d", cfd);
-
-    u_task_new(echo, cfd);
-  }
-
-  sock_close(&conf);
+  return 0;
 }
 
 int main(int argc, const u_cstr_t argv[]) {
   u_task_loop(_main, argc, argv);
-
   return EXIT_SUCCESS;
 }
