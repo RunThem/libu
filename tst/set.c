@@ -1,6 +1,4 @@
 #include <mut.h>
-
-#define u_set_defs u_defs(set, item)
 #include <u/u.h>
 
 typedef struct {
@@ -12,7 +10,7 @@ fn_compe_def(item, x.a == y.a, x.a > y.a);
 fn_compe_dec(item);
 
 mut_test(set_create) {
-  u_set_t(item) s = nullptr;
+  u_set_t(item) s = nullptr; /* #[[set<item>]] */
 
   u_set_init(s, fn_cmp(item));
 

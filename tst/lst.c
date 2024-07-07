@@ -1,10 +1,8 @@
 #include <mut.h>
-
-#define u_list_defs u_defs(list, int*)
 #include <u/u.h>
 
 mut_test(lst_create) {
-  u_list_t(int*) v = nullptr;
+  u_list_t(int*) v = nullptr; /* #[[list<int*>]] */
 
   u_list_init(v);
 

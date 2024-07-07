@@ -1,12 +1,10 @@
 #include <mut.h>
-
-#define u_vec_defs u_defs(vec, int)
 #include <u/u.h>
 
 #define N 10
 
 mut_test(vec_create) {
-  u_vec_t(int) v = nullptr;
+  u_vec_t(int) v = nullptr; /* #[[vec<int>]] */
 
   u_vec_init(v);
 
