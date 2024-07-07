@@ -10,6 +10,8 @@ set_xmakever('2.6.1')
 --- Build mode
 add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.release')
 
+includes('rules/*.lua')
+
 --- Language standard
 set_languages('clatest', 'cxxlatest')
 
@@ -74,6 +76,8 @@ target('u', function()
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })
   end
+
+  add_rules('generic')
 end)
 
 includes('dev', 'tst')

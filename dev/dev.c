@@ -1,11 +1,3 @@
-// #define NDEBUG
-
-#define u_vec_defs  u_defs(vec, bool, int, u_vec_t(int))
-#define u_set_defs  u_defs(set, item)
-#define u_map_defs  u_defs(map, (int, bool), (int, char))
-#define u_tree_defs u_defs(tree, (int, bool), (int, char), (int, u_zero_size_type_t))
-#define u_list_defs u_defs(list, bool, int)
-
 #include <u/u.h>
 
 /* system libs */
@@ -75,27 +67,27 @@ typedef struct {
 } item;
 
 node graph[] = {
-    {0, {{1, 4}, {7, 8}, {-1, 0}, {-1, 0}} },
-    {1, {{0, 4}, {7, 11}, {2, 8}, {-1, 0}} },
-    {2, {{1, 8}, {8, 2}, {5, 4}, {3, 7}}   },
-    {3, {{2, 7}, {5, 14}, {4, 9}, {-1, 0}} },
-    {4, {{3, 9}, {5, 10}, {-1, 0}, {-1, 0}}},
-    {5, {{6, 2}, {2, 4}, {3, 14}, {4, 10}} },
-    {6, {{7, 1}, {8, 6}, {5, 2}, {-1, 0}}  },
-    {7, {{0, 8}, {1, 11}, {8, 7}, {6, 1}}  },
-    {8, {{7, 7}, {6, 6}, {2, 2}, {-1, 0}}  },
+  {0, {{1, 4}, {7, 8}, {-1, 0}, {-1, 0}} },
+  {1, {{0, 4}, {7, 11}, {2, 8}, {-1, 0}} },
+  {2, {{1, 8}, {8, 2}, {5, 4}, {3, 7}}   },
+  {3, {{2, 7}, {5, 14}, {4, 9}, {-1, 0}} },
+  {4, {{3, 9}, {5, 10}, {-1, 0}, {-1, 0}}},
+  {5, {{6, 2}, {2, 4}, {3, 14}, {4, 10}} },
+  {6, {{7, 1}, {8, 6}, {5, 2}, {-1, 0}}  },
+  {7, {{0, 8}, {1, 11}, {8, 7}, {6, 1}}  },
+  {8, {{7, 7}, {6, 6}, {2, 2}, {-1, 0}}  },
 };
 
 item table[] = {
-    {0, false, 0,       -1},
-    {1, false, INT_MAX, -1},
-    {2, false, INT_MAX, -1},
-    {3, false, INT_MAX, -1},
-    {4, false, INT_MAX, -1},
-    {5, false, INT_MAX, -1},
-    {6, false, INT_MAX, -1},
-    {7, false, INT_MAX, -1},
-    {8, false, INT_MAX, -1},
+  {0, false, 0,       -1},
+  {1, false, INT_MAX, -1},
+  {2, false, INT_MAX, -1},
+  {3, false, INT_MAX, -1},
+  {4, false, INT_MAX, -1},
+  {5, false, INT_MAX, -1},
+  {6, false, INT_MAX, -1},
+  {7, false, INT_MAX, -1},
+  {8, false, INT_MAX, -1},
 };
 
 void spf() {
@@ -144,11 +136,7 @@ void set(any_t _self) {
 int main(int argc, const u_cstr_t argv[]) {
   u_log_init();
 
-  u_inf("%lu", sizeof(enum {T, F}));
-
-  u_each (i, 16) {
-    u_inf("%zx_ is %zu", i, i * 16);
-  }
+  u_dbg("hello libu!");
 
   return EXIT_SUCCESS;
 
