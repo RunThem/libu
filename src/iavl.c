@@ -22,7 +22,6 @@
  *
  * */
 
-#define u_vec_defs u_defs(vec, node_t*)
 #include <u/u.h>
 
 /***************************************************************************************************
@@ -388,7 +387,7 @@ err:
 void avl_clear(any_t _self) {
   avl_t* self            = (avl_t*)_self;
   node_t* node           = nullptr;
-  u_vec_t(node_t*) nodes = nullptr;
+  u_vec_t(node_t*) nodes = nullptr; /* #[[vec<node_t*>]] */
 
   u_nchk_if(self->len == 0);
 

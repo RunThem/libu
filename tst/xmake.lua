@@ -5,6 +5,8 @@ target('check', function()
   add_files('*.c')
   set_default('false')
 
+  add_rules('generic')
+
   add_deps('u')
 
   add_defines('N1k=1000', 'N1W=10000', 'N10W=100000', 'N100W=1000000', 'N1000W=10000000')

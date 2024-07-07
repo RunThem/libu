@@ -1,6 +1,3 @@
-
-#define u_tree_defs u_defs(tree, (int, task_t*))
-#define u_list_defs u_defs(list, task_t*)
 #include <u/u.h>
 
 /*  */
@@ -20,9 +17,9 @@ void task_init() {
   sch.id    = 1;
   sch.cnt   = 0;
   sch.run   = nullptr;
-  sch.tasks = u_list_new(task_t*);
-  sch.dead  = u_list_new(task_t*);
-  sch.rwait = u_tree_new(int, task_t*, fn_cmp(int));
+  sch.tasks = u_list_new(task_t); /* #[[list<task_t>]] */
+  sch.dead  = u_list_new(task_t);
+  sch.rwait = u_tree_new(int, task_t*, fn_cmp(int)); /* #[[tree<int, task_t*>]] */
   sch.wwait = u_tree_new(int, task_t*, fn_cmp(int));
 
   FD_ZERO(&sch.rfds[0]);

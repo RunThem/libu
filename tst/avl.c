@@ -1,12 +1,10 @@
 #include <mut.h>
-
-#define u_tree_defs u_defs(tree, (size_t, int), (int, char))
 #include <u/u.h>
 
 #define N 20
 
 mut_test(avl_create) {
-  u_tree_t(size_t, int) t = nullptr;
+  u_tree_t(size_t, int) t = nullptr; /* #[[tree<size_t, int>]] */
 
   u_tree_init(t, fn_cmp(int));
 
@@ -82,7 +80,7 @@ mut_test(avl_interface) {
 }
 
 mut_test(avl_iterator) {
-  u_tree_t(int, char) t = nullptr;
+  u_tree_t(int, char) t = nullptr; /* #[[tree<int, char>]] */
   u_tree_init(t, fn_cmp(int));
 
   mut_assert(true == u_tree_is_empty(t));

@@ -1,12 +1,10 @@
 #include <mut.h>
-
-#define u_map_defs u_defs(map, (int, char))
 #include <u/u.h>
 
 #define N 26
 
 mut_test(map_create) {
-  u_map_t(int, char) m = nullptr;
+  u_map_t(int, char) m = nullptr; /* #[[map<int, char>]] */
 
   u_map_init(m);
 

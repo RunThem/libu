@@ -55,8 +55,8 @@ typedef struct {
   ucontext_t ctx;
   task_t* run;
   int state;
-  u_list_t(task_t*) tasks;
-  u_list_t(task_t*) dead;
+  u_list_t(task_t) tasks;
+  u_list_t(task_t) dead;
   u_tree_t(int, task_t*) rwait;
   u_tree_t(int, task_t*) wwait;
 
