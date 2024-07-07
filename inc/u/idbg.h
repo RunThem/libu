@@ -24,8 +24,8 @@
 
 #pragma once
 
-#ifndef U_ILOG_H__
-#  define U_ILOG_H__
+#ifndef U_IDBG_H__
+#  define U_IDBG_H__
 
 #  ifdef __cplusplus
 extern "C" {
@@ -34,33 +34,32 @@ extern "C" {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern void log_init(const char*);
-
-extern void log_deinit();
-
 [[gnu::format(printf, 4, 5)]]
-extern void log_write(int, const char*, int, const char*, ...);
+extern void dbg_write(int, const char*, int, const char*, ...);
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#  define u_log_init(...)                                                                          \
-    do {                                                                                           \
-      log_init(va_0th(nullptr, __VA_ARGS__));                                                      \
-    } while (0)
+#  ifdef NDEBUG
+#    define u_err(fmt, ...)
+#    define u_war(fmt, ...)
+#    define u_inf(fmt, ...)
+#    define u_dbg(fmt, ...)
+#  else /* NDEBUG */
+#    define u_err(fmt, ...) dbg_write(0, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#    define u_war(fmt, ...) dbg_write(1, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#    define u_inf(fmt, ...) dbg_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#    define u_dbg(fmt, ...) dbg_write(3, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  endif /* NDEBUG */
 
-#  define u_log_deinit()                                                                           \
-    do {                                                                                           \
-      log_deinit();                                                                                \
-    } while (0)
-
-#  define u_err(fmt, ...) log_write(0, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#  define u_war(fmt, ...) log_write(1, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#  define u_inf(fmt, ...) log_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#  define u_dbg(fmt, ...) log_write(3, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  ifndef LIBU_DEBUG
+#    define u_xxx(fmt, ...)
+#  else /* !LIBU_DEBUG */
+#    define u_xxx(fmt, ...) dbg_write(4, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  endif /* !LIBU_DEBUG */
 
 #  ifdef __cplusplus
 } /* extern "C" */
 #  endif
 
-#endif /* !U_ILOG_H__ */
+#endif /* !U_IDBG_H__ */

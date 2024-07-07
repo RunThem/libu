@@ -24,41 +24,15 @@
 
 #include <u/u.h>
 
-/***************************************************************************************************
- * Type
- **************************************************************************************************/
-typedef struct {
-  char* file;
-  FILE* fp;
-  u_spmtx_t mtx;
-} u_log_t;
+#define FMT "%s %s%s\x1b[0m \x1b[02m%s:%d\x1b[0m"
 
-static u_log_t loger           = {};
-static const char* log_level[] = {"ERR", "WAR", "INF", "DBG"};
-static const char* log_color[] = {"\x1b[31m", "\x1b[33m", "\x1b[32m", "\x1b[36m"};
+static const char* dbg_level[] = {"ERR", "WAR", "INF", "DBG", " U "};
+static const char* dbg_color[] = {"\x1b[31m", "\x1b[33m", "\x1b[34m", "\x1b[35m", "\x1b[32m"};
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-void log_init(const char* out) {
-  if (out == nullptr) {
-    loger.fp = stdout;
-  } else {
-    loger.file = (char*)out;
-    loger.fp   = fopen(out, "w");
-  }
-
-  u_spmtx_init(&loger.mtx);
-}
-
-void log_deinit() {
-  if (loger.file != nullptr) {
-    fclose(loger.fp);
-    loger.fp = nullptr;
-  }
-}
-
-void log_write(int level, const char* file, int line, const char* fmt, ...) {
+void dbg_write(int level, const char* file, int line, const char* fmt, ...) {
   char protmp[256] = {};
   char buf[4096]   = {};
   char timebuf[64] = {};
@@ -67,10 +41,6 @@ void log_write(int level, const char* file, int line, const char* fmt, ...) {
   struct tm* tm    = {};
   va_list ap       = {};
   error_t err      = {};
-
-  if (loger.fp == nullptr) {
-    return;
-  }
 
   err = errno;
 
@@ -81,29 +51,13 @@ void log_write(int level, const char* file, int line, const char* fmt, ...) {
   vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
 
-  if (loger.file == nullptr) {
-    timebuf[strftime(timebuf, sizeof(timebuf), "%H:%M:%S", tm)] = '\0';
+  timebuf[strftime(timebuf, sizeof(timebuf), "%H:%M:%S", tm)] = '\0';
 
-#define FMT "%s %s%s\x1b[0m \x1b[02m%s:%d\x1b[0m"
-    snprintf(protmp, sizeof(protmp), FMT, timebuf, log_color[level], log_level[level], file, line);
-#undef FMT
+  snprintf(protmp, sizeof(protmp), FMT, timebuf, dbg_color[level], dbg_level[level], file, line);
+
+  if (err == 0) {
+    fprintf(stderr, "%s : %s", protmp, buf);
   } else {
-    timebuf[strftime(timebuf, sizeof(timebuf), "%Y-%m-%d %H:%M:%S", tm)] = '\0';
-
-#define FMT "%s %s %s:%d"
-    snprintf(protmp, sizeof(protmp), FMT, timebuf, log_level[level], file, line);
-#undef FMT
+    fprintf(stderr, "%s {%s} : %s", protmp, strerror(err), buf);
   }
-
-  u_spmtx_if (&loger.mtx) {
-    if (err == 0) {
-      fprintf(loger.fp, "%s: %s", protmp, buf);
-    } else {
-      fprintf(loger.fp, "%s {%s}: %s", protmp, strerror(err), buf);
-    }
-
-    fflush(loger.fp);
-  }
-
-err:
 }

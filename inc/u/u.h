@@ -75,7 +75,7 @@ extern "C" {
 #  include "iavl.h"
 #  include "ibuf.h"
 #  include "ilock.h"
-#  include "ilog.h"
+#  include "idbg.h"
 #  include "ilst.h"
 #  include "imap.h"
 #  include "iset.h"
