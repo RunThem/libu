@@ -155,12 +155,8 @@ rule('generic', function()
 
             out:close()
           end
-
-          generic(sourcefile, target:objectfile(sourcefile))
         end
       end
     end
-
-    print('libu generic file update!')
   end)
 end)
