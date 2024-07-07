@@ -123,8 +123,6 @@ rule('generic', function()
               return
             end
 
-            print(gentbl)
-
             -- include codegen file
             target:add('files', sourcefile, { cflags = ('-include %s'):format(genericfile) })
 
@@ -155,6 +153,8 @@ rule('generic', function()
 
             out:close()
           end
+
+          generic(sourcefile, target:objectfile(sourcefile))
         end
       end
     end
