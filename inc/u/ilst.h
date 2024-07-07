@@ -69,10 +69,10 @@ extern any_t lst_for(any_t);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_list_t(...) typeof(__u_list_t(*)(__VA_ARGS__))
+#  define u_list_t(...) typeof(__u_list_t(*)(__VA_ARGS__*))
 
 #  define _u_list_defs(T)                                                                          \
-    u_list_t(T) : (T) {                                                                            \
+    u_list_t(T*) : (T*) {                                                                          \
     }
 
 #  define u_list_type(u) typeof(_Generic(u, u_list_defs))

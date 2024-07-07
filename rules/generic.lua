@@ -68,8 +68,8 @@ rule('generic', function()
                 local ktxt, ktyp, g_ktyp = _output(t.ktyp)
 
                 typ = ('list<%s>'):format(g_ktyp)
-                g_typ = ('typeof(__u_list_t(*)(%s))'):format(g_ktyp)
-                txt = ('typeof(__u_list_t(*)(%s)): (%s){}'):format(g_ktyp, g_ktyp)
+                g_typ = ('typeof(__u_list_t(*)(%s*))'):format(g_ktyp)
+                txt = ('typeof(__u_list_t(*)(%s*)): (%s*){}'):format(g_ktyp, g_ktyp)
 
                 gentbl['list'][typ] = txt
               elseif t.typ == 'map' then
