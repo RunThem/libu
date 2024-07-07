@@ -71,7 +71,7 @@ void task_init() {
   FD_ZERO(&sch.rfds[1]);
   FD_ZERO(&sch.wfds[1]);
 
-  u_dbg("task init");
+  u_xxx("task init");
 }
 
 any_t task_new(any_t fun) {
@@ -95,7 +95,7 @@ any_t task_new(any_t fun) {
 
   sch.cnt++;
 
-  u_dbg("task new %zu, tatol %zu", self->id, sch.cnt);
+  u_xxx("task new %zu, tatol %zu", self->id, sch.cnt);
 
   return self;
 
@@ -119,7 +119,7 @@ void task_loop() {
       goto end;
     }
 
-    u_dbg("task(%zu) resume", task->id);
+    u_xxx("task(%zu) resume", task->id);
 
     task->state = 0;
 
@@ -127,14 +127,14 @@ void task_loop() {
     swapcontext(&sch.ctx, &task->ctx);
     sch.run = nullptr;
 
-    u_dbg("task(%zu) yield, ret %d", task->id, task->state);
+    u_xxx("task(%zu) yield, ret %d", task->id, task->state);
     switch (task->state) {
       /* dead, add to dead queue */
       case 0:
         u_list_put(sch.dead, task);
         sch.cnt--;
 
-        u_dbg("task(%zu) dead", task->id);
+        u_xxx("task(%zu) dead", task->id);
         break;
 
       /* ready, add to ready queue */
@@ -146,8 +146,8 @@ void task_loop() {
         FD_SET(task->fd, &sch.rfds[0]);
         sch.maxfd = max(sch.maxfd, task->fd);
 
-        u_dbg("task(%zu) -> R %d", task->id, task->fd);
-        u_dbg("rwait total %zu", u_tree_len(sch.rwait));
+        u_xxx("task(%zu) -> R %d", task->id, task->fd);
+        u_xxx("rwait total %zu", u_tree_len(sch.rwait));
         break;
 
       /* write wait */
@@ -156,8 +156,8 @@ void task_loop() {
         FD_SET(task->fd, &sch.wfds[0]);
         sch.maxfd = max(sch.maxfd, task->fd);
 
-        u_dbg("task(%zu) -> W %d", task->id, task->fd);
-        u_dbg("wwait total %zu", u_tree_len(sch.wwait));
+        u_xxx("task(%zu) -> W %d", task->id, task->fd);
+        u_xxx("wwait total %zu", u_tree_len(sch.wwait));
         break;
 
       default: assert(0);
@@ -174,7 +174,7 @@ void task_loop() {
     timeout_ref = u_list_is_empty(sch.tasks) ? nullptr : &timeout;
     cnt         = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
 
-    u_dbg("select ret %d, maxfd is %d", cnt, sch.maxfd);
+    u_xxx("select ret %d, maxfd is %d", cnt, sch.maxfd);
 
     if (cnt > 0) {
       for (int fd = 0; fd <= sch.maxfd; fd++) {
@@ -185,7 +185,7 @@ void task_loop() {
           u_list_put(sch.tasks, task);
           FD_CLR(fd, &sch.rfds[0]);
 
-          u_dbg("task(%zu) <- R %d", task->id, task->fd);
+          u_xxx("task(%zu) <- R %d", task->id, task->fd);
 
           goto reset_maxfd;
         }
@@ -197,7 +197,7 @@ void task_loop() {
           u_list_put(sch.tasks, task);
           FD_CLR(fd, &sch.wfds[0]);
 
-          u_dbg("task(%zu) <- W %d", task->id, task->fd);
+          u_xxx("task(%zu) <- W %d", task->id, task->fd);
 
           goto reset_maxfd;
         }
@@ -220,7 +220,30 @@ reset_maxfd:
   }
 
 end:
-  u_inf("end");
+
+  u_list_for_all(sch.dead, task) {
+    u_free_if(task->stack);
+    u_free_if(task);
+  }
+
+  u_list_for_all(sch.tasks, task) {
+    u_free_if(task->stack);
+    u_free_if(task);
+  }
+
+  u_tree_for (sch.rwait, fd, task) {
+    u_close_if(fd);
+    u_free_if(task->stack);
+    u_free_if(task);
+  }
+
+  u_tree_for (sch.wwait, fd, task) {
+    u_close_if(fd);
+    u_free_if(task->stack);
+    u_free_if(task);
+  }
+
+  u_xxx("end");
 }
 
 /*
@@ -272,9 +295,9 @@ int task_accept(int fd, struct sockaddr* addr, socklen_t* len) {
 err:
 
   if (errno == ECONNABORTED) {
-    u_war("accept: ECONNABORTED");
+    u_xxx("accept: ECONNABORTED");
   } else if (errno == EMFILE || errno == ENFILE) {
-    u_war("accept: EMFILE || ENFILE");
+    u_xxx("accept: EMFILE || ENFILE");
   }
 
   return -1;
