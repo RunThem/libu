@@ -62,7 +62,7 @@ extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*
     do {                                                                                           \
       any_t _t = task_new(fun);                                                                    \
                                                                                                    \
-      makecontext(_t, any(fun), va_size(__VA_ARGS__) va_list(0, __VA_ARGS__));                     \
+      makecontext(_t, any(fun), va_cnt(__VA_ARGS__) va_list(0, __VA_ARGS__));                      \
     } while (0)
 
 #  define u_task_loop(start, ...)                                                                  \

@@ -150,7 +150,7 @@ extern bool avl_for(any_t, any_t, any_t);
 
 /* clang-format off */
 #  define u_tree_at(u, _k, ...)                                                                    \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
       ({                                                                                           \
         u_tree_type_check(u);                                                                      \
                                                                                                    \

@@ -40,7 +40,7 @@ extern "C" {
 #  define bit(byte, n)  (((byte) >> (n)) & 1)
 
 /* clang-format off */
-#define u_each(i, n, ...) va_elseif(va_size_is(1, __VA_ARGS__)) (                                  \
+#define u_each(i, n, ...) va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                   \
       for (size_t i = n; i < va_at(0, __VA_ARGS__); i++)                                           \
     )(                                                                                             \
       for (size_t i = 0; i < n; i++)                                                               \

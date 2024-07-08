@@ -183,7 +183,7 @@ extern any_t lst_for(any_t);
 /* clang-format off */
 #define u_list_pop(u, ...)                                                                         \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
       u_list_type(u) _a = va_at(0, __VA_ARGS__);                                                   \
     ) (                                                                                            \
       u_list_type(u) _a = lst_head(u);                                                             \
@@ -198,7 +198,7 @@ extern any_t lst_for(any_t);
   do {                                                                                             \
     u_list_type_check(u);                                                                          \
                                                                                                    \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
       u_list_type(u) _a = ptr;                                                                     \
       u_list_type(u) _b = va_at(0, __VA_ARGS__);                                                   \
     ) (                                                                                            \

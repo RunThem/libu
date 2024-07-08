@@ -142,7 +142,7 @@ extern bool avl_for(any_t, any_t, any_t);
 
 /* clang-format off */
 #  define u_set_at(u, _it, ...)                                                                    \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
       ({                                                                                           \
         u_set_type_check(u);                                                                       \
                                                                                                    \

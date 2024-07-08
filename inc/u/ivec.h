@@ -151,7 +151,7 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 /* clang-format off */
 #define u_vec_at(u, ...)                                                                           \
-  va_elseif(va_size_is(2, __VA_ARGS__)) (                                                          \
+  va_elseif(va_cnt_is(2, __VA_ARGS__)) (                                                           \
     ({                                                                                             \
       u_vec_type_check(u);                                                                         \
                                                                                                    \
@@ -192,12 +192,12 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 /* clang-format off */
 #define u_vec_pop(u, ...)                                                                          \
   ({                                                                                               \
-    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 0),                       \
+    static_assert((va_cnt(__VA_ARGS__) == 1) + (va_cnt(__VA_ARGS__) == 0),                         \
                   "The number of '...' is 1 or 0.");                                               \
                                                                                                    \
     u_vec_type_check(u);                                                                           \
                                                                                                    \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
       ssize_t _a    = va_at(0, __VA_ARGS__);                                                       \
       u_vec_type(u) _b = {};                                                                       \
     ) (                                                                                            \
@@ -212,12 +212,12 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 #define u_vec_put(u, ...)                                                                          \
   do {                                                                                             \
-    static_assert((va_size(__VA_ARGS__) == 1) + (va_size(__VA_ARGS__) == 2),                       \
+    static_assert((va_cnt(__VA_ARGS__) == 1) + (va_cnt(__VA_ARGS__) == 2),                         \
                   "The number of '...' is 1 or 2.");                                               \
                                                                                                    \
     u_vec_type_check(u);                                                                           \
                                                                                                    \
-    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(2, __VA_ARGS__)) (                                                         \
       auto _a       = va_at(0, __VA_ARGS__);                                                       \
       u_vec_type(u) _b = va_at(1, __VA_ARGS__);                                                    \
     )(                                                                                             \
@@ -231,7 +231,7 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 #  define u_vec_sort(u, ...)                                                                       \
     do {                                                                                           \
-      static_assert(va_size(__VA_ARGS__) == 1, "The number of '...' is 1.");                       \
+      static_assert(va_cnt(__VA_ARGS__) == 1, "The number of '...' is 1.");                        \
                                                                                                    \
       u_vec_type_check(u);                                                                         \
                                                                                                    \

@@ -19,9 +19,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
- * */
-#pragma once
+ * */ #pragma once
 
 #ifndef U_IMAP_H__
 #  define U_IMAP_H__
@@ -149,7 +147,7 @@ extern bool map_for(any_t, any_t, any_t);
 
 /* clang-format off */
 #  define u_map_at(u, _k, ...)                                                                     \
-    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+    va_elseif(va_cnt_is(2, __VA_ARGS__)) (                                                         \
       ({                                                                                           \
         u_map_type_check(u);                                                                       \
                                                                                                    \

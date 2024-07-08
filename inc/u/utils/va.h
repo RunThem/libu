@@ -40,6 +40,100 @@
 #ifndef U_VA_H__
 #define U_VA_H__
 
+#ifndef LIBU_VA_EVAL
+
+#define va_first(first, ...) first
+
+#define va_cat(x, y, ...)   __va_cat(x, y, __VA_ARGS__)
+#define __va_cat(x, y, ...) x##y##__VA_ARGS__
+
+#define va_at(N, ...)                                           va_cat(__va_at, N)(__VA_ARGS__, , , , , , , , )
+#define __va_at10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, ...) va_first(__VA_ARGS__)
+#define __va_at9(_1, _2, _3, _4, _5, _6, _7, _8, _9, ...)       va_first(__VA_ARGS__)
+#define __va_at8(_1, _2, _3, _4, _5, _6, _7, _8, ...)           va_first(__VA_ARGS__)
+#define __va_at7(_1, _2, _3, _4, _5, _6, _7, ...)               va_first(__VA_ARGS__)
+#define __va_at6(_1, _2, _3, _4, _5, _6, ...)                   va_first(__VA_ARGS__)
+#define __va_at5(_1, _2, _3, _4, _5, ...)                       va_first(__VA_ARGS__)
+#define __va_at4(_1, _2, _3, _4, ...)                           va_first(__VA_ARGS__)
+#define __va_at3(_1, _2, _3, ...)                               va_first(__VA_ARGS__)
+#define __va_at2(_1, _2, ...)                                   va_first(__VA_ARGS__)
+#define __va_at1(_1, ...)                                       va_first(__VA_ARGS__)
+#define __va_at0(...)                                           va_first(__VA_ARGS__)
+
+#define va_has(...)        va_first(__VA_OPT__(1, ) 0)
+#define va_eat(first, ...) __VA_ARGS__
+
+#define va_if(condition) va_cat(__va_if_, condition)
+#define __va_if_1(...)   __VA_ARGS__
+#define __va_if_0(...)
+
+#define va_elseif(condition) va_cat(__va_elseif_, condition)
+#define __va_elseif_1(...)   __VA_ARGS__ __va_elseif_1_else
+#define __va_elseif_0(...)   __va_elseif_0_else
+#define __va_elseif_1_else(...)
+#define __va_elseif_0_else(...) __VA_ARGS__
+
+#define va_cnt(...)                                                                                \
+        va_elseif(va_has(__VA_ARGS__)) (                                                           \
+          va_at(10, __VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)                                    \
+        ) (                                                                                        \
+          0                                                                                        \
+        )
+
+#define va_cnt_is(N, ...) va_at(N, va_cat(__va_cnt_is, va_cnt(__VA_ARGS__)))
+#define __va_cnt_is0      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_cnt_is1      0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_cnt_is2      0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_cnt_is3      0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0
+#define __va_cnt_is4      0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
+#define __va_cnt_is5      0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0
+#define __va_cnt_is6      0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0
+#define __va_cnt_is7      0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0
+#define __va_cnt_is8      0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0
+#define __va_cnt_is9      0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0
+#define __va_cnt_is10     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+
+#define va_check(N, ...) va_at(N, va_cat(__va_check, va_cnt(__VA_ARGS__)))
+#define __va_check0      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_check1      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_check2      1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_check3      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0
+#define __va_check4      1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0
+#define __va_check5      1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
+#define __va_check6      1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0
+#define __va_check7      1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0
+#define __va_check8      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0
+#define __va_check9      1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0
+#define __va_check10     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0
+
+#define va_list(N, ...)                                                                            \
+        va_if(va_check(N, __VA_ARGS__)) (                                                          \
+          , va_cat(__va_list, N)(__VA_ARGS__)                                                      \
+        )
+#define __va_list10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, ...) __VA_ARGS__
+#define __va_list9(_1, _2, _3, _4, _5, _6, _7, _8, _9, ...)       __VA_ARGS__
+#define __va_list8(_1, _2, _3, _4, _5, _6, _7, _8, ...)           __VA_ARGS__
+#define __va_list7(_1, _2, _3, _4, _5, _6, _7, ...)               __VA_ARGS__
+#define __va_list6(_1, _2, _3, _4, _5, _6, ...)                   __VA_ARGS__
+#define __va_list5(_1, _2, _3, _4, _5, ...)                       __VA_ARGS__
+#define __va_list4(_1, _2, _3, _4, ...)                           __VA_ARGS__
+#define __va_list3(_1, _2, _3, ...)                               __VA_ARGS__
+#define __va_list2(_1, _2, ...)                                   __VA_ARGS__
+#define __va_list1(_1, ...)                                       __VA_ARGS__
+#define __va_list0(...)                                           __VA_ARGS__
+
+#define va_0th(def, ...) va_th(0, def, __VA_ARGS__)
+#define va_1th(def, ...) va_th(1, def, __VA_ARGS__)
+#define va_2th(def, ...) va_th(2, def, __VA_ARGS__)
+#define va_th(N, def, ...)                                                                         \
+        va_elseif(va_check(N, __VA_ARGS__)) (                                                      \
+          va_at(N, __VA_ARGS__)                                                                    \
+        ) (                                                                                        \
+          def                                                                                      \
+        )                                                                                          \
+
+#else /* !LIBU_VA_EVAL */
+
 #ifdef va_debug
 #define echo(arg) <><><><><><><><><><><><><><><><><><><><><><><> va_##arg
 #endif
@@ -59,7 +153,7 @@ va_cat(hello_, the_, world)       /* : hello_the_world */
 /*
  * eval 2^8 128
  **/
-#define va_eval(...)     __va_eval_8(__VA_ARGS__)
+#define va_eval(...)     __va_eval_3(__VA_ARGS__)
 #define __va_eval_1(...) __VA_ARGS__
 #define __va_eval_2(...) __va_eval_1(__va_eval_1(__VA_ARGS__))
 #define __va_eval_3(...) __va_eval_2(__va_eval_2(__VA_ARGS__))
@@ -634,41 +728,41 @@ va_th(3, Y, 0, 1, 2, 3, 4, 5)       /* : 3 */
 
 
 /*
- * size
+ * cnt
  **/
-#define va_size(...)    va_eval(__va_size(0, "ignore", __VA_ARGS__))
-#define __va_size_def() __va_size
-#define __va_size(first, arg,  ...)                                                                \
+#define va_cnt(...)    va_eval(__va_cnt(0, "ignore", __VA_ARGS__))
+#define __va_cnt_def() __va_cnt
+#define __va_cnt(first, arg,  ...)                                                                 \
   va_elseif(va_has(__VA_ARGS__)) (                                                                 \
-    va_defer(2, __va_size_def)()(va_inc(first), __VA_ARGS__)                                       \
+    va_defer(2, __va_cnt_def)()(va_inc(first), __VA_ARGS__)                                        \
   )(                                                                                               \
     first                                                                                          \
   )                                                                                             
 
 #ifdef va_debug
-echo(size)
-va_size()                     /* : 0 */
-va_size(1)                    /* : 1 */
-va_size(1, 2)                 /* : 2 */
-va_size(1, 2, 3)              /* : 3 */
-va_size(1, 2, 3, 4)           /* : 4 */
-va_size(1, 2, 3, 4, 5)        /* : 5 */
+echo(cnt)
+va_cnt()                     /* : 0 */
+va_cnt(1)                    /* : 1 */
+va_cnt(1, 2)                 /* : 2 */
+va_cnt(1, 2, 3)              /* : 3 */
+va_cnt(1, 2, 3, 4)           /* : 4 */
+va_cnt(1, 2, 3, 4, 5)        /* : 5 */
 #endif
 
 
 /* 
- * size_is
+ * cnt_is
  **/
-#define va_size_is(n, ...) va_eval(va_defer(1, va_first)(__va_size_is(va_at(n, _, __VA_ARGS__)) 0))
-#define __va_size_is(...)  __VA_OPT__(1, )
+#define va_cnt_is(n, ...) va_eval(va_defer(1, va_first)(__va_cnt_is(va_at(n, _, __VA_ARGS__)) 0))
+#define __va_cnt_is(...)  __VA_OPT__(1, )
 
 #ifdef va_debug
-echo(size_is)
-va_size_is(2)                    /* : 0 */
-va_size_is(2, 2)                 /* : 0 */
-va_size_is(2, 2, 3)              /* : 1 */
-va_size_is(2, 2, 3, 4)           /* : 1 */
-va_size_is(2, 2, 3, 4, 5)        /* : 1 */
+echo(cnt_is)
+va_cnt_is(2)                    /* : 0 */
+va_cnt_is(2, 2)                 /* : 0 */
+va_cnt_is(2, 2, 3)              /* : 1 */
+va_cnt_is(2, 2, 3, 4)           /* : 1 */
+va_cnt_is(2, 2, 3, 4, 5)        /* : 1 */
 #endif
 
 
@@ -690,7 +784,7 @@ va_list(3, 1, 2, 3, 4, 5)       /* : , 4 , 5 */
 /*
  * last cut
  * */
-#define va_lcut(...) va_cut(va_dec(va_size(__VA_ARGS__)), __VA_ARGS__)
+#define va_lcut(...) va_cut(va_dec(va_cnt(__VA_ARGS__)), __VA_ARGS__)
 
 #ifdef va_debug
 echo(lcut)
@@ -706,7 +800,7 @@ va_lcut(1, 2, 3, 4, 5)        /* : 1 , 2 , 3 , 4 */
 /*
  * last
  * */
-#define va_last(...) va_at(va_dec(va_size(__VA_ARGS__)), __VA_ARGS__)
+#define va_last(...) va_at(va_dec(va_cnt(__VA_ARGS__)), __VA_ARGS__)
 
 #ifdef va_debug
 echo(last)
@@ -775,5 +869,7 @@ va_mapof(_b, 1, 2)              /* : (1), (2),           */
 va_mapof(_b, 1, 2, 3)           /* : (1), (2), (3),      */
 va_mapof(_b, 1, 2, 3, 4)        /* : (1), (2), (3), (4), */
 #endif
+
+#endif /* !LIBU_VA_EVAL */
 
 #endif /* !U_VA_H__ */
