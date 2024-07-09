@@ -120,7 +120,7 @@ any_t vec_at(any_t _self, ssize_t idx) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(idx > self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
+  u_chk_if(idx >= self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
 
   idx += (idx < 0) ? (ssize_t)self->len : 0;
 
