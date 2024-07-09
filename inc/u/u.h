@@ -31,7 +31,7 @@
 extern "C" {
 #  endif
 
-#  define u_defs(type, ...) va_map(_u_##type##_defs, __VA_ARGS__)
+#  define u_defs(type, ...) u_va_map(_u_##type##_defs, __VA_ARGS__)
 
 #  if defined(__clang__) && __clang_major__ < 16
 #    error "Please use the Clang.v16 or later toolchain."

@@ -36,7 +36,7 @@ typedef struct {
 
 /***************************************************************************************************
  * Api
- ***************************************************************************************************/
+ **************************************************************************************************/
 extern any_t map_new(size_t, size_t, u_hash_fn);
 
 extern size_t map_len(any_t);
@@ -147,7 +147,7 @@ extern bool map_for(any_t, any_t, any_t);
 
 /* clang-format off */
 #  define u_map_at(u, _k, ...)                                                                     \
-    va_elseif(va_cnt_is(2, __VA_ARGS__)) (                                                         \
+    u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
         u_map_type_check(u);                                                                       \
                                                                                                    \
@@ -158,7 +158,7 @@ extern bool map_for(any_t, any_t, any_t);
         _b = map_at(u, &_a);                                                                       \
                                                                                                    \
         if (_b != nullptr) {                                                                       \
-          *_b = va_at(0, __VA_ARGS__);                                                             \
+          *_b = u_va_at(0, __VA_ARGS__);                                                           \
           _ret = true;                                                                             \
         }                                                                                          \
                                                                                                    \

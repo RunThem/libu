@@ -39,7 +39,7 @@ typedef struct {
 
 /***************************************************************************************************
  * Api
- ***************************************************************************************************/
+ **************************************************************************************************/
 extern any_t avl_new(size_t, size_t, u_cmp_fn);
 
 extern size_t avl_len(any_t);
@@ -94,9 +94,9 @@ extern bool avl_for(any_t, any_t, any_t);
 
 #  define u_set_new(...)                                                                           \
     ({                                                                                             \
-      u_set_t(va_at(0, __VA_ARGS__)) u = nullptr;                                                  \
+      u_set_t(u_va_at(0, __VA_ARGS__)) u = nullptr;                                                \
                                                                                                    \
-      u_set_init(u, va_at(1, __VA_ARGS__));                                                        \
+      u_set_init(u, u_va_at(1, __VA_ARGS__));                                                      \
                                                                                                    \
       u;                                                                                           \
     })
@@ -142,19 +142,19 @@ extern bool avl_for(any_t, any_t, any_t);
 
 /* clang-format off */
 #  define u_set_at(u, _it, ...)                                                                    \
-    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
         u_set_type_check(u);                                                                       \
                                                                                                    \
         bool _ret         = false;                                                                 \
         u_set_type(u) it  = _it;                                                                   \
-        u_set_type(u) _a  = va_at(0, __VA_ARGS__);                                                 \
+        u_set_type(u) _a  = u_va_at(0, __VA_ARGS__);                                               \
         u_set_type(u)* _b = {};                                                                    \
                                                                                                    \
         _b = avl_at(u, &it);                                                                       \
                                                                                                    \
         if (_b != nullptr && 0 == avl_fn(u)(&_it, &_a)) {                                          \
-          *(_b - 1) = va_at(0, __VA_ARGS__);                                                       \
+          *(_b - 1) = u_va_at(0, __VA_ARGS__);                                                     \
           _ret = true;                                                                             \
         }                                                                                          \
                                                                                                    \

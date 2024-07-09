@@ -20,6 +20,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
+ * doc:
+ *    [](https://zyy.rs/post/ucontext-usage-and-coroutine/)
+ *    [](https://www.cnblogs.com/adinosaur/p/5889014.html)
+ *    [](https://zhuanlan.zhihu.com/p/82492121)
+ *    [](https://juejin.cn/post/7173648788551434247)
+ *    [](https://juejin.cn/post/7122978663137542175)
+ *    [](https://lib.miaobai.net/blog/context-switch.html)
+ *    [](http://jinke.me/2018-09-14-coroutine-context-switch/)
+ *    [](https://github.com/dreamsxin/example/blob/master/context/context.md)
+ *    [](https://tboox.org/cn/2016/10/28/coroutine-context/)
+ *
  * */
 
 #pragma once
@@ -57,12 +68,12 @@ extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*
 
 /***************************************************************************************************
  * iApi
- ***************************************************************************************************/
+ **************************************************************************************************/
 #  define u_task_new(fun, ...)                                                                     \
     do {                                                                                           \
       any_t _t = task_new(fun);                                                                    \
                                                                                                    \
-      makecontext(_t, any(fun), va_cnt(__VA_ARGS__) va_list(0, __VA_ARGS__));                      \
+      makecontext(_t, any(fun), u_va_cnt(__VA_ARGS__) u_va_list(0, __VA_ARGS__));                  \
     } while (0)
 
 #  define u_task_loop(start, ...)                                                                  \

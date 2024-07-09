@@ -45,7 +45,7 @@ typedef struct {
 
 /***************************************************************************************************
  * Api
- ***************************************************************************************************/
+ **************************************************************************************************/
 extern void buf_init(u_buf_t*, u8_t*, size_t);
 
 extern void buf_clear(u_buf_t*);
@@ -66,13 +66,13 @@ extern void buf_put(u_buf_t*, any_t, size_t);
 /* clang-format off */
 #define u_buf_init(u, ...)                                                                         \
   do {                                                                                             \
-    va_elseif(va_cnt_is(0, __VA_ARGS__)) (                                                         \
+    u_va_elseif(u_va_cnt_is(0, __VA_ARGS__)) (                                                     \
       buf_init(u, nullptr, 32);                                                                    \
     )(                                                                                             \
-      va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                       \
-        buf_init(u, nullptr, va_at(0, __VA_ARGS__));                                               \
+      u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
+        buf_init(u, nullptr, u_va_at(0, __VA_ARGS__));                                             \
       )(                                                                                           \
-        buf_init(u, va_at(0, __VA_ARGS__), va_at(1, __VA_ARGS__));                                 \
+        buf_init(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                             \
       )                                                                                            \
     )                                                                                              \
   } while (0)
@@ -108,14 +108,14 @@ extern void buf_put(u_buf_t*, any_t, size_t);
 /* clang-format off */
 #define u_buf_pop(u, ...)                                                                          \
   ({                                                                                               \
-    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
-      typeof(va_at(0, __VA_ARGS__)) _a   = {};                                                     \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      typeof(u_va_at(0, __VA_ARGS__)) _a   = {};                                                   \
                                                                                                    \
       buf_pop(u, &_a, sizeof(_a)) ;                                                                \
                                                                                                    \
       _a;                                                                                          \
     ) (                                                                                            \
-      buf_pop(u, va_at(0, __VA_ARGS__), va_at(1, __VA_ARGS__));                                    \
+      buf_pop(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                                \
                                                                                                    \
       true;                                                                                        \
     )                                                                                              \
@@ -123,12 +123,12 @@ extern void buf_put(u_buf_t*, any_t, size_t);
 
 #define u_buf_put(u, ...)                                                                          \
   ({                                                                                               \
-    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
-      typeof(va_at(0, __VA_ARGS__)) _a   = va_at(0, __VA_ARGS__);                                  \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      typeof(u_va_at(0, __VA_ARGS__)) _a   = u_va_at(0, __VA_ARGS__);                              \
                                                                                                    \
       buf_put(u, &_a, sizeof(_a)) ;                                                                \
     ) (                                                                                            \
-      buf_pop(u, va_at(0, __VA_ARGS__), va_at(1, __VA_ARGS__));                                    \
+      buf_pop(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                                \
     )                                                                                              \
   })
 /* clang-format on */

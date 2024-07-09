@@ -20,6 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
+ * doc:
+ *    [](https://coolshell.cn/articles/8239.html)
+ *    [](https://github.com/supermartian/lockfree-queue)
+ *    [](https://github.com/golang-design/lockfree/blob/master/queue.go)
+ *
  * */
 
 #ifndef U_ILFQ_H__

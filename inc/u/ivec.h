@@ -39,7 +39,7 @@ typedef struct {
 
 /***************************************************************************************************
  * Api
- ***************************************************************************************************/
+ **************************************************************************************************/
 extern any_t vec_new(size_t);
 
 extern size_t vec_len(any_t);
@@ -151,18 +151,18 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 /* clang-format off */
 #define u_vec_at(u, ...)                                                                           \
-  va_elseif(va_cnt_is(2, __VA_ARGS__)) (                                                           \
+  u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                       \
     ({                                                                                             \
       u_vec_type_check(u);                                                                         \
                                                                                                    \
       bool _ret      = false;                                                                      \
-      ssize_t _a     = va_at(0, __VA_ARGS__);                                                      \
+      ssize_t _a     = u_va_at(0, __VA_ARGS__);                                                    \
       u_vec_type(u)* _b = {};                                                                      \
                                                                                                    \
       _b = vec_at(u, _a);                                                                          \
                                                                                                    \
       if (_b != nullptr) {                                                                         \
-        *_b = va_at(1, __VA_ARGS__);                                                               \
+        *_b = u_va_at(1, __VA_ARGS__);                                                             \
         _ret = true;                                                                               \
       }                                                                                            \
                                                                                                    \
@@ -172,7 +172,7 @@ extern bool vec_for(any_t, ssize_t*, any_t);
     ({                                                                                             \
       u_vec_type_check(u);                                                                         \
                                                                                                    \
-      auto _a        = va_at(0, __VA_ARGS__);                                                      \
+      auto _a        = u_va_at(0, __VA_ARGS__);                                                    \
       u_vec_type(u) _it = {};                                                                      \
       u_vec_type(u)* _b = {};                                                                      \
                                                                                                    \
@@ -192,13 +192,13 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 /* clang-format off */
 #define u_vec_pop(u, ...)                                                                          \
   ({                                                                                               \
-    static_assert((va_cnt(__VA_ARGS__) == 1) + (va_cnt(__VA_ARGS__) == 0),                         \
+    static_assert((u_va_cnt(__VA_ARGS__) == 1) + (u_va_cnt(__VA_ARGS__) == 0),                     \
                   "The number of '...' is 1 or 0.");                                               \
                                                                                                    \
     u_vec_type_check(u);                                                                           \
                                                                                                    \
-    va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                                         \
-      ssize_t _a    = va_at(0, __VA_ARGS__);                                                       \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      ssize_t _a    = u_va_at(0, __VA_ARGS__);                                                     \
       u_vec_type(u) _b = {};                                                                       \
     ) (                                                                                            \
       ssize_t _a    = -1;                                                                          \
@@ -212,17 +212,17 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 #define u_vec_put(u, ...)                                                                          \
   do {                                                                                             \
-    static_assert((va_cnt(__VA_ARGS__) == 1) + (va_cnt(__VA_ARGS__) == 2),                         \
+    static_assert((u_va_cnt(__VA_ARGS__) == 1) + (u_va_cnt(__VA_ARGS__) == 2),                     \
                   "The number of '...' is 1 or 2.");                                               \
                                                                                                    \
     u_vec_type_check(u);                                                                           \
                                                                                                    \
-    va_elseif(va_cnt_is(2, __VA_ARGS__)) (                                                         \
-      auto _a       = va_at(0, __VA_ARGS__);                                                       \
-      u_vec_type(u) _b = va_at(1, __VA_ARGS__);                                                    \
+    u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
+      auto _a       = u_va_at(0, __VA_ARGS__);                                                     \
+      u_vec_type(u) _b = u_va_at(1, __VA_ARGS__);                                                  \
     )(                                                                                             \
       auto _a       = -1;                                                                          \
-      u_vec_type(u) _b = va_at(0, __VA_ARGS__);                                                    \
+      u_vec_type(u) _b = u_va_at(0, __VA_ARGS__);                                                  \
     )                                                                                              \
                                                                                                    \
     vec_put(u, _a, &_b);                                                                           \
@@ -231,11 +231,11 @@ extern bool vec_for(any_t, ssize_t*, any_t);
 
 #  define u_vec_sort(u, ...)                                                                       \
     do {                                                                                           \
-      static_assert(va_cnt(__VA_ARGS__) == 1, "The number of '...' is 1.");                        \
+      static_assert(u_va_cnt(__VA_ARGS__) == 1, "The number of '...' is 1.");                      \
                                                                                                    \
       u_vec_type_check(u);                                                                         \
                                                                                                    \
-      vec_sort(u, va_at(0, __VA_ARGS__));                                                          \
+      vec_sort(u, u_va_at(0, __VA_ARGS__));                                                        \
     } while (0)
 
 #  define u_vec_for(u, i, it)                                                                      \

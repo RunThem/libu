@@ -40,8 +40,8 @@ extern "C" {
 #  define bit(byte, n)  (((byte) >> (n)) & 1)
 
 /* clang-format off */
-#define u_each(i, n, ...) va_elseif(va_cnt_is(1, __VA_ARGS__)) (                                   \
-      for (size_t i = n; i < va_at(0, __VA_ARGS__); i++)                                           \
+#define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
+      for (size_t i = n; i < u_va_at(0, __VA_ARGS__); i++)                                         \
     )(                                                                                             \
       for (size_t i = 0; i < n; i++)                                                               \
     )
@@ -89,21 +89,21 @@ extern thread_local __err__t __err__;
 /* clang-format off */
 #define try      for (bzero(&__err__, sizeof(__err__)); !setjmp(__err__.label);)
 #define catch(e) for (auto e = __err__; e.is_err; e.is_err = false)
-#define panic(_expr, _id, args...)                                                               \
-  do {                                                                                           \
-    __err__.is_err = true;                                                                       \
-    __err__.file   = __file__;                                                                   \
-    __err__.func   = __func__;                                                                   \
-    __err__.line   = __line__;                                                                   \
-    __err__.expr   = #_expr;                                                                     \
-    __err__.id     = _id;                                                                        \
-    __err__.error  = errno;                                                                      \
-                                                                                                 \
-    va_if(va_has(args)) (                                                                        \
-      snprintf(__err__.msg, U_ERR_MSG_SIZE, args);                                               \
-    )                                                                                            \
-                                                                                                 \
-    longjmp(__err__.label, 1);                                                                   \
+#define panic(_expr, _id, args...)                                                                 \
+  do {                                                                                             \
+    __err__.is_err = true;                                                                         \
+    __err__.file   = __file__;                                                                     \
+    __err__.func   = __func__;                                                                     \
+    __err__.line   = __line__;                                                                     \
+    __err__.expr   = #_expr;                                                                       \
+    __err__.id     = _id;                                                                          \
+    __err__.error  = errno;                                                                        \
+                                                                                                   \
+    u_va_if(u_va_has(args)) (                                                                      \
+      snprintf(__err__.msg, U_ERR_MSG_SIZE, args);                                                 \
+    )                                                                                              \
+                                                                                                   \
+    longjmp(__err__.label, 1);                                                                     \
   } while (0)
 /* clang-format on */
 
@@ -148,7 +148,7 @@ extern thread_local __err__t __err__;
  * '!=' => false
  * */
 #define fn_eq(type, ...)                                                                           \
-  va_elseif(va_has(__VA_ARGS__)) (                                                                 \
+  u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
     fn_eq_##type(__VA_ARGS__)                                                                      \
   )(                                                                                               \
     fn_eq_##type                                                                                   \
@@ -159,7 +159,7 @@ extern thread_local __err__t __err__;
  * '==' => 0
  * '<'  => -1*/
 #define fn_cmp(type, ...)                                                                          \
-  va_elseif(va_has(__VA_ARGS__)) (                                                                 \
+  u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
     fn_cmp_##type(__VA_ARGS__)                                                                     \
   )(                                                                                               \
     fn_cmp_##type                                                                                  \
