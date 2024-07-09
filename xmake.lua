@@ -80,4 +80,4 @@ target('u', function()
   add_rules('generic')
 end)
 
-includes('dev', 'tst')
+includes('dev', 'tst', 'tests')
