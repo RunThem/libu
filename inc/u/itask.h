@@ -46,6 +46,8 @@ extern "C" {
  ***************************************************************************************************/
 extern any_t task_new(any_t);
 
+extern void task_yield();
+
 extern void task_loop();
 
 extern int task_socket(int, int, int);
@@ -76,12 +78,71 @@ extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*
       makecontext(_t, any(fun), u_va_cnt(__VA_ARGS__) u_va_list(0, __VA_ARGS__));                  \
     } while (0)
 
+#  define u_task_yield()                                                                           \
+    do {                                                                                           \
+      task_yield();                                                                                \
+    } while (0)
+
 #  define u_task_loop(start, ...)                                                                  \
     do {                                                                                           \
       u_task_new(start __VA_OPT__(, ) __VA_ARGS__);                                                \
                                                                                                    \
       task_loop();                                                                                 \
     } while (0)
+
+#  define u_task_socket(domain, type, protocol)                                                    \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_socket(domain, type, protocol);                                                         \
+    })
+
+#  define u_task_accept(fd, addr, len)                                                             \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_accept(fd, addr, len);                                                                  \
+    })
+
+#  define u_task_connect(fd, name, namelen)                                                        \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_connect(fd, name, namelen);                                                             \
+    })
+
+#  define u_task_read(fd, buf, count)                                                              \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_read(fd, buf, count);                                                                   \
+    })
+
+#  define u_task_recv(fd, buf, n, flags)                                                           \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_recv(fd, buf, n, flags);                                                                \
+    })
+
+#  define u_task_recvfrom(fd, buf, len, flags, addr, addrlen)                                      \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_recvfrom(fd, buf, len, flags, addr, addrlen);                                           \
+    })
+
+#  define u_task_write(fd, buf, count)                                                             \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_write(fd, buf, count);                                                                  \
+    })
+
+#  define u_task_send(fd, buf, n, flags)                                                           \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_send(fd, buf, n, flags);                                                                \
+    })
+
+#  define u_task_sendto(fd, buf, len, flags, addr, addrlen)                                        \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_sendto(fd, buf, len, flags, addr, addrlen);                                             \
+    })
 
 #  ifdef __cplusplus
 } /* extern "C" */

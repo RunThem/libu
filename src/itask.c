@@ -109,6 +109,11 @@ err:
   return nullptr;
 }
 
+void task_yield() {
+  sch.run->state = 1;
+  swapcontext(&sch.run->ctx, &sch.ctx);
+}
+
 void task_loop() {
   task_t* task                = nullptr;
   int cnt                     = 0;

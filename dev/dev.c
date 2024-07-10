@@ -139,70 +139,22 @@ int _main(int argc, const u_cstr_t argv[]) {
   return 0;
 }
 
-#if 0
-void list_implemention() {
-
-  typedef uintptr_t u_entry_t[2]; /* { prev, next } */
-  typedef uintptr_t u_list_t[4];  /* { head, tail, offset, count } */
-
-  struct st_t {
-    int a;
-    u_entry_t next;
-  };
-
-#  undef u_list_init
-#  undef u_list_new
-
-#  define u_list_t(...) typeof(__u_list_t(*)(__VA_ARGS__*))
-
-#  define u_list_init(head, type, field)                                                           \
-    do {                                                                                           \
-      uintptr_t* _head = (void*)u_calloc(4, sizeof(uintptr_t));                                    \
-                                                                                                   \
-      _head[3] = offsetof(type, field);                                                            \
-                                                                                                   \
-      head = any(_head);                                                                           \
-    } while (0)
-
-#  define u_list_new(type, filed)
-
-  u_list_t(int) l = nullptr;
-  u_list_init(l, struct st_t, next);
-}
-
-#endif
-
-#include "ico.h"
-
-#define N 1000
-
-int cnt = 0;
-void fun() {
-  u_each (i, N) {
-    cnt++;
-    co_yield (2);
-  }
-}
-
 int main(int argc, const u_cstr_t argv[]) {
-  u_each (i, N) {
-    co_new(fun);
-  }
-
+#if 0
   struct timespec s = {0};
   struct timespec e = {0};
 
   clock_gettime(CLOCK_MONOTONIC, &s);
 
-  co_loop();
+  u_task_loop(_main, argc, argv);
 
   clock_gettime(CLOCK_MONOTONIC, &e);
 
-#define BILLION 10'0000'0000L
+#  define BILLION 10'0000'0000L
   f64_t duration = BILLION * (e.tv_sec - s.tv_sec) + (e.tv_nsec - s.tv_nsec);
-  printf("Elapsed time: %f nanoseconds, %f\n", duration, duration / N / N);
-  printf("cnt is %d\n", cnt);
+  printf("Elapsed time: %f nanoseconds, %f\n", duration, duration / cnt);
+  printf("cnt is %d", cnt);
+#endif
 
-  // u_task_loop(_main, argc, argv);
   return EXIT_SUCCESS;
 }
