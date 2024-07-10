@@ -37,10 +37,17 @@ extern "C" {
 typedef struct {
 }* __u_list_t;
 
+typedef struct u_node_t u_node_t;
+struct u_node_t {
+  u_node_t* prev;
+  u_node_t* next;
+  any_t ptr;
+};
+
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t lst_new();
+extern any_t lst_new(size_t);
 
 extern void lst_cleanup(any_t);
 
@@ -86,18 +93,18 @@ extern any_t lst_for(any_t);
 /***************************************************************************************************
  * iApi lst
  **************************************************************************************************/
-#  define u_list_init(u)                                                                           \
+#  define u_list_init(u, type, filed)                                                              \
     do {                                                                                           \
       u_list_type_check(u);                                                                        \
                                                                                                    \
-      u = lst_new();                                                                               \
+      u = lst_new(offsetof(type, filed));                                                          \
     } while (0)
 
 #  define u_list_new(...)                                                                          \
     ({                                                                                             \
-      u_list_t(__VA_ARGS__) u = nullptr;                                                           \
+      u_list_t(u_va_at(0, __VA_ARGS__)) u = nullptr;                                               \
                                                                                                    \
-      u_list_init(u);                                                                              \
+      u_list_init(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                            \
                                                                                                    \
       u;                                                                                           \
     })

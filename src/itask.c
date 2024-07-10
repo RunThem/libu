@@ -35,6 +35,8 @@ typedef struct {
   u8_t* stack;    /* 栈帧 */
   size_t stksize; /* 栈帧大小 */
   int fd;         /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
+
+  u_node_t next;
 } task_t;
 
 typedef struct {
@@ -43,9 +45,9 @@ typedef struct {
   ucontext_t ctx;
   task_t* run;
   int state;
-  u_list_t(task_t) tasks;
+  u_list_t(task_t) tasks; /* #[[list<task_t>]] */
   u_list_t(task_t) dead;
-  u_tree_t(int, task_t*) rwait;
+  u_tree_t(int, task_t*) rwait; /* #[[tree<int, task_t*>]] */
   u_tree_t(int, task_t*) wwait;
 
   fd_set rfds[2];
@@ -60,9 +62,9 @@ void task_init() {
   sch.id    = 1;
   sch.cnt   = 0;
   sch.run   = nullptr;
-  sch.tasks = u_list_new(task_t); /* #[[list<task_t>]] */
-  sch.dead  = u_list_new(task_t);
-  sch.rwait = u_tree_new(int, task_t*, fn_cmp(int)); /* #[[tree<int, task_t*>]] */
+  sch.tasks = u_list_new(task_t, next);
+  sch.dead  = u_list_new(task_t, next);
+  sch.rwait = u_tree_new(int, task_t*, fn_cmp(int));
   sch.wwait = u_tree_new(int, task_t*, fn_cmp(int));
 
   FD_ZERO(&sch.rfds[0]);
