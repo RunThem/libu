@@ -88,11 +88,15 @@ err:
 void vec_clear(any_t _self) {
   vec_t* self = (vec_t*)_self;
 
+  u_nchk_if(self == nullptr);
+
   self->len = 0;
 }
 
 void vec_cleanup(any_t _self) {
   vec_t* self = (vec_t*)_self;
+
+  u_nchk_if(self == nullptr);
 
   u_free_if(self->items);
   u_free_if(self);
@@ -101,11 +105,15 @@ void vec_cleanup(any_t _self) {
 bool vec_exist(any_t _self, size_t idx) {
   vec_t* self = (vec_t*)_self;
 
+  u_chk_if(self == nullptr, false);
+
   return self->len > idx;
 }
 
 size_t vec_len(any_t _self) {
   vec_t* self = (vec_t*)_self;
+
+  u_chk_if(self == nullptr, 0);
 
   return self->len;
 }
@@ -138,6 +146,7 @@ void vec_pop(any_t _self, ssize_t idx, any_t item) {
   vec_t* self = (vec_t*)_self;
 
   u_nchk_if(self == nullptr);
+  u_nchk_if(self->len == 0);
   u_nchk_if(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
   idx += (idx < 0) ? (ssize_t)self->len : 0;
