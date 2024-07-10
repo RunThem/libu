@@ -30,6 +30,7 @@ BreakStringLiterals: false
 BreakAfterAttributes: Always
 
 IncludeBlocks: Regroup
+SortIncludes: false
 
 IndentCaseBlocks: false
 IndentCaseLabels: true
