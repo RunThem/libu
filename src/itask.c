@@ -97,7 +97,7 @@ any_t task_new(any_t fun) {
 
   sch.cnt++;
 
-  u_xxx("task new %zu, tatol %zu", self->id, sch.cnt);
+  u_xxx("task new %zu, total %zu", self->id, sch.cnt);
 
   return self;
 
@@ -228,26 +228,26 @@ reset_maxfd:
 
 end:
 
-  u_list_for_all(sch.dead, task) {
-    u_free_if(task->stack);
-    u_free_if(task);
+  u_list_for (sch.dead, it) {
+    u_free_if(it->stack);
+    u_free_if(it);
   }
 
-  u_list_for_all(sch.tasks, task) {
-    u_free_if(task->stack);
-    u_free_if(task);
+  u_list_for (sch.tasks, it) {
+    u_free_if(it->stack);
+    u_free_if(it);
   }
 
-  u_tree_for (sch.rwait, fd, task) {
+  u_tree_for (sch.rwait, fd, it) {
     u_close_if(fd);
-    u_free_if(task->stack);
-    u_free_if(task);
+    u_free_if(it->stack);
+    u_free_if(it);
   }
 
-  u_tree_for (sch.wwait, fd, task) {
+  u_tree_for (sch.wwait, fd, it) {
     u_close_if(fd);
-    u_free_if(task->stack);
-    u_free_if(task);
+    u_free_if(it->stack);
+    u_free_if(it);
   }
 
   u_xxx("end");

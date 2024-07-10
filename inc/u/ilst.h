@@ -217,11 +217,11 @@ extern any_t lst_for(any_t);
   } while (0)
 /* clang-format on */
 
-#  define u_list_for_all(u, it)                                                                    \
+#  define u_list_for(u, it)                                                                        \
     for (; lst_for_init(u, 1); lst_for_end(u))                                                     \
       for (u_list_type(u) it = {}; (it = lst_for(u));)
 
-#  define u_list_rfor_all(u, it)                                                                   \
+#  define u_list_rfor(u, it)                                                                       \
     for (; lst_for_init(u, 0); lst_for_end(u))                                                     \
       for (u_list_type(u) it = {}; (it = lst_for(u));)
 
