@@ -53,7 +53,7 @@ fn_compe_def(u128_t, (x == y), (x > y));
 #endif
 
 /***************************************************************************************************
- * Function
+ * Display
  **************************************************************************************************/
 void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
   u8_t byte = 0;
@@ -121,4 +121,80 @@ void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
     println("%*s", 47 - 3 * ((int)pos % 16) + (int)i, buf);
   }
 #endif
+}
+
+/***************************************************************************************************
+ * Benchmark
+ **************************************************************************************************/
+#define BASE_THOUSANDS(take, base)                                                                 \
+  ({                                                                                               \
+    auto _ = 0;                                                                                    \
+                                                                                                   \
+    if (take != 0) {                                                                               \
+      _ = take % base;                                                                             \
+      take /= base;                                                                                \
+    }                                                                                              \
+                                                                                                   \
+    _;                                                                                             \
+  })
+
+typedef struct {
+  struct timespec s;
+  struct timespec e;
+  size_t cnt;
+  char* msg;
+  bool run;
+} u_bm_t;
+
+thread_local u_bm_t bm;
+
+bool u_bm_entry(const char* msg, size_t cnt) {
+  size_t take = 10'0000'0000L; /* nanoseconds/per second */
+  size_t ave  = 0;
+  size_t s    = 0; /* second */
+  size_t ms   = 0; /* millisecond */
+  size_t us   = 0; /* microsecond */
+  size_t ns   = 0; /* nanosecond */
+
+  /* start */
+  if (!bm.run) {
+    bm.run = true;
+    bm.msg = strdup(msg);
+    bm.cnt = cnt == 0 ? 1 : cnt;
+    clock_gettime(CLOCK_MONOTONIC, &bm.s);
+  } else { /* end */
+    bm.run = false;
+    clock_gettime(CLOCK_MONOTONIC, &bm.e);
+    take = take * (bm.e.tv_sec - bm.s.tv_sec) + (bm.e.tv_nsec - bm.s.tv_nsec);
+    ave  = take / (f64_t)bm.cnt;
+    ns   = BASE_THOUSANDS(take, 1000);
+    us   = BASE_THOUSANDS(take, 1000);
+    ms   = BASE_THOUSANDS(take, 1000);
+    s    = take;
+
+    printf("Total time: ");
+    if (s != 0) {
+      printf("%zus, ", s);
+    }
+
+    if (ms != 0) {
+      printf("%zums, ", ms);
+    }
+
+    if (us != 0) {
+      printf("%zuus, ", us);
+    }
+
+    if (ns != 0) {
+      printf("%zuns.", ns);
+    }
+
+    if (bm.cnt != 1) {
+      printf(" Average time: %zuns/%zu", ave, bm.cnt);
+    }
+
+    printf("\n");
+  }
+
+  return bm.run;
 }

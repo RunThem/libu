@@ -65,6 +65,9 @@ extern "C" {
     for (size_t i = 0; i < u_arr_len(arr); i++)                                                    \
       for (auto it = &arr[i]; it; it = nullptr)
 
+extern bool u_bm_entry(const char*, size_t);
+#  define u_bm_block(msg, ...) while (u_bm_entry(msg, u_va_0th(1, __VA_ARGS__)))
+
 /***************************************************************************************************
  * Try catch
  **************************************************************************************************/

@@ -133,28 +133,28 @@ void set(any_t _self) {
   ((any_t*)_self)[0] = nullptr;
 }
 
+#define N 1000
+
+void fun() {
+  u_each (i, N) {
+    u_task_yield();
+  }
+}
+
 int _main(int argc, const u_cstr_t argv[]) {
-  u_inf("argc(%d), argv[0](%s), argv[1](%s)", argc, argv[0], argv[1]);
+
+  u_each (i, N) {
+    u_task_new(fun);
+  }
 
   return 0;
 }
 
 int main(int argc, const u_cstr_t argv[]) {
-#if 0
-  struct timespec s = {0};
-  struct timespec e = {0};
 
-  clock_gettime(CLOCK_MONOTONIC, &s);
-
-  u_task_loop(_main, argc, argv);
-
-  clock_gettime(CLOCK_MONOTONIC, &e);
-
-#  define BILLION 10'0000'0000L
-  f64_t duration = BILLION * (e.tv_sec - s.tv_sec) + (e.tv_nsec - s.tv_nsec);
-  printf("Elapsed time: %f nanoseconds, %f\n", duration, duration / cnt);
-  printf("cnt is %d", cnt);
-#endif
+  u_bm_block("task", N * N) {
+    u_task_loop(_main, argc, argv);
+  }
 
   return EXIT_SUCCESS;
 }
