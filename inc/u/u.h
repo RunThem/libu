@@ -82,6 +82,7 @@ extern "C" {
 #  include "ivec.h"
 #  include "ilfq.h"
 #  include "itask.h"
+#  include "iheap.h"
 /* clang-format on */
 
 /* #include "istr.h" */

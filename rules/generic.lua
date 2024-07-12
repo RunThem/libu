@@ -22,7 +22,7 @@ rule('generic', function()
           ---@param sourcefile string
           local function handle(sourcefile)
             local is_generic = false
-            local gentbl = { vec = {}, map = {}, set = {}, list = {}, tree = {} }
+            local gentbl = { vec = {}, map = {}, set = {}, list = {}, tree = {}, heap = {} }
 
             ---@param tbl table<string>
             ---@return T, table<string>
@@ -30,7 +30,7 @@ rule('generic', function()
               local typ = table.remove(tbl, 1):trim()
 
               local m = new(typ)
-              if typ == 'vec' or typ == 'set' or typ == 'list' then
+              if typ == 'vec' or typ == 'set' or typ == 'list' or typ == 'heap' then
                 m.ktyp, tbl = _parse(tbl)
               elseif typ == 'map' or typ == 'tree' then
                 m.ktyp, tbl = _parse(tbl)
@@ -72,6 +72,14 @@ rule('generic', function()
                 txt = ('typeof(__u_list_t(*)(%s*)): (%s*){}'):format(g_ktyp, g_ktyp)
 
                 gentbl['list'][typ] = txt
+              elseif t.typ == 'heap' then
+                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
+
+                typ = ('heap<%s>'):format(g_ktyp)
+                g_typ = ('typeof(__u_heap_t(*)(%s))'):format(g_ktyp)
+                txt = ('typeof(__u_heap_t(*)(%s)): (%s){}'):format(g_ktyp, g_ktyp)
+
+                gentbl['heap'][typ] = txt
               elseif t.typ == 'map' then
                 local ktxt, ktyp, g_ktyp = _output(t.ktyp)
                 local vtxt, vtyp, g_vtyp = _output(t.vtyp)
@@ -122,6 +130,11 @@ rule('generic', function()
             if not is_generic then
               return
             end
+
+            --[[ debug
+            print(sourcefile)
+            print(gentbl)
+            --]]
 
             -- include codegen file
             target:add('files', sourcefile, { cflags = ('-include %s'):format(genericfile) })
