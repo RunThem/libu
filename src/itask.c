@@ -29,6 +29,7 @@
  **************************************************************************************************/
 #define U_TASK_STACK_SIZE (0x20'00'00)
 
+#define U_TASK_STATE_RET     0x00
 #define U_TASK_STATE_INIT    0x01
 #define U_TASK_STATE_DEAD    0x02
 #define U_TASK_STATE_READY   0x04
@@ -150,12 +151,15 @@ void task_loop() {
     swapcontext(&sch.ctx, &task->ctx);
     sch.run = nullptr;
 
-    if (task->id == 1 && task->state == 0) {
-      goto end;
-    }
-
     u_xxx("task(%zu) yield, ret %d", task->id, task->state);
     switch (task->state) {
+      case U_TASK_STATE_RET:
+        if (task->id == 1) {
+          goto end;
+        }
+
+        [[fallthrough]];
+
       /* dead, add to dead queue */
       case U_TASK_STATE_DEAD:
         u_list_put(sch.dead, task);
