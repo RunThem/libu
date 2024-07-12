@@ -24,6 +24,8 @@
 
 #include <u/u.h>
 
+#define U_TASK_STACK_SIZE (0x20'00'00)
+
 /***************************************************************************************************
  * Type
  ***************************************************************************************************/
@@ -31,10 +33,9 @@ typedef struct {
   ucontext_t ctx; /* 上下文 */
   size_t id;
   int state;
-  any_t fun;      /* 协程执行入口 */
-  u8_t* stack;    /* 栈帧 */
-  size_t stksize; /* 栈帧大小 */
-  int fd;         /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
+  any_t fun;   /* 协程执行入口 */
+  u8_t* stack; /* 栈帧 */
+  int fd;      /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
 
   u_node_t next;
 } task_t;
@@ -82,13 +83,12 @@ any_t task_new(any_t fun) {
   self = u_talloc(task_t);
   u_nil_if(self);
 
-  self->stksize = 8192 * 4;
-  self->stack   = u_zalloc(self->stksize);
+  self->stack = u_zalloc(U_TASK_STACK_SIZE);
   u_nil_if(self->stack);
 
   getcontext(&self->ctx);
   self->ctx.uc_stack.ss_sp   = self->stack;
-  self->ctx.uc_stack.ss_size = self->stksize;
+  self->ctx.uc_stack.ss_size = U_TASK_STACK_SIZE;
   self->ctx.uc_link          = &sch.ctx;
   self->id                   = sch.id++;
   self->fun                  = fun;
