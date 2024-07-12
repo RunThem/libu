@@ -24,11 +24,21 @@
 
 #include <u/u.h>
 
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
 #define U_TASK_STACK_SIZE (0x20'00'00)
+
+#define U_TASK_STATE_INIT    0x01
+#define U_TASK_STATE_DEAD    0x02
+#define U_TASK_STATE_READY   0x04
+#define U_TASK_STATE_RWAIT   0x08
+#define U_TASK_STATE_WWAIT   0x10
+#define U_TASK_STATE_TIMEOUT 0x20
 
 /***************************************************************************************************
  * Type
- ***************************************************************************************************/
+ **************************************************************************************************/
 typedef struct {
   ucontext_t ctx; /* 上下文 */
   size_t id;
@@ -92,6 +102,7 @@ any_t task_new(any_t fun) {
   self->ctx.uc_link          = &sch.ctx;
   self->id                   = sch.id++;
   self->fun                  = fun;
+  self->state                = U_TASK_STATE_INIT;
 
   u_list_put(sch.tasks, self);
 
@@ -109,8 +120,13 @@ err:
   return nullptr;
 }
 
-void task_yield() {
-  sch.run->state = 1;
+inline void task_yield() {
+  sch.run->state = U_TASK_STATE_READY;
+  swapcontext(&sch.run->ctx, &sch.ctx);
+}
+
+static inline void task_switch(int state) {
+  sch.run->state = state;
   swapcontext(&sch.run->ctx, &sch.ctx);
 }
 
@@ -137,7 +153,7 @@ void task_loop() {
     u_xxx("task(%zu) yield, ret %d", task->id, task->state);
     switch (task->state) {
       /* dead, add to dead queue */
-      case 0:
+      case U_TASK_STATE_DEAD:
         u_list_put(sch.dead, task);
         sch.cnt--;
 
@@ -145,10 +161,10 @@ void task_loop() {
         break;
 
       /* ready, add to ready queue */
-      case 1: u_list_put(sch.tasks, task); break;
+      case U_TASK_STATE_READY: u_list_put(sch.tasks, task); break;
 
       /* read wait */
-      case 2:
+      case U_TASK_STATE_RWAIT:
         u_tree_put(sch.rwait, task->fd, task);
         FD_SET(task->fd, &sch.rfds[0]);
         sch.maxfd = max(sch.maxfd, task->fd);
@@ -158,7 +174,7 @@ void task_loop() {
         break;
 
       /* write wait */
-      case 3:
+      case U_TASK_STATE_WWAIT:
         u_tree_put(sch.wwait, task->fd, task);
         FD_SET(task->fd, &sch.wfds[0]);
         sch.maxfd = max(sch.maxfd, task->fd);
@@ -189,6 +205,7 @@ void task_loop() {
           task = u_tree_pop(sch.rwait, fd);
           u_die_if(task == nullptr, "fd is %d", fd);
 
+          task->state = U_TASK_STATE_READY;
           u_list_put(sch.tasks, task);
           FD_CLR(fd, &sch.rfds[0]);
 
@@ -201,6 +218,7 @@ void task_loop() {
           task = u_tree_pop(sch.wwait, fd);
           u_die_if(task == nullptr, "fd is %d", fd);
 
+          task->state = U_TASK_STATE_READY;
           u_list_put(sch.tasks, task);
           FD_CLR(fd, &sch.wfds[0]);
 
@@ -284,9 +302,8 @@ int task_accept(int fd, struct sockaddr* addr, socklen_t* len) {
   int reuse  = 1;
 
   do {
-    sch.run->fd    = fd;
-    sch.run->state = 2;
-    swapcontext(&sch.run->ctx, &sch.ctx);
+    sch.run->fd = fd;
+    task_switch(U_TASK_STATE_RWAIT);
 
     sockfd = accept(fd, addr, len);
     u_err_if(sockfd < 0 && errno != EAGAIN);
@@ -328,9 +345,8 @@ err:
 ssize_t task_read(int fd, void* buf, size_t count) {
   ssize_t recn = 0;
 
-  sch.run->fd    = fd;
-  sch.run->state = 2;
-  swapcontext(&sch.run->ctx, &sch.ctx);
+  sch.run->fd = fd;
+  task_switch(U_TASK_STATE_RWAIT);
 
   recn = read(fd, buf, count);
 
@@ -340,9 +356,8 @@ ssize_t task_read(int fd, void* buf, size_t count) {
 ssize_t task_recv(int fd, void* buf, size_t n, int flags) {
   ssize_t recn = 0;
 
-  sch.run->fd    = fd;
-  sch.run->state = 2;
-  swapcontext(&sch.run->ctx, &sch.ctx);
+  sch.run->fd = fd;
+  task_switch(U_TASK_STATE_RWAIT);
 
   recn = recv(fd, buf, n, flags);
 
@@ -357,9 +372,8 @@ ssize_t task_recvfrom(int fd,
                       socklen_t* addrlen) {
   ssize_t recn = 0;
 
-  sch.run->fd    = fd;
-  sch.run->state = 2;
-  swapcontext(&sch.run->ctx, &sch.ctx);
+  sch.run->fd = fd;
+  task_switch(U_TASK_STATE_RWAIT);
 
   recn = recvfrom(fd, buf, len, flags, src_addr, addrlen);
   u_err_if(recn < 0 && errno == EAGAIN);
@@ -384,9 +398,8 @@ ssize_t task_write(int fd, const void* buf, size_t count) {
   sent += ret;
 
   while (sent < count) {
-    sch.run->fd    = fd;
-    sch.run->state = 3;
-    swapcontext(&sch.run->ctx, &sch.ctx);
+    sch.run->fd = fd;
+    task_switch(U_TASK_STATE_WWAIT);
 
     ret = write(fd, buf + sent, count - sent);
     u_err_if(ret == 0);
@@ -410,9 +423,8 @@ ssize_t task_send(int fd, const void* buf, size_t n, int flags) {
   sent += ret;
 
   while (sent < n) {
-    sch.run->fd    = fd;
-    sch.run->state = 3;
-    swapcontext(&sch.run->ctx, &sch.ctx);
+    sch.run->fd = fd;
+    task_switch(U_TASK_STATE_WWAIT);
 
     ret = send(fd, buf + sent, n - sent, flags);
     u_err_if(ret == 0);
@@ -441,9 +453,8 @@ ssize_t task_sendto(int fd,
   sent += ret;
 
   while (sent < len) {
-    sch.run->fd    = fd;
-    sch.run->state = 3;
-    swapcontext(&sch.run->ctx, &sch.ctx);
+    sch.run->fd = fd;
+    task_switch(U_TASK_STATE_WWAIT);
 
     ret = sendto(fd, buf, len, flags, dest_addr, addrlen);
     u_err_if(ret == 0);
