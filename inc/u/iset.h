@@ -35,197 +35,154 @@ extern "C" {
  * Type
  **************************************************************************************************/
 typedef struct {
-} __u_set_t;
-
-/***************************************************************************************************
- * Api
- **************************************************************************************************/
-extern any_t avl_new(size_t, size_t, u_cmp_fn);
-
-extern size_t avl_len(any_t);
-
-extern bool avl_exist(any_t, any_t);
-
-extern void avl_clear(any_t);
-
-extern void avl_cleanup(any_t);
-
-extern any_t avl_at(any_t, any_t);
-
-extern void avl_pop(any_t, any_t, any_t);
-
-extern void avl_put(any_t, any_t, any_t);
-
-extern u_cmp_fn avl_fn(any_t);
-
-extern bool avl_for_init(any_t, bool);
-
-extern void avl_for_end(any_t);
-
-extern bool avl_for(any_t, any_t, any_t);
+}* __u_set_ref_t;
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_set_t(...) typeof(__u_set_t(*)(__VA_ARGS__))
-
-#  define _u_set_defs(T)                                                                           \
-    u_set_t(T) : (T) {                                                                             \
-    }
-
-#  define u_set_type(u)     typeof(_Generic(u, u_set_defs))
-#  define u_set_type_val(u) _Generic(u, u_set_defs)
-
-#  if defined(NDEBUG)
-#    define u_set_type_check(u)
-#  else
-#    define u_set_type_check(u) static_assert(typeeq((__u_set_t){}, u(u_set_type_val(u))))
-#  endif
+#  define u_set_t(T) typeof(__u_set_ref_t(*)(T*))
 
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#  define u_set_init(u, fn)                                                                        \
+#  define u_set_init(self, fn)                                                                     \
     do {                                                                                           \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u = avl_new(sizeof(u_set_type(u)), 0, fn);                                                   \
+      self = avl_new(sizeof(u_types(self, 0)), 0, fn);                                             \
     } while (0)
 
-#  define u_set_new(...)                                                                           \
+#  define u_set_new(T, fn)                                                                         \
     ({                                                                                             \
-      u_set_t(u_va_at(0, __VA_ARGS__)) u = nullptr;                                                \
+      u_set_t(T) self = nullptr;                                                                   \
                                                                                                    \
-      u_set_init(u, u_va_at(1, __VA_ARGS__));                                                      \
+      u_set_init(self, fn);                                                                        \
                                                                                                    \
       u;                                                                                           \
     })
 
-#  define u_set_len(u)                                                                             \
+#  define u_set_len(self)                                                                          \
     ({                                                                                             \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      avl_len(u);                                                                                  \
+      avl_len(self);                                                                               \
     })
 
-#  define u_set_is_empty(u)                                                                        \
+#  define u_set_is_empty(self)                                                                     \
     ({                                                                                             \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      0 == avl_len(u);                                                                             \
+      0 == avl_len(self);                                                                          \
     })
 
-#  define u_set_is_exist(u, _k)                                                                    \
+#  define u_set_is_exist(self, item)                                                               \
     ({                                                                                             \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_set_type(u) _a = _k;                                                                       \
+      u_types(self) __a = item;                                                                    \
                                                                                                    \
-      avl_exist(u, &_a);                                                                           \
+      avl_exist(self, &__a);                                                                       \
     })
 
-#  define u_set_clear(u)                                                                           \
+#  define u_set_clear(self)                                                                        \
     do {                                                                                           \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      avl_clear(u);                                                                                \
+      avl_clear(self);                                                                             \
     } while (0)
 
-#  define u_set_cleanup(u)                                                                         \
+#  define u_set_cleanup(self)                                                                      \
     do {                                                                                           \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      avl_cleanup(u);                                                                              \
+      avl_cleanup(self);                                                                           \
                                                                                                    \
-      u = nullptr;                                                                                 \
+      self = nullptr;                                                                              \
     } while (0)
 
 /* clang-format off */
-#  define u_set_at(u, _it, ...)                                                                    \
+#  define u_set_at(self, item, ...)                                                                \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
-        u_set_type_check(u);                                                                       \
+        u_check(self, 1, __u_set_ref_t);                                                           \
                                                                                                    \
-        bool _ret         = false;                                                                 \
-        u_set_type(u) it  = _it;                                                                   \
-        u_set_type(u) _a  = u_va_at(0, __VA_ARGS__);                                               \
-        u_set_type(u)* _b = {};                                                                    \
+        bool __ret              = false;                                                           \
+        u_types(self, 0) __item = item;                                                            \
+        u_types(self, 0) __a    = u_va_at(0, __VA_ARGS__);                                         \
+        u_types(self, 0)* __b   = {};                                                              \
                                                                                                    \
-        _b = avl_at(u, &it);                                                                       \
+        __b = avl_at(self, &__item);                                                               \
                                                                                                    \
-        if (_b != nullptr && 0 == avl_fn(u)(&_it, &_a)) {                                          \
-          *(_b - 1) = u_va_at(0, __VA_ARGS__);                                                     \
-          _ret = true;                                                                             \
+        if (__b != nullptr && 0 == avl_fn(self)(&__item, &__a)) {                                  \
+          *(__b - 1) = u_va_at(0, __VA_ARGS__);                                                    \
+          __ret = true;                                                                            \
         }                                                                                          \
                                                                                                    \
-        _ret;                                                                                      \
+        __ret;                                                                                     \
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
-        u_set_type_check(u);                                                                       \
+        u_check(self, 1, __u_set_ref_t);                                                           \
                                                                                                    \
-        u_set_type(u) it  = _it;                                                                   \
-        u_set_type(u) _a = {};                                                                     \
-        u_set_type(u)* _b = {};                                                                    \
+        u_types(self, 0) __item  = item;                                                           \
+        u_types(self, 0) __a     = {};                                                             \
+        u_types(self, 0)* __b    = {};                                                             \
                                                                                                    \
-        _b = avl_at(u, &it);                                                                       \
+        __b = avl_at(self, &__item);                                                               \
                                                                                                    \
-        if (_b == nullptr) {                                                                       \
-          _b = &_it;                                                                               \
+        if (__b == nullptr) {                                                                      \
+          __b = &__a;                                                                              \
         } else {                                                                                   \
-          _b -= 1;                                                                                 \
+          __b -= 1;                                                                                \
         }                                                                                          \
                                                                                                    \
-        *_b;                                                                                       \
+        *__b;                                                                                      \
       })                                                                                           \
     )
 /* clang-format on */
 
-#  define u_set_try(u, _it)                                                                        \
-    for (u_set_type(u)* it = avl_at(u, ({                                                          \
-                                      u_set_type(u) __it = _it;                                    \
-                                      &__it;                                                       \
-                                    }));                                                           \
+#  define u_set_try(self, item)                                                                    \
+    for (u_types(self, 0)* it = avl_at(self, &(u_types(self, 0)){item});                           \
          it != nullptr && (it -= 1);                                                               \
          it = nullptr)
 
-#  define u_set_pop(u, _it)                                                                        \
+#  define u_set_pop(self, item)                                                                    \
     ({                                                                                             \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_set_type(u) it = _it;                                                                      \
+      u_types(self) __item = item;                                                                 \
                                                                                                    \
-      avl_pop(u, &it, &it);                                                                        \
+      avl_pop(self, &__item, &__item);                                                             \
                                                                                                    \
       it;                                                                                          \
     })
 
-#  define u_set_put(u, _it)                                                                        \
+#  define u_set_put(self, item)                                                                    \
     do {                                                                                           \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_set_type(u) it = _it;                                                                      \
+      u_types(self) __item = item;                                                                 \
                                                                                                    \
-      avl_put(u, &it, &it);                                                                        \
+      avl_put(self, &__item, &__item);                                                             \
     } while (0)
 
-#  define u_set_fn(u, _k1, _k2)                                                                    \
+#  define u_set_fn(self, it1, it2)                                                                 \
     ({                                                                                             \
-      u_set_type_check(u);                                                                         \
+      u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_set_type(u) _a = _k1;                                                                      \
-      u_set_type(u) _b = _k2;                                                                      \
+      u_types(self) __a = it1;                                                                     \
+      u_types(self) __b = it2;                                                                     \
                                                                                                    \
-      avl_fn(u)(&_a, &_b);                                                                         \
+      avl_fn(self)(&__a, &__b);                                                                    \
     })
 
-#  define u_set_for(u, _it)                                                                        \
-    for (u_set_type(u) _it = {}; avl_for_init(u, 1); avl_for_end(u))                               \
-      for (; avl_for(u, &_it, &_it);)
+#  define u_set_for(self, it)                                                                      \
+    for (u_types(self, 0) it = {}; avl_for_init(self, 1); avl_for_end(self))                       \
+      for (; avl_for(self, &it, &it);)
 
-#  define u_set_rfor(u, _it)                                                                       \
-    for (u_set_type(u) _it = {}; avl_for_init(u, 0); avl_for_end(u))                               \
-      for (; avl_for(u, &_it, &_it);)
+#  define u_set_rfor(self, it)                                                                     \
+    for (u_types(self, 0) it = {}; avl_for_init(self, 0); avl_for_end(self))                       \
+      for (; avl_for(self, &it, &it);)
 
 #  ifdef __cplusplus
 } /* extern "C" */

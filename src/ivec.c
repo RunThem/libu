@@ -31,8 +31,8 @@ typedef struct vec_t vec_t;
 struct vec_t {
   u8_t flags[4];
   size_t itsize;
-  size_t len;
-  size_t cap;
+  int len;
+  int cap;
   any_t items;
 };
 
@@ -46,7 +46,7 @@ struct vec_t {
  * Function
  **************************************************************************************************/
 static ret_t vec_resize(vec_t* self) {
-  size_t cap  = 0;
+  int cap     = 0;
   any_t items = nullptr;
 
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
@@ -102,7 +102,7 @@ void vec_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-bool vec_exist(any_t _self, size_t idx) {
+bool vec_exist(any_t _self, int idx) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -124,13 +124,13 @@ size_t vec_cap(any_t _self) {
   return self->cap;
 }
 
-any_t vec_at(any_t _self, ssize_t idx) {
+any_t vec_at(any_t _self, int idx) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx >= self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
 
-  idx += (idx < 0) ? (ssize_t)self->len : 0;
+  idx += (idx < 0) ? self->len : 0;
 
   return at(idx);
 }
@@ -142,14 +142,14 @@ any_t vec_at(any_t _self, ssize_t idx) {
  * {  0,  1,  2,  3,  4,  5,  6 }
  * { -7, -6, -5, -4, -3, -2  -1 }
  * */
-void vec_pop(any_t _self, ssize_t idx, any_t item) {
+void vec_pop(any_t _self, int idx, any_t item) {
   vec_t* self = (vec_t*)_self;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(self->len == 0);
   u_nchk_if(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
 
-  idx += (idx < 0) ? (ssize_t)self->len : 0;
+  idx += (idx < 0) ? self->len : 0;
   memcpy(item, at(idx), self->itsize);
   if (idx != self->len - 1) {
     memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
@@ -168,7 +168,7 @@ void vec_pop(any_t _self, ssize_t idx, any_t item) {
  * {  0,  1,  2,  3,  4,  5,  6 }  7
  * { -8, -7, -6, -5, -4, -3, -2 } -1
  * */
-void vec_put(any_t _self, ssize_t idx, any_t item) {
+void vec_put(any_t _self, int idx, any_t item) {
   vec_t* self = (vec_t*)_self;
   ret_t code  = 0;
 
@@ -178,7 +178,7 @@ void vec_put(any_t _self, ssize_t idx, any_t item) {
             idx,
             self->len);
 
-  idx += (idx < 0) ? (ssize_t)self->len + 1 : 0;
+  idx += (idx < 0) ? self->len + 1 : 0;
   if (self->len == self->cap) {
     code = vec_resize(self);
     u_err_if(code != 0, "resize failed.");
@@ -231,7 +231,7 @@ void vec_for_end(any_t _self) {
   self->flags[0] = 2;
 }
 
-bool vec_for(any_t _self, ssize_t* idx, any_t item) {
+bool vec_for(any_t _self, int* idx, any_t item) {
   vec_t* self = (vec_t*)_self;
 
   u_chk_if(self == nullptr, false);
@@ -240,7 +240,7 @@ bool vec_for(any_t _self, ssize_t* idx, any_t item) {
 
   /* 初始化 */
   if (self->flags[2]) {
-    *idx           = self->flags[1] ? 0 : (ssize_t)self->len - 1;
+    *idx           = self->flags[1] ? 0 : self->len - 1;
     self->flags[2] = !self->flags[2];
   } else { /* 迭代 */
     *idx += self->flags[1] ? 1 : -1;

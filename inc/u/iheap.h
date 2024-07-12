@@ -34,121 +34,104 @@ extern "C" {
  * Type
  **************************************************************************************************/
 typedef struct {
-}* __u_heap_t;
+}* __u_heap_ref_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t heap_new(size_t, bool, u_cmp_fn);
-
-extern void heap_clear(any_t);
-
-extern void heap_cleanup(any_t);
-
-extern size_t heap_len(any_t);
-
-extern void heap_at(any_t, any_t);
-
-extern void heap_pop(any_t, any_t);
-
-extern void heap_put(any_t, any_t);
+/* clang-format off */
+extern any_t  heap_new      (size_t, bool, u_cmp_fn);
+extern void   heap_clear    (any_t);
+extern void   heap_cleanup  (any_t);
+extern size_t heap_len      (any_t);
+extern void   heap_at       (any_t, any_t);
+extern void   heap_pop      (any_t, any_t);
+extern void   heap_put      (any_t, any_t);
+/* clang-format on */
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_heap_t(...) typeof(__u_heap_t(*)(__VA_ARGS__))
-
-#  define _u_heap_defs(T)                                                                          \
-    u_heap_t(T) : (T) {                                                                            \
-    }
-
-#  define u_heap_type(u)     typeof(_Generic(u, u_heap_defs))
-#  define u_heap_type_val(u) _Generic(u, u_heap_defs)
-
-#  if defined(NDEBUG)
-#    define u_heap_type_check(u)
-#  else
-#    define u_heap_type_check(u) static_assert(typeeq((__u_heap_t){}, u(u_heap_type_val(u))))
-#  endif
+#  define u_heap_t(T) typeof(__u_heap_ref_t(*)(T*))
 
 /***************************************************************************************************
  * iApi heap
  **************************************************************************************************/
-#  define u_heap_init(u, attr, fn)                                                                 \
+#  define u_heap_init(self, attr, fn)                                                              \
     do {                                                                                           \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      u = heap_new(sizeof(u_heap_type(u)), attr, fn);                                              \
+      self = heap_new(sizeof(u_types(self, 0)), attr, fn);                                         \
     } while (0)
 
-#  define u_heap_new(...)                                                                          \
+#  define u_heap_new(T, attr, fn)                                                                  \
     ({                                                                                             \
-      u_heap_t(u_va_at(0, __VA_ARGS__)) u = nullptr;                                               \
+      u_heap_t(T) self = nullptr;                                                                  \
                                                                                                    \
-      u_heap_init(u, u_va_at(1, __VA_ARGS__), u_va_at(2, __VA_ARGS__));                            \
+      u_heap_init(self, attr, fn);                                                                 \
                                                                                                    \
       u;                                                                                           \
     })
 
-#  define u_heap_len(u)                                                                            \
+#  define u_heap_len(self)                                                                         \
     ({                                                                                             \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      heap_len(u);                                                                                 \
+      heap_len(self);                                                                              \
     })
 
-#  define u_heap_is_empty(u)                                                                       \
+#  define u_heap_is_empty(self)                                                                    \
     ({                                                                                             \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      0 == heap_len(u);                                                                            \
+      0 == heap_len(self);                                                                         \
     })
 
-#  define u_heap_clear(u)                                                                          \
+#  define u_heap_clear(self)                                                                       \
     do {                                                                                           \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      heap_clear(u);                                                                               \
+      heap_clear(self);                                                                            \
     } while (0)
 
-#  define u_heap_cleanup(u)                                                                        \
+#  define u_heap_cleanup(self)                                                                     \
     do {                                                                                           \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      heap_cleanup(u);                                                                             \
+      heap_cleanup(self);                                                                          \
                                                                                                    \
-      u = nullptr;                                                                                 \
+      self = nullptr;                                                                              \
     } while (0)
 
-#  define u_heap_at(u)                                                                             \
+#  define u_heap_at(self)                                                                          \
     ({                                                                                             \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      u_heap_type(u) _a = {};                                                                      \
+      u_types(self) __a = {};                                                                      \
                                                                                                    \
-      heap_at(u, &_a);                                                                             \
+      heap_at(self, &__a);                                                                         \
                                                                                                    \
-      _a;                                                                                          \
+      __a;                                                                                         \
     })
 
-#  define u_heap_pop(u)                                                                            \
+#  define u_heap_pop(self)                                                                         \
     ({                                                                                             \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      u_heap_type(u) _a = {};                                                                      \
+      u_types(self) __a = {};                                                                      \
                                                                                                    \
-      heap_pop(u, &_a);                                                                            \
+      heap_pop(self, &__a);                                                                        \
                                                                                                    \
-      _a;                                                                                          \
+      __a;                                                                                         \
     })
 
-#  define u_heap_put(u, ...)                                                                       \
+#  define u_heap_put(self, item)                                                                   \
     do {                                                                                           \
-      u_heap_type_check(u);                                                                        \
+      u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      auto _a = u_va_at(0, __VA_ARGS__);                                                           \
+      u_types(self, 0) __a = item;                                                                 \
                                                                                                    \
-      heap_put(u, &_a);                                                                            \
+      heap_put(self, &__a);                                                                        \
     } while (0)
 
 #  ifdef __cplusplus

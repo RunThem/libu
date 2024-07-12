@@ -44,29 +44,20 @@ extern "C" {
 /***************************************************************************************************
  * Api
  ***************************************************************************************************/
-extern any_t task_new(any_t);
-
-extern void task_yield();
-
-extern void task_loop();
-
-extern int task_socket(int, int, int);
-
-extern int task_accept(int, struct sockaddr*, socklen_t*);
-
-extern int task_connect(int, struct sockaddr*, socklen_t);
-
-extern ssize_t task_read(int, void*, size_t);
-
-extern ssize_t task_recv(int, void*, size_t, int);
-
-extern ssize_t task_recvfrom(int, void*, size_t, int, struct sockaddr*, socklen_t*);
-
-extern ssize_t task_write(int, const void*, size_t);
-
-extern ssize_t task_send(int, const void*, size_t, int);
-
-extern ssize_t task_sendto(int, const void*, size_t, int, const struct sockaddr*, socklen_t);
+/* coang-format off */
+extern any_t   task_new       (any_t);
+extern void    task_yield     ();
+extern void    task_loop      ();
+extern int     task_socket    (int, int, int);
+extern int     task_accept    (int, struct sockaddr*, socklen_t*);
+extern int     task_connect   (int, struct sockaddr*, socklen_t);
+extern ssize_t task_read      (int, void*, size_t);
+extern ssize_t task_recv      (int, void*, size_t, int);
+extern ssize_t task_recvfrom  (int, void*, size_t, int, struct sockaddr*, socklen_t*);
+extern ssize_t task_write     (int, const void*, size_t);
+extern ssize_t task_send      (int, const void*, size_t, int);
+extern ssize_t task_sendto    (int, const void*, size_t, int, const struct sockaddr*, socklen_t);
+/* coang-format on */
 
 /***************************************************************************************************
  * iApi

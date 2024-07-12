@@ -34,185 +34,157 @@ extern "C" {
  * Type
  **************************************************************************************************/
 typedef struct {
-}* __u_map_t;
+}* __u_map_ref_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t map_new(size_t, size_t, u_hash_fn);
-
-extern size_t map_len(any_t);
-
-extern bool map_exist(any_t, any_t);
-
-extern void map_clear(any_t);
-
-extern void map_cleanup(any_t);
-
-extern any_t map_at(any_t, any_t);
-
-extern void map_pop(any_t, any_t, any_t);
-
-extern void map_put(any_t, any_t, any_t);
-
-extern void vec_sort(any_t, u_cmp_fn);
-
-extern bool map_for_init(any_t, bool);
-
-extern void map_for_end(any_t);
-
-extern bool map_for(any_t, any_t, any_t);
+/* clang-format off */
+extern any_t  map_new       (size_t, size_t, u_hash_fn);
+extern size_t map_len       (any_t);
+extern bool   map_exist     (any_t, any_t);
+extern void   map_clear     (any_t);
+extern void   map_cleanup   (any_t);
+extern any_t  map_at        (any_t, any_t);
+extern void   map_pop       (any_t, any_t, any_t);
+extern void   map_put       (any_t, any_t, any_t);
+extern void   vec_sort      (any_t, u_cmp_fn);
+extern bool   map_for_init  (any_t, bool);
+extern void   map_for_end   (any_t);
+extern bool   map_for       (any_t, any_t, any_t);
+/* clang-format on */
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_map_t(...) typeof(__u_map_t(*)(__VA_ARGS__))
-
-#  define __u_map_defs(K, V)                                                                       \
-    u_map_t(K, V) :                                                                                \
-        (struct {                                                                                  \
-          K k;                                                                                     \
-          V v;                                                                                     \
-        }) {                                                                                       \
-    }
-
-#  define _u_map_defs(arg) __u_map_defs arg
-
-#  define u_map_type(u, arg)     typeof(_Generic(u, u_map_defs).arg)
-#  define u_map_type_val(u, arg) _Generic(u, u_map_defs).arg
-
-#  if defined(NDEBUG)
-#    define u_map_type_check(u)
-#  else
-#    define u_map_type_check(u)                                                                    \
-      static_assert(typeeq((__u_map_t){}, u(u_map_type_val(u, k), u_map_type_val(u, v))))
-#  endif
+#  define u_map_t(K, V) typeof(__u_map_ref_t(*)(K*, V*))
 
 /***************************************************************************************************
  * iApi map
  **************************************************************************************************/
-#  define u_map_init(u)                                                                            \
+#  define u_map_init(self)                                                                         \
     do {                                                                                           \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      u = map_new(sizeof(u_map_type(u, k)), sizeof(u_map_type(u, v)), nullptr);                    \
+      self = map_new(sizeof(u_types(self, 0)), sizeof(u_types(self, 1)), nullptr);                 \
     } while (0)
 
-#  define u_map_new(...)                                                                           \
+#  define u_map_new(K, V)                                                                          \
     ({                                                                                             \
-      u_map_t(__VA_ARGS__) u = nullptr;                                                            \
+      u_map_t(K, V) self = nullptr;                                                                \
                                                                                                    \
-      u_map_init(u);                                                                               \
+      u_map_init(self);                                                                            \
                                                                                                    \
       u;                                                                                           \
     })
 
-#  define u_map_len(u)                                                                             \
+#  define u_map_len(self)                                                                          \
     ({                                                                                             \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      map_len(u);                                                                                  \
+      map_len(self);                                                                               \
     })
 
-#  define u_map_is_empty(u)                                                                        \
+#  define u_map_is_empty(self)                                                                     \
     ({                                                                                             \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      0 == map_len(u);                                                                             \
+      0 == map_len(self);                                                                          \
     })
 
-#  define u_map_is_exist(u, _k)                                                                    \
+#  define u_map_is_exist(self, key)                                                                \
     ({                                                                                             \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      u_map_type(u, k) _a = _k;                                                                    \
-      u_map_type(u, v) _b = {};                                                                    \
+      u_types(self, 0) __a = key;                                                                  \
+      u_types(self, 1) __b = {};                                                                   \
                                                                                                    \
-      map_exist(u, &_a);                                                                           \
+      map_exist(self, &__a);                                                                       \
     })
 
-#  define u_map_clear(u)                                                                           \
+#  define u_map_clear(self)                                                                        \
     do {                                                                                           \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      map_clear(u);                                                                                \
+      map_clear(self);                                                                             \
     } while (0)
 
-#  define u_map_cleanup(u)                                                                         \
+#  define u_map_cleanup(self)                                                                      \
     do {                                                                                           \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      map_cleanup(u);                                                                              \
+      map_cleanup(self);                                                                           \
                                                                                                    \
-      u = nullptr;                                                                                 \
+      self = nullptr;                                                                              \
     } while (0)
 
 /* clang-format off */
-#  define u_map_at(u, _k, ...)                                                                     \
-    u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
+#  define u_map_at(self, key, ...)                                                                 \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
-        u_map_type_check(u);                                                                       \
+        u_check(self, 2, __u_map_ref_t);                                                           \
                                                                                                    \
-        bool _ret         = false;                                                                 \
-        u_map_type(u, k) _a  = _k;                                                                 \
-        u_map_type(u, v)* _b = {};                                                                 \
+        bool __ret             = false;                                                            \
+        u_types(self, 0) __a  = key;                                                               \
+        u_types(self, 1)* __b = {};                                                                \
                                                                                                    \
-        _b = map_at(u, &_a);                                                                       \
+        __b = map_at(self, &__a);                                                                  \
                                                                                                    \
-        if (_b != nullptr) {                                                                       \
-          *_b = u_va_at(0, __VA_ARGS__);                                                           \
-          _ret = true;                                                                             \
+        if (__b != nullptr) {                                                                      \
+          *__b = u_va_at(0, __VA_ARGS__);                                                          \
+          __ret = true;                                                                            \
         }                                                                                          \
                                                                                                    \
-        _ret;                                                                                      \
+        __ret;                                                                                     \
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
-        u_map_type_check(u);                                                                       \
+        u_check(self, 2, __u_map_ref_t);                                                           \
                                                                                                    \
-        u_map_type(u, k) _a  = _k;                                                                 \
-        u_map_type(u, v) _it = {};                                                                 \
-        u_map_type(u, v)* _b = {};                                                                 \
+        u_types(self, 0) __a  = key;                                                               \
+        u_types(self, 1) __it = {};                                                                \
+        u_types(self, 1)* __b = {};                                                                \
                                                                                                    \
-        _b = map_at(u, &_a);                                                                       \
+        __b = map_at(self, &__a);                                                                  \
                                                                                                    \
-        if (_b == nullptr) {                                                                       \
-          _b = &_it;                                                                               \
+        if (__b == nullptr) {                                                                      \
+          __b = &__it;                                                                             \
         }                                                                                          \
                                                                                                    \
-        *_b;                                                                                       \
+        *__b;                                                                                      \
       })                                                                                           \
     )
 /* clang-format on */
 
-#  define u_map_try(u, _k)                                                                         \
-    for (u_map_type(u, v)* it = map_at(u, &(u_map_type(u, k)){_k}); it != nullptr; it = nullptr)
+#  define u_map_try(self, key)                                                                     \
+    for (u_types(self, 1)* it = map_at(self, &(u_types(self, 0)){key}); it != nullptr; it = nullptr)
 
-#  define u_map_pop(u, _k)                                                                         \
+#  define u_map_pop(self, key)                                                                     \
     ({                                                                                             \
-      u_map_type_check(u);                                                                         \
+      u_map_type_check(self);                                                                      \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      u_map_type(u, k) _a = _k;                                                                    \
-      u_map_type(u, v) _b = {};                                                                    \
+      u_types(self, 0) __a = key;                                                                  \
+      u_types(self, 1) __b = {};                                                                   \
                                                                                                    \
-      map_pop(u, &_a, &_b);                                                                        \
+      map_pop(self, &__a, &__b);                                                                   \
                                                                                                    \
-      _b;                                                                                          \
+      __b;                                                                                         \
     })
 
-#  define u_map_put(u, _k, _v)                                                                     \
+#  define u_map_put(self, key, val)                                                                \
     do {                                                                                           \
-      u_map_type_check(u);                                                                         \
+      u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
-      u_map_type(u, k) _a = _k;                                                                    \
-      u_map_type(u, v) _b = _v;                                                                    \
+      u_types(self, 0) __a = key;                                                                  \
+      u_types(self, 1) __b = val;                                                                  \
                                                                                                    \
-      map_put(u, &_a, &_b);                                                                        \
+      map_put(self, &__a, &__b);                                                                   \
     } while (0)
 
-#  define u_map_for(u, _k, _v)                                                                     \
-    for (u_map_type(u, k) _k = {}; map_for_init(u, 1); map_for_end(u))                             \
-      for (u_map_type(u, v) _v = {}; map_for(u, &_k, &_v);)
+#  define u_map_for(self, key, val)                                                                \
+    for (u_types(self, 0) key = {}; map_for_init(self, 1); map_for_end(self))                      \
+      for (u_types(self, 1) val = {}; map_for(self, &key, &val);)
 
 #  ifdef __cplusplus
 } /* extern "C" */

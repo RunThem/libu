@@ -35,231 +35,199 @@ extern "C" {
  * Type
  **************************************************************************************************/
 typedef struct {
-}* __u_tree_t;
+}* __u_tree_ref_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t avl_new(size_t, size_t, u_cmp_fn);
-
-extern size_t avl_len(any_t);
-
-extern bool avl_exist(any_t, any_t);
-
-extern void avl_clear(any_t);
-
-extern void avl_cleanup(any_t);
-
-extern any_t avl_at(any_t, any_t);
-
-extern void avl_min(any_t, any_t, any_t);
-
-extern void avl_max(any_t, any_t, any_t);
-
-extern void avl_pop(any_t, any_t, any_t);
-
-extern void avl_put(any_t, any_t, any_t);
-
-extern u_cmp_fn avl_fn(any_t);
-
-extern bool avl_for_init(any_t, bool);
-
-extern void avl_for_end(any_t);
-
-extern bool avl_for(any_t, any_t, any_t);
+/* clang-format off */
+extern any_t    avl_new       (size_t, size_t, u_cmp_fn);
+extern size_t   avl_len       (any_t);
+extern bool     avl_exist     (any_t, any_t);
+extern void     avl_clear     (any_t);
+extern void     avl_cleanup   (any_t);
+extern any_t    avl_at        (any_t, any_t);
+extern void     avl_min       (any_t, any_t, any_t);
+extern void     avl_max       (any_t, any_t, any_t);
+extern void     avl_pop       (any_t, any_t, any_t);
+extern void     avl_put       (any_t, any_t, any_t);
+extern u_cmp_fn avl_fn        (any_t);
+extern bool     avl_for_init  (any_t, bool);
+extern void     avl_for_end   (any_t);
+extern bool     avl_for       (any_t, any_t, any_t);
+/* clang-format on */
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_tree_t(...) typeof(__u_tree_t(*)(__VA_ARGS__))
-
-#  define __u_tree_defs(K, V)                                                                      \
-    u_tree_t(K, V) :                                                                               \
-        (struct {                                                                                  \
-          K k;                                                                                     \
-          V v;                                                                                     \
-        }) {                                                                                       \
-    }
-
-#  define _u_tree_defs(arg) __u_tree_defs arg
-
-#  define u_tree_type(u, arg)     typeof(_Generic(u, u_tree_defs).arg)
-#  define u_tree_type_val(u, arg) _Generic(u, u_tree_defs).arg
-
-#  if defined(NDEBUG)
-#    define u_tree_type_check(u)
-#  else
-#    define u_tree_type_check(u)                                                                   \
-      static_assert(typeeq((__u_tree_t){}, u(u_tree_type_val(u, k), u_tree_type_val(u, v))))
-#  endif
+#  define u_tree_t(K, V) typeof(__u_tree_ref_t(*)(K*, V*))
 
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#  define u_tree_init(u, fn)                                                                       \
+#  define u_tree_init(self, fn)                                                                    \
     do {                                                                                           \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      u = avl_new(sizeof(u_tree_type(u, k)), sizeof(u_tree_type(u, v)), fn);                       \
+      self = avl_new(sizeof(u_types(self, 0)), sizeof(u_types(self, 1)), fn);                      \
     } while (0)
 
-#  define u_tree_new(...)                                                                          \
+#  define u_tree_new(K, V, fn)                                                                     \
     ({                                                                                             \
-      u_tree_t(u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__)) u = nullptr;                      \
+      u_tree_t(K, V) self = nullptr;                                                               \
                                                                                                    \
-      u_tree_init(u, u_va_at(2, __VA_ARGS__));                                                     \
+      u_tree_init(self, fn);                                                                       \
                                                                                                    \
-      u;                                                                                           \
+      self;                                                                                        \
     })
 
-#  define u_tree_len(u)                                                                            \
+#  define u_tree_len(self)                                                                         \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      avl_len(u);                                                                                  \
+      avl_len(self);                                                                               \
     })
 
-#  define u_tree_is_empty(u)                                                                       \
+#  define u_tree_is_empty(self)                                                                    \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      0 == avl_len(u);                                                                             \
+      0 == avl_len(self);                                                                          \
     })
 
-#  define u_tree_is_exist(u, _k)                                                                   \
+#  define u_tree_is_exist(self, key)                                                               \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      u_tree_type(u, k) _a = _k;                                                                   \
-      u_tree_type(u, v) _b = {};                                                                   \
+      u_types(self, 0) __a = key;                                                                  \
                                                                                                    \
-      avl_exist(u, &_a);                                                                           \
+      avl_exist(self, &__a);                                                                       \
     })
 
-#  define u_tree_clear(u)                                                                          \
+#  define u_tree_clear(self)                                                                       \
     do {                                                                                           \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      avl_clear(u);                                                                                \
+      avl_clear(self);                                                                             \
     } while (0)
 
-#  define u_tree_cleanup(u)                                                                        \
+#  define u_tree_cleanp(self)                                                                      \
     do {                                                                                           \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      avl_cleanup(u);                                                                              \
+      avl_cleanup(self);                                                                           \
                                                                                                    \
-      u = nullptr;                                                                                 \
+      self = nullptr;                                                                              \
     } while (0)
 
 /* clang-format off */
-#  define u_tree_at(u, _k, ...)                                                                    \
+#  define u_tree_at(self, key, ...)                                                                \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
-        u_tree_type_check(u);                                                                      \
+        u_check(self, 2, __u_tree_ref_t);                                                          \
                                                                                                    \
-        bool _ret         = false;                                                                 \
-        u_tree_type(u, k) _a  = _k;                                                                \
-        u_tree_type(u, v)* _b = {};                                                                \
+        bool __ret            = false;                                                             \
+        u_types(self, 0) __a  = key;                                                               \
+        u_types(self, 1)* __b = {};                                                                \
                                                                                                    \
-        _b = avl_at(u, &_a);                                                                       \
+        __b = avl_at(self, &__a);                                                                  \
                                                                                                    \
-        if (_b != nullptr) {                                                                       \
-          *_b = u_va_at(0, __VA_ARGS__);                                                           \
-          _ret = true;                                                                             \
+        if (__b != nullptr) {                                                                      \
+          *__b = u_va_at(0, __VA_ARGS__);                                                          \
+          __ret = true;                                                                            \
         }                                                                                          \
                                                                                                    \
-        _ret;                                                                                      \
+        __ret;                                                                                     \
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
-        u_tree_type_check(u);                                                                      \
+        u_check(self, 2, __u_tree_ref_t);                                                          \
                                                                                                    \
-        u_tree_type(u, k) _a  = _k;                                                                \
-        u_tree_type(u, v) _it = {};                                                                \
-        u_tree_type(u, v)* _b = {};                                                                \
+        u_types(self, 0) __a  = key;                                                               \
+        u_types(self, 1) __it = {};                                                                \
+        u_types(self, 1)* __b = {};                                                                \
                                                                                                    \
-        _b = avl_at(u, &_a);                                                                       \
+        __b = avl_at(self, &__a);                                                                  \
                                                                                                    \
-        if (_b == nullptr) {                                                                       \
-          _b = &_it;                                                                               \
+        if (__b == nullptr) {                                                                      \
+          __b = &__it;                                                                             \
         }                                                                                          \
                                                                                                    \
-        *_b;                                                                                       \
+        *__b;                                                                                      \
       })                                                                                           \
     )
 /* clang-format on */
 
-#  define u_tree_try(u, _k)                                                                        \
-    for (u_tree_type(u, v)* it = avl_at(u, &(u_tree_type(u, k)){_k}); it != nullptr; it = nullptr)
+#  define u_tree_try(self, key)                                                                    \
+    for (u_types(self, 1)* it = avl_at(self, &(u_types(self, 0)){key}); it != nullptr; it = nullptr)
 
-#  define u_tree_min(u)                                                                            \
+#  define u_tree_min(self)                                                                         \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
       struct {                                                                                     \
-        u_tree_type(u, k) key;                                                                     \
-        u_tree_type(u, v) val;                                                                     \
-      } _ = {};                                                                                    \
+        u_types(self, 0) key;                                                                      \
+        u_types(self, 1) val;                                                                      \
+      } __ = {};                                                                                   \
                                                                                                    \
-      avl_min(u, &_.key, &_.val);                                                                  \
+      avl_min(self, &__.key, &__.val);                                                             \
                                                                                                    \
-      _;                                                                                           \
+      __;                                                                                          \
     })
 
-#  define u_tree_max(u)                                                                            \
+#  define u_tree_max(self)                                                                         \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
       struct {                                                                                     \
-        u_tree_type(u, k) key;                                                                     \
-        u_tree_type(u, v) val;                                                                     \
-      } _ = {};                                                                                    \
+        u_types(self, 0) key;                                                                      \
+        u_types(self, 1) val;                                                                      \
+      } __ = {};                                                                                   \
                                                                                                    \
-      avl_max(u, &_.key, &_.val);                                                                  \
+      avl_max(self, &__.key, &__.val);                                                             \
                                                                                                    \
-      _;                                                                                           \
+      __;                                                                                          \
     })
 
-#  define u_tree_pop(u, _k)                                                                        \
+#  define u_tree_pop(self, key)                                                                    \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      u_tree_type(u, k) _a = _k;                                                                   \
-      u_tree_type(u, v) _b = {};                                                                   \
+      u_types(self, 0) __a = key;                                                                  \
+      u_types(self, 1) __b = {};                                                                   \
                                                                                                    \
-      avl_pop(u, &_a, &_b);                                                                        \
+      avl_pop(self, &__a, &__b);                                                                   \
                                                                                                    \
-      _b;                                                                                          \
+      __b;                                                                                         \
     })
 
-#  define u_tree_put(u, _k, _v)                                                                    \
+#  define u_tree_put(self, key, val)                                                               \
     do {                                                                                           \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      u_tree_type(u, k) _a = _k;                                                                   \
-      u_tree_type(u, v) _b = _v;                                                                   \
+      u_types(self, 0) __a = key;                                                                  \
+      u_types(self, 1) __b = val;                                                                  \
                                                                                                    \
-      avl_put(u, &_a, &_b);                                                                        \
+      avl_put(self, &__a, &__b);                                                                   \
     } while (0)
 
-#  define u_tree_fn(u, _k1, _k2)                                                                   \
+#  define u_tree_fn(self, k1, k2)                                                                  \
     ({                                                                                             \
-      u_tree_type_check(u);                                                                        \
+      u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      u_tree_type(u, k) _a = _k1;                                                                  \
-      u_tree_type(u, k) _b = _k2;                                                                  \
+      u_types(self, 0) __a = k1;                                                                   \
+      u_types(self, 1) __b = k2;                                                                   \
                                                                                                    \
-      avl_fn(u)(&_a, &_b);                                                                         \
+      avl_fn(self)(&__a, &__b);                                                                    \
     })
 
-#  define u_tree_for(u, _k, _v)                                                                    \
-    for (u_tree_type(u, k) _k = {}; avl_for_init(u, 1); avl_for_end(u))                            \
-      for (u_tree_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
+#  define u_tree_for(self, key, val)                                                               \
+    for (u_types(self, 0) key = {}; avl_for_init(self, 1); avl_for_end(self))                      \
+      for (u_types(self, 1) val = {}; avl_for(self, &key, &val);)
 
-#  define u_tree_rfor(u, _k, _v)                                                                   \
-    for (u_tree_type(u, k) _k = {}; avl_for_init(u, 0); avl_for_end(u))                            \
-      for (u_tree_type(u, v) _v = {}; avl_for(u, &_k, &_v);)
+#  define u_tree_rfor(self, key, val)                                                              \
+    for (u_types(self, 0) key = {}; avl_for_init(self, 0); avl_for_end(self))                      \
+      for (u_types(self, 1) val = {}; avl_for(self, &key, &val);)
 
 #  ifdef __cplusplus
 } /* extern "C" */

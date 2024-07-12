@@ -41,94 +41,92 @@ typedef struct {
 
   u8_t* buf;
   u8_t* __rawbuf;
-} u_buf_t;
+} u_buf_t, *u_buf_ref_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern void buf_init(u_buf_t*, u8_t*, size_t);
-
-extern void buf_clear(u_buf_t*);
-
-extern void buf_cleanup(u_buf_t*);
-
-extern size_t buf_len(u_buf_t*);
-
-extern void buf_skip(u_buf_t*, size_t);
-
-extern void buf_pop(u_buf_t*, any_t, size_t);
-
-extern void buf_put(u_buf_t*, any_t, size_t);
+/* clang-format off */
+extern void   buf_init    (u_buf_ref_t, u8_t*, size_t);
+extern void   buf_clear   (u_buf_ref_t);
+extern void   buf_cleanup (u_buf_ref_t);
+extern size_t buf_len     (u_buf_ref_t);
+extern void   buf_skip    (u_buf_ref_t, size_t);
+extern void   buf_pop     (u_buf_ref_t, any_t, size_t);
+extern void   buf_put     (u_buf_ref_t, any_t, size_t);
+/* clang-format on */
 
 /***************************************************************************************************
  * iApi buf
  **************************************************************************************************/
 /* clang-format off */
-#define u_buf_init(u, ...)                                                                         \
+#define u_buf_init(self, ...)                                                                      \
   do {                                                                                             \
     u_va_elseif(u_va_cnt_is(0, __VA_ARGS__)) (                                                     \
-      buf_init(u, nullptr, 32);                                                                    \
+      buf_init(self, nullptr, 32);                                                                 \
     )(                                                                                             \
       u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
-        buf_init(u, nullptr, u_va_at(0, __VA_ARGS__));                                             \
+        buf_init(self, nullptr, u_va_at(0, __VA_ARGS__));                                          \
       )(                                                                                           \
-        buf_init(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                             \
+        buf_init(self, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                          \
       )                                                                                            \
     )                                                                                              \
   } while (0)
 /* clang-format on */
 
-#  define u_buf_len(u)                                                                             \
+#  define u_buf_len(self)                                                                          \
     ({                                                                                             \
       ;                                                                                            \
-      buf_len(u);                                                                                  \
+      buf_len(self);                                                                               \
     })
 
-#  define u_buf_is_empty(u)                                                                        \
+#  define u_buf_is_empty(self)                                                                     \
     ({                                                                                             \
       ;                                                                                            \
-      0 == buf_len(u);                                                                             \
+      0 == buf_len(self);                                                                          \
     })
 
-#  define u_buf_clear(u)                                                                           \
+#  define u_buf_clear(self)                                                                        \
     do {                                                                                           \
-      buf_clear(u);                                                                                \
+      buf_clear(self);                                                                             \
     } while (0)
 
-#  define u_buf_cleanup(u)                                                                         \
+#  define u_buf_cleanup(self)                                                                      \
     do {                                                                                           \
-      buf_cleanup(u);                                                                              \
+      buf_cleanup(self);                                                                           \
+                                                                                                   \
+      self = nullptr;                                                                              \
     } while (0)
 
-#  define u_buf_skip(u, len)                                                                       \
+#  define u_buf_skip(self, len)                                                                    \
     do {                                                                                           \
-      buf_skip(u, len);                                                                            \
+      buf_skip(self, len);                                                                         \
     } while (0)
 
 /* clang-format off */
-#define u_buf_pop(u, ...)                                                                          \
+#define u_buf_pop(self, ...)                                                                       \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
-      typeof(u_va_at(0, __VA_ARGS__)) _a   = {};                                                   \
+      typeof(u_va_at(0, __VA_ARGS__)) __a   = {};                                                  \
                                                                                                    \
-      buf_pop(u, &_a, sizeof(_a)) ;                                                                \
+      buf_pop(self, &__a, sizeof(__a)) ;                                                           \
                                                                                                    \
       _a;                                                                                          \
     ) (                                                                                            \
-      buf_pop(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                                \
+      buf_pop(self, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                             \
                                                                                                    \
       true;                                                                                        \
     )                                                                                              \
   })
 
-#define u_buf_put(u, ...)                                                                          \
+#define u_buf_put(self, ...)                                                                       \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
-      typeof(u_va_at(0, __VA_ARGS__)) _a   = u_va_at(0, __VA_ARGS__);                              \
+      typeof(u_va_at(0, __VA_ARGS__)) __a   = u_va_at(0, __VA_ARGS__);                             \
                                                                                                    \
-      buf_put(u, &_a, sizeof(_a)) ;                                                                \
+      buf_put(self, &__a, sizeof(__a)) ;                                                           \
     ) (                                                                                            \
-      buf_pop(u, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                                \
+      buf_pop(self, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                             \
     )                                                                                              \
   })
 /* clang-format on */

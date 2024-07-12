@@ -36,31 +36,26 @@ extern "C" {
  **************************************************************************************************/
 typedef struct {
   _Atomic(bool) locked;
-} u_spmtx_t;
+} u_spmtx_t, *u_spmtx_ref_t;
 
 typedef struct {
   _Atomic(bool) rwlock;
   _Atomic(int) cnt;
-} u_rwmtx_t;
+} u_rwmtx_t, *u_rwmtx_ref_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern void u_spmtx_init(u_spmtx_t*);
-
-extern void u_spmtx_lock(u_spmtx_t*);
-
-extern void u_spmtx_unlock(u_spmtx_t*);
-
-extern void u_rwmtx_init(u_rwmtx_t*);
-
-extern void u_rwmtx_rlock(u_rwmtx_t*);
-
-extern void u_rwmtx_runlock(u_rwmtx_t*);
-
-extern void u_rwmtx_wlock(u_rwmtx_t*);
-
-extern void u_rwmtx_wunlock(u_rwmtx_t*);
+/* clang-format off */
+extern void u_spmtx_init    (u_spmtx_ref_t);
+extern void u_spmtx_lock    (u_spmtx_ref_t);
+extern void u_spmtx_unlock  (u_spmtx_ref_t);
+extern void u_rwmtx_init    (u_rwmtx_ref_t);
+extern void u_rwmtx_rlock   (u_rwmtx_ref_t);
+extern void u_rwmtx_runlock (u_rwmtx_ref_t);
+extern void u_rwmtx_wlock   (u_rwmtx_ref_t);
+extern void u_rwmtx_wunlock (u_rwmtx_ref_t);
+/* clang-format on */
 
 /***************************************************************************************************
  * iApi

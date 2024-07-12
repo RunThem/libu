@@ -2,7 +2,7 @@
 
 test() {
   /* #[[vec<int>]] */
-  u_vec_t(int) v = u_vec_new(int);
+  u_vec_t(int) v = nullptr;
 
   /* 1 */
   v = u_vec_new(int);

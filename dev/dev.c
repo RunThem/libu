@@ -26,8 +26,11 @@ int _main(int argc, const u_cstr_t argv[]) {
 
 int main(int argc, const u_cstr_t argv[]) {
 
+  /* #[[vec<int>]] */
+  u_vec_t(int) v = u_vec_new(int);
+
   /* 1500 ns switch */
-  u_task_loop(_main, argc, argv);
+  // u_task_loop(_main, argc, argv);
 
   return EXIT_SUCCESS;
 }

@@ -35,216 +35,185 @@ extern "C" {
  * Type
  **************************************************************************************************/
 typedef struct {
-}* __u_vec_t;
+}* __u_vec_ref_t;
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t vec_new(size_t);
-
-extern size_t vec_len(any_t);
-
-extern size_t vec_cap(any_t);
-
-extern bool vec_exist(any_t, size_t);
-
-extern void vec_clear(any_t);
-
-extern void vec_cleanup(any_t);
-
-extern any_t vec_at(any_t, ssize_t);
-
-extern void vec_pop(any_t, ssize_t, any_t);
-
-extern void vec_put(any_t, ssize_t, any_t);
-
-extern void vec_sort(any_t, u_cmp_fn);
-
-extern bool vec_for_init(any_t, bool);
-
-extern void vec_for_end(any_t);
-
-extern bool vec_for(any_t, ssize_t*, any_t);
+/* clang-format off */
+extern any_t  vec_new       (size_t);
+extern size_t vec_len       (any_t);
+extern size_t vec_cap       (any_t);
+extern bool   vec_exist     (any_t, int);
+extern void   vec_clear     (any_t);
+extern void   vec_cleanup   (any_t);
+extern any_t  vec_at        (any_t, int);
+extern void   vec_pop       (any_t, int, any_t);
+extern void   vec_put       (any_t, int, any_t);
+extern void   vec_sort      (any_t, u_cmp_fn);
+extern bool   vec_for_init  (any_t, bool);
+extern void   vec_for_end   (any_t);
+extern bool   vec_for       (any_t, int*, any_t);
+/* clang-format on */
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_vec_t(...) typeof(__u_vec_t(*)(ssize_t, __VA_ARGS__))
-
-#  define _u_vec_defs(T)                                                                           \
-    u_vec_t(T) : (T) {                                                                             \
-    }
-
-#  define u_vec_type(u)     typeof(_Generic(u, u_vec_defs))
-#  define u_vec_type_val(u) _Generic(u, u_vec_defs)
-
-#  if defined(NDEBUG)
-#    define u_vec_type_check(u)
-#  else
-#    define u_vec_type_check(u) static_assert(typeeq((__u_vec_t){}, u(0, u_vec_type_val(u))))
-#  endif
+#  define u_vec_t(T) typeof(__u_vec_ref_t(*)(T*))
 
 /***************************************************************************************************
  * iApi vec
  **************************************************************************************************/
-#  define u_vec_init(u)                                                                            \
+#  define u_vec_init(self)                                                                         \
     do {                                                                                           \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      u = vec_new(sizeof(u_vec_type(u)));                                                          \
+      self = vec_new(sizeof(u_types(self, 0)));                                                    \
     } while (0)
 
-#  define u_vec_new(...)                                                                           \
+#  define u_vec_new(T)                                                                             \
     ({                                                                                             \
-      u_vec_t(__VA_ARGS__) u = nullptr;                                                            \
+      u_vec_t(T) self = nullptr;                                                                   \
                                                                                                    \
-      u_vec_init(u);                                                                               \
+      u_vec_init(self);                                                                            \
                                                                                                    \
-      u;                                                                                           \
+      self;                                                                                        \
     })
 
-#  define u_vec_len(u)                                                                             \
+#  define u_vec_len(self)                                                                          \
     ({                                                                                             \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      vec_len(u);                                                                                  \
+      vec_len(self);                                                                               \
     })
 
-#  define u_vec_cap(u)                                                                             \
+#  define u_vec_cap(self)                                                                          \
     ({                                                                                             \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      vec_cap(u);                                                                                  \
+      vec_cap(self);                                                                               \
     })
 
-#  define u_vec_is_empty(u)                                                                        \
+#  define u_vec_is_empty(self)                                                                     \
     ({                                                                                             \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      0 == vec_len(u);                                                                             \
+      0 == vec_len(self);                                                                          \
     })
 
-#  define u_vec_is_exist(u, idx)                                                                   \
+#  define u_vec_is_exist(self, idx)                                                                \
     ({                                                                                             \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      ssize_t _a = idx;                                                                            \
+      int _a = idx;                                                                                \
                                                                                                    \
-      vec_exist(u, _a);                                                                            \
+      vec_exist(self, _a);                                                                         \
     })
 
-#  define u_vec_clear(u)                                                                           \
+#  define u_vec_clear(self)                                                                        \
     do {                                                                                           \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      vec_clear(u);                                                                                \
+      vec_clear(self);                                                                             \
     } while (0)
 
-#  define u_vec_cleanup(u)                                                                         \
+#  define u_vec_cleanup(self)                                                                      \
     do {                                                                                           \
-      u_vec_type_check(u);                                                                         \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      vec_cleanup(u);                                                                              \
+      vec_cleanup(self);                                                                           \
                                                                                                    \
-      u = nullptr;                                                                                 \
+      self = nullptr;                                                                              \
     } while (0)
 
 /* clang-format off */
-#define u_vec_at(u, ...)                                                                           \
-  u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                       \
-    ({                                                                                             \
-      u_vec_type_check(u);                                                                         \
-                                                                                                   \
-      bool _ret      = false;                                                                      \
-      ssize_t _a     = u_va_at(0, __VA_ARGS__);                                                    \
-      u_vec_type(u)* _b = {};                                                                      \
-                                                                                                   \
-      _b = vec_at(u, _a);                                                                          \
-                                                                                                   \
-      if (_b != nullptr) {                                                                         \
-        *_b = u_va_at(1, __VA_ARGS__);                                                             \
-        _ret = true;                                                                               \
-      }                                                                                            \
-                                                                                                   \
-      _ret;                                                                                        \
-    })                                                                                             \
-  ) (                                                                                              \
-    ({                                                                                             \
-      u_vec_type_check(u);                                                                         \
-                                                                                                   \
-      auto _a        = u_va_at(0, __VA_ARGS__);                                                    \
-      u_vec_type(u) _it = {};                                                                      \
-      u_vec_type(u)* _b = {};                                                                      \
-                                                                                                   \
-      _b = vec_at(u, _a);                                                                          \
-                                                                                                   \
-      if (_b == nullptr) {                                                                         \
-        _b = &_it;                                                                                 \
-      }                                                                                            \
-                                                                                                   \
-      *_b;                                                                                         \
-    })                                                                                             \
-  )
-/* clang-format on */
-
-#  define u_vec_try(u, i) for (u_vec_type(u)* it = vec_at(u, i); it != nullptr; it = nullptr)
-
-/* clang-format off */
-#define u_vec_pop(u, ...)                                                                          \
-  ({                                                                                               \
-    static_assert((u_va_cnt(__VA_ARGS__) == 1) + (u_va_cnt(__VA_ARGS__) == 0),                     \
-                  "The number of '...' is 1 or 0.");                                               \
-                                                                                                   \
-    u_vec_type_check(u);                                                                           \
-                                                                                                   \
+#  define u_vec_at(self, idx, ...)                                                                 \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
-      ssize_t _a    = u_va_at(0, __VA_ARGS__);                                                     \
-      u_vec_type(u) _b = {};                                                                       \
+      ({                                                                                           \
+        u_check(self, 1, __u_vec_ref_t);                                                           \
+                                                                                                   \
+        bool __ret            = false;                                                             \
+        int __a               = idx;                                                               \
+        u_types(self, 0)* __b = {};                                                                \
+                                                                                                   \
+        __b = vec_at(self, __a);                                                                   \
+                                                                                                   \
+        if (__b != nullptr) {                                                                      \
+          *__b = u_va_at(1, __VA_ARGS__);                                                          \
+          __ret = true;                                                                            \
+        }                                                                                          \
+                                                                                                   \
+        __ret;                                                                                     \
+      })                                                                                           \
     ) (                                                                                            \
-      ssize_t _a    = -1;                                                                          \
-      u_vec_type(u) _b = {};                                                                       \
-    )                                                                                              \
+      ({                                                                                           \
+        u_check(self, 1, __u_vec_ref_t);                                                           \
                                                                                                    \
-    vec_pop(u, _a, &_b);                                                                           \
+        u_types(self, 0) __it = {};                                                                \
+        u_types(self, 0)* __b = {};                                                                \
                                                                                                    \
-    _b;                                                                                            \
-  })
-
-#define u_vec_put(u, ...)                                                                          \
-  do {                                                                                             \
-    static_assert((u_va_cnt(__VA_ARGS__) == 1) + (u_va_cnt(__VA_ARGS__) == 2),                     \
-                  "The number of '...' is 1 or 2.");                                               \
+        __b = vec_at(self, idx);                                                                   \
                                                                                                    \
-    u_vec_type_check(u);                                                                           \
+        if (__b == nullptr) {                                                                      \
+          __b = &__it;                                                                             \
+        }                                                                                          \
                                                                                                    \
-    u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
-      auto _a       = u_va_at(0, __VA_ARGS__);                                                     \
-      u_vec_type(u) _b = u_va_at(1, __VA_ARGS__);                                                  \
-    )(                                                                                             \
-      auto _a       = -1;                                                                          \
-      u_vec_type(u) _b = u_va_at(0, __VA_ARGS__);                                                  \
-    )                                                                                              \
-                                                                                                   \
-    vec_put(u, _a, &_b);                                                                           \
-  } while (0)
+        *__b;                                                                                      \
+      })                                                                                           \
+    )
 /* clang-format on */
 
-#  define u_vec_sort(u, ...)                                                                       \
+#  define u_vec_try(self, i)                                                                       \
+    for (u_types(self, 0)* it = vec_at(self, i); it != nullptr; it = nullptr)
+
+/* clang-format off */
+#  define u_vec_pop(self, ...)                                                                     \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
+        int __a              = u_va_at(0, __VA_ARGS__);                                            \
+        u_types(self, 0) __b = {};                                                                 \
+      ) (                                                                                          \
+        int __a              = -1;                                                                 \
+        u_types(self, 0) __b = {};                                                                 \
+      )                                                                                            \
+                                                                                                   \
+      vec_pop(self, __a, &__b);                                                                    \
+                                                                                                   \
+      __b;                                                                                         \
+    })
+
+#  define u_vec_put(self, tmp, ...)                                                                \
     do {                                                                                           \
-      static_assert(u_va_cnt(__VA_ARGS__) == 1, "The number of '...' is 1.");                      \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      u_vec_type_check(u);                                                                         \
+      u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
+        int __a             = tmp;                                                                 \
+        u_types(self, 0) __b = u_va_at(0, __VA_ARGS__);                                            \
+      )(                                                                                           \
+        auto __a             = -1;                                                                 \
+        u_types(self, 0) __b = tmp;                                                                \
+      )                                                                                            \
                                                                                                    \
-      vec_sort(u, u_va_at(0, __VA_ARGS__));                                                        \
+      vec_put(self, __a, &__b);                                                                    \
+    } while (0)
+/* clang-format on */
+
+#  define u_vec_sort(self, cmp_fn)                                                                 \
+    do {                                                                                           \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      vec_sort(self, cmp_fn);                                                                      \
     } while (0)
 
-#  define u_vec_for(u, i, it)                                                                      \
-    for (ssize_t i = 0; vec_for_init(u, 1); vec_for_end(u))                                        \
-      for (u_vec_type(u) it = {}; vec_for(u, &i, &it);)
+#  define u_vec_for(self, i, it)                                                                   \
+    for (int i = 0; vec_for_init(self, 1); vec_for_end(self))                                      \
+      for (u_types(self, 0) it = {}; vec_for(self, &i, &it);)
 
-#  define u_vec_rfor(u, i, it)                                                                     \
-    for (ssize_t i = 0; vec_for_init(u, 0); vec_for_end(u))                                        \
-      for (u_vec_type(u) it = {}; vec_for(u, &i, &it);)
+#  define u_vec_rfor(self, i, it)                                                                  \
+    for (int i = 0; vec_for_init(self, 0); vec_for_end(self))                                      \
+      for (u_types(self, 0) it = {}; vec_for(self, &i, &it);)
 
 #  ifdef __cplusplus
 } /* extern "C" */

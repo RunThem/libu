@@ -5,135 +5,111 @@ rule('generic', function()
         for _, sourcefile in ipairs(batch.sourcefiles) do
           local genericfile = vformat('$(buildir)/generic/' .. sourcefile .. '.h')
           local Generic = { vec = {}, map = {}, set = {}, list = {}, tree = {} }
+          local generic_type_flags = { vec = true, set = true, map = true, list = true, heap = true, tree = true }
 
           ---@class T
           ---@field typ string
-          ---@field ktyp string|T
-          ---@field vtyp string|T
+          ---@field arg0 string|T
+          ---@field arg1 string|T
+          ---@field arg2 string|T
 
           ---new class
           ---@param typ string
           ---@return T
           local function new(typ)
-            return { typ = typ, ktyp = nil, vtyp = nil }
+            return { typ = typ, arg0 = nil, arg1 = nil }
           end
 
           ---handle
           ---@param sourcefile string
+          ---@return table
           local function handle(sourcefile)
-            local is_generic = false
-            local gentbl = { vec = {}, map = {}, set = {}, list = {}, tree = {}, heap = {} }
+            local tbl = { run = false, {}, {} }
 
             ---@param tbl table<string>
-            ---@return T, table<string>
+            ---@return T
             local function _parse(tbl)
               local typ = table.remove(tbl, 1):trim()
 
               local m = new(typ)
-              if typ == 'vec' or typ == 'set' or typ == 'list' or typ == 'heap' then
-                m.ktyp, tbl = _parse(tbl)
-              elseif typ == 'map' or typ == 'tree' then
-                m.ktyp, tbl = _parse(tbl)
-                m.vtyp, tbl = _parse(tbl)
+              if generic_type_flags[typ] then
+                m.arg0 = _parse(tbl)
+
+                if typ == 'map' or typ == 'tree' then
+                  m.arg1 = _parse(tbl)
+                end
               else
+                -- skip base type
               end
 
-              return m, tbl
+              return m
             end
 
             ---@param t T
-            ---@return string, string, string
+            ---@return string
             local function _output(t)
+              if t == nil then
+                return nil
+              end
+
               local txt = ''
               local typ = ''
               local g_typ
 
-              if t.typ == 'vec' then
-                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
+              if generic_type_flags[t.typ] then
+                local arg0 = _output(t.arg0)
+                local arg1 = _output(t.arg1)
 
-                typ = ('vec<%s>'):format(g_ktyp)
-                g_typ = ('typeof(__u_vec_t(*)(ssize_t, %s))'):format(g_ktyp)
-                txt = ('typeof(__u_vec_t(*)(ssize_t, %s)): (%s){}'):format(g_ktyp, g_ktyp)
+                if t.typ == 'map' or t.typ == 'tree' then
+                  typ = ('%s<%s, %s>'):format(t.typ, arg0, arg1)
+                else
+                  typ = ('%s<%s>'):format(t.typ, arg0)
+                end
 
-                gentbl['vec'][typ] = txt
-              elseif t.typ == 'set' then
-                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
+                if t.typ == 'map' or t.typ == 'tree' then
+                  txt = ('typeof(__u_%s_ref_t(*)(%s*, %s*)): (%s){}'):format(t.typ, arg0, arg1, arg0)
+                  table.insert(tbl[1], txt)
 
-                typ = ('set<%s>'):format(g_ktyp)
-                g_typ = ('typeof(__u_set_t(*)(%s))'):format(g_ktyp)
-                txt = ('typeof(__u_set_t(*)(%s)): (%s){}'):format(g_ktyp, g_ktyp)
+                  txt = ('typeof(__u_%s_ref_t(*)(%s*, %s*)): (%s){}'):format(t.typ, arg0, arg1, arg1)
+                  table.insert(tbl[2], txt)
+                else
+                  txt = ('typeof(__u_%s_ref_t(*)(%s*)): (%s){}'):format(t.typ, arg0, arg0)
+                  table.insert(tbl[1], txt)
+                end
 
-                gentbl['set'][typ] = txt
-              elseif t.typ == 'list' then
-                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
-
-                typ = ('list<%s>'):format(g_ktyp)
-                g_typ = ('typeof(__u_list_t(*)(%s*))'):format(g_ktyp)
-                txt = ('typeof(__u_list_t(*)(%s*)): (%s*){}'):format(g_ktyp, g_ktyp)
-
-                gentbl['list'][typ] = txt
-              elseif t.typ == 'heap' then
-                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
-
-                typ = ('heap<%s>'):format(g_ktyp)
-                g_typ = ('typeof(__u_heap_t(*)(%s))'):format(g_ktyp)
-                txt = ('typeof(__u_heap_t(*)(%s)): (%s){}'):format(g_ktyp, g_ktyp)
-
-                gentbl['heap'][typ] = txt
-              elseif t.typ == 'map' then
-                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
-                local vtxt, vtyp, g_vtyp = _output(t.vtyp)
-
-                typ = ('map<%s, %s>'):format(g_ktyp, g_vtyp)
-                g_typ = ('typeof(__u_map_t(*)(%s, %s))'):format(g_ktyp, g_vtyp)
-                txt = ('typeof(__u_map_t(*)(%s, %s)): (struct {%s k; %s v;}){}'):format(g_ktyp, g_vtyp, g_ktyp, g_vtyp)
-
-                gentbl['map'][typ] = txt
-              elseif t.typ == 'tree' then
-                local ktxt, ktyp, g_ktyp = _output(t.ktyp)
-                local vtxt, vtyp, g_vtyp = _output(t.vtyp)
-
-                typ = ('tree<%s, %s>'):format(g_ktyp, g_vtyp)
-                g_typ = ('typeof(__u_tree_t(*)(%s, %s))'):format(g_ktyp, g_vtyp)
-                txt = ('typeof(__u_tree_t(*)(%s, %s)): (struct {%s k; %s v;}){}'):format(g_ktyp, g_vtyp, g_ktyp, g_vtyp)
-
-                gentbl['tree'][typ] = txt
+                g_typ = ('typeof(__u_%s_ref_t(*)(%s*))'):format(t.typ, arg0)
               else
-                txt = t.typ
-                typ = t.typ
                 g_typ = t.typ
               end
 
-              return txt, typ, g_typ
+              return g_typ
             end
 
             local pattern = '#%[%[(.-)%]%]'
             local content = io.readfile(sourcefile)
 
             for code in string.gmatch(content, pattern) do
-              local tbl = code:gsub('%s+', ' '):gsub('[<>,]', '$'):split('$', { plain = true })
+              local types = code:gsub('%s+', ' '):gsub('[<>,]', '$'):split('$', { plain = true })
 
-              local t, _ = _parse(tbl)
-              local _, _, _ = _output(t)
-
-              is_generic = true
+              _output(_parse(types))
+              tbl.run = true
             end
 
-            return is_generic, gentbl
+            return tbl
           end
 
           ---generic
           ---@param sourcefile string
           ---@param objectfile string
           local function generic(sourcefile, objectfile)
-            local is_generic, gentbl = handle(sourcefile)
-            if not is_generic then
+            local tbl = handle(sourcefile)
+            if not tbl.run then
               return
             end
 
             --[[ debug
             print(sourcefile)
-            print(gentbl)
+            print(tbl)
             --]]
 
             -- include codegen file
@@ -146,24 +122,21 @@ rule('generic', function()
 
             local out = io.open(genericfile, 'w')
 
-            for _k, _v in pairs(gentbl) do
-              local txt = ''
-              local is_init = false
-              for _, v in pairs(_v) do
-                if not is_init then
-                  out:write(('#define u_%s_defs \\\n'):format(_k))
-                  is_init = true
-                end
-
-                txt = ('\t%s,\\\n%s'):format(v, txt)
-              end
-
-              if is_init then
-                txt = txt:sub(1, txt:len() - 3)
-                out:write(txt .. '\n\n')
+            for idx, args in ipairs(tbl) do
+              if #args ~= 0 then
+                local txt = ('#define __u_types_arg%d(self) _Generic(self, %s)\n\n'):format(
+                  idx - 1,
+                  table.concat(args, ', ')
+                )
+                out:write(txt)
               end
             end
 
+            out:write('#define u_types(self, i) typeof(__u_types_arg##i(self))\n\n\n\n')
+
+            out:write('#define __u_check_arg1(self) (self(nullptr))\n\n')
+            out:write('#define __u_check_arg2(self) (self(nullptr, nullptr))\n\n')
+            out:write('#define u_check(self, c, t) static_assert(typeeq(t, __u_check_arg##c(self)))\n\n')
             out:close()
           end
 
