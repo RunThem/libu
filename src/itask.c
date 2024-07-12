@@ -150,6 +150,10 @@ void task_loop() {
     swapcontext(&sch.ctx, &task->ctx);
     sch.run = nullptr;
 
+    if (task->id == 1 && task->state == 0) {
+      goto end;
+    }
+
     u_xxx("task(%zu) yield, ret %d", task->id, task->state);
     switch (task->state) {
       /* dead, add to dead queue */
@@ -166,8 +170,8 @@ void task_loop() {
       /* read wait */
       case U_TASK_STATE_RWAIT:
         u_tree_put(sch.rwait, task->fd, task);
+
         FD_SET(task->fd, &sch.rfds[0]);
-        sch.maxfd = max(sch.maxfd, task->fd);
 
         u_xxx("task(%zu) -> R %d", task->id, task->fd);
         u_xxx("rwait total %zu", u_tree_len(sch.rwait));
@@ -176,14 +180,14 @@ void task_loop() {
       /* write wait */
       case U_TASK_STATE_WWAIT:
         u_tree_put(sch.wwait, task->fd, task);
+
         FD_SET(task->fd, &sch.wfds[0]);
-        sch.maxfd = max(sch.maxfd, task->fd);
 
         u_xxx("task(%zu) -> W %d", task->id, task->fd);
         u_xxx("wwait total %zu", u_tree_len(sch.wwait));
         break;
 
-      default: assert(0);
+      default: u_xxx("default state is %d", task->state); assert(0);
     }
 
     if (u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait)) {
@@ -193,6 +197,8 @@ void task_loop() {
     /* net fd */
     sch.rfds[1] = sch.rfds[0];
     sch.wfds[1] = sch.wfds[0];
+
+    sch.maxfd = max(u_tree_max(sch.rwait).key, u_tree_max(sch.wwait).key);
 
     timeout_ref = u_list_is_empty(sch.tasks) ? nullptr : &timeout;
     cnt         = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
@@ -210,8 +216,6 @@ void task_loop() {
           FD_CLR(fd, &sch.rfds[0]);
 
           u_xxx("task(%zu) <- R %d", task->id, task->fd);
-
-          goto reset_maxfd;
         }
 
         if (FD_ISSET(fd, &sch.wfds[1])) {
@@ -223,22 +227,6 @@ void task_loop() {
           FD_CLR(fd, &sch.wfds[0]);
 
           u_xxx("task(%zu) <- W %d", task->id, task->fd);
-
-          goto reset_maxfd;
-        }
-
-        continue;
-
-reset_maxfd:
-        if (sch.maxfd == fd) {
-          sch.maxfd = 0;
-          u_tree_for (sch.rwait, _fd, _task) {
-            sch.maxfd = max(sch.maxfd, _fd);
-          }
-
-          u_tree_for (sch.wwait, _fd, _task) {
-            sch.maxfd = max(sch.maxfd, _fd);
-          }
         }
       }
     }
