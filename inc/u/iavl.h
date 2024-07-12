@@ -200,7 +200,7 @@ extern bool avl_for(any_t, any_t, any_t);
       struct {                                                                                     \
         u_tree_type(u, k) key;                                                                     \
         u_tree_type(u, v) val;                                                                     \
-      } _;                                                                                         \
+      } _ = {};                                                                                    \
                                                                                                    \
       avl_min(u, &_.key, &_.val);                                                                  \
                                                                                                    \
@@ -214,7 +214,7 @@ extern bool avl_for(any_t, any_t, any_t);
       struct {                                                                                     \
         u_tree_type(u, k) key;                                                                     \
         u_tree_type(u, v) val;                                                                     \
-      } _;                                                                                         \
+      } _ = {};                                                                                    \
                                                                                                    \
       avl_max(u, &_.key, &_.val);                                                                  \
                                                                                                    \
