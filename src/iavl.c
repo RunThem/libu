@@ -483,6 +483,40 @@ any_t avl_at(any_t _self, any_t key) {
   return val(node);
 }
 
+void avl_min(any_t _self, any_t key, any_t val) {
+  avl_t* self  = (avl_t*)_self;
+  node_t* node = self->root;
+
+  u_nchk_if(self == nullptr);
+  u_nchk_if(self->len == 0);
+  u_nchk_if(key == nullptr);
+  u_nchk_if(val == nullptr);
+
+  while (node->left) {
+    node = node->left;
+  }
+
+  memcpy(key, key(node), self->ksize);
+  memcpy(val, val(node), self->vsize);
+}
+
+void avl_max(any_t _self, any_t key, any_t val) {
+  avl_t* self  = (avl_t*)_self;
+  node_t* node = self->root;
+
+  u_nchk_if(self == nullptr);
+  u_nchk_if(self->len == 0);
+  u_nchk_if(key == nullptr);
+  u_nchk_if(val == nullptr);
+
+  while (node->right) {
+    node = node->right;
+  }
+
+  memcpy(key, key(node), self->ksize);
+  memcpy(val, val(node), self->vsize);
+}
+
 void avl_pop(any_t _self, any_t key, any_t val) {
   avl_t* self    = (avl_t*)_self;
   node_t* node   = self->root;

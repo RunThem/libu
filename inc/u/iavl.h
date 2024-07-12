@@ -52,6 +52,10 @@ extern void avl_cleanup(any_t);
 
 extern any_t avl_at(any_t, any_t);
 
+extern void avl_min(any_t, any_t, any_t);
+
+extern void avl_max(any_t, any_t, any_t);
+
 extern void avl_pop(any_t, any_t, any_t);
 
 extern void avl_put(any_t, any_t, any_t);
@@ -188,6 +192,34 @@ extern bool avl_for(any_t, any_t, any_t);
 
 #  define u_tree_try(u, _k)                                                                        \
     for (u_tree_type(u, v)* it = avl_at(u, &(u_tree_type(u, k)){_k}); it != nullptr; it = nullptr)
+
+#  define u_tree_min(u)                                                                            \
+    ({                                                                                             \
+      u_tree_type_check(u);                                                                        \
+                                                                                                   \
+      struct {                                                                                     \
+        u_tree_type(u, k) key;                                                                     \
+        u_tree_type(u, v) val;                                                                     \
+      } _;                                                                                         \
+                                                                                                   \
+      avl_min(u, &_.key, &_.val);                                                                  \
+                                                                                                   \
+      _;                                                                                           \
+    })
+
+#  define u_tree_max(u)                                                                            \
+    ({                                                                                             \
+      u_tree_type_check(u);                                                                        \
+                                                                                                   \
+      struct {                                                                                     \
+        u_tree_type(u, k) key;                                                                     \
+        u_tree_type(u, v) val;                                                                     \
+      } _;                                                                                         \
+                                                                                                   \
+      avl_max(u, &_.key, &_.val);                                                                  \
+                                                                                                   \
+      _;                                                                                           \
+    })
 
 #  define u_tree_pop(u, _k)                                                                        \
     ({                                                                                             \
