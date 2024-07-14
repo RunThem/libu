@@ -127,7 +127,7 @@ any_t vec_at(any_t _self, int idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self == nullptr, nullptr);
-  u_chk_if(idx >= self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
+  u_chk_if(idx >= self->len && idx < -self->len, nullptr, "idx(%d), len(%d)", idx, self->len);
 
   idx += (idx < 0) ? self->len : 0;
 
@@ -146,7 +146,7 @@ void vec_pop(any_t _self, int idx, any_t item) {
 
   u_nchk_if(self == nullptr);
   u_nchk_if(self->len == 0);
-  u_nchk_if(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
+  u_nchk_if(idx > self->len && idx < -self->len, "idx(%d), len(%d)", idx, self->len);
 
   idx += (idx < 0) ? self->len : 0;
   memcpy(item, at(idx), self->itsize);
@@ -173,7 +173,7 @@ void vec_put(any_t _self, int idx, any_t item) {
 
   u_nchk_if(self == nullptr);
   u_nchk_if(idx > (ssize_t)self->len || idx < -((ssize_t)self->len + 1),
-            "idx(%ld), len(%zu)",
+            "idx(%d), len(%d)",
             idx,
             self->len);
 

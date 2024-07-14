@@ -148,7 +148,7 @@ typedef struct {
 
 thread_local u_bm_t bm;
 
-bool u_bm_entry(const char* msg, size_t cnt) {
+bool __bm_entry(const char* msg, size_t cnt) {
   size_t take = 10'0000'0000L; /* nanoseconds/per second */
   size_t ave  = 0;
   size_t s    = 0; /* second */
