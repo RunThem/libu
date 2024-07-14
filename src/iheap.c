@@ -140,29 +140,34 @@ void heap_pop(any_t _self, any_t item) {
 
   memcpy(item, self->root, self->itsize);
 
-  flag = self->attr ? -1 : 1;
+  flag = self->attr ? 1 : -1;
   while (true) {
     lidx = left(pidx);
     ridx = right(pidx);
-    idx  = pidx;
 
-    /* exist left node */
-    if (lidx < self->len && self->cmp_fn(at(lidx), at(self->len - 1)) == flag) {
-      idx = lidx;
-    }
-
-    /* exist right node */
-    if (ridx < self->len && self->cmp_fn(at(ridx), at(idx)) == flag) {
-      idx = ridx;
-    }
-
-    /* neither the left nor the right node exits */
-    if (idx == pidx) {
+    /* no child node */
+    if (lidx >= self->len) {
       break;
     }
 
+    idx = lidx;
+
+    /* if there are two child nodes, select the node that meets the rules(flag) */
+    if (ridx < self->len) {
+      if (self->cmp_fn(at(lidx), at(ridx)) == flag) {
+        idx = ridx;
+      }
+    }
+
+    /* compare the child node with the current node to see if they meet the rules(flag) */
+    if (self->cmp_fn(at(idx), at(self->len - 1)) == flag) {
+      break;
+    }
+
+    /* exchange child node with current node  */
     memcpy(at(pidx), at(idx), self->itsize);
 
+    /* iteration */
     pidx = idx;
   }
 

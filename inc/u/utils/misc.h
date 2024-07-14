@@ -41,9 +41,9 @@ extern "C" {
 
 /* clang-format off */
 #define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
-      for (size_t i = n; i < u_va_at(0, __VA_ARGS__); i++)                                         \
+      for (int i = n; i < u_va_at(0, __VA_ARGS__); i++)                                            \
     )(                                                                                             \
-      for (size_t i = 0; i < n; i++)                                                               \
+      for (int i = 0; i < n; i++)                                                                  \
     )
 /* clang-format on */
 

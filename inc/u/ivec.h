@@ -139,7 +139,7 @@ extern bool   vec_for       (any_t, int*, any_t);
         __b = vec_at(self, __a);                                                                   \
                                                                                                    \
         if (__b != nullptr) {                                                                      \
-          *__b = u_va_at(1, __VA_ARGS__);                                                          \
+          *__b = u_va_at(0, __VA_ARGS__);                                                          \
           __ret = true;                                                                            \
         }                                                                                          \
                                                                                                    \

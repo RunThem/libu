@@ -75,7 +75,7 @@ extern bool   map_for       (any_t, any_t, any_t);
                                                                                                    \
       u_map_init(self);                                                                            \
                                                                                                    \
-      u;                                                                                           \
+      self;                                                                                        \
     })
 
 #  define u_map_len(self)                                                                          \
@@ -157,11 +157,15 @@ extern bool   map_for       (any_t, any_t, any_t);
 /* clang-format on */
 
 #  define u_map_try(self, key)                                                                     \
-    for (u_types(self, 1)* it = map_at(self, &(u_types(self, 0)){key}); it != nullptr; it = nullptr)
+    for (u_types(self, 1)* it = ({                                                                 \
+           u_types(self, 0) __key = key;                                                           \
+           map_at(self, &__key);                                                                   \
+         });                                                                                       \
+         it != nullptr;                                                                            \
+         it = nullptr)
 
 #  define u_map_pop(self, key)                                                                     \
     ({                                                                                             \
-      u_map_type_check(self);                                                                      \
       u_check(self, 2, __u_map_ref_t);                                                             \
                                                                                                    \
       u_types(self, 0) __a = key;                                                                  \

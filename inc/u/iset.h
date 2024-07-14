@@ -58,7 +58,7 @@ typedef struct {
                                                                                                    \
       u_set_init(self, fn);                                                                        \
                                                                                                    \
-      u;                                                                                           \
+      self;                                                                                        \
     })
 
 #  define u_set_len(self)                                                                          \
@@ -79,7 +79,7 @@ typedef struct {
     ({                                                                                             \
       u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_types(self) __a = item;                                                                    \
+      u_types(self, 0) __a = item;                                                                 \
                                                                                                    \
       avl_exist(self, &__a);                                                                       \
     })
@@ -142,7 +142,11 @@ typedef struct {
 /* clang-format on */
 
 #  define u_set_try(self, item)                                                                    \
-    for (u_types(self, 0)* it = avl_at(self, &(u_types(self, 0)){item});                           \
+    for (u_types(self, 0)* it = ({                                                                 \
+           u_types(self, 0) __item = item;                                                         \
+                                                                                                   \
+           avl_at(self, &__item);                                                                  \
+         });                                                                                       \
          it != nullptr && (it -= 1);                                                               \
          it = nullptr)
 
@@ -150,18 +154,18 @@ typedef struct {
     ({                                                                                             \
       u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_types(self) __item = item;                                                                 \
+      u_types(self, 0) __item = item;                                                              \
                                                                                                    \
       avl_pop(self, &__item, &__item);                                                             \
                                                                                                    \
-      it;                                                                                          \
+      __item;                                                                                      \
     })
 
 #  define u_set_put(self, item)                                                                    \
     do {                                                                                           \
       u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_types(self) __item = item;                                                                 \
+      u_types(self, 0) __item = item;                                                              \
                                                                                                    \
       avl_put(self, &__item, &__item);                                                             \
     } while (0)
@@ -170,8 +174,8 @@ typedef struct {
     ({                                                                                             \
       u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      u_types(self) __a = it1;                                                                     \
-      u_types(self) __b = it2;                                                                     \
+      u_types(self, 0) __a = it1;                                                                  \
+      u_types(self, 0) __b = it2;                                                                  \
                                                                                                    \
       avl_fn(self)(&__a, &__b);                                                                    \
     })

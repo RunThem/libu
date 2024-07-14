@@ -70,7 +70,7 @@ extern void   heap_put      (any_t, any_t);
                                                                                                    \
       u_heap_init(self, attr, fn);                                                                 \
                                                                                                    \
-      u;                                                                                           \
+      self;                                                                                        \
     })
 
 #  define u_heap_len(self)                                                                         \
@@ -107,7 +107,7 @@ extern void   heap_put      (any_t, any_t);
     ({                                                                                             \
       u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      u_types(self) __a = {};                                                                      \
+      u_types(self, 0) __a = {};                                                                   \
                                                                                                    \
       heap_at(self, &__a);                                                                         \
                                                                                                    \
@@ -118,7 +118,7 @@ extern void   heap_put      (any_t, any_t);
     ({                                                                                             \
       u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      u_types(self) __a = {};                                                                      \
+      u_types(self, 0) __a = {};                                                                   \
                                                                                                    \
       heap_pop(self, &__a);                                                                        \
                                                                                                    \

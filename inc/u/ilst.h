@@ -49,6 +49,7 @@ struct u_node_t {
  **************************************************************************************************/
 /* clang-format off */
 extern any_t  lst_new       (size_t);
+extern bool   lst_clear     (any_t, any_t);
 extern void   lst_cleanup   (any_t);
 extern size_t lst_len       (any_t);
 extern bool   lst_exist     (any_t, any_t);
@@ -109,6 +110,9 @@ extern any_t  lst_for       (any_t);
                                                                                                    \
       lst_exist(self, __a);                                                                        \
     })
+
+#  define u_list_clear(self, it)                                                                   \
+    for (u_types(self, 0)* it = lst_head(self); lst_clear(self, it); it = lst_head(self))
 
 #  define u_list_cleanup(self)                                                                     \
     do {                                                                                           \

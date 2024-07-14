@@ -62,6 +62,29 @@ err:
   return nullptr;
 }
 
+bool lst_clear(any_t _self, any_t ptr) {
+  lst_t* self    = (lst_t*)_self;
+  u_node_t* node = nullptr;
+
+  u_chk_if(self == nullptr, false);
+  u_chk_if(ptr == nullptr, false);
+
+  node = ptr + self->offset;
+
+  self->head = self->head->next;
+  if (self->head == nullptr) {
+    self->len  = 0;
+    self->tail = nullptr;
+    self->iter = nullptr;
+  }
+
+  node->prev = nullptr;
+  node->next = nullptr;
+  node->ptr  = nullptr;
+
+  return true;
+}
+
 void lst_cleanup(any_t _self) {
   lst_t* self = (lst_t*)_self;
 
@@ -106,7 +129,7 @@ any_t lst_tail(any_t _self) {
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(self->len == 0, nullptr);
 
-  return any(self->head) - self->offset;
+  return any(self->tail) - self->offset;
 }
 
 any_t lst_prev(any_t _self, any_t ptr) {
@@ -119,7 +142,7 @@ any_t lst_prev(any_t _self, any_t ptr) {
   node = ptr + self->offset;
   u_err_if(node->ptr != self);
 
-  return any(node->prev) - self->offset;
+  return node->prev == nullptr ? nullptr : any(node->prev) - self->offset;
 
 err:
   return nullptr;
@@ -135,7 +158,7 @@ any_t lst_next(any_t _self, any_t ptr) {
   node = ptr + self->offset;
   u_err_if(node->ptr != self);
 
-  return any(node->prev) - self->offset;
+  return node->next == nullptr ? nullptr : any(node->next) - self->offset;
 
 err:
   return nullptr;
@@ -225,7 +248,6 @@ bool lst_for_init(any_t _self, bool flag) {
     self->flags[0] = 0;
   }
 
-  self->flags[0] = !self->flags[0];
   self->flags[1] = flag;
   self->flags[2] = true;
   self->flags[3] = false;

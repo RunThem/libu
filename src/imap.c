@@ -345,8 +345,8 @@ void map_pop(any_t _self, any_t key, any_t val) {
 
   node = map_find(self, idx, key);
   if (node->next != nullptr) {
-    idx[0]->next = node->next;
-    idx[1]->hash--;
+    idx[0]->hash--;
+    idx[1]->next = node->next;
 
     self->len--;
 

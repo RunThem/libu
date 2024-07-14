@@ -111,7 +111,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
       avl_clear(self);                                                                             \
     } while (0)
 
-#  define u_tree_cleanp(self)                                                                      \
+#  define u_tree_cleanup(self)                                                                     \
     do {                                                                                           \
       u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
@@ -159,7 +159,12 @@ extern bool     avl_for       (any_t, any_t, any_t);
 /* clang-format on */
 
 #  define u_tree_try(self, key)                                                                    \
-    for (u_types(self, 1)* it = avl_at(self, &(u_types(self, 0)){key}); it != nullptr; it = nullptr)
+    for (u_types(self, 1)* it = ({                                                                 \
+           u_types(self, 0) __key = key;                                                           \
+           avl_at(self, &__key);                                                                   \
+         });                                                                                       \
+         it != nullptr;                                                                            \
+         it = nullptr)
 
 #  define u_tree_min(self)                                                                         \
     ({                                                                                             \
