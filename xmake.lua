@@ -10,6 +10,10 @@ set_xmakever('2.6.1')
 --- Build mode
 add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.release')
 
+--- Project file
+add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
+
+--- Custom rules
 includes('rules/*.lua')
 
 --- Language standard
@@ -38,19 +42,6 @@ add_cflags('-Werror=vla')
 
 --- Repositories
 add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
-
---- Task(lsp) generate the project file
-task('lsp', function()
-  set_menu({
-    usage = 'xmake lsp',
-    description = 'Generate the project file.',
-  })
-
-  on_run(function()
-    os.exec('xmake project -k cmake build')
-    os.exec('xmake project -k compile_commands build')
-  end)
-end)
 
 --- Mimalloc option
 option('mimalloc', function()
