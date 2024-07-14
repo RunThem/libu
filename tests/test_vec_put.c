@@ -17,7 +17,7 @@ test() {
     mut_e(i, u_vec_at(v, i));
   }
 
-  mut_e(0, u_vec_at(v, N1W));
+  mut_e(0, u_vec_at(v, -N1W - 1));
   mut_e(0, u_vec_at(v, N1W));
 
   u_vec_cleanup(v);
@@ -35,7 +35,7 @@ test() {
     mut_e(i, u_vec_at(v, i));
   }
 
-  mut_e(0, u_vec_at(v, N1W));
+  mut_e(0, u_vec_at(v, -N1W - 1));
   mut_e(0, u_vec_at(v, N1W));
 
   u_vec_cleanup(v);
@@ -54,6 +54,7 @@ test() {
 
   mut_e(0, u_vec_at(v, N1W));
   mut_e(0, u_vec_at(v, -1));
+  mut_e(0, u_vec_at(v, -N1W - 1));
 
   u_vec_cleanup(v);
 
@@ -72,6 +73,7 @@ test() {
 
   mut_e(0, u_vec_at(v, N1W));
   mut_e(0, u_vec_at(v, -1));
+  mut_e(0, u_vec_at(v, -N1W - 1));
 
   u_vec_cleanup(v);
 
