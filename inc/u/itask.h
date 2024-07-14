@@ -48,6 +48,7 @@ extern "C" {
 extern any_t    task_new      (any_t);
 extern void     task_yield    ();
 extern void     task_loop     ();
+extern bool     task_delay    (u64_t);
 extern int      task_socket   (int, int, int);
 extern int      task_accept   (int, struct sockaddr*, socklen_t*);
 extern int      task_connect  (int, struct sockaddr*, socklen_t);
@@ -80,6 +81,12 @@ extern ssize_t  task_sendto   (int, const void*, size_t, int, const struct socka
                                                                                                    \
       task_loop();                                                                                 \
     } while (0)
+
+#  define u_task_delay(tick)                                                                       \
+    ({                                                                                             \
+      ;                                                                                            \
+      task_delay(tick);                                                                            \
+    })
 
 #  define u_task_socket(domain, type, protocol)                                                    \
     ({                                                                                             \
