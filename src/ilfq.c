@@ -24,27 +24,27 @@
 
 #include <u/u.h>
 
-typedef struct lfq_node_t lfq_node_t;
-struct lfq_node_t {
+typedef struct node_t node_t, *node_ref_t;
+struct node_t {
   any_t item;
-  _Atomic(lfq_node_t*) next;
+  _Atomic(node_ref_t) next;
 };
 
-typedef struct lfq_t {
-  _Atomic(lfq_node_t*) head;
-  _Atomic(lfq_node_t*) tail;
+typedef struct {
+  _Atomic(node_ref_t) head;
+  _Atomic(node_ref_t) tail;
 
   _Atomic(size_t) len;
-} lfq_t;
+} lfq_t, *lfq_ref_t;
 
 u_lfq_ref_t lfq_new() {
-  lfq_t* self      = nullptr;
-  lfq_node_t* node = nullptr;
+  lfq_ref_t self  = nullptr;
+  node_ref_t node = nullptr;
 
   self = u_talloc(lfq_t);
   u_nil_if(self);
 
-  node = u_talloc(lfq_node_t);
+  node = u_talloc(node_t);
   u_nil_if(node);
 
   u_atomic_init(&self->len, 0);
@@ -58,7 +58,7 @@ err:
 }
 
 void lfq_cleanup(u_lfq_ref_t _self) {
-  lfq_t* self = (lfq_t*)_self;
+  lfq_ref_t self = (lfq_ref_t)_self;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(u_atomic_pop(&self->len) == 0);
@@ -70,7 +70,7 @@ void lfq_cleanup(u_lfq_ref_t _self) {
 }
 
 size_t lfq_len(u_lfq_ref_t _self) {
-  lfq_t* self = (lfq_t*)_self;
+  lfq_ref_t self = (lfq_ref_t)_self;
 
   u_chk_if(self == nullptr, 0);
 
@@ -78,15 +78,15 @@ size_t lfq_len(u_lfq_ref_t _self) {
 }
 
 bool lfq_put(u_lfq_ref_t _self, any_t obj) {
-  lfq_t* self      = (lfq_t*)_self;
-  lfq_node_t* tail = nullptr;
-  lfq_node_t* next = nullptr;
-  lfq_node_t* node = nullptr;
+  lfq_ref_t self  = (lfq_ref_t)_self;
+  node_ref_t tail = nullptr;
+  node_ref_t next = nullptr;
+  node_ref_t node = nullptr;
 
   u_chk_if(self == nullptr, false);
   u_chk_if(obj == nullptr, false);
 
-  node = u_talloc(lfq_node_t);
+  node = u_talloc(node_t);
   u_nil_if(node);
 
   node->item = obj;
@@ -120,10 +120,10 @@ err:
 }
 
 any_t lfq_pop(u_lfq_ref_t _self) {
-  lfq_t* self      = (lfq_t*)_self;
-  lfq_node_t* head = nullptr;
-  lfq_node_t* tail = nullptr;
-  lfq_node_t* next = nullptr;
+  lfq_ref_t self  = (lfq_ref_t)_self;
+  node_ref_t head = nullptr;
+  node_ref_t tail = nullptr;
+  node_ref_t next = nullptr;
 
   u_chk_if(self == nullptr, nullptr);
 

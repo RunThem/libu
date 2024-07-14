@@ -49,23 +49,23 @@ typedef struct {
   int fd;      /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
 
   u_node_t next;
-} task_t;
+} task_t, *task_ref_t;
 
 typedef struct {
   size_t id;
   size_t cnt;
   ucontext_t ctx;
-  task_t* run;
+  task_ref_t run;
   int state;
   u_list_t(task_t) tasks; /* #[[list<task_t>]] */
   u_list_t(task_t) dead;
-  u_tree_t(int, task_t*) rwait; /* #[[tree<int, task_t*>]] */
-  u_tree_t(int, task_t*) wwait;
+  u_tree_t(int, task_ref_t) rwait; /* #[[tree<int, task_ref_t>]] */
+  u_tree_t(int, task_ref_t) wwait;
 
   fd_set rfds[2];
   fd_set wfds[2];
   int maxfd;
-} scheduler_t;
+} scheduler_t, *scheduler_ref_t;
 
 scheduler_t sch = {};
 
@@ -76,8 +76,8 @@ void task_init() {
   sch.run   = nullptr;
   sch.tasks = u_list_new(task_t, next);
   sch.dead  = u_list_new(task_t, next);
-  sch.rwait = u_tree_new(int, task_t*, fn_cmp(int));
-  sch.wwait = u_tree_new(int, task_t*, fn_cmp(int));
+  sch.rwait = u_tree_new(int, task_ref_t, fn_cmp(int));
+  sch.wwait = u_tree_new(int, task_ref_t, fn_cmp(int));
 
   FD_ZERO(&sch.rfds[0]);
   FD_ZERO(&sch.wfds[0]);
@@ -89,7 +89,7 @@ void task_init() {
 }
 
 any_t task_new(any_t fun) {
-  task_t* self = nullptr;
+  task_ref_t self = nullptr;
 
   self = u_talloc(task_t);
   u_nil_if(self);
@@ -132,7 +132,7 @@ static inline void task_switch(int state) {
 }
 
 void task_loop() {
-  task_t* task                = nullptr;
+  task_ref_t task             = nullptr;
   int cnt                     = 0;
   struct timeval timeout      = {};
   struct timeval* timeout_ref = nullptr;

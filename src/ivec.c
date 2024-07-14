@@ -27,14 +27,13 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef struct vec_t vec_t;
-struct vec_t {
+typedef struct {
   u8_t flags[4];
   size_t itsize;
   int len;
   int cap;
   any_t items;
-};
+} vec_t, *vec_ref_t;
 
 /***************************************************************************************************
  * Macro
@@ -45,7 +44,7 @@ struct vec_t {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static ret_t vec_resize(vec_t* self) {
+static ret_t vec_resize(vec_ref_t self) {
   int cap     = 0;
   any_t items = nullptr;
 
@@ -64,7 +63,7 @@ err:
 }
 
 any_t vec_new(size_t itsize) {
-  vec_t* self = nullptr;
+  vec_ref_t self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
 
@@ -86,7 +85,7 @@ err:
 }
 
 void vec_clear(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -94,7 +93,7 @@ void vec_clear(any_t _self) {
 }
 
 void vec_cleanup(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -103,7 +102,7 @@ void vec_cleanup(any_t _self) {
 }
 
 bool vec_exist(any_t _self, int idx) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self == nullptr, false);
 
@@ -111,7 +110,7 @@ bool vec_exist(any_t _self, int idx) {
 }
 
 size_t vec_len(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self == nullptr, 0);
 
@@ -119,13 +118,13 @@ size_t vec_len(any_t _self) {
 }
 
 size_t vec_cap(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   return self->cap;
 }
 
 any_t vec_at(any_t _self, int idx) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(idx >= self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
@@ -143,7 +142,7 @@ any_t vec_at(any_t _self, int idx) {
  * { -7, -6, -5, -4, -3, -2  -1 }
  * */
 void vec_pop(any_t _self, int idx, any_t item) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(self->len == 0);
@@ -169,8 +168,8 @@ void vec_pop(any_t _self, int idx, any_t item) {
  * { -8, -7, -6, -5, -4, -3, -2 } -1
  * */
 void vec_put(any_t _self, int idx, any_t item) {
-  vec_t* self = (vec_t*)_self;
-  ret_t code  = 0;
+  vec_ref_t self = (vec_ref_t)_self;
+  ret_t code     = 0;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(idx > (ssize_t)self->len || idx < -((ssize_t)self->len + 1),
@@ -196,7 +195,7 @@ err:
 }
 
 void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(cmp_fn == nullptr);
@@ -206,7 +205,7 @@ void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
 }
 
 bool vec_for_init(any_t _self, bool flag) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self == nullptr, false);
 
@@ -224,7 +223,7 @@ bool vec_for_init(any_t _self, bool flag) {
 }
 
 void vec_for_end(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -232,7 +231,7 @@ void vec_for_end(any_t _self) {
 }
 
 bool vec_for(any_t _self, int* idx, any_t item) {
-  vec_t* self = (vec_t*)_self;
+  vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self == nullptr, false);
   u_chk_if(self->len == 0, false);

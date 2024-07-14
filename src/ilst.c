@@ -28,23 +28,22 @@
  * Type
  **************************************************************************************************/
 
-typedef struct lst_t lst_t;
-struct lst_t {
+typedef struct {
   u8_t flags[4];
 
   size_t offset;
   size_t len;
 
-  u_node_t* head;
-  u_node_t* tail;
-  u_node_t* iter;
-};
+  u_node_ref_t head;
+  u_node_ref_t tail;
+  u_node_ref_t iter;
+} lst_t, *lst_ref_t;
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
 any_t lst_new(size_t offset) {
-  lst_t* self = nullptr;
+  lst_ref_t self = nullptr;
 
   self = u_talloc(lst_t);
   u_nil_if(self);
@@ -63,8 +62,8 @@ err:
 }
 
 bool lst_clear(any_t _self, any_t ptr) {
-  lst_t* self    = (lst_t*)_self;
-  u_node_t* node = nullptr;
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t node = nullptr;
 
   u_chk_if(self == nullptr, false);
   u_chk_if(ptr == nullptr, false);
@@ -86,7 +85,7 @@ bool lst_clear(any_t _self, any_t ptr) {
 }
 
 void lst_cleanup(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -94,7 +93,7 @@ void lst_cleanup(any_t _self) {
 }
 
 size_t lst_len(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_chk_if(self == nullptr, 0);
 
@@ -102,8 +101,8 @@ size_t lst_len(any_t _self) {
 }
 
 bool lst_exist(any_t _self, any_t ptr) {
-  lst_t* self    = (lst_t*)_self;
-  u_node_t* node = nullptr;
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t node = nullptr;
 
   u_chk_if(self == nullptr, false);
   u_chk_if(ptr == nullptr, false);
@@ -115,7 +114,7 @@ bool lst_exist(any_t _self, any_t ptr) {
 }
 
 any_t lst_head(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(self->len == 0, nullptr);
@@ -124,7 +123,7 @@ any_t lst_head(any_t _self) {
 }
 
 any_t lst_tail(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(self->len == 0, nullptr);
@@ -133,8 +132,8 @@ any_t lst_tail(any_t _self) {
 }
 
 any_t lst_prev(any_t _self, any_t ptr) {
-  lst_t* self    = (lst_t*)_self;
-  u_node_t* node = nullptr;
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t node = nullptr;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(ptr == nullptr, nullptr);
@@ -149,8 +148,8 @@ err:
 }
 
 any_t lst_next(any_t _self, any_t ptr) {
-  lst_t* self    = (lst_t*)_self;
-  u_node_t* node = nullptr;
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t node = nullptr;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(ptr == nullptr, nullptr);
@@ -165,8 +164,8 @@ err:
 }
 
 void lst_pop(any_t _self, any_t ptr) {
-  lst_t* self    = (lst_t*)_self;
-  u_node_t* node = nullptr;
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t node = nullptr;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(ptr == nullptr);
@@ -198,11 +197,11 @@ err:
 }
 
 void lst_put(any_t _self, any_t idx, any_t ptr) {
-  lst_t* self    = (lst_t*)_self;
-  u_node_t* node = nullptr;
-  u_node_t* prev = nullptr;
-  u_node_t* next = nullptr;
-  u_node_t* _idx = nullptr;
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t node = nullptr;
+  u_node_ref_t prev = nullptr;
+  u_node_ref_t next = nullptr;
+  u_node_ref_t _idx = nullptr;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(ptr == nullptr);
@@ -238,7 +237,7 @@ err:
 }
 
 bool lst_for_init(any_t _self, bool flag) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_chk_if(self == nullptr, false);
 
@@ -256,7 +255,7 @@ bool lst_for_init(any_t _self, bool flag) {
 }
 
 void lst_for_end(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -264,7 +263,7 @@ void lst_for_end(any_t _self) {
 }
 
 any_t lst_for(any_t _self) {
-  lst_t* self = (lst_t*)_self;
+  lst_ref_t self = (lst_ref_t)_self;
 
   u_chk_if(self == nullptr, nullptr);
   u_chk_if(self->len == 0, nullptr);

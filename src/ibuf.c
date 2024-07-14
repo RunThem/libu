@@ -27,7 +27,7 @@
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-void buf_init(u_buf_t* self, u8_t* buf, size_t cap) {
+void buf_init(u_buf_ref_t self, u8_t* buf, size_t cap) {
   u_nchk_if(self == nullptr);
 
   if (buf != nullptr) {
@@ -45,14 +45,14 @@ void buf_init(u_buf_t* self, u8_t* buf, size_t cap) {
 err:
 }
 
-void buf_clear(u_buf_t* self) {
+void buf_clear(u_buf_ref_t self) {
   u_nchk_if(self == nullptr);
 
   self->len = 0;
   self->buf = self->__rawbuf;
 }
 
-void buf_cleanup(u_buf_t* self) {
+void buf_cleanup(u_buf_ref_t self) {
   u_nchk_if(self == nullptr);
 
   if (self->alloc_flag) {
@@ -60,20 +60,20 @@ void buf_cleanup(u_buf_t* self) {
   }
 }
 
-size_t buf_len(u_buf_t* self) {
+size_t buf_len(u_buf_ref_t self) {
   u_chk_if(self == nullptr, 0);
 
   return self->len;
 }
 
-void buf_skip(u_buf_t* self, size_t len) {
+void buf_skip(u_buf_ref_t self, size_t len) {
   u_nchk_if(self == nullptr);
   u_nchk_if(len > self->len);
 
   self->buf += len;
 }
 
-void buf_pop(u_buf_t* self, any_t buf, size_t len) {
+void buf_pop(u_buf_ref_t self, any_t buf, size_t len) {
   u_nchk_if(self == nullptr);
   u_nchk_if(buf == nullptr);
   u_nchk_if(len > self->len);
@@ -84,7 +84,7 @@ void buf_pop(u_buf_t* self, any_t buf, size_t len) {
   self->buf += len;
 }
 
-void buf_put(u_buf_t* self, any_t buf, size_t len) {
+void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
   size_t diff = 0;
 
   u_nchk_if(self == nullptr);

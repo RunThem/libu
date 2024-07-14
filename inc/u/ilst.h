@@ -39,8 +39,8 @@ typedef struct {
 
 typedef struct u_node_t u_node_t, *u_node_ref_t;
 struct u_node_t {
-  u_node_t* prev;
-  u_node_t* next;
+  u_node_ref_t prev;
+  u_node_ref_t next;
   any_t ptr;
 };
 

@@ -46,12 +46,12 @@ typedef struct {
   u_cmp_fn cmp_fn;
 
   any_t root;
-} heap_t;
+} heap_t, *heap_ref_t;
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static ret_t heap_resize(heap_t* self) {
+static ret_t heap_resize(heap_ref_t self) {
   size_t cap = 0;
   any_t root = nullptr;
 
@@ -70,7 +70,7 @@ err:
 }
 
 any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
-  heap_t* self = nullptr;
+  heap_ref_t self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
 
@@ -94,7 +94,7 @@ err:
 }
 
 void heap_clear(any_t _self) {
-  heap_t* self = (heap_t*)_self;
+  heap_ref_t self = (heap_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -102,7 +102,7 @@ void heap_clear(any_t _self) {
 }
 
 void heap_cleanup(any_t _self) {
-  heap_t* self = (heap_t*)_self;
+  heap_ref_t self = (heap_ref_t)_self;
 
   u_nchk_if(self == nullptr);
 
@@ -111,7 +111,7 @@ void heap_cleanup(any_t _self) {
 }
 
 size_t heap_len(any_t _self) {
-  heap_t* self = (heap_t*)_self;
+  heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self == nullptr, 0);
 
@@ -119,7 +119,7 @@ size_t heap_len(any_t _self) {
 }
 
 void heap_at(any_t _self, any_t item) {
-  heap_t* self = (heap_t*)_self;
+  heap_ref_t self = (heap_ref_t)_self;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(self->len == 0);
@@ -128,12 +128,12 @@ void heap_at(any_t _self, any_t item) {
 }
 
 void heap_pop(any_t _self, any_t item) {
-  heap_t* self = (heap_t*)_self;
-  size_t idx   = 0;
-  size_t lidx  = 0;
-  size_t ridx  = 0;
-  size_t pidx  = 0;
-  int flag     = 0;
+  heap_ref_t self = (heap_ref_t)_self;
+  size_t idx      = 0;
+  size_t lidx     = 0;
+  size_t ridx     = 0;
+  size_t pidx     = 0;
+  int flag        = 0;
 
   u_nchk_if(self == nullptr);
   u_nchk_if(self->len == 0);
@@ -181,11 +181,11 @@ err:
 }
 
 void heap_put(any_t _self, any_t item) {
-  heap_t* self = (heap_t*)_self;
-  ret_t code   = 0;
-  size_t idx   = 0;
-  size_t pidx  = 0;
-  int flag     = 0;
+  heap_ref_t self = (heap_ref_t)_self;
+  ret_t code      = 0;
+  size_t idx      = 0;
+  size_t pidx     = 0;
+  int flag        = 0;
 
   u_nchk_if(self == nullptr);
 
