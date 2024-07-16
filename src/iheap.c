@@ -58,27 +58,27 @@ static ret_t heap_resize(heap_ref_t self) {
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
 
   root = u_realloc(self->root, self->itsize * cap);
-  u_nil_if(root);
+  u_check_expr_null_goto(root);
 
   self->root = root;
   self->cap  = cap;
 
   return 0;
 
-err:
+end:
   return -1;
 }
 
 any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
   heap_ref_t self = nullptr;
 
-  u_chk_if(itsize == 0, nullptr);
+  u_check_args_ret(itsize == 0, nullptr);
 
   self = u_talloc(heap_t);
-  u_nil_if(self);
+  u_check_expr_null_goto(self);
 
   self->root = u_calloc(32, itsize);
-  u_nil_if(self->root);
+  u_check_expr_null_goto(self->root);
 
   self->itsize = itsize;
   self->cmp_fn = fn;
@@ -88,15 +88,16 @@ any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
 
   return self;
 
-err:
+end:
   u_free_if(self);
+
   return nullptr;
 }
 
 void heap_clear(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   self->len = 0;
 }
@@ -104,7 +105,7 @@ void heap_clear(any_t _self) {
 void heap_cleanup(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   u_free_if(self->root);
   u_free_if(self);
@@ -113,7 +114,7 @@ void heap_cleanup(any_t _self) {
 size_t heap_len(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_chk_if(self == nullptr, 0);
+  u_check_args_null_ret(self, 0);
 
   return self->len;
 }
@@ -121,8 +122,9 @@ size_t heap_len(any_t _self) {
 void heap_at(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(self->len == 0);
+  u_check_args_null_ret(self);
+
+  u_check_args_ret(self->len == 0);
 
   memcpy(item, self->root, self->itsize);
 }
@@ -135,8 +137,9 @@ void heap_pop(any_t _self, any_t item) {
   size_t pidx     = 0;
   int flag        = 0;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(self->len == 0);
+  u_check_args_null_ret(self);
+
+  u_check_args_ret(self->len == 0);
 
   memcpy(item, self->root, self->itsize);
 
@@ -174,10 +177,6 @@ void heap_pop(any_t _self, any_t item) {
   memcpy(at(idx), at(self->len - 1), self->itsize);
 
   self->len--;
-
-  return;
-
-err:
 }
 
 void heap_put(any_t _self, any_t item) {
@@ -187,11 +186,11 @@ void heap_put(any_t _self, any_t item) {
   size_t pidx     = 0;
   int flag        = 0;
 
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   if (self->len == self->cap) {
     code = heap_resize(self);
-    u_err_if(code != 0, "resize failed.");
+    u_check_expr_goto(code != 0);
   }
 
   flag = self->attr ? 1 : -1;
@@ -211,5 +210,5 @@ void heap_put(any_t _self, any_t item) {
 
   return;
 
-err:
+end:
 }

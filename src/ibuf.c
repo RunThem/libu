@@ -28,13 +28,13 @@
  * Function
  **************************************************************************************************/
 void buf_init(u_buf_ref_t self, u8_t* buf, size_t cap) {
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   if (buf != nullptr) {
     self->__rawbuf = buf;
   } else {
     self->__rawbuf = u_zalloc(cap);
-    u_nil_if(self->__rawbuf);
+    u_check_expr_null_goto(self->__rawbuf);
 
     self->alloc_flag = true;
   }
@@ -42,18 +42,21 @@ void buf_init(u_buf_ref_t self, u8_t* buf, size_t cap) {
   self->len = 0;
   self->cap = cap;
   self->buf = self->__rawbuf;
-err:
+
+  return;
+
+end:
 }
 
 void buf_clear(u_buf_ref_t self) {
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   self->len = 0;
   self->buf = self->__rawbuf;
 }
 
 void buf_cleanup(u_buf_ref_t self) {
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   if (self->alloc_flag) {
     u_free_if(self->__rawbuf);
@@ -61,22 +64,24 @@ void buf_cleanup(u_buf_ref_t self) {
 }
 
 size_t buf_len(u_buf_ref_t self) {
-  u_chk_if(self == nullptr, 0);
+  u_check_args_null_ret(self, 0);
 
   return self->len;
 }
 
 void buf_skip(u_buf_ref_t self, size_t len) {
-  u_nchk_if(self == nullptr);
-  u_nchk_if(len > self->len);
+  u_check_args_null_ret(self);
+
+  u_check_args_ret(self->len < len);
 
   self->buf += len;
 }
 
 void buf_pop(u_buf_ref_t self, any_t buf, size_t len) {
-  u_nchk_if(self == nullptr);
-  u_nchk_if(buf == nullptr);
-  u_nchk_if(len > self->len);
+  u_check_args_null_ret(self);
+  u_check_args_null_ret(buf);
+
+  u_check_args_ret(self->len < self->len);
 
   memcpy(buf, self->buf, len);
 
@@ -87,8 +92,8 @@ void buf_pop(u_buf_ref_t self, any_t buf, size_t len) {
 void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
   size_t diff = 0;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(buf == nullptr);
+  u_check_args_null_ret(self);
+  u_check_args_null_ret(buf);
 
   diff = self->buf - self->__rawbuf;
 
@@ -98,10 +103,10 @@ void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
       memmove(self->__rawbuf, self->buf, self->len);
       self->buf = self->__rawbuf;
     } else {
-      u_err_if(!self->alloc_flag);
+      u_check_expr_goto(!self->alloc_flag);
 
       self->__rawbuf = u_realloc(self->__rawbuf, self->cap + len);
-      u_nil_if(self->__rawbuf);
+      u_check_expr_null_goto(self->__rawbuf);
 
       self->cap += len;
       self->buf = self->__rawbuf + diff;
@@ -112,5 +117,7 @@ void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
 
   self->len += len;
 
-err:
+  return;
+
+end:
 }

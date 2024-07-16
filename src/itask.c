@@ -98,10 +98,10 @@ any_t task_new(any_t fun) {
   task_ref_t self = nullptr;
 
   self = u_talloc(task_t);
-  u_nil_if(self);
+  u_check_expr_null_goto(self);
 
   self->stack = u_zalloc(U_TASK_STACK_SIZE);
-  u_nil_if(self->stack);
+  u_check_expr_null_goto(self->stack);
 
   getcontext(&self->ctx);
   self->ctx.uc_stack.ss_sp   = self->stack;
@@ -119,7 +119,7 @@ any_t task_new(any_t fun) {
 
   return self;
 
-err:
+end:
   assert(0);
 
   u_free_if(self);
@@ -151,7 +151,7 @@ static void task_network() {
   struct timeval timeout      = {};
   struct timeval* timeout_ref = &timeout;
 
-  u_nchk_if(u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait));
+  u_check_args_ret(u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait));
 
   sch.rfds[1] = sch.rfds[0];
   sch.wfds[1] = sch.wfds[0];
@@ -163,7 +163,7 @@ static void task_network() {
   sch.maxfd = max(u_tree_max(sch.rwait).key, u_tree_max(sch.wwait).key);
   cnt       = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
 
-  u_err_if(cnt <= 0);
+  u_check_expr_goto(cnt <= 0);
 
   u_xxx("select ret %d, maxfd is %d", cnt, sch.maxfd);
 
@@ -193,7 +193,7 @@ static void task_network() {
 
   return;
 
-err:
+end:
 }
 
 static void task_timer() {
@@ -203,7 +203,7 @@ static void task_timer() {
   struct timeval timeout      = {.tv_usec = 10};
   struct timeval* timeout_ref = nullptr;
 
-  u_nchk_if(u_heap_is_empty(sch.timer));
+  u_check_args_ret(u_heap_is_empty(sch.timer));
 
   tick = task_gettick(0);
   task = u_heap_at(sch.timer);
@@ -294,7 +294,7 @@ void task_loop() {
       default: u_xxx("default state is %d", task->state); assert(0);
     }
 
-    u_errs_if(sch.cnt == 0, end);
+    u_check_args_ret(sch.cnt == 0);
 
     do {
       u_xxx("--- network ---");
@@ -333,16 +333,16 @@ int task_socket(int domain, int type, int protocol) {
   int reuse = 1;
 
   fd = socket(domain, type, protocol);
-  u_err_if(fd == -1, "Failed to create a new socket");
+  u_check_expr_goto(fd == -1);
 
   ret = fcntl(fd, F_SETFL, O_NONBLOCK);
-  u_err_if(ret == -1);
+  u_check_expr_goto(ret == -1);
 
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, any(&reuse), sizeof(int));
 
   return fd;
 
-err:
+end:
   u_close_if(fd);
 
   return -1;
@@ -358,17 +358,17 @@ int task_accept(int fd, struct sockaddr* addr, socklen_t* len) {
     task_switch(U_TASK_STATE_RWAIT);
 
     sockfd = accept(fd, addr, len);
-    u_err_if(sockfd < 0 && errno != EAGAIN);
+    u_check_expr_goto(sockfd < 0 && errno != EAGAIN);
   } while (sockfd < 0);
 
   ret = fcntl(sockfd, F_SETFL, O_NONBLOCK);
-  u_err_if(ret == -1);
+  u_check_expr_goto(ret == -1);
 
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, any(&reuse), sizeof(int));
 
   return sockfd;
 
-err:
+end:
 
   if (errno == ECONNABORTED) {
     u_xxx("accept: ECONNABORTED");
@@ -385,12 +385,13 @@ int task_connect(int fd, struct sockaddr* name, socklen_t namelen) {
   do {
     ret = connect(fd, name, namelen);
 
-    u_err_if(ret == -1 && (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINPROGRESS));
+    u_check_expr_goto(ret == -1 &&
+                      (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINPROGRESS));
   } while (ret != 0);
 
   return 0;
 
-err:
+end:
   return -1;
 }
 
@@ -428,15 +429,15 @@ ssize_t task_recvfrom(int fd,
   task_switch(U_TASK_STATE_RWAIT);
 
   recn = recvfrom(fd, buf, len, flags, src_addr, addrlen);
-  u_err_if(recn < 0 && errno == EAGAIN);
-  u_errs_if(recn < 0 && errno == ECONNRESET, err2);
+  u_check_expr_goto(recn < 0 && errno == EAGAIN);
+  u_check_expr_goto(recn < 0 && errno == ECONNRESET, end2);
 
   return recn;
 
-err:
+end:
   return recn;
 
-err2:
+end2:
   return 0;
 }
 
@@ -445,7 +446,7 @@ ssize_t task_write(int fd, const void* buf, size_t count) {
   ssize_t ret  = 0;
 
   ret = write(fd, buf, count);
-  u_err_if(ret == 0);
+  u_check_expr_goto(ret == 0);
 
   sent += ret;
 
@@ -454,14 +455,14 @@ ssize_t task_write(int fd, const void* buf, size_t count) {
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = write(fd, buf + sent, count - sent);
-    u_err_if(ret == 0);
+    u_check_expr_goto(ret == 0);
 
     sent += ret;
   }
 
   return sent;
 
-err:
+end:
   return ret;
 }
 
@@ -470,7 +471,7 @@ ssize_t task_send(int fd, const void* buf, size_t n, int flags) {
   ssize_t ret  = 0;
 
   ret = send(fd, buf, n, flags);
-  u_err_if(ret == 0);
+  u_check_expr_goto(ret == 0);
 
   sent += ret;
 
@@ -479,14 +480,14 @@ ssize_t task_send(int fd, const void* buf, size_t n, int flags) {
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = send(fd, buf + sent, n - sent, flags);
-    u_err_if(ret == 0);
+    u_check_expr_goto(ret == 0);
 
     sent += ret;
   }
 
   return sent;
 
-err:
+end:
   return ret;
 }
 
@@ -500,7 +501,7 @@ ssize_t task_sendto(int fd,
   ssize_t ret  = 0;
 
   ret = sendto(fd, buf, len, flags, dest_addr, addrlen);
-  u_err_if(ret == 0);
+  u_check_expr_goto(ret == 0);
 
   sent += ret;
 
@@ -509,13 +510,13 @@ ssize_t task_sendto(int fd,
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = sendto(fd, buf, len, flags, dest_addr, addrlen);
-    u_err_if(ret == 0);
+    u_check_expr_goto(ret == 0);
 
     sent += ret;
   }
 
   return sent;
 
-err:
+end:
   return ret;
 }

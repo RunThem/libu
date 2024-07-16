@@ -80,7 +80,7 @@ static node_ref_t avl_node(avl_ref_t self, node_ref_t parent, any_t key, any_t v
     self->free_nodes = node->parent;
   } else {
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
-    u_nil_if(node);
+    u_check_expr_null_goto(node);
   }
 
   node->left   = nullptr;
@@ -93,7 +93,7 @@ static node_ref_t avl_node(avl_ref_t self, node_ref_t parent, any_t key, any_t v
 
   return node;
 
-err:
+end:
   return nullptr;
 }
 
@@ -363,14 +363,12 @@ static void avl_prev(avl_ref_t self) {
 any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   avl_ref_t self = nullptr;
 
-  u_chk_if(ksize == 0, nullptr);
-#if 0 /* support set */
-  u_chk_if(vsize == 0, nullptr);
-#endif
-  u_chk_if(cmp_fn == nullptr, nullptr);
+  u_check_args_ret(ksize == 0, nullptr);
+
+  u_check_args_null_ret(cmp_fn, nullptr);
 
   self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
-  u_nil_if(self);
+  u_check_expr_null_goto(self);
 
   self->ksize  = ksize;
   self->vsize  = vsize;
@@ -380,7 +378,7 @@ any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
 
   return self;
 
-err:
+end:
   return nullptr;
 }
 
@@ -389,7 +387,7 @@ void avl_clear(any_t _self) {
   node_ref_t node           = nullptr;
   u_vec_t(node_ref_t) nodes = nullptr; /* #[[vec<node_ref_t>]] */
 
-  u_nchk_if(self->len == 0);
+  u_check_args_ret(self->len == 0);
 
   u_vec_init(nodes);
   u_vec_put(nodes, self->root);
@@ -418,7 +416,7 @@ void avl_cleanup(any_t _self) {
   avl_ref_t self  = (avl_ref_t)_self;
   node_ref_t node = nullptr;
 
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   avl_clear(_self);
 
@@ -435,7 +433,7 @@ void avl_cleanup(any_t _self) {
 size_t avl_len(any_t _self) {
   avl_ref_t self = (avl_ref_t)_self;
 
-  u_chk_if(self == nullptr, 0);
+  u_check_args_null_ret(self, 0);
 
   return self->len;
 }
@@ -445,8 +443,8 @@ bool avl_exist(any_t _self, any_t key) {
   node_ref_t node = self->root;
   ret_t result    = 0;
 
-  u_chk_if(self == nullptr, false);
-  u_chk_if(key == nullptr, false);
+  u_check_args_null_ret(self, false);
+  u_check_args_null_ret(key, false);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -465,9 +463,10 @@ any_t avl_at(any_t _self, any_t key) {
   node_ref_t node = self->root;
   ret_t result    = 0;
 
-  u_chk_if(self == nullptr, nullptr);
-  u_chk_if(key == nullptr, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_check_args_null_ret(self, nullptr);
+  u_check_args_null_ret(key, nullptr);
+
+  u_check_args_ret(self->len == 0, nullptr);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -478,19 +477,24 @@ any_t avl_at(any_t _self, any_t key) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  u_ret_if(node == nullptr, nullptr, "node not exists.");
+  /* node not exist */
+  u_check_expr_null_goto(node);
 
   return val(node);
+
+end:
+  return nullptr;
 }
 
 void avl_min(any_t _self, any_t key, any_t val) {
   avl_ref_t self  = (avl_ref_t)_self;
   node_ref_t node = self->root;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(self->len == 0);
-  u_nchk_if(key == nullptr);
-  u_nchk_if(val == nullptr);
+  u_check_args_null_ret(self);
+  u_check_args_null_ret(key);
+  u_check_args_null_ret(val);
+
+  u_check_args_ret(self->len == 0);
 
   while (node->left) {
     node = node->left;
@@ -504,10 +508,11 @@ void avl_max(any_t _self, any_t key, any_t val) {
   avl_ref_t self  = (avl_ref_t)_self;
   node_ref_t node = self->root;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(self->len == 0);
-  u_nchk_if(key == nullptr);
-  u_nchk_if(val == nullptr);
+  u_check_args_null_ret(self);
+  u_check_args_null_ret(key);
+  u_check_args_null_ret(val);
+
+  u_check_args_ret(self->len == 0);
 
   while (node->right) {
     node = node->right;
@@ -523,9 +528,9 @@ void avl_pop(any_t _self, any_t key, any_t val) {
   node_ref_t parent = nullptr;
   ret_t result      = 0;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(key == nullptr);
-  u_nchk_if(val == nullptr);
+  u_check_args_null_ret(self);
+  u_check_args_null_ret(key);
+  u_check_args_null_ret(val);
 
   while (node) {
     result = self->cmp_fn(key, key(node));
@@ -536,7 +541,8 @@ void avl_pop(any_t _self, any_t key, any_t val) {
     node = (result < 0) ? node->left : node->right;
   }
 
-  u_nchk_if(node == nullptr);
+  /* node not exist */
+  u_check_expr_null_goto(node);
 
   if (node->left && node->right) {
     parent = avl_pop_left_and_right(self, node);
@@ -555,6 +561,10 @@ void avl_pop(any_t _self, any_t key, any_t val) {
   if (parent) {
     avl_pop_rebalance(self, parent);
   }
+
+  return;
+
+end:
 }
 
 void avl_put(any_t _self, any_t key, any_t val) {
@@ -564,21 +574,22 @@ void avl_put(any_t _self, any_t key, any_t val) {
   node_ref_t node   = nullptr;
   ret_t result      = 0;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(key == nullptr);
-  u_nchk_if(val == nullptr);
+  u_check_args_null_ret(self);
+  u_check_args_null_ret(key);
+  u_check_args_null_ret(val);
 
   while (*link) {
     parent = *link;
 
     result = self->cmp_fn(key, key(parent));
-    u_err_if(result == 0, "avl push node already exists.");
+    /* put node already exist */
+    u_check_expr_goto(result == 0);
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
 
   node = avl_node(self, parent, key, val);
-  u_nil_if(node);
+  u_check_expr_null_goto(node);
 
   *link = node;
   self->len++;
@@ -587,13 +598,13 @@ void avl_put(any_t _self, any_t key, any_t val) {
 
   return;
 
-err:
+end:
 }
 
 extern u_cmp_fn avl_fn(any_t _self) {
   avl_ref_t self = (avl_ref_t)_self;
 
-  u_chk_if(self == nullptr, nullptr);
+  u_check_args_null_ret(self, nullptr);
 
   return self->cmp_fn;
 }
@@ -601,7 +612,7 @@ extern u_cmp_fn avl_fn(any_t _self) {
 bool avl_for_init(any_t _self, bool flag) {
   avl_ref_t self = (avl_ref_t)_self;
 
-  u_chk_if(self == nullptr, false);
+  u_check_args_null_ret(self, false);
 
   if (self->flags[0] == 0) {
     self->flags[0] = 1;
@@ -618,7 +629,7 @@ bool avl_for_init(any_t _self, bool flag) {
 void avl_for_end(any_t _self) {
   avl_ref_t self = (avl_ref_t)_self;
 
-  u_nchk_if(self == nullptr);
+  u_check_args_null_ret(self);
 
   self->flags[0] = 2;
 }
@@ -626,14 +637,18 @@ void avl_for_end(any_t _self) {
 bool avl_for(any_t _self, any_t key, any_t val) {
   avl_ref_t self = (avl_ref_t)_self;
 
-  u_chk_if(self == nullptr, false);
-  u_chk_if(self->len == 0, false);
+  u_check_args_null_ret(self, false);
+
+  u_check_args_ret(self->len == 0, false);
 
   (self->flags[1] ? avl_next : avl_prev)(self);
-  u_ret_if(self->iter == nullptr, false);
+  u_check_expr_null_goto(self->iter);
 
   memcpy(key, key(self->iter), self->ksize);
   memcpy(val, val(self->iter), self->vsize);
 
   return true;
+
+end:
+  return false;
 }

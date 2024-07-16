@@ -33,58 +33,35 @@ extern "C" {
 
 #  define u_die_if(expr, ...)                                                                      \
     if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_0th("", __VA_ARGS__) " ", #expr u_va_list(1, __VA_ARGS__));               \
-                                                                                                   \
       exit(EXIT_FAILURE);                                                                          \
     }
 
-#  define u_chk_if(expr, code, ...)                                                                \
+#  define u_check_args_ret(expr, ...)                                                              \
     if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_0th("", __VA_ARGS__) " ", #expr u_va_list(1, __VA_ARGS__));               \
+      u_xxx("<%s> ", #expr);                                                                       \
                                                                                                    \
-      return code;                                                                                 \
+      return __VA_OPT__(__VA_ARGS__);                                                              \
     }
 
-#  define u_nchk_if(expr, ...)                                                                     \
-    if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_0th("", __VA_ARGS__) " ", #expr u_va_list(1, __VA_ARGS__));               \
+#  define u_check_args_null_ret(ptr, ...)                                                          \
+    if ((ptr) == nullptr) {                                                                        \
+      u_xxx("<%s == null> ", #ptr);                                                                \
                                                                                                    \
-      return;                                                                                      \
+      return __VA_OPT__(__VA_ARGS__);                                                              \
     }
 
-#  define u_ret_if(expr, code, ...)                                                                \
+#  define u_check_expr_goto(expr, ...)                                                             \
     if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_0th("", __VA_ARGS__) " ", #expr u_va_list(1, __VA_ARGS__));               \
+      u_xxx("<%s> ", #expr);                                                                       \
                                                                                                    \
-      return code;                                                                                 \
+      goto u_va_0th(end, __VA_ARGS__);                                                             \
     }
 
-#  define u_nret_if(expr, ...)                                                                     \
-    if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_0th("", __VA_ARGS__) " ", #expr u_va_list(1, __VA_ARGS__));               \
+#  define u_check_expr_null_goto(ptr, ...)                                                         \
+    if ((ptr) == nullptr) {                                                                        \
+      u_xxx("<%s == null> ", #ptr);                                                                \
                                                                                                    \
-      return;                                                                                      \
-    }
-
-#  define u_err_if(expr, ...)                                                                      \
-    if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_0th("", __VA_ARGS__) " ", #expr u_va_list(1, __VA_ARGS__));               \
-                                                                                                   \
-      goto err;                                                                                    \
-    }
-
-#  define u_errs_if(expr, ...)                                                                     \
-    if (expr) {                                                                                    \
-      u_xxx("(%s) " u_va_1th("", __VA_ARGS__) " ", #expr u_va_list(2, __VA_ARGS__));               \
-                                                                                                   \
-      goto u_va_0th(err, __VA_ARGS__);                                                             \
-    }
-
-#  define u_nil_if(mem, ...)                                                                       \
-    if ((mem) == nullptr) {                                                                        \
-      u_xxx("(%s == null) " u_va_0th("", __VA_ARGS__) " ", #mem u_va_list(1, __VA_ARGS__));        \
-                                                                                                   \
-      goto u_va_0th(err, __VA_ARGS__);                                                             \
+      goto u_va_0th(end, __VA_ARGS__);                                                             \
     }
 
 #  define u_free_if(mem)                                                                           \
