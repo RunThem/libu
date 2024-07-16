@@ -47,7 +47,7 @@ typedef struct {
   any_t fun;   /* 协程执行入口 */
   u8_t* stack; /* 栈帧 */
   int fd;      /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
-  u64_t timer; /* 定时器(单位 10us) */
+  u64_t timer; /* 定时器(单位 1ms) */
 
   u_node_t next;
 } task_t, *task_ref_t;
@@ -137,12 +137,99 @@ static inline void task_switch(int state) {
   swapcontext(&sch.run->ctx, &sch.ctx);
 }
 
-static inline u64_t get_tick(u64_t tick) {
+static inline u64_t task_gettick(u64_t tick) {
   struct timespec tp = {};
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
 
-  return tp.tv_sec * 1000 * 100 + tp.tv_nsec / 1000 / 10 + tick;
+  return tp.tv_sec * 1000 + tp.tv_nsec / 1000 / 1000 + tick;
+}
+
+static void task_network() {
+  task_ref_t task             = nullptr;
+  int cnt                     = 0;
+  struct timeval timeout      = {};
+  struct timeval* timeout_ref = &timeout;
+
+  u_nchk_if(u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait));
+
+  sch.rfds[1] = sch.rfds[0];
+  sch.wfds[1] = sch.wfds[0];
+
+  if (u_list_is_empty(sch.tasks) && u_heap_is_empty(sch.timer)) {
+    timeout_ref = nullptr;
+  }
+
+  sch.maxfd = max(u_tree_max(sch.rwait).key, u_tree_max(sch.wwait).key);
+  cnt       = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
+
+  u_err_if(cnt <= 0);
+
+  u_xxx("select ret %d, maxfd is %d", cnt, sch.maxfd);
+
+  for (int fd = 0; fd < sch.maxfd; fd++) {
+    if (FD_ISSET(fd, &sch.rfds[1])) {
+      task = u_tree_pop(sch.rwait, fd);
+      u_die_if(task == nullptr, "fd is %d", fd);
+
+      task->state = U_TASK_STATE_READY;
+      u_list_put(sch.tasks, task);
+      FD_CLR(fd, &sch.rfds[0]);
+
+      u_xxx("task(%zu) <- R %d", task->id, task->fd);
+    }
+
+    if (FD_ISSET(fd, &sch.wfds[1])) {
+      task = u_tree_pop(sch.wwait, fd);
+      u_die_if(task == nullptr, "fd is %d", fd);
+
+      task->state = U_TASK_STATE_READY;
+      u_list_put(sch.tasks, task);
+      FD_CLR(fd, &sch.wfds[0]);
+
+      u_xxx("task(%zu) <- W %d", task->id, task->fd);
+    }
+  }
+
+  return;
+
+err:
+}
+
+static void task_timer() {
+  task_ref_t task             = nullptr;
+  int cnt                     = 0;
+  u64_t tick                  = 0;
+  struct timeval timeout      = {.tv_usec = 10};
+  struct timeval* timeout_ref = nullptr;
+
+  u_nchk_if(u_heap_is_empty(sch.timer));
+
+  tick = task_gettick(0);
+  task = u_heap_at(sch.timer);
+
+  if (task->timer > tick) {
+    if (u_list_is_empty(sch.tasks) && u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait)) {
+      usleep((task->timer - tick) * 1000);
+    }
+  }
+
+  while (!u_heap_is_empty(sch.timer)) {
+    task = u_heap_at(sch.timer);
+
+    if (task->timer > tick) {
+      break;
+    }
+
+    u_xxx("task(%zu) timer timeout, cur(%zu), %zu, %d",
+          task->id,
+          tick,
+          task->timer,
+          task->timer > tick);
+
+    u_heap_pop(sch.timer);
+    u_list_put(sch.tasks, task);
+  }
 }
 
 void task_loop() {
@@ -154,158 +241,82 @@ void task_loop() {
 
   while (true) {
     task = u_list_pop(sch.tasks);
-    if (task != nullptr) {
-      u_xxx("task(%zu) resume", task->id);
+    u_xxx("task(%zu) resume", task->id);
 
-      task->state = 0;
+    task->state = 0;
 
-      sch.run = task;
-      swapcontext(&sch.ctx, &task->ctx);
-      sch.run = nullptr;
+    sch.run = task;
+    swapcontext(&sch.ctx, &task->ctx);
+    sch.run = nullptr;
 
-      u_xxx("task(%zu) yield, ret %d", task->id, task->state);
-      switch (task->state) {
-        case U_TASK_STATE_RET:
-          if (task->id == 1) {
-            goto end;
-          }
+    u_xxx("task(%zu) yield, ret %d", task->id, task->state);
+    switch (task->state) {
+      case U_TASK_STATE_RET: [[fallthrough]];
 
-          [[fallthrough]];
+      /* dead, add to dead queue */
+      case U_TASK_STATE_DEAD:
+        u_list_put(sch.dead, task);
+        sch.cnt--;
 
-        /* dead, add to dead queue */
-        case U_TASK_STATE_DEAD:
-          u_list_put(sch.dead, task);
-          sch.cnt--;
+        u_xxx("task(%zu) dead", task->id);
+        break;
 
-          u_xxx("task(%zu) dead", task->id);
-          break;
+      /* ready, add to ready queue */
+      case U_TASK_STATE_READY: u_list_put(sch.tasks, task); break;
 
-        /* ready, add to ready queue */
-        case U_TASK_STATE_READY: u_list_put(sch.tasks, task); break;
+      /* read wait */
+      case U_TASK_STATE_RWAIT:
+        u_tree_put(sch.rwait, task->fd, task);
 
-        /* read wait */
-        case U_TASK_STATE_RWAIT:
-          u_tree_put(sch.rwait, task->fd, task);
+        FD_SET(task->fd, &sch.rfds[0]);
 
-          FD_SET(task->fd, &sch.rfds[0]);
+        u_xxx("task(%zu) -> R %d", task->id, task->fd);
+        u_xxx("rwait total %zu", u_tree_len(sch.rwait));
+        break;
 
-          u_xxx("task(%zu) -> R %d", task->id, task->fd);
-          u_xxx("rwait total %zu", u_tree_len(sch.rwait));
-          break;
+      /* write wait */
+      case U_TASK_STATE_WWAIT:
+        u_tree_put(sch.wwait, task->fd, task);
 
-        /* write wait */
-        case U_TASK_STATE_WWAIT:
-          u_tree_put(sch.wwait, task->fd, task);
+        FD_SET(task->fd, &sch.wfds[0]);
 
-          FD_SET(task->fd, &sch.wfds[0]);
+        u_xxx("task(%zu) -> W %d", task->id, task->fd);
+        u_xxx("wwait total %zu", u_tree_len(sch.wwait));
+        break;
 
-          u_xxx("task(%zu) -> W %d", task->id, task->fd);
-          u_xxx("wwait total %zu", u_tree_len(sch.wwait));
-          break;
+      /* timer */
+      case U_TASK_STATE_TIMER:
+        u_heap_put(sch.timer, task);
 
-        /* timer */
-        case U_TASK_STATE_TIMER:
-          u_heap_put(sch.timer, task);
+        u_xxx("task(%zu) delay %zu tick", task->id, task->timer);
+        break;
 
-          u_xxx("task(%zu) delay %zu tick", task->id, task->timer);
-          break;
-
-        default: u_xxx("default state is %d", task->state); assert(0);
-      }
+      default: u_xxx("default state is %d", task->state); assert(0);
     }
 
-    /*
-     * network
-     * */
-    if (!u_tree_is_empty(sch.rwait) || !u_tree_is_empty(sch.wwait)) {
-      sch.rfds[1] = sch.rfds[0];
-      sch.wfds[1] = sch.wfds[0];
+    u_errs_if(sch.cnt == 0, end);
 
-      sch.maxfd = max(u_tree_max(sch.rwait).key, u_tree_max(sch.wwait).key);
-
-      timeout_ref = u_list_is_empty(sch.tasks) && u_heap_is_empty(sch.timer) ? nullptr : &timeout;
-      cnt         = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
-
-      u_xxx("select ret %d, maxfd is %d", cnt, sch.maxfd);
-
-      if (cnt > 0) {
-        for (int fd = 0; fd <= sch.maxfd; fd++) {
-          if (FD_ISSET(fd, &sch.rfds[1])) {
-            task = u_tree_pop(sch.rwait, fd);
-            u_die_if(task == nullptr, "fd is %d", fd);
-
-            task->state = U_TASK_STATE_READY;
-            u_list_put(sch.tasks, task);
-            FD_CLR(fd, &sch.rfds[0]);
-
-            u_xxx("task(%zu) <- R %d", task->id, task->fd);
-          }
-
-          if (FD_ISSET(fd, &sch.wfds[1])) {
-            task = u_tree_pop(sch.wwait, fd);
-            u_die_if(task == nullptr, "fd is %d", fd);
-
-            task->state = U_TASK_STATE_READY;
-            u_list_put(sch.tasks, task);
-            FD_CLR(fd, &sch.wfds[0]);
-
-            u_xxx("task(%zu) <- W %d", task->id, task->fd);
-          }
-        }
-      }
-    }
-
-    /*
-     * timer
-     * */
-    if (!u_heap_is_empty(sch.timer)) {
-      tick = get_tick(0);
-
-      task = u_heap_at(sch.timer);
-      if (task->timer > tick) {
-        usleep((task->timer - tick) * 10);
-      }
-
-      for (task = u_heap_at(sch.timer); task != nullptr && task->timer <= tick;
-           task = u_heap_at(sch.timer)) {
-        u_heap_pop(sch.timer);
-
-        u_xxx("task(%zu) timer timeout", task->id);
-
-        u_list_put(sch.tasks, task);
-      }
-    }
+    do {
+      u_xxx("--- network ---");
+      task_network();
+#if 0
+      u_xxx("--- timer ---");
+      task_timer();
+#endif
+    } while (u_list_is_empty(sch.tasks));
   }
 
 end:
-
-  u_list_for (sch.dead, it) {
-    u_free_if(it->stack);
-    u_free_if(it);
-  }
-
-  u_list_for (sch.tasks, it) {
-    u_free_if(it->stack);
-    u_free_if(it);
-  }
-
-  u_tree_for (sch.rwait, fd, it) {
-    u_close_if(fd);
-    u_free_if(it->stack);
-    u_free_if(it);
-  }
-
-  u_tree_for (sch.wwait, fd, it) {
-    u_close_if(fd);
-    u_free_if(it->stack);
-    u_free_if(it);
+  u_list_clear(sch.dead, it) {
+    u_free(it->stack);
+    u_free(it);
   }
 
   u_xxx("end");
 }
 
 bool task_delay(u64_t tick) {
-  sch.run->timer = get_tick(tick);
+  sch.run->timer = task_gettick(tick);
 
   task_switch(U_TASK_STATE_TIMER);
 

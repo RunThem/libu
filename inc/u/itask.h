@@ -42,8 +42,14 @@ extern "C" {
 #  endif
 
 /***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
+#  define U_TASK_MS_TICK (1)                     /* 1 ms */
+#  define U_TASK_S_TICK  (U_TASK_MS_TICK * 1000) /* 1 s */
+
+/***************************************************************************************************
  * Api
- ***************************************************************************************************/
+ **************************************************************************************************/
 /* clang-format off */
 extern any_t    task_new      (any_t);
 extern void     task_yield    ();
@@ -82,11 +88,13 @@ extern ssize_t  task_sendto   (int, const void*, size_t, int, const struct socka
       task_loop();                                                                                 \
     } while (0)
 
-#  define u_task_delay(tick)                                                                       \
-    ({                                                                                             \
-      ;                                                                                            \
-      task_delay(tick);                                                                            \
-    })
+#  if 0 /* XXX: */
+#    define u_task_delay(tick)                                                                     \
+      ({                                                                                           \
+        ;                                                                                          \
+        task_delay(tick);                                                                          \
+      })
+#  endif
 
 #  define u_task_socket(domain, type, protocol)                                                    \
     ({                                                                                             \
