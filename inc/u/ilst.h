@@ -174,11 +174,7 @@ extern any_t  lst_for       (any_t);
   ({                                                                                               \
     u_check(self, 1, __u_list_ref_t);                                                              \
                                                                                                    \
-    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
-      u_types(self, 0)* __a = u_va_at(0, __VA_ARGS__);                                             \
-    ) (                                                                                            \
-      u_types(self, 0)* __a = lst_head(self);                                                      \
-    )                                                                                              \
+    u_types(self, 0)* __a = u_va_0th(lst_head(self), __VA_ARGS__);                                 \
                                                                                                    \
     lst_pop(self, __a);                                                                            \
                                                                                                    \

@@ -171,13 +171,8 @@ extern bool   vec_for       (any_t, int*, any_t);
     ({                                                                                             \
       u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
-        int __a              = u_va_at(0, __VA_ARGS__);                                            \
-        u_types(self, 0) __b = {};                                                                 \
-      ) (                                                                                          \
-        int __a              = -1;                                                                 \
-        u_types(self, 0) __b = {};                                                                 \
-      )                                                                                            \
+      int __a              = u_va_0th(-1, __VA_ARGS__);                                            \
+      u_types(self, 0) __b = {};                                                                   \
                                                                                                    \
       vec_pop(self, __a, &__b);                                                                    \
                                                                                                    \
@@ -192,7 +187,7 @@ extern bool   vec_for       (any_t, int*, any_t);
         int __a             = tmp;                                                                 \
         u_types(self, 0) __b = u_va_at(0, __VA_ARGS__);                                            \
       )(                                                                                           \
-        auto __a             = -1;                                                                 \
+        int __a              = -1;                                                                 \
         u_types(self, 0) __b = tmp;                                                                \
       )                                                                                            \
                                                                                                    \
