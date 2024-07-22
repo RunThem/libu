@@ -41,14 +41,13 @@ extern "C" {
 #    define typeclassify(t) (__builtin_classify_type(t))
 #    define is_ptr(t)       (typeclassify(t) == 5)
 #  else
-#    define typeclassify(t)
-#    define is_ptr(t)
+#    error "!__has_builtin(__builtin_classify_type)"
 #  endif
 
 #  if __has_builtin(__builtin_types_compatible_p)
 #    define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
 #  else
-#    define typeeq(t1, t2)
+#    error "!__has_builtin(__builtin_types_compatible_p)"
 #  endif
 
 #  ifdef __cplusplus
