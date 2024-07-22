@@ -22,6 +22,7 @@
  *
  * */
 
+#include "u/utils/debug.h"
 #include <u/u.h>
 
 /***************************************************************************************************
@@ -58,7 +59,7 @@ static ret_t heap_resize(heap_ref_t self) {
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
 
   root = u_realloc(self->root, self->itsize * cap);
-  u_check_expr_null_goto(root);
+  u_end_if(root);
 
   self->root = root;
   self->cap  = cap;
@@ -72,13 +73,13 @@ end:
 any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
   heap_ref_t self = nullptr;
 
-  u_check_args_ret(itsize == 0, nullptr);
+  u_chk_if(itsize == 0, nullptr);
 
   self = u_talloc(heap_t);
-  u_check_expr_null_goto(self);
+  u_end_if(self);
 
   self->root = u_calloc(32, itsize);
-  u_check_expr_null_goto(self->root);
+  u_end_if(self->root);
 
   self->itsize = itsize;
   self->cmp_fn = fn;
@@ -97,7 +98,7 @@ end:
 void heap_clear(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   self->len = 0;
 }
@@ -105,7 +106,7 @@ void heap_clear(any_t _self) {
 void heap_cleanup(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   u_free_if(self->root);
   u_free_if(self);
@@ -114,7 +115,7 @@ void heap_cleanup(any_t _self) {
 size_t heap_len(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_check_args_null_ret(self, 0);
+  u_chk_if(self, 0);
 
   return self->len;
 }
@@ -122,9 +123,8 @@ size_t heap_len(any_t _self) {
 void heap_at(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_check_args_null_ret(self);
-
-  u_check_args_ret(self->len == 0);
+  u_chk_if(self);
+  u_chk_if(self->len == 0);
 
   memcpy(item, self->root, self->itsize);
 }
@@ -137,9 +137,8 @@ void heap_pop(any_t _self, any_t item) {
   size_t pidx     = 0;
   int flag        = 0;
 
-  u_check_args_null_ret(self);
-
-  u_check_args_ret(self->len == 0);
+  u_chk_if(self);
+  u_chk_if(self->len == 0);
 
   memcpy(item, self->root, self->itsize);
 
@@ -149,9 +148,7 @@ void heap_pop(any_t _self, any_t item) {
     ridx = right(pidx);
 
     /* no child node */
-    if (lidx >= self->len) {
-      break;
-    }
+    u_brk_if(lidx >= self->len);
 
     idx = lidx;
 
@@ -163,9 +160,7 @@ void heap_pop(any_t _self, any_t item) {
     }
 
     /* compare the child node with the current node to see if they meet the rules(flag) */
-    if (self->cmp_fn(at(idx), at(self->len - 1)) == flag) {
-      break;
-    }
+    u_brk_if(self->cmp_fn(at(idx), at(self->len - 1)) == flag);
 
     /* exchange child node with current node  */
     memcpy(at(pidx), at(idx), self->itsize);
@@ -177,29 +172,31 @@ void heap_pop(any_t _self, any_t item) {
   memcpy(at(idx), at(self->len - 1), self->itsize);
 
   self->len--;
+
+  return;
+
+end:
 }
 
 void heap_put(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
-  ret_t code      = 0;
+  ret_t result    = 0;
   size_t idx      = 0;
   size_t pidx     = 0;
   int flag        = 0;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   if (self->len == self->cap) {
-    code = heap_resize(self);
-    u_check_expr_goto(code != 0);
+    result = heap_resize(self);
+    u_end_if(result != 0);
   }
 
   flag = self->attr ? 1 : -1;
   for (idx = self->len; idx > 0; idx = pidx) {
     pidx = parent(idx);
 
-    if (self->cmp_fn(item, at(pidx)) == flag) {
-      break;
-    }
+    u_brk_if(self->cmp_fn(item, at(pidx)) == flag);
 
     memcpy(at(idx), at(pidx), self->itsize);
   }

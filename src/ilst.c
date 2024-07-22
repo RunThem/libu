@@ -46,7 +46,7 @@ any_t lst_new(size_t offset) {
   lst_ref_t self = nullptr;
 
   self = u_talloc(lst_t);
-  u_check_expr_null_goto(self);
+  u_end_if(self);
 
   self->head   = nullptr;
   self->tail   = nullptr;
@@ -65,8 +65,8 @@ bool lst_clear(any_t _self, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
 
-  u_check_args_null_ret(self, false);
-  u_check_args_null_ret(ptr, false);
+  u_chk_if(self, false);
+  u_chk_if(ptr, false);
 
   node = ptr + self->offset;
 
@@ -87,7 +87,7 @@ bool lst_clear(any_t _self, any_t ptr) {
 void lst_cleanup(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   u_free_if(self);
 }
@@ -95,7 +95,7 @@ void lst_cleanup(any_t _self) {
 size_t lst_len(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_null_ret(self, 0);
+  u_chk_if(self, 0);
 
   return self->len;
 }
@@ -104,10 +104,9 @@ bool lst_exist(any_t _self, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
 
-  u_check_args_null_ret(self, false);
-  u_check_args_null_ret(ptr, false);
-
-  u_check_args_ret(self->len == 0, false);
+  u_chk_if(self, false);
+  u_chk_if(ptr, false);
+  u_chk_if(self->len == 0, false);
 
   node = ptr + self->offset;
 
@@ -117,8 +116,8 @@ bool lst_exist(any_t _self, any_t ptr) {
 any_t lst_head(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_ret(self == nullptr, nullptr);
-  u_check_args_ret(self->len == 0, nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   return any(self->head) - self->offset;
 }
@@ -126,8 +125,8 @@ any_t lst_head(any_t _self) {
 any_t lst_tail(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_ret(self == nullptr, nullptr);
-  u_check_args_ret(self->len == 0, nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   return any(self->tail) - self->offset;
 }
@@ -136,13 +135,14 @@ any_t lst_prev(any_t _self, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
 
-  u_check_args_ret(self == nullptr, nullptr);
-  u_check_args_ret(ptr == nullptr, nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(ptr, nullptr);
 
   node = ptr + self->offset;
-  u_check_expr_goto(node->ptr != self);
+  u_end_if(node->ptr != self);
+  u_end_if(node->prev);
 
-  return node->prev == nullptr ? nullptr : any(node->prev) - self->offset;
+  return any(node->prev) - self->offset;
 
 end:
   return nullptr;
@@ -152,13 +152,14 @@ any_t lst_next(any_t _self, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
 
-  u_check_args_ret(self == nullptr, nullptr);
-  u_check_args_ret(ptr == nullptr, nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(ptr, nullptr);
 
   node = ptr + self->offset;
-  u_check_expr_goto(node->ptr != self);
+  u_end_if(node->ptr != self);
+  u_end_if(node->next);
 
-  return node->next == nullptr ? nullptr : any(node->next) - self->offset;
+  return any(node->next) - self->offset;
 
 end:
   return nullptr;
@@ -168,11 +169,11 @@ void lst_pop(any_t _self, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
 
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(ptr);
+  u_chk_if(self);
+  u_chk_if(ptr);
 
   node = ptr + self->offset;
-  u_check_expr_goto(node->ptr != self);
+  u_end_if(node->ptr != self);
 
   if (node->prev != nullptr) {
     node->prev->next = node->next;
@@ -204,8 +205,8 @@ void lst_put(any_t _self, any_t idx, any_t ptr) {
   u_node_ref_t next = nullptr;
   u_node_ref_t _idx = nullptr;
 
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(ptr);
+  u_chk_if(self);
+  u_chk_if(ptr);
 
   node       = ptr + self->offset;
   node->prev = nullptr;
@@ -217,7 +218,7 @@ void lst_put(any_t _self, any_t idx, any_t ptr) {
     self->head = node;
   } else {
     _idx = idx + self->offset;
-    u_check_expr_goto(_idx->ptr != self);
+    u_end_if(_idx->ptr != self);
 
     node->next = _idx->next;
     node->prev = _idx;
@@ -240,7 +241,7 @@ end:
 bool lst_for_init(any_t _self, bool flag) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_ret(self == nullptr, false);
+  u_chk_if(self, false);
 
   if (self->flags[0] == 0) {
     self->flags[0] = 1;
@@ -258,7 +259,7 @@ bool lst_for_init(any_t _self, bool flag) {
 void lst_for_end(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   self->flags[0] = 2;
 }
@@ -266,10 +267,9 @@ void lst_for_end(any_t _self) {
 any_t lst_for(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_check_args_null_ret(self, nullptr);
-
-  u_check_args_ret(self->len == 0, nullptr);
-  u_check_args_ret(self->flags[3], nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self->flags[3], nullptr);
 
   /* 初始化 */
   if (self->flags[2]) {

@@ -31,35 +31,37 @@
 extern "C" {
 #  endif
 
-#  define u_die_if(expr, ...)                                                                      \
-    if (expr) {                                                                                    \
+#  define u_die_if(expr)                                                                           \
+    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
+      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
+                                                                                                   \
       exit(EXIT_FAILURE);                                                                          \
     }
 
-#  define u_check_args_ret(expr, ...)                                                              \
-    if (expr) {                                                                                    \
-      u_xxx("<%s> ", #expr);                                                                       \
+#  define u_brk_if(expr)                                                                           \
+    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
+      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
                                                                                                    \
-      return __VA_OPT__(__VA_ARGS__);                                                              \
+      break;                                                                                       \
     }
 
-#  define u_check_args_null_ret(ptr, ...)                                                          \
-    if ((ptr) == nullptr) {                                                                        \
-      u_xxx("<%s == null> ", #ptr);                                                                \
+#  define u_cnt_if(expr)                                                                           \
+    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
+      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
                                                                                                    \
-      return __VA_OPT__(__VA_ARGS__);                                                              \
+      continue;                                                                                    \
     }
 
-#  define u_check_expr_goto(expr, ...)                                                             \
-    if (expr) {                                                                                    \
-      u_xxx("<%s> ", #expr);                                                                       \
+#  define u_chk_if(expr, ...)                                                                      \
+    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
+      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
                                                                                                    \
-      goto u_va_0th(end, __VA_ARGS__);                                                             \
+      return u_va_at(0, __VA_ARGS__);                                                              \
     }
 
-#  define u_check_expr_null_goto(ptr, ...)                                                         \
-    if ((ptr) == nullptr) {                                                                        \
-      u_xxx("<%s == null> ", #ptr);                                                                \
+#  define u_end_if(expr, ...)                                                                      \
+    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
+      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
                                                                                                    \
       goto u_va_0th(end, __VA_ARGS__);                                                             \
     }

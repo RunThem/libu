@@ -42,10 +42,10 @@ u_lfq_ref_t lfq_new() {
   node_ref_t node = nullptr;
 
   self = u_talloc(lfq_t);
-  u_check_expr_null_goto(self);
+  u_end_if(self);
 
   node = u_talloc(node_t);
-  u_check_expr_null_goto(node);
+  u_end_if(node);
 
   u_atomic_init(&self->len, 0);
   u_atomic_init(&self->head, node);
@@ -60,9 +60,8 @@ end:
 void lfq_cleanup(u_lfq_ref_t _self) {
   lfq_ref_t self = (lfq_ref_t)_self;
 
-  u_check_args_null_ret(self);
-
-  u_check_args_ret(u_atomic_pop(&self->len) == 0);
+  u_chk_if(self);
+  u_chk_if(u_atomic_pop(&self->len) == 0);
 
   while (lfq_pop(_self))
     ;
@@ -73,7 +72,7 @@ void lfq_cleanup(u_lfq_ref_t _self) {
 size_t lfq_len(u_lfq_ref_t _self) {
   lfq_ref_t self = (lfq_ref_t)_self;
 
-  u_check_args_null_ret(self, 0);
+  u_chk_if(self, 0);
 
   return u_atomic_pop(&self->len);
 }
@@ -84,11 +83,11 @@ bool lfq_put(u_lfq_ref_t _self, any_t obj) {
   node_ref_t next = nullptr;
   node_ref_t node = nullptr;
 
-  u_check_args_null_ret(self, false);
-  u_check_args_null_ret(obj, false);
+  u_chk_if(self, false);
+  u_chk_if(obj, false);
 
   node = u_talloc(node_t);
-  u_check_expr_null_goto(node);
+  u_end_if(node);
 
   node->item = obj;
   node->next = nullptr;
@@ -97,18 +96,14 @@ bool lfq_put(u_lfq_ref_t _self, any_t obj) {
     tail = u_atomic_pop(&self->tail);
     next = u_atomic_pop(&tail->next);
 
-    if (u_atomic_pop(&self->tail) != tail) {
-      continue;
-    }
+    u_cnt_if(u_atomic_pop(&self->tail) != tail);
 
     if (next != nullptr) {
       u_atomic_cswap(&self->tail, tail, next);
       continue;
     }
 
-    if (u_atomic_cswap(&tail->next, next, node)) {
-      break;
-    }
+    u_brk_if(u_atomic_cswap(&tail->next, next, node));
   }
 
   u_atomic_cswap(&self->tail, tail, node);
@@ -126,27 +121,23 @@ any_t lfq_pop(u_lfq_ref_t _self) {
   node_ref_t tail = nullptr;
   node_ref_t next = nullptr;
 
-  u_check_args_null_ret(self, nullptr);
+  u_chk_if(self, nullptr);
 
   while (true) {
     head = u_atomic_pop(&self->head);
     tail = u_atomic_pop(&self->tail);
     next = u_atomic_pop(&head->next);
 
-    if (head != u_atomic_pop(&self->head)) {
-      continue;
-    }
+    u_cnt_if(head != u_atomic_pop(&self->head));
 
     if (head == tail) {
-      u_check_expr_null_goto(next);
+      u_end_if(next);
 
       u_atomic_cswap(&self->tail, tail, next);
       continue;
     }
 
-    if (u_atomic_cswap(&self->head, head, next)) {
-      break;
-    }
+    u_brk_if(u_atomic_cswap(&self->head, head, next));
   }
 
   u_free(head);

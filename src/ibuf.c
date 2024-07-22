@@ -28,13 +28,13 @@
  * Function
  **************************************************************************************************/
 void buf_init(u_buf_ref_t self, u8_t* buf, size_t cap) {
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   if (buf != nullptr) {
     self->__rawbuf = buf;
   } else {
     self->__rawbuf = u_zalloc(cap);
-    u_check_expr_null_goto(self->__rawbuf);
+    u_end_if(self->__rawbuf);
 
     self->alloc_flag = true;
   }
@@ -49,14 +49,14 @@ end:
 }
 
 void buf_clear(u_buf_ref_t self) {
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   self->len = 0;
   self->buf = self->__rawbuf;
 }
 
 void buf_cleanup(u_buf_ref_t self) {
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   if (self->alloc_flag) {
     u_free_if(self->__rawbuf);
@@ -64,24 +64,22 @@ void buf_cleanup(u_buf_ref_t self) {
 }
 
 size_t buf_len(u_buf_ref_t self) {
-  u_check_args_null_ret(self, 0);
+  u_chk_if(self, 0);
 
   return self->len;
 }
 
 void buf_skip(u_buf_ref_t self, size_t len) {
-  u_check_args_null_ret(self);
-
-  u_check_args_ret(self->len < len);
+  u_chk_if(self);
+  u_chk_if(len > self->len);
 
   self->buf += len;
 }
 
 void buf_pop(u_buf_ref_t self, any_t buf, size_t len) {
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(buf);
-
-  u_check_args_ret(self->len < self->len);
+  u_chk_if(self);
+  u_chk_if(buf);
+  u_chk_if(len > self->len);
 
   memcpy(buf, self->buf, len);
 
@@ -92,8 +90,8 @@ void buf_pop(u_buf_ref_t self, any_t buf, size_t len) {
 void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
   size_t diff = 0;
 
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(buf);
+  u_chk_if(self);
+  u_chk_if(buf);
 
   diff = self->buf - self->__rawbuf;
 
@@ -103,10 +101,10 @@ void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
       memmove(self->__rawbuf, self->buf, self->len);
       self->buf = self->__rawbuf;
     } else {
-      u_check_expr_goto(!self->alloc_flag);
+      u_end_if(!self->alloc_flag);
 
       self->__rawbuf = u_realloc(self->__rawbuf, self->cap + len);
-      u_check_expr_null_goto(self->__rawbuf);
+      u_end_if(self->__rawbuf);
 
       self->cap += len;
       self->buf = self->__rawbuf + diff;

@@ -26,8 +26,9 @@
 
 /* clang-format off */
 static size_t bucket_sizes[] = {
-    /* debug bucket size */
-    /* 7 , */
+#if 0 /* debug */
+    7,
+#endif
 
     61,         127,        251,        509,        1021,        2039,
     4093,       8191,       16381,      32749,      65521,       131071,
@@ -109,7 +110,7 @@ static u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   return hash;
 }
 
-static node_ref_t map_make_node(map_ref_t self, any_t key, any_t val) {
+static node_ref_t map_new_node(map_ref_t self, any_t key, any_t val) {
   node_ref_t node = nullptr;
 
   if (self->free_nodes != nullptr) {
@@ -117,7 +118,7 @@ static node_ref_t map_make_node(map_ref_t self, any_t key, any_t val) {
     self->free_nodes = node->next;
   } else {
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
-    u_check_expr_null_goto(node);
+    u_end_if(node);
   }
 
   node->hash = self->hash_fn(key, self->ksize);
@@ -140,9 +141,7 @@ static node_ref_t map_find(map_ref_t self, node_ref_t idx[2], any_t key) {
   for (idx[1] = idx[0], node = (idx[0])->next; node->next != nullptr;
        idx[1] = node, node = node->next) {
 
-    if (hash == node->hash && memcmp(key(node), key, self->ksize) == 0) {
-      break;
-    }
+    u_brk_if(hash == node->hash && memcmp(key(node), key, self->ksize) == 0);
   }
 
   return node;
@@ -152,7 +151,7 @@ static node_ref_t map_make_buckets(size_t bs) {
   node_ref_t buckets = nullptr;
 
   buckets = u_calloc(bs * 2, sizeof(node_t));
-  u_check_expr_null_goto(buckets);
+  u_end_if(buckets);
 
   for (size_t i = 0, j = bs; i < bs; i++, j++) {
     buckets[i].next = &buckets[j];
@@ -172,31 +171,33 @@ end:
 
 static void map_next(map_ref_t self) {
   size_t idx = 0;
+  size_t i   = 0;
 
   if (self->iter != nullptr) {
     self->iter = self->iter->next;
 
     /* ok */
-    u_check_expr_goto(self->iter->next != nullptr);
+    u_end_if(self->iter->next != nullptr);
 
     /* end */
-    u_check_expr_goto(self->iter->hash == 0);
+    u_end_if(self->iter->hash == 0);
 
     idx        = self->iter->hash;
     self->iter = nullptr;
   }
 
-  for (size_t i = idx; i < bucket_sizes[self->bucket_idx]; i++) {
-    if (self->buckets[i].hash != 0) {
-      self->iter = self->buckets[i].next;
-      break;
-    }
+  for (i = idx; i < bucket_sizes[self->bucket_idx]; i++) {
+    u_brk_if(self->buckets[i].hash != 0);
   }
+
+  self->iter = self->buckets[i].next;
 
   return;
 
 end:
-  self->iter = nullptr;
+  if (self->iter->hash == 0) {
+    self->iter = nullptr;
+  }
 }
 
 static bool map_resize(map_ref_t self) {
@@ -209,12 +210,10 @@ static bool map_resize(map_ref_t self) {
 
   bucket_idx = bucket_sizes[self->bucket_idx + 1];
   nbuckets   = map_make_buckets(bucket_idx);
-  u_check_expr_null_goto(nbuckets);
+  u_end_if(nbuckets);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
-    if (self->buckets[i].hash == 0) {
-      continue;
-    }
+    u_cnt_if(self->buckets[i].hash == 0);
 
     for (node = self->buckets[i].next, list = node->next; node->next != nullptr;
          node = list, list = list->next) {
@@ -241,14 +240,14 @@ end:
 any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   map_ref_t self = nullptr;
 
-  u_check_args_ret(ksize == 0, nullptr);
-  u_check_args_ret(vsize == 0, nullptr);
+  u_chk_if(ksize == 0, nullptr);
+  u_chk_if(vsize == 0, nullptr);
 
   self = u_zalloc(sizeof(map_t) + ksize + vsize);
-  u_check_expr_null_goto(self);
+  u_end_if(self);
 
   self->buckets = map_make_buckets(bucket_sizes[0]);
-  u_check_expr_null_goto(self->buckets);
+  u_end_if(self->buckets);
 
   self->ksize      = ksize;
   self->vsize      = vsize;
@@ -269,7 +268,7 @@ void map_clear(any_t _self) {
   node_ref_t node = nullptr;
   node_ref_t list = nullptr;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
     list = self->buckets[i].next;
@@ -295,7 +294,7 @@ void map_clear(any_t _self) {
 void map_cleanup(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   map_clear(_self);
 
@@ -306,7 +305,7 @@ void map_cleanup(any_t _self) {
 size_t map_len(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
-  u_check_args_null_ret(self, 0);
+  u_chk_if(self, 0);
 
   return self->len;
 }
@@ -316,8 +315,8 @@ bool map_exist(any_t _self, any_t key) {
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
 
-  u_check_args_null_ret(self, false);
-  u_check_args_null_ret(key, false);
+  u_chk_if(self, false);
+  u_chk_if(key, false);
 
   node = map_find(self, idx, key);
 
@@ -329,13 +328,12 @@ any_t map_at(any_t _self, any_t key) {
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
 
-  u_check_args_null_ret(self, nullptr);
-  u_check_args_null_ret(self, nullptr);
-
-  u_check_args_ret(self->len == 0, nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(key, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   node = map_find(self, idx, key);
-  u_check_expr_null_goto(node->next);
+  u_end_if(node->next);
 
   return val(node);
 
@@ -348,25 +346,26 @@ void map_pop(any_t _self, any_t key, any_t val) {
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
 
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(key);
-  u_check_args_null_ret(val);
+  u_chk_if(self);
+  u_chk_if(key);
+  u_chk_if(val);
 
   node = map_find(self, idx, key);
-  if (node->next != nullptr) {
-    idx[0]->hash--;
-    idx[1]->next = node->next;
+  u_end_if(node->next);
 
-    self->len--;
+  idx[0]->hash--;
+  idx[1]->next = node->next;
 
-    memcpy(val, val(node), self->vsize);
+  self->len--;
 
-    node->next       = self->free_nodes;
-    self->free_nodes = node;
+  memcpy(val, val(node), self->vsize);
 
-    return;
-  }
+  node->next       = self->free_nodes;
+  self->free_nodes = node;
 
+  return;
+
+end:
   bzero(val, self->vsize);
 }
 
@@ -374,15 +373,15 @@ void map_put(any_t _self, any_t key, any_t val) {
   map_ref_t self    = (map_ref_t)_self;
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
-  ret_t code        = 0;
+  ret_t result      = 0;
 
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(key);
-  u_check_args_null_ret(val);
+  u_chk_if(self);
+  u_chk_if(key);
+  u_chk_if(val);
 
   if (self->len >= (size_t)(0.75 * (f64_t)bucket_sizes[self->bucket_idx])) {
-    code = map_resize(self);
-    u_check_expr_goto(code != true);
+    result = map_resize(self);
+    u_end_if(result != true);
   }
 
   node = map_find(self, idx, key);
@@ -391,8 +390,8 @@ void map_put(any_t _self, any_t key, any_t val) {
   if (node->next != nullptr) {
     memcpy(val(node), val, self->vsize);
   } else {
-    node = map_make_node(self, key, val);
-    u_check_expr_null_goto(node);
+    node = map_new_node(self, key, val);
+    u_end_if(node);
 
     node->next   = idx[0]->next;
     idx[0]->next = node;
@@ -410,7 +409,7 @@ end:
 bool map_for_init(any_t _self, bool flag) {
   map_ref_t self = (map_ref_t)_self;
 
-  u_check_args_null_ret(self, false);
+  u_chk_if(self, false);
 
   if (self->flags[0] == 0) {
     self->flags[0] = 1;
@@ -426,7 +425,7 @@ bool map_for_init(any_t _self, bool flag) {
 void map_for_end(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   self->flags[0] = 2;
 }
@@ -434,10 +433,10 @@ void map_for_end(any_t _self) {
 bool map_for(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
 
-  u_check_args_null_ret(self, false);
+  u_chk_if(self, false);
 
   map_next(self);
-  u_check_expr_null_goto(self->iter);
+  u_end_if(self->iter);
 
   memcpy(key, key(self->iter), self->ksize);
   memcpy(val, val(self->iter), self->vsize);

@@ -37,8 +37,19 @@ extern "C" {
 
 #  define auto __auto_type
 
-#  define typeclassify(t) (__builtin_classify_type(t))
-#  define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#  if __has_builtin(__builtin_classify_type)
+#    define typeclassify(t) (__builtin_classify_type(t))
+#    define is_ptr(t)       (typeclassify(t) == 5)
+#  else
+#    define typeclassify(t)
+#    define is_ptr(t)
+#  endif
+
+#  if __has_builtin(__builtin_types_compatible_p)
+#    define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#  else
+#    define typeeq(t1, t2)
+#  endif
 
 #  ifdef __cplusplus
 } /* extern "C" */

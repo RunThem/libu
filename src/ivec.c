@@ -51,7 +51,7 @@ static ret_t vec_resize(vec_ref_t self) {
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
 
   items = u_realloc(self->items, self->itsize * cap);
-  u_check_expr_null_goto(items);
+  u_end_if(items);
 
   self->items = items;
   self->cap   = cap;
@@ -65,13 +65,13 @@ end:
 any_t vec_new(size_t itsize) {
   vec_ref_t self = nullptr;
 
-  u_check_args_ret(itsize == 0, nullptr);
+  u_chk_if(itsize == 0, nullptr);
 
   self = u_talloc(vec_t);
-  u_check_expr_null_goto(self);
+  u_end_if(self);
 
   self->items = u_calloc(16, itsize);
-  u_check_expr_null_goto(self->items);
+  u_end_if(self->items);
 
   self->itsize = itsize;
   self->cap    = 16;
@@ -87,7 +87,7 @@ end:
 void vec_clear(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   self->len = 0;
 }
@@ -95,7 +95,7 @@ void vec_clear(any_t _self) {
 void vec_cleanup(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self);
+  u_chk_if(self);
 
   u_free_if(self->items);
   u_free_if(self);
@@ -104,7 +104,7 @@ void vec_cleanup(any_t _self) {
 bool vec_exist(any_t _self, int idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self, false);
+  u_chk_if(self, false);
 
   return self->len > idx;
 }
@@ -112,7 +112,7 @@ bool vec_exist(any_t _self, int idx) {
 size_t vec_len(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self, 0);
+  u_chk_if(self, 0);
 
   return self->len;
 }
@@ -126,9 +126,8 @@ size_t vec_cap(any_t _self) {
 any_t vec_at(any_t _self, int idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self, nullptr);
-
-  u_check_args_ret(idx >= self->len && idx < -self->len, nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(idx >= self->len && idx < -self->len, nullptr);
 
   idx += (idx < 0) ? self->len : 0;
 
@@ -145,10 +144,9 @@ any_t vec_at(any_t _self, int idx) {
 void vec_pop(any_t _self, int idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self);
-
-  u_check_args_ret(self->len == 0);
-  u_check_args_ret(idx > self->len && idx < -self->len);
+  u_chk_if(self);
+  u_chk_if(self->len == 0);
+  u_chk_if(idx > self->len && idx < -self->len);
 
   idx += (idx < 0) ? self->len : 0;
   memcpy(item, at(idx), self->itsize);
@@ -171,16 +169,15 @@ void vec_pop(any_t _self, int idx, any_t item) {
  * */
 void vec_put(any_t _self, int idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
-  ret_t code     = 0;
+  ret_t result   = 0;
 
-  u_check_args_null_ret(self);
-
-  u_check_args_ret(idx > (ssize_t)self->len || idx < -((ssize_t)self->len + 1));
+  u_chk_if(self);
+  u_chk_if(idx > (ssize_t)self->len || idx < -((ssize_t)self->len + 1));
 
   idx += (idx < 0) ? self->len + 1 : 0;
   if (self->len == self->cap) {
-    code = vec_resize(self);
-    u_check_expr_goto(code != 0);
+    result = vec_resize(self);
+    u_end_if(result != 0);
   }
 
   if (idx != self->len) {
@@ -199,9 +196,9 @@ end:
 void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self);
-  u_check_args_null_ret(cmp_fn);
-  u_check_args_ret(self->len < 2);
+  u_chk_if(self);
+  u_chk_if(cmp_fn);
+  u_chk_if(self->len < 2);
 
   qsort(self->items, self->len, self->itsize, cmp_fn);
 }
@@ -209,7 +206,7 @@ void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
 bool vec_for_init(any_t _self, bool flag) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self, false);
+  u_chk_if(self, false);
 
   if (self->flags[0] == 0) {
     self->flags[0] = 1;
@@ -227,18 +224,17 @@ bool vec_for_init(any_t _self, bool flag) {
 void vec_for_end(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self)
+  u_chk_if(self);
 
-      self->flags[0] = 2;
+  self->flags[0] = 2;
 }
 
 bool vec_for(any_t _self, int* idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_check_args_null_ret(self, false);
-
-  u_check_args_ret(self->len == 0, false);
-  u_check_args_ret(self->flags[3], false);
+  u_chk_if(self, false);
+  u_chk_if(self->len == 0, false);
+  u_chk_if(self->flags[3], false);
 
   /* 初始化 */
   if (self->flags[2]) {

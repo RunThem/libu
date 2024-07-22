@@ -47,8 +47,10 @@ typedef struct {
   int state;
   any_t fun;   /* 协程执行入口 */
   u8_t* stack; /* 栈帧 */
-  int fd;      /* 监听的描述符, 一个协程在同一时间只能监听一个描述符 */
-  struct itimerspec its; /* 定时器 */
+  int fd;      /* 被监听的描述符, 一个协程在同一时间只能监听一个描述符 */
+
+  int timer_fd;          /* 定时器描述符 */
+  struct itimerspec its; /* 定时器时间戳 */
 
   u_node_t next;
 } task_t, *task_ref_t;
@@ -74,7 +76,7 @@ typedef struct {
   int maxfd;
 } scheduler_t, *scheduler_ref_t;
 
-scheduler_t sch = {};
+static thread_local scheduler_t sch = {};
 
 [[gnu::constructor]]
 void task_init() {
@@ -100,10 +102,10 @@ any_t task_new(any_t fun) {
   task_ref_t self = nullptr;
 
   self = u_talloc(task_t);
-  u_check_expr_null_goto(self);
+  u_end_if(self);
 
   self->stack = u_zalloc(U_TASK_STACK_SIZE);
-  u_check_expr_null_goto(self->stack);
+  u_end_if(self->stack);
 
   getcontext(&self->ctx);
   self->ctx.uc_stack.ss_sp   = self->stack;
@@ -112,6 +114,10 @@ any_t task_new(any_t fun) {
   self->id                   = sch.id++;
   self->fun                  = fun;
   self->state                = U_TASK_STATE_INIT;
+
+  if (self->timer_fd == 0) {
+    self->timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+  }
 
   u_list_put(sch.tasks, self);
 
@@ -122,8 +128,6 @@ any_t task_new(any_t fun) {
   return self;
 
 end:
-  assert(0);
-
   u_free_if(self);
 
   return nullptr;
@@ -152,10 +156,10 @@ static inline void task_add_read_event() {
 static inline void task_del_read_event(int fd) {
   task_ref_t task = sch.run;
 
-  u_check_args_ret(u_tree_is_empty(sch.rwait));
+  u_chk_if(u_tree_is_empty(sch.rwait));
 
   task = u_tree_pop(sch.rwait, fd);
-  u_check_expr_null_goto(task);
+  u_end_if(task);
 
   task->state = U_TASK_STATE_READY;
   u_list_put(sch.tasks, task);
@@ -181,10 +185,10 @@ static inline void task_add_write_event() {
 static inline void task_del_write_event(int fd) {
   task_ref_t task = sch.run;
 
-  u_check_args_ret(u_tree_is_empty(sch.wwait));
+  u_chk_if(u_tree_is_empty(sch.wwait));
 
   task = u_tree_pop(sch.wwait, fd);
-  u_check_expr_null_goto(task);
+  u_end_if(task, end);
 
   task->state = U_TASK_STATE_READY;
   u_list_put(sch.tasks, task);
@@ -200,6 +204,8 @@ end:
 static inline void task_add_timer_event() {
   task_ref_t task = sch.run;
 
+  u_chk_if(u_tree_is_exist(sch.twait, task->timer_fd));
+
   u_tree_put(sch.twait, task->fd, task);
   FD_SET(task->fd, &sch.rfds[0]);
 
@@ -210,14 +216,18 @@ static inline void task_add_timer_event() {
 static inline void task_del_timer_event(int fd) {
   task_ref_t task = sch.run;
 
-  u_check_args_ret(u_tree_is_empty(sch.twait));
+  u_chk_if(u_tree_is_empty(sch.twait));
 
-  task = u_tree_pop(sch.twait, fd);
-  u_check_expr_null_goto(task);
+  task = u_tree_at(sch.twait, fd);
+  u_end_if(task);
+
+  if (task->its.it_interval.tv_sec == 0 && task->its.it_interval.tv_nsec == 0) {
+    FD_CLR(fd, &sch.rfds[0]);
+    u_tree_pop(sch.twait, fd);
+  }
 
   task->state = U_TASK_STATE_READY;
   u_list_put(sch.tasks, task);
-  FD_CLR(fd, &sch.rfds[0]);
 
   u_xxx("task(%zu) <- T %d", task->id, task->fd);
 
@@ -226,14 +236,13 @@ static inline void task_del_timer_event(int fd) {
 end:
 }
 
-static void task_io_loop() {
+static void task_select() {
   task_ref_t task             = nullptr;
   int cnt                     = 0;
   struct timeval timeout      = {};
   struct timeval* timeout_ref = &timeout;
 
-  u_check_args_ret(u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait) &&
-                   u_tree_is_empty(sch.twait));
+  u_chk_if(u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait) && u_tree_is_empty(sch.twait));
 
   sch.rfds[1] = sch.rfds[0];
   sch.wfds[1] = sch.wfds[0];
@@ -247,7 +256,7 @@ static void task_io_loop() {
 
   cnt = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
 
-  u_check_expr_goto(cnt <= 0);
+  u_end_if(cnt <= 0);
 
   u_xxx("select ret %d, maxfd is %d", cnt, sch.maxfd);
 
@@ -268,14 +277,10 @@ end:
 }
 
 void task_loop() {
-  task_ref_t task             = nullptr;
-  int cnt                     = 0;
-  u64_t tick                  = 0;
-  struct timeval timeout      = {.tv_usec = 10};
-  struct timeval* timeout_ref = nullptr;
+  task_ref_t task = nullptr;
 
   while (true) {
-    u_check_args_ret(sch.cnt == 0);
+    u_end_if(sch.cnt == 0);
 
     task = u_list_pop(sch.tasks);
     u_xxx("task(%zu) resume", task->id);
@@ -305,7 +310,7 @@ void task_loop() {
       default: u_xxx("default state is %d", task->state); assert(0);
     }
 
-    task_io_loop();
+    task_select();
   }
 
 end:
@@ -317,24 +322,48 @@ end:
   u_xxx("end");
 }
 
-bool task_delay(i64_t sec, i64_t nsec) {
-  sch.run->fd = timerfd_create(CLOCK_MONOTONIC, 0);
+void task_delay(i64_t sec, i64_t nsec) {
+  u64_t buf = 0;
 
   bzero(&sch.run->its, sizeof(struct itimerspec));
 
   sch.run->its.it_value.tv_sec  = sec;
   sch.run->its.it_value.tv_nsec = nsec;
+  timerfd_settime(sch.run->timer_fd, 0, &sch.run->its, nullptr);
 
-  timerfd_settime(sch.run->fd, 0, &sch.run->its, nullptr);
-
+  sch.run->fd = sch.run->timer_fd;
   task_switch(U_TASK_STATE_TIMER);
+
+  read(sch.run->timer_fd, &buf, sizeof(u64_t));
+}
+
+bool task_timer_start(i64_t sec, i64_t nsec, i64_t inter_sec, i64_t inter_nsec) {
+  u64_t buf = 0;
+
+  if (!u_tree_is_exist(sch.twait, sch.run->timer_fd)) {
+    bzero(&sch.run->its, sizeof(struct itimerspec));
+
+    sch.run->its.it_value.tv_sec     = sec;
+    sch.run->its.it_value.tv_nsec    = nsec;
+    sch.run->its.it_interval.tv_sec  = inter_sec;
+    sch.run->its.it_interval.tv_nsec = inter_nsec;
+    timerfd_settime(sch.run->timer_fd, 0, &sch.run->its, nullptr);
+  }
+
+  sch.run->fd = sch.run->timer_fd;
+  task_switch(U_TASK_STATE_TIMER);
+
+  read(sch.run->timer_fd, &buf, sizeof(u64_t));
 
   return true;
 }
 
-/*
- * rewrite syscall
- * */
+void task_timer_stop() {
+  bzero(&sch.run->its, sizeof(struct itimerspec));
+
+  u_tree_pop(sch.twait, sch.run->timer_fd);
+  FD_CLR(sch.run->timer_fd, &sch.rfds[0]);
+}
 
 int task_socket(int domain, int type, int protocol) {
   int ret   = 0;
@@ -342,10 +371,10 @@ int task_socket(int domain, int type, int protocol) {
   int reuse = 1;
 
   fd = socket(domain, type, protocol);
-  u_check_expr_goto(fd == -1);
+  u_end_if(fd == -1);
 
   ret = fcntl(fd, F_SETFL, O_NONBLOCK);
-  u_check_expr_goto(ret == -1);
+  u_end_if(ret == -1);
 
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, any(&reuse), sizeof(int));
 
@@ -367,11 +396,11 @@ int task_accept(int fd, struct sockaddr* addr, socklen_t* len) {
     task_switch(U_TASK_STATE_RWAIT);
 
     sockfd = accept(fd, addr, len);
-    u_check_expr_goto(sockfd < 0 && errno != EAGAIN);
+    u_end_if(sockfd < 0 && errno != EAGAIN);
   } while (sockfd < 0);
 
   ret = fcntl(sockfd, F_SETFL, O_NONBLOCK);
-  u_check_expr_goto(ret == -1);
+  u_end_if(ret == -1);
 
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, any(&reuse), sizeof(int));
 
@@ -394,8 +423,7 @@ int task_connect(int fd, struct sockaddr* name, socklen_t namelen) {
   do {
     ret = connect(fd, name, namelen);
 
-    u_check_expr_goto(ret == -1 &&
-                      (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINPROGRESS));
+    u_end_if(ret == -1 && (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINPROGRESS));
   } while (ret != 0);
 
   return 0;
@@ -438,8 +466,8 @@ ssize_t task_recvfrom(int fd,
   task_switch(U_TASK_STATE_RWAIT);
 
   recn = recvfrom(fd, buf, len, flags, src_addr, addrlen);
-  u_check_expr_goto(recn < 0 && errno == EAGAIN);
-  u_check_expr_goto(recn < 0 && errno == ECONNRESET, end2);
+  u_end_if(recn < 0 && errno == EAGAIN);
+  u_end_if(recn < 0 && errno == ECONNRESET, end2);
 
   return recn;
 
@@ -455,7 +483,7 @@ ssize_t task_write(int fd, const void* buf, size_t count) {
   ssize_t ret  = 0;
 
   ret = write(fd, buf, count);
-  u_check_expr_goto(ret == 0);
+  u_end_if(ret == 0);
 
   sent += ret;
 
@@ -464,7 +492,7 @@ ssize_t task_write(int fd, const void* buf, size_t count) {
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = write(fd, buf + sent, count - sent);
-    u_check_expr_goto(ret == 0);
+    u_end_if(ret == 0);
 
     sent += ret;
   }
@@ -480,7 +508,7 @@ ssize_t task_send(int fd, const void* buf, size_t n, int flags) {
   ssize_t ret  = 0;
 
   ret = send(fd, buf, n, flags);
-  u_check_expr_goto(ret == 0);
+  u_end_if(ret == 0);
 
   sent += ret;
 
@@ -489,7 +517,7 @@ ssize_t task_send(int fd, const void* buf, size_t n, int flags) {
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = send(fd, buf + sent, n - sent, flags);
-    u_check_expr_goto(ret == 0);
+    u_end_if(ret == 0);
 
     sent += ret;
   }
@@ -510,7 +538,7 @@ ssize_t task_sendto(int fd,
   ssize_t ret  = 0;
 
   ret = sendto(fd, buf, len, flags, dest_addr, addrlen);
-  u_check_expr_goto(ret == 0);
+  u_end_if(ret == 0);
 
   sent += ret;
 
@@ -519,7 +547,7 @@ ssize_t task_sendto(int fd,
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = sendto(fd, buf, len, flags, dest_addr, addrlen);
-    u_check_expr_goto(ret == 0);
+    u_end_if(ret == 0);
 
     sent += ret;
   }
