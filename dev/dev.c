@@ -20,13 +20,15 @@
 /* 全新版本的字符串原始实现 */
 typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
 
+void fun(int ms) {
+  while (task_timer(1000, ms)) {
+    u_dbg("timeout %d", ms);
+  }
+}
+
 int _main(int argc, const u_cstr_t argv[]) {
 
-  while (true) {
-    task_delay(1, 0);
-
-    u_dbg("timer timeout");
-  }
+  fun(1000);
 
   return 0;
 }

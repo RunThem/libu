@@ -49,9 +49,8 @@ extern any_t    task_new      (any_t);
 extern void     task_loop     ();
 
 extern void     task_yield    ();
-extern void     task_delay    (i64_t, i64_t);
-extern bool     task_timer_start(i64_t, i64_t, i64_t, i64_t);
-extern void     task_timer_stop();
+// extern void     task_delay    (i64_t, i64_t);
+extern bool     task_timer    (i64_t ms, i64_t inter_ms);
 extern int      task_socket   (int, int, int);
 extern int      task_accept   (int, struct sockaddr*, socklen_t*);
 extern int      task_connect  (int, struct sockaddr*, socklen_t);

@@ -36,7 +36,7 @@
 #define U_TASK_STATE_READY 0x04
 #define U_TASK_STATE_RWAIT 0x08
 #define U_TASK_STATE_WWAIT 0x10
-#define U_TASK_STATE_TIMER 0x20
+#define U_TASK_STATE_TWAIT 0x20
 
 /***************************************************************************************************
  * Type
@@ -49,8 +49,8 @@ typedef struct {
   u8_t* stack; /* 栈帧 */
   int fd;      /* 被监听的描述符, 一个协程在同一时间只能监听一个描述符 */
 
-  int timer_fd;          /* 定时器描述符 */
-  struct itimerspec its; /* 定时器时间戳 */
+  int tstate; /* 定时器状态 */
+  int tfd;    /* 定时器描述符 */
 
   u_node_t next;
 } task_t, *task_ref_t;
@@ -59,8 +59,6 @@ typedef struct {
   size_t id;
   size_t cnt;
   ucontext_t ctx;
-  task_ref_t run;
-  int state;
 
   /* #[[list<task_t>]] */
   u_list_t(task_t) tasks; /* 就绪队列 */
@@ -69,31 +67,32 @@ typedef struct {
   /* #[[tree<int, task_ref_t>]] */
   u_tree_t(int, task_ref_t) rwait; /* 读队列 */
   u_tree_t(int, task_ref_t) wwait; /* 写队列 */
-  u_tree_t(int, task_ref_t) twait; /* 定时队列 */
+  u_tree_t(int, task_ref_t) twait; /* 定时器队列 */
 
   fd_set rfds[2];
   fd_set wfds[2];
+
   int maxfd;
 } scheduler_t, *scheduler_ref_t;
 
-static thread_local scheduler_t sch = {};
+static thread_local scheduler_t g_sch = {};
+static thread_local task_ref_t g_task = {};
 
 [[gnu::constructor]]
 void task_init() {
-  sch.id    = 1;
-  sch.cnt   = 0;
-  sch.run   = nullptr;
-  sch.tasks = u_list_new(task_t, next);
-  sch.dead  = u_list_new(task_t, next);
-  sch.rwait = u_tree_new(int, task_ref_t, fn_cmp(int));
-  sch.wwait = u_tree_new(int, task_ref_t, fn_cmp(int));
-  sch.twait = u_tree_new(int, task_ref_t, fn_cmp(int));
+  g_sch.id    = 1;
+  g_sch.cnt   = 0;
+  g_sch.tasks = u_list_new(task_t, next);
+  g_sch.dead  = u_list_new(task_t, next);
+  g_sch.rwait = u_tree_new(int, task_ref_t, fn_cmp(int));
+  g_sch.wwait = u_tree_new(int, task_ref_t, fn_cmp(int));
+  g_sch.twait = u_tree_new(int, task_ref_t, fn_cmp(int));
 
-  FD_ZERO(&sch.rfds[0]);
-  FD_ZERO(&sch.wfds[0]);
+  FD_ZERO(&g_sch.rfds[0]);
+  FD_ZERO(&g_sch.wfds[0]);
 
-  FD_ZERO(&sch.rfds[1]);
-  FD_ZERO(&sch.wfds[1]);
+  FD_ZERO(&g_sch.rfds[1]);
+  FD_ZERO(&g_sch.wfds[1]);
 
   u_xxx("task init");
 }
@@ -110,20 +109,17 @@ any_t task_new(any_t fun) {
   getcontext(&self->ctx);
   self->ctx.uc_stack.ss_sp   = self->stack;
   self->ctx.uc_stack.ss_size = U_TASK_STACK_SIZE;
-  self->ctx.uc_link          = &sch.ctx;
-  self->id                   = sch.id++;
+  self->ctx.uc_link          = &g_sch.ctx;
+  self->id                   = g_sch.id++;
   self->fun                  = fun;
   self->state                = U_TASK_STATE_INIT;
+  self->tfd                  = timerfd_create(CLOCK_MONOTONIC, 0);
 
-  if (self->timer_fd == 0) {
-    self->timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
-  }
+  u_list_put(g_sch.tasks, self);
 
-  u_list_put(sch.tasks, self);
+  g_sch.cnt++;
 
-  sch.cnt++;
-
-  u_xxx("task new %zu, total %zu", self->id, sch.cnt);
+  u_xxx("task new %zu, total %zu", self->id, g_sch.cnt);
 
   return self;
 
@@ -134,140 +130,89 @@ end:
 }
 
 inline void task_yield() {
-  sch.run->state = U_TASK_STATE_READY;
-  swapcontext(&sch.run->ctx, &sch.ctx);
+  g_task->state = U_TASK_STATE_READY;
+  swapcontext(&g_task->ctx, &g_sch.ctx);
 }
 
 static inline void task_switch(int state) {
-  sch.run->state = state;
-  swapcontext(&sch.run->ctx, &sch.ctx);
-}
-
-static inline void task_add_read_event() {
-  task_ref_t task = sch.run;
-
-  u_tree_put(sch.rwait, task->fd, task);
-  FD_SET(task->fd, &sch.rfds[0]);
-
-  u_xxx("task(%zu) -> R %d", task->id, task->fd);
-  u_xxx("rwait total %zu", u_tree_len(sch.rwait));
-}
-
-static inline void task_del_read_event(int fd) {
-  task_ref_t task = sch.run;
-
-  u_chk_if(u_tree_is_empty(sch.rwait));
-
-  task = u_tree_pop(sch.rwait, fd);
-  u_end_if(task);
-
-  task->state = U_TASK_STATE_READY;
-  u_list_put(sch.tasks, task);
-  FD_CLR(fd, &sch.rfds[0]);
-
-  u_xxx("task(%zu) <- R %d", task->id, task->fd);
-
-  return;
-
-end:
-}
-
-static inline void task_add_write_event() {
-  task_ref_t task = sch.run;
-
-  u_tree_put(sch.wwait, task->fd, task);
-  FD_SET(task->fd, &sch.wfds[1]);
-
-  u_xxx("task(%zu) -> W %d", task->id, task->fd);
-  u_xxx("wwait total %zu", u_tree_len(sch.wwait));
-}
-
-static inline void task_del_write_event(int fd) {
-  task_ref_t task = sch.run;
-
-  u_chk_if(u_tree_is_empty(sch.wwait));
-
-  task = u_tree_pop(sch.wwait, fd);
-  u_end_if(task, end);
-
-  task->state = U_TASK_STATE_READY;
-  u_list_put(sch.tasks, task);
-  FD_CLR(fd, &sch.wfds[0]);
-
-  u_xxx("task(%zu) <- W %d", task->id, task->fd);
-
-  return;
-
-end:
-}
-
-static inline void task_add_timer_event() {
-  task_ref_t task = sch.run;
-
-  u_chk_if(u_tree_is_exist(sch.twait, task->timer_fd));
-
-  u_tree_put(sch.twait, task->fd, task);
-  FD_SET(task->fd, &sch.rfds[0]);
-
-  u_xxx("task(%zu) -> T %d", task->id, task->fd);
-  u_xxx("twait total %zu", u_tree_len(sch.twait));
-}
-
-static inline void task_del_timer_event(int fd) {
-  task_ref_t task = sch.run;
-
-  u_chk_if(u_tree_is_empty(sch.twait));
-
-  task = u_tree_at(sch.twait, fd);
-  u_end_if(task);
-
-  if (task->its.it_interval.tv_sec == 0 && task->its.it_interval.tv_nsec == 0) {
-    FD_CLR(fd, &sch.rfds[0]);
-    u_tree_pop(sch.twait, fd);
-  }
-
-  task->state = U_TASK_STATE_READY;
-  u_list_put(sch.tasks, task);
-
-  u_xxx("task(%zu) <- T %d", task->id, task->fd);
-
-  return;
-
-end:
+  g_task->state = state;
+  swapcontext(&g_task->ctx, &g_sch.ctx);
 }
 
 static void task_select() {
-  task_ref_t task             = nullptr;
   int cnt                     = 0;
+  task_ref_t task             = {};
   struct timeval timeout      = {};
   struct timeval* timeout_ref = &timeout;
 
-  u_chk_if(u_tree_is_empty(sch.rwait) && u_tree_is_empty(sch.wwait) && u_tree_is_empty(sch.twait));
+  switch (g_task->state) {
+    case U_TASK_STATE_RWAIT: {
+      u_tree_put(g_sch.rwait, g_task->fd, g_task);
+      FD_SET(g_task->fd, &g_sch.rfds[0]);
 
-  sch.rfds[1] = sch.rfds[0];
-  sch.wfds[1] = sch.wfds[0];
+      u_xxx("task(%zu) -> R %d, total %zu", g_task->id, g_task->fd, u_tree_len(g_sch.rwait));
+    } break;
 
-  if (u_list_is_empty(sch.tasks)) {
+    case U_TASK_STATE_WWAIT: {
+      u_tree_put(g_sch.wwait, g_task->fd, g_task);
+      FD_SET(g_task->fd, &g_sch.wfds[0]);
+
+      u_xxx("task(%zu) -> W %d, total %zu", g_task->id, g_task->fd, u_tree_len(g_sch.wwait));
+    } break;
+
+    case U_TASK_STATE_TWAIT: {
+      u_tree_put(g_sch.twait, g_task->fd, g_task);
+      FD_SET(g_task->fd, &g_sch.rfds[0]);
+
+      u_xxx("task(%zu) -> T %d, total %zu", g_task->id, g_task->fd, u_tree_len(g_sch.twait));
+    } break;
+  }
+
+  u_end_if(u_tree_is_empty(g_sch.rwait) && u_tree_is_empty(g_sch.wwait) &&
+           u_tree_is_empty(g_sch.twait));
+
+  g_sch.rfds[1] = g_sch.rfds[0];
+  g_sch.wfds[1] = g_sch.wfds[0];
+
+  if (u_list_is_empty(g_sch.tasks)) {
     timeout_ref = nullptr;
   }
 
-  sch.maxfd = max(u_tree_max(sch.rwait).key, u_tree_max(sch.wwait).key);
-  sch.maxfd = max(sch.maxfd, u_tree_max(sch.twait).key);
+  g_sch.maxfd = max(u_tree_max(g_sch.rwait).key, u_tree_max(g_sch.wwait).key);
+  g_sch.maxfd = max(g_sch.maxfd, u_tree_max(g_sch.wwait).key);
 
-  cnt = select(sch.maxfd + 1, &sch.rfds[1], &sch.wfds[1], nullptr, timeout_ref);
-
+  cnt = select(g_sch.maxfd + 1, &g_sch.rfds[1], &g_sch.wfds[1], nullptr, timeout_ref);
   u_end_if(cnt <= 0);
 
-  u_xxx("select ret %d, maxfd is %d", cnt, sch.maxfd);
+  u_xxx("select io ret %d, maxfd is %d", cnt, g_sch.maxfd);
 
-  for (int fd = 0; fd < sch.maxfd + 1; fd++) {
-    if (FD_ISSET(fd, &sch.rfds[1])) {
-      task_del_read_event(fd);
-      task_del_timer_event(fd);
+  for (int fd = 0; fd < g_sch.maxfd + 1; fd++) {
+    if (FD_ISSET(fd, &g_sch.rfds[1])) {
+      task = u_tree_pop(g_sch.rwait, fd);
+      if (task != nullptr) {
+        u_list_put(g_sch.tasks, task);
+        FD_CLR(fd, &g_sch.rfds[0]);
+
+        u_xxx("task(%zu) <- R %d", task->id, task->fd);
+      }
+
+      task = u_tree_pop(g_sch.twait, fd);
+      if (task != nullptr) {
+        u_list_put(g_sch.tasks, nullptr, task);
+        FD_CLR(fd, &g_sch.rfds[0]);
+
+        u_xxx("task(%zu) <- T %d", task->id, task->fd);
+      }
     }
 
-    if (FD_ISSET(fd, &sch.wfds[1])) {
-      task_del_write_event(fd);
+    if (FD_ISSET(fd, &g_sch.wfds[1])) {
+      task = u_tree_pop(g_sch.wwait, fd);
+      u_die_if(task);
+
+      u_list_put(g_sch.tasks, task);
+      FD_CLR(fd, &g_sch.wfds[0]);
+
+      u_xxx("task(%zu) <- W %d", task->id, task->fd);
     }
   }
 
@@ -277,44 +222,46 @@ end:
 }
 
 void task_loop() {
-  task_ref_t task = nullptr;
-
   while (true) {
-    u_end_if(sch.cnt == 0);
+    u_end_if(g_sch.cnt == 0);
 
-    task = u_list_pop(sch.tasks);
-    u_xxx("task(%zu) resume", task->id);
+    g_task = u_list_pop(g_sch.tasks);
+    u_xxx("task(%zu) resume", g_task->id);
 
-    task->state = 0;
+    g_task->state = 0;
+    swapcontext(&g_sch.ctx, &g_task->ctx);
 
-    sch.run = task;
-    swapcontext(&sch.ctx, &task->ctx);
+    u_xxx("task(%zu) yield, ret %d", g_task->id, g_task->state);
+    switch (g_task->state) {
+      case U_TASK_STATE_RET:;
+      case U_TASK_STATE_DEAD: {
+        u_list_put(g_sch.dead, g_task);
+        g_sch.cnt--;
 
-    u_xxx("task(%zu) yield, ret %d", task->id, task->state);
-    switch (task->state) {
-      case U_TASK_STATE_RET: [[fallthrough]];
-      case U_TASK_STATE_DEAD:
-        u_list_put(sch.dead, task);
-        sch.cnt--;
-
-        u_xxx("task(%zu) dead", task->id);
-        break;
+        u_xxx("task(%zu) dead", g_task->id);
+      } break;
 
       /* ready, add to ready queue */
-      case U_TASK_STATE_READY: u_list_put(sch.tasks, task); break;
+      case U_TASK_STATE_READY: {
+        u_list_put(g_sch.tasks, g_task);
+      } break;
 
-      case U_TASK_STATE_RWAIT: task_add_read_event(); break;
-      case U_TASK_STATE_WWAIT: task_add_write_event(); break;
-      case U_TASK_STATE_TIMER: task_add_timer_event(); break;
+      case U_TASK_STATE_RWAIT:
+      case U_TASK_STATE_WWAIT:
+      case U_TASK_STATE_TWAIT: {
+      } break;
 
-      default: u_xxx("default state is %d", task->state); assert(0);
+      default: {
+        u_xxx("task(%zu) default state is %d", g_task->id, g_task->state);
+        assert(0);
+      } break;
     }
 
     task_select();
   }
 
 end:
-  u_list_clear(sch.dead, it) {
+  u_list_clear(g_sch.dead, it) {
     u_free(it->stack);
     u_free(it);
   }
@@ -322,47 +269,38 @@ end:
   u_xxx("end");
 }
 
-void task_delay(i64_t sec, i64_t nsec) {
-  u64_t buf = 0;
+bool task_timer(i64_t ms, i64_t inter_ms) {
+  u64_t buf             = 0;
+  struct itimerspec its = {};
 
-  bzero(&sch.run->its, sizeof(struct itimerspec));
+  u_chk_if(g_task->tstate == 3, false);
 
-  sch.run->its.it_value.tv_sec  = sec;
-  sch.run->its.it_value.tv_nsec = nsec;
-  timerfd_settime(sch.run->timer_fd, 0, &sch.run->its, nullptr);
+  u_end_if(ms == 0 && inter_ms == 0);
 
-  sch.run->fd = sch.run->timer_fd;
-  task_switch(U_TASK_STATE_TIMER);
+  /* init timer */
+  if (g_task->tstate == 0) {
+    its.it_value.tv_sec  = ms / 1000;
+    its.it_value.tv_nsec = (ms % 1000) * 1000 * 1000;
 
-  read(sch.run->timer_fd, &buf, sizeof(u64_t));
-}
-
-bool task_timer_start(i64_t sec, i64_t nsec, i64_t inter_sec, i64_t inter_nsec) {
-  u64_t buf = 0;
-
-  if (!u_tree_is_exist(sch.twait, sch.run->timer_fd)) {
-    bzero(&sch.run->its, sizeof(struct itimerspec));
-
-    sch.run->its.it_value.tv_sec     = sec;
-    sch.run->its.it_value.tv_nsec    = nsec;
-    sch.run->its.it_interval.tv_sec  = inter_sec;
-    sch.run->its.it_interval.tv_nsec = inter_nsec;
-    timerfd_settime(sch.run->timer_fd, 0, &sch.run->its, nullptr);
+    g_task->tstate = 1;
+  } else if (g_task->tstate == 1) {
+    its.it_value.tv_sec  = inter_ms / 1000;
+    its.it_value.tv_nsec = (inter_ms % 1000) * 1000 * 1000;
   }
 
-  sch.run->fd = sch.run->timer_fd;
-  task_switch(U_TASK_STATE_TIMER);
+  timerfd_settime(g_task->tfd, 0, &its, nullptr);
 
-  read(sch.run->timer_fd, &buf, sizeof(u64_t));
+  g_task->fd = g_task->tfd;
+  task_switch(U_TASK_STATE_TWAIT);
+
+  read(g_task->tfd, &buf, sizeof(u64_t));
 
   return true;
-}
 
-void task_timer_stop() {
-  bzero(&sch.run->its, sizeof(struct itimerspec));
+end:
+  g_task->tstate = 3;
 
-  u_tree_pop(sch.twait, sch.run->timer_fd);
-  FD_CLR(sch.run->timer_fd, &sch.rfds[0]);
+  return false;
 }
 
 int task_socket(int domain, int type, int protocol) {
@@ -392,7 +330,7 @@ int task_accept(int fd, struct sockaddr* addr, socklen_t* len) {
   int reuse  = 1;
 
   do {
-    sch.run->fd = fd;
+    g_task->fd = fd;
     task_switch(U_TASK_STATE_RWAIT);
 
     sockfd = accept(fd, addr, len);
@@ -435,7 +373,7 @@ end:
 ssize_t task_read(int fd, void* buf, size_t count) {
   ssize_t recn = 0;
 
-  sch.run->fd = fd;
+  g_task->fd = fd;
   task_switch(U_TASK_STATE_RWAIT);
 
   recn = read(fd, buf, count);
@@ -446,7 +384,7 @@ ssize_t task_read(int fd, void* buf, size_t count) {
 ssize_t task_recv(int fd, void* buf, size_t n, int flags) {
   ssize_t recn = 0;
 
-  sch.run->fd = fd;
+  g_task->fd = fd;
   task_switch(U_TASK_STATE_RWAIT);
 
   recn = recv(fd, buf, n, flags);
@@ -462,7 +400,7 @@ ssize_t task_recvfrom(int fd,
                       socklen_t* addrlen) {
   ssize_t recn = 0;
 
-  sch.run->fd = fd;
+  g_task->fd = fd;
   task_switch(U_TASK_STATE_RWAIT);
 
   recn = recvfrom(fd, buf, len, flags, src_addr, addrlen);
@@ -488,7 +426,7 @@ ssize_t task_write(int fd, const void* buf, size_t count) {
   sent += ret;
 
   while (sent < count) {
-    sch.run->fd = fd;
+    g_task->fd = fd;
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = write(fd, buf + sent, count - sent);
@@ -513,7 +451,7 @@ ssize_t task_send(int fd, const void* buf, size_t n, int flags) {
   sent += ret;
 
   while (sent < n) {
-    sch.run->fd = fd;
+    g_task->fd = fd;
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = send(fd, buf + sent, n - sent, flags);
@@ -543,7 +481,7 @@ ssize_t task_sendto(int fd,
   sent += ret;
 
   while (sent < len) {
-    sch.run->fd = fd;
+    g_task->fd = fd;
     task_switch(U_TASK_STATE_WWAIT);
 
     ret = sendto(fd, buf, len, flags, dest_addr, addrlen);
