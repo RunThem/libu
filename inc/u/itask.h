@@ -48,18 +48,17 @@ extern "C" {
 extern any_t    task_new      (any_t);
 extern void     task_loop     ();
 
-extern void     task_yield    ();
-// extern void     task_delay    (i64_t, i64_t);
-extern bool     task_timer    (i64_t ms, i64_t inter_ms);
-extern int      task_socket   (int, int, int);
-extern int      task_accept   (int, struct sockaddr*, socklen_t*);
-extern int      task_connect  (int, struct sockaddr*, socklen_t);
-extern ssize_t  task_read     (int, void*, size_t);
-extern ssize_t  task_recv     (int, void*, size_t, int);
-extern ssize_t  task_recvfrom (int, void*, size_t, int, struct sockaddr*, socklen_t*);
-extern ssize_t  task_write    (int, const void*, size_t);
-extern ssize_t  task_send     (int, const void*, size_t, int);
-extern ssize_t  task_sendto   (int, const void*, size_t, int, const struct sockaddr*, socklen_t);
+extern void     u_task_yield    ();
+extern bool     u_task_delay    (i64_t);
+extern int      u_task_socket   (int, int, int);
+extern int      u_task_accept   (int, struct sockaddr*, socklen_t*);
+extern int      u_task_connect  (int, struct sockaddr*, socklen_t);
+extern ssize_t  u_task_read     (int, void*, size_t);
+extern ssize_t  u_task_recv     (int, void*, size_t, int);
+extern ssize_t  u_task_recvfrom (int, void*, size_t, int, struct sockaddr*, socklen_t*);
+extern ssize_t  u_task_write    (int, const void*, size_t);
+extern ssize_t  u_task_send     (int, const void*, size_t, int);
+extern ssize_t  u_task_sendto   (int, const void*, size_t, int, const struct sockaddr*, socklen_t);
 /* clang-format on */
 
 /***************************************************************************************************
