@@ -81,7 +81,6 @@ extern "C" {
 #  include "iset.h"
 #  include "ivec.h"
 #  include "ilfq.h"
-#  include "itask.h"
 #  include "iheap.h"
 /* clang-format on */
 
