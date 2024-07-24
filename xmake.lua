@@ -61,8 +61,8 @@ add_includedirs('$(projectdir)/inc')
 --- libu target
 target('u', function()
   set_kind('static')
-  add_files('$(projectdir)/src/**.c|istr.c')
-  add_headerfiles('$(projectdir)/inc/(**.h)|istr.h')
+  add_files('$(projectdir)/src/**.c')
+  add_headerfiles('$(projectdir)/inc/(**.h)')
 
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })
