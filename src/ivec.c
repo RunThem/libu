@@ -120,6 +120,8 @@ size_t vec_len(any_t _self) {
 size_t vec_cap(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
+  u_chk_if(self, 0);
+
   return self->cap;
 }
 
