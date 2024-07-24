@@ -25,95 +25,127 @@
 #include <u/u.h>
 
 /***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+typedef struct {
+  bool is_alloc;
+  bool is_append;
+  size_t cap;
+
+  u8_t* rawbuf;
+  u8_t* begin;
+  u8_t* end;
+} buf_t, *buf_ref_t;
+
+/***************************************************************************************************
  * Function
  **************************************************************************************************/
-void buf_init(u_buf_ref_t self, u8_t* buf, size_t cap) {
-  u_chk_if(self);
+u_buf_ref_t buf_new(u8_t* buf, size_t cap) {
+  buf_ref_t self = nullptr;
+
+  self = u_talloc(buf_t);
+  u_end_if(self);
 
   if (buf != nullptr) {
-    self->__rawbuf = buf;
+    self->rawbuf = buf;
   } else {
-    self->__rawbuf = u_zalloc(cap);
-    u_end_if(self->__rawbuf);
+    self->is_alloc = true;
 
-    self->alloc_flag = true;
+    self->rawbuf = u_zalloc(cap);
+    u_end_if(self->rawbuf);
   }
 
-  self->len = 0;
-  self->cap = cap;
-  self->buf = self->__rawbuf;
+  self->begin = self->rawbuf;
+  self->end   = self->rawbuf;
+  self->cap   = cap;
 
-  return;
+  return (u_buf_ref_t)self;
 
 end:
+  u_free_if(self);
+
+  return nullptr;
 }
 
-void buf_clear(u_buf_ref_t self) {
+void buf_clear(u_buf_ref_t _self) {
+  buf_ref_t self = (buf_ref_t)_self;
+
   u_chk_if(self);
 
-  self->len = 0;
-  self->buf = self->__rawbuf;
+  self->begin = self->rawbuf;
+  self->end   = self->rawbuf;
 }
 
-void buf_cleanup(u_buf_ref_t self) {
+void buf_cleanup(u_buf_ref_t _self) {
+  buf_ref_t self = (buf_ref_t)_self;
+
   u_chk_if(self);
 
-  if (self->alloc_flag) {
-    u_free_if(self->__rawbuf);
+  if (self->is_alloc) {
+    u_free(self->rawbuf);
+  }
+
+  u_free(self->rawbuf);
+}
+
+size_t buf_len(u_buf_ref_t _self) {
+  buf_ref_t self = (buf_ref_t)_self;
+
+  u_chk_if(self, 0);
+
+  return self->begin - self->end;
+}
+
+void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
+  buf_ref_t self = (buf_ref_t)_self;
+
+  u_chk_if(self);
+  u_chk_if(buf);
+  u_chk_if(len > self->end - self->begin);
+
+  if (self->is_append) {
+    self->end -= len;
+    memcpy(buf, self->end, len);
+  } else {
+    memcpy(buf, self->begin, len);
+    self->begin += len;
   }
 }
 
-size_t buf_len(u_buf_ref_t self) {
-  u_chk_if(self, 0);
+void buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
+  size_t diff    = 0;
+  size_t size    = 0;
+  buf_ref_t self = (buf_ref_t)_self;
 
-  return self->len;
-}
-
-void buf_skip(u_buf_ref_t self, size_t len) {
   u_chk_if(self);
-  u_chk_if(len > self->len);
-
-  self->buf += len;
-}
-
-void buf_pop(u_buf_ref_t self, any_t buf, size_t len) {
-  u_chk_if(self);
-  u_chk_if(buf);
-  u_chk_if(len > self->len);
-
-  memcpy(buf, self->buf, len);
-
-  self->len -= len;
-  self->buf += len;
-}
-
-void buf_put(u_buf_ref_t self, any_t buf, size_t len) {
-  size_t diff = 0;
 
   u_chk_if(self);
   u_chk_if(buf);
 
-  diff = self->buf - self->__rawbuf;
+  diff = self->begin - self->rawbuf;
+  size = self->end - self->begin;
 
   /* realloc */
-  if (self->cap - (diff + self->len) < len) {
-    if (self->cap - self->len >= len) {
-      memmove(self->__rawbuf, self->buf, self->len);
-      self->buf = self->__rawbuf;
+  if (self->cap - (diff + size) < len) {
+    if (self->cap - size >= len) {
+      memmove(self->rawbuf, self->begin, size);
+      self->begin = self->rawbuf;
+      self->end   = self->rawbuf + size;
     } else {
-      u_end_if(!self->alloc_flag);
+      u_end_if(!self->is_alloc);
 
-      self->__rawbuf = u_realloc(self->__rawbuf, self->cap + len);
-      u_end_if(self->__rawbuf);
+      self->rawbuf = u_realloc(self->rawbuf, self->cap + len);
+      u_end_if(self->rawbuf);
 
       self->cap += len;
-      self->buf = self->__rawbuf + diff;
+      self->begin = self->rawbuf + diff;
+      self->end   = self->begin + size;
     }
   }
 
-  memcpy(self->buf + self->len, buf, len);
+  memcpy(self->end, buf, len);
 
-  self->len += len;
+  self->end += len;
 
   return;
 
