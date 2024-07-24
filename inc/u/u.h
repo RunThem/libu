@@ -84,8 +84,6 @@ extern "C" {
 #  include "iheap.h"
 /* clang-format on */
 
-/* #include "istr.h" */
-
 #  ifdef __cplusplus
 } /* extern "C" */
 #  endif
