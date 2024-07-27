@@ -68,11 +68,11 @@ target('u', function()
     add_packages('mimalloc', { public = true })
   end
 
+  add_rules('generic')
+
   --[[
   add_defines('LIBU_DEBUG')
   --]]
-
-  add_rules('generic')
 end)
 
 includes('dev', 'tests')

@@ -23,7 +23,6 @@ task('dev', function()
   })
 
   on_run(function()
-    os.exec('xmake f -m debug --mimalloc=y')
     os.exec('xmake build -v dev.c')
     os.exec('xmake run dev.c')
   end)
@@ -45,8 +44,6 @@ task('perf', function()
 
     local pd = option.get('perfdata')
     local fd = vformat('$(buildir)/FlameGraph')
-
-    print(pd)
 
     if not os.exists(pd) then
       cprint('${bright green}usage: sudo perf record -e cpu-clock -g -o $(buildir)/perf.data -p 1234')
