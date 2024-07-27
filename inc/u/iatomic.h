@@ -61,7 +61,6 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   } while (0)
 
-
 #define u_atomic_pop(obj, ...)                                                                     \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \

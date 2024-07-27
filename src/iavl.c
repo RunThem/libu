@@ -589,7 +589,7 @@ void avl_put(any_t _self, any_t key, any_t val) {
 end:
 }
 
-extern u_cmp_fn avl_fn(any_t _self) {
+u_cmp_fn avl_fn(any_t _self) {
   avl_ref_t self = (avl_ref_t)_self;
 
   u_chk_if(self, nullptr);

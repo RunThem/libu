@@ -34,18 +34,17 @@ extern "C" {
 /***************************************************************************************************
  * Misc macro
  **************************************************************************************************/
+/* clang-format off */
 #  define any(p)        ((any_t)(p))
 #  define ch(c)         ((char)(#c[0]))
 #  define me(type, ...) ((type){__VA_ARGS__})
 #  define bit(byte, n)  (((byte) >> (n)) & 1)
 
-/* clang-format off */
 #define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
       for (int i = n; i < u_va_at(0, __VA_ARGS__); i++)                                            \
     )(                                                                                             \
       for (int i = 0; i < n; i++)                                                                  \
     )
-/* clang-format on */
 
 #  define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
@@ -67,6 +66,7 @@ extern "C" {
 
 extern bool __bm_entry(const char*, size_t);
 #  define u_bm_block(msg, ...) while (__bm_entry(msg, u_va_0th(1, __VA_ARGS__)))
+/* clang-format on */
 
 /***************************************************************************************************
  * Try catch
@@ -160,7 +160,8 @@ extern thread_local __err__t __err__;
 /*
  * '>'  => 1
  * '==' => 0
- * '<'  => -1*/
+ * '<'  => -1
+ * */
 #define fn_cmp(type, ...)                                                                          \
   u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
     fn_cmp_##type(__VA_ARGS__)                                                                     \
