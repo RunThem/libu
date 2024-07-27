@@ -52,7 +52,7 @@ typedef struct {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static ret_t heap_resize(heap_ref_t self) {
+pri ret_t heap_resize(heap_ref_t self) {
   size_t cap = 0;
   any_t root = nullptr;
 
@@ -70,7 +70,7 @@ end:
   return -1;
 }
 
-any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
+pub any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
   heap_ref_t self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
@@ -95,7 +95,7 @@ end:
   return nullptr;
 }
 
-void heap_clear(any_t _self) {
+pub void heap_clear(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self);
@@ -103,7 +103,7 @@ void heap_clear(any_t _self) {
   self->len = 0;
 }
 
-void heap_cleanup(any_t _self) {
+pub void heap_cleanup(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self);
@@ -112,7 +112,7 @@ void heap_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-size_t heap_len(any_t _self) {
+pub size_t heap_len(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -120,7 +120,7 @@ size_t heap_len(any_t _self) {
   return self->len;
 }
 
-void heap_at(any_t _self, any_t item) {
+pub void heap_at(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self);
@@ -129,7 +129,7 @@ void heap_at(any_t _self, any_t item) {
   memcpy(item, self->root, self->itsize);
 }
 
-void heap_pop(any_t _self, any_t item) {
+pub void heap_pop(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
   size_t idx      = 0;
   size_t lidx     = 0;
@@ -178,7 +178,7 @@ void heap_pop(any_t _self, any_t item) {
 end:
 }
 
-void heap_put(any_t _self, any_t item) {
+pub void heap_put(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
   ret_t result    = 0;
   size_t idx      = 0;

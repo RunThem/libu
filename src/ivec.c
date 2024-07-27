@@ -44,7 +44,7 @@ typedef struct {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static ret_t vec_resize(vec_ref_t self) {
+pri ret_t vec_resize(vec_ref_t self) {
   int cap     = 0;
   any_t items = nullptr;
 
@@ -62,7 +62,7 @@ end:
   return -1;
 }
 
-any_t vec_new(size_t itsize) {
+pub any_t vec_new(size_t itsize) {
   vec_ref_t self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
@@ -84,7 +84,7 @@ end:
   return nullptr;
 }
 
-void vec_clear(any_t _self) {
+pub void vec_clear(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self);
@@ -92,7 +92,7 @@ void vec_clear(any_t _self) {
   self->len = 0;
 }
 
-void vec_cleanup(any_t _self) {
+pub void vec_cleanup(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self);
@@ -101,7 +101,7 @@ void vec_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-bool vec_exist(any_t _self, int idx) {
+pub bool vec_exist(any_t _self, int idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, false);
@@ -109,7 +109,7 @@ bool vec_exist(any_t _self, int idx) {
   return self->len > idx;
 }
 
-size_t vec_len(any_t _self) {
+pub size_t vec_len(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -117,7 +117,7 @@ size_t vec_len(any_t _self) {
   return self->len;
 }
 
-size_t vec_cap(any_t _self) {
+pub size_t vec_cap(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -125,7 +125,7 @@ size_t vec_cap(any_t _self) {
   return self->cap;
 }
 
-any_t vec_at(any_t _self, int idx) {
+pub any_t vec_at(any_t _self, int idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, nullptr);
@@ -143,7 +143,7 @@ any_t vec_at(any_t _self, int idx) {
  * {  0,  1,  2,  3,  4,  5,  6 }
  * { -7, -6, -5, -4, -3, -2  -1 }
  * */
-void vec_pop(any_t _self, int idx, any_t item) {
+pub void vec_pop(any_t _self, int idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self);
@@ -169,7 +169,7 @@ void vec_pop(any_t _self, int idx, any_t item) {
  * {  0,  1,  2,  3,  4,  5,  6 }  7
  * { -8, -7, -6, -5, -4, -3, -2 } -1
  * */
-void vec_put(any_t _self, int idx, any_t item) {
+pub void vec_put(any_t _self, int idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
   ret_t result   = 0;
 
@@ -195,7 +195,7 @@ void vec_put(any_t _self, int idx, any_t item) {
 end:
 }
 
-void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
+pub void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self);
@@ -205,7 +205,7 @@ void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
   qsort(self->items, self->len, self->itsize, cmp_fn);
 }
 
-bool vec_for_init(any_t _self, bool flag) {
+pub bool vec_for_init(any_t _self, bool flag) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, false);
@@ -223,7 +223,7 @@ bool vec_for_init(any_t _self, bool flag) {
   return self->flags[0];
 }
 
-void vec_for_end(any_t _self) {
+pub void vec_for_end(any_t _self) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self);
@@ -231,7 +231,7 @@ void vec_for_end(any_t _self) {
   self->flags[0] = 2;
 }
 
-bool vec_for(any_t _self, int* idx, any_t item) {
+pub bool vec_for(any_t _self, int* idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, false);

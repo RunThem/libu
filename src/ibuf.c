@@ -40,7 +40,7 @@ typedef struct {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-u_buf_ref_t buf_new(u8_t* buf, size_t cap) {
+pub u_buf_ref_t buf_new(u8_t* buf, size_t cap) {
   buf_ref_t self = nullptr;
 
   self = u_talloc(buf_t);
@@ -67,7 +67,7 @@ end:
   return nullptr;
 }
 
-void buf_clear(u_buf_ref_t _self) {
+pub void buf_clear(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self);
@@ -76,7 +76,7 @@ void buf_clear(u_buf_ref_t _self) {
   self->end   = self->rawbuf;
 }
 
-void buf_cleanup(u_buf_ref_t _self) {
+pub void buf_cleanup(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self);
@@ -88,7 +88,7 @@ void buf_cleanup(u_buf_ref_t _self) {
   u_free(self->rawbuf);
 }
 
-size_t buf_len(u_buf_ref_t _self) {
+pub size_t buf_len(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -96,7 +96,7 @@ size_t buf_len(u_buf_ref_t _self) {
   return self->begin - self->end;
 }
 
-void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
+pub void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self);
@@ -112,7 +112,7 @@ void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
   }
 }
 
-void buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
+pub void buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
   size_t diff    = 0;
   size_t size    = 0;
   buf_ref_t self = (buf_ref_t)_self;

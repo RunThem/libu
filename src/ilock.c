@@ -24,33 +24,33 @@
 
 #include <u/u.h>
 
-void u_spmtx_init(u_spmtx_ref_t self) {
+pub void u_spmtx_init(u_spmtx_ref_t self) {
   u_chk_if(self);
 
   u_atomic_init(&self->locked, false);
 }
 
-void u_spmtx_lock(u_spmtx_ref_t self) {
+pub void u_spmtx_lock(u_spmtx_ref_t self) {
   u_chk_if(self);
 
   while (u_atomic_swap(&self->locked, true))
     ;
 }
 
-void u_spmtx_unlock(u_spmtx_ref_t self) {
+pub void u_spmtx_unlock(u_spmtx_ref_t self) {
   u_chk_if(self);
 
   u_atomic_swap(&self->locked, false);
 }
 
-void u_rwmtx_init(u_rwmtx_ref_t self) {
+pub void u_rwmtx_init(u_rwmtx_ref_t self) {
   u_chk_if(self);
 
   u_atomic_init(&self->cnt, 0);
   u_atomic_init(&self->rwlock, false);
 }
 
-void u_rwmtx_rlock(u_rwmtx_ref_t self) {
+pub void u_rwmtx_rlock(u_rwmtx_ref_t self) {
   u_chk_if(self);
 
   while (true) {
@@ -64,13 +64,13 @@ void u_rwmtx_rlock(u_rwmtx_ref_t self) {
   }
 }
 
-void u_rwmtx_runlock(u_rwmtx_ref_t self) {
+pub void u_rwmtx_runlock(u_rwmtx_ref_t self) {
   u_chk_if(self);
 
   u_atomic_sub(&self->cnt, 1);
 }
 
-void u_rwmtx_wlock(u_rwmtx_ref_t self) {
+pub void u_rwmtx_wlock(u_rwmtx_ref_t self) {
   u_chk_if(self);
 
   while (u_atomic_swap(&self->rwlock, true))
@@ -80,7 +80,7 @@ void u_rwmtx_wlock(u_rwmtx_ref_t self) {
     ;
 }
 
-void u_rwmtx_wunlock(u_rwmtx_ref_t self) {
+pub void u_rwmtx_wunlock(u_rwmtx_ref_t self) {
   u_chk_if(self);
 
   u_atomic_swap(&self->rwlock, false);

@@ -37,6 +37,9 @@ extern "C" {
 
 #  define auto __auto_type
 
+#  define pub        /* public */
+#  define pri static /* private */
+
 #  if __has_builtin(__builtin_classify_type)
 #    define typeclassify(t) (__builtin_classify_type(t))
 #    define is_ptr(t)       (typeclassify(t) == 5)

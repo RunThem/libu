@@ -55,7 +55,7 @@ fn_compe_def(u128_t, (x == y), (x > y));
 /***************************************************************************************************
  * Display
  **************************************************************************************************/
-void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
+pub void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
   u8_t byte = 0;
 
 #if 0
@@ -85,7 +85,7 @@ void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
 #endif
 }
 
-void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
+pub void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
   char buf[17] = {0};
   size_t i     = 0;
   size_t pos   = 0;
@@ -148,7 +148,7 @@ typedef struct {
 
 thread_local u_bm_t bm;
 
-bool __bm_entry(const char* msg, size_t cnt) {
+pub bool __bm_entry(const char* msg, size_t cnt) {
   size_t take = 10'0000'0000L; /* nanoseconds/per second */
   size_t ave  = 0;
   size_t s    = 0; /* second */

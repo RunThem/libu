@@ -25,7 +25,7 @@
 #include <u/u.h>
 
 /* clang-format off */
-static size_t bucket_sizes[] = {
+pri size_t bucket_sizes[] = {
 #if 0 /* debug */
     7,
 #endif
@@ -79,7 +79,7 @@ typedef struct {
  * Function
  **************************************************************************************************/
 /* [idx, len] { 0xffff } { 0xfffe } */
-static void map_debug(map_ref_t self) {
+pri void map_debug(map_ref_t self) {
   fprintf(stderr,
           "ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)\n",
           self->ksize,
@@ -99,7 +99,7 @@ static void map_debug(map_ref_t self) {
 }
 
 /* fnv 64-bit hash function */
-static u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
+pri u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   u_hash_t hash = 1469'5981'0393'4665'6037U;
 
   for (size_t i = 0; i < len; ++i) {
@@ -110,7 +110,7 @@ static u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   return hash;
 }
 
-static node_ref_t map_new_node(map_ref_t self, any_t key, any_t val) {
+pri node_ref_t map_new_node(map_ref_t self, any_t key, any_t val) {
   node_ref_t node = nullptr;
 
   if (self->free_nodes != nullptr) {
@@ -131,7 +131,7 @@ end:
   return nullptr;
 }
 
-static node_ref_t map_find(map_ref_t self, node_ref_t idx[2], any_t key) {
+pri node_ref_t map_find(map_ref_t self, node_ref_t idx[2], any_t key) {
   u_hash_t hash   = 0;
   node_ref_t node = nullptr;
 
@@ -147,7 +147,7 @@ static node_ref_t map_find(map_ref_t self, node_ref_t idx[2], any_t key) {
   return node;
 }
 
-static node_ref_t map_make_buckets(size_t bs) {
+pri node_ref_t map_make_buckets(size_t bs) {
   node_ref_t buckets = nullptr;
 
   buckets = u_calloc(bs * 2, sizeof(node_t));
@@ -169,7 +169,7 @@ end:
   return nullptr;
 }
 
-static void map_next(map_ref_t self) {
+pri void map_next(map_ref_t self) {
   size_t idx = 0;
   size_t i   = 0;
 
@@ -200,7 +200,7 @@ end:
   }
 }
 
-static bool map_resize(map_ref_t self) {
+pri bool map_resize(map_ref_t self) {
   node_ref_t nbuckets = nullptr;
   node_ref_t node     = nullptr;
   node_ref_t tmp      = nullptr;
@@ -237,7 +237,7 @@ end:
   return false;
 }
 
-any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
+pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   map_ref_t self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
@@ -263,7 +263,7 @@ end:
   return nullptr;
 }
 
-void map_clear(any_t _self) {
+pub void map_clear(any_t _self) {
   map_ref_t self  = (map_ref_t)_self;
   node_ref_t node = nullptr;
   node_ref_t list = nullptr;
@@ -291,7 +291,7 @@ void map_clear(any_t _self) {
   self->len = 0;
 }
 
-void map_cleanup(any_t _self) {
+pub void map_cleanup(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
   u_chk_if(self);
@@ -302,7 +302,7 @@ void map_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-size_t map_len(any_t _self) {
+pub size_t map_len(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -310,7 +310,7 @@ size_t map_len(any_t _self) {
   return self->len;
 }
 
-bool map_exist(any_t _self, any_t key) {
+pub bool map_exist(any_t _self, any_t key) {
   map_ref_t self    = (map_ref_t)_self;
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
@@ -323,7 +323,7 @@ bool map_exist(any_t _self, any_t key) {
   return node->next != nullptr;
 }
 
-any_t map_at(any_t _self, any_t key) {
+pub any_t map_at(any_t _self, any_t key) {
   map_ref_t self    = (map_ref_t)_self;
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
@@ -341,7 +341,7 @@ end:
   return nullptr;
 }
 
-void map_pop(any_t _self, any_t key, any_t val) {
+pub void map_pop(any_t _self, any_t key, any_t val) {
   map_ref_t self    = (map_ref_t)_self;
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
@@ -369,7 +369,7 @@ end:
   bzero(val, self->vsize);
 }
 
-void map_put(any_t _self, any_t key, any_t val) {
+pub void map_put(any_t _self, any_t key, any_t val) {
   map_ref_t self    = (map_ref_t)_self;
   node_ref_t node   = nullptr;
   node_ref_t idx[2] = {};
@@ -406,7 +406,7 @@ end:
   u_free_if(node);
 }
 
-bool map_for_init(any_t _self, bool flag) {
+pub bool map_for_init(any_t _self, bool flag) {
   map_ref_t self = (map_ref_t)_self;
 
   u_chk_if(self, false);
@@ -422,7 +422,7 @@ bool map_for_init(any_t _self, bool flag) {
   return self->flags[0];
 }
 
-void map_for_end(any_t _self) {
+pub void map_for_end(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
   u_chk_if(self);
@@ -430,7 +430,7 @@ void map_for_end(any_t _self) {
   self->flags[0] = 2;
 }
 
-bool map_for(any_t _self, any_t key, any_t val) {
+pub bool map_for(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
 
   u_chk_if(self, false);

@@ -37,7 +37,7 @@ typedef struct {
   _Atomic(size_t) len;
 } lfq_t, *lfq_ref_t;
 
-u_lfq_ref_t lfq_new() {
+pub u_lfq_ref_t lfq_new() {
   lfq_ref_t self  = nullptr;
   node_ref_t node = nullptr;
 
@@ -57,7 +57,7 @@ end:
   return nullptr;
 }
 
-void lfq_cleanup(u_lfq_ref_t _self) {
+pub void lfq_cleanup(u_lfq_ref_t _self) {
   lfq_ref_t self = (lfq_ref_t)_self;
 
   u_chk_if(self);
@@ -69,7 +69,7 @@ void lfq_cleanup(u_lfq_ref_t _self) {
   u_free(self);
 }
 
-size_t lfq_len(u_lfq_ref_t _self) {
+pub size_t lfq_len(u_lfq_ref_t _self) {
   lfq_ref_t self = (lfq_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -77,7 +77,7 @@ size_t lfq_len(u_lfq_ref_t _self) {
   return u_atomic_pop(&self->len);
 }
 
-bool lfq_put(u_lfq_ref_t _self, any_t obj) {
+pub bool lfq_put(u_lfq_ref_t _self, any_t obj) {
   lfq_ref_t self  = (lfq_ref_t)_self;
   node_ref_t tail = nullptr;
   node_ref_t next = nullptr;
@@ -115,7 +115,7 @@ end:
   return false;
 }
 
-any_t lfq_pop(u_lfq_ref_t _self) {
+pub any_t lfq_pop(u_lfq_ref_t _self) {
   lfq_ref_t self  = (lfq_ref_t)_self;
   node_ref_t head = nullptr;
   node_ref_t tail = nullptr;

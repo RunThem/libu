@@ -26,13 +26,13 @@
 
 #define FMT "%s %s%s\x1b[0m \x1b[02m%s:%d\x1b[0m"
 
-static const char* dbg_level[] = {"ERR", "WAR", "INF", "DBG", " U "};
-static const char* dbg_color[] = {"\x1b[31m", "\x1b[33m", "\x1b[34m", "\x1b[35m", "\x1b[32m"};
+pri const char* dbg_level[] = {"ERR", "WAR", "INF", "DBG", " U "};
+pri const char* dbg_color[] = {"\x1b[31m", "\x1b[33m", "\x1b[34m", "\x1b[35m", "\x1b[32m"};
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-void dbg_write(int level, const char* file, int line, const char* fmt, ...) {
+pub void dbg_write(int level, const char* file, int line, const char* fmt, ...) {
   char protmp[256] = {};
   char buf[4096]   = {};
   char timebuf[64] = {};
