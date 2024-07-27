@@ -85,7 +85,7 @@ pub void buf_cleanup(u_buf_ref_t _self) {
     u_free(self->rawbuf);
   }
 
-  u_free(self->rawbuf);
+  u_free(self);
 }
 
 pub size_t buf_len(u_buf_ref_t _self) {
@@ -93,7 +93,7 @@ pub size_t buf_len(u_buf_ref_t _self) {
 
   u_chk_if(self, 0);
 
-  return self->begin - self->end;
+  return self->end - self->begin;
 }
 
 pub void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {

@@ -90,7 +90,7 @@ extern void         buf_put     (u_buf_ref_t, any_t, size_t);
                                                                                                    \
       buf_pop(self, &__a, sizeof(__a)) ;                                                           \
                                                                                                    \
-      _a;                                                                                          \
+      __a;                                                                                         \
     ) (                                                                                            \
       buf_pop(self, u_va_at(0, __VA_ARGS__), u_va_at(1, __VA_ARGS__));                             \
                                                                                                    \
