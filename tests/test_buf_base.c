@@ -1,7 +1,6 @@
 #include <u/u.h>
 
 test() {
-  /* #[[vec<int>]] */
   u_buf_ref_t v = nullptr;
 
   /* alloc buffer */
