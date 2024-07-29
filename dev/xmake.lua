@@ -1,4 +1,6 @@
-add_requires('libsock', 'tbox', 'xxhash', 'avlmini')
+local deps = { 'libsock', 'avlmini' }
+
+add_requires(unpack(deps))
 
 target('dev.c', function()
   set_kind('binary')
@@ -9,7 +11,7 @@ target('dev.c', function()
   add_rules('generic')
 
   add_deps('u')
-  add_packages('libsock', 'tbox', 'xxhash', 'avlmini')
+  add_packages(unpack(deps))
 
   -- after_build(function(target)
   --   os.trycp('$(projectdir)/$(buildir)/$(plat)/$(arch)/$(mode)/' .. target:name(), '$(projectdir)')
@@ -33,7 +35,7 @@ task('perf', function()
     usage = 'xmake perf',
     description = 'perf',
     options = {
-      { 'p', 'perfdata', 'kv', 'build/perf.data', 'perf output filename' },
+      { 't', 'target', 'kv', 'dev.c', 'target name' },
     },
   })
 
@@ -41,24 +43,43 @@ task('perf', function()
     import('core.base.option')
     import('devel.git')
     import('privilege.sudo')
+    import('core.project.project')
 
-    local pd = option.get('perfdata')
-    local fd = vformat('$(buildir)/FlameGraph')
+    local fg = vformat('$(buildir)/FlameGraph')
+    local sh = vformat('$(buildir)/perf.sh')
+    local target = project.target(option.get('target'))
 
-    if not os.exists(pd) then
-      cprint('${bright green}usage: sudo perf record -e cpu-clock -g -o $(buildir)/perf.data -p 1234')
-
+    if not target then
       return
     end
 
+    target = vformat('%s/debug/%s', target:targetdir(), target:filename())
+
     -- download [FlameGraph](https://github.com/brendangregg/FlameGraph)
-    if not os.exists(fd) then
-      git.clone('https://github.com/brendangregg/FlameGraph', { depth = 1, outputdir = fd })
+    if not os.exists(fg) then
+      git.clone('https://github.com/brendangregg/FlameGraph', { depth = 1, outputdir = fg })
     end
 
-    cprint('perf script -i %s &> $(buildir)/perf.unfold', pd)
-    -- sudo.run('perf script -i %s &> $(buildir)/perf.unfold', pd)
-    -- sudo.run('%s/stackcollapse-perf.pl $(buildir)/perf.unfold &> $(buildir)/perf.folded', fd)
-    -- sudo.run('%s/flamegraph.pl $(buildir)/perf.folded > perf.svg', fd)
+    local script = [[
+#!/usr/bin/env bash
+
+set -x
+
+./build/linux/x86_64/debug/dev.c &>/dev/null &
+pid=$!
+
+sleep 1
+
+sudo perf record -g -o perf.data -p ${pid} -- sleep 10
+sudo perf script -i perf.data &>perf.unfold
+./build/FlameGraph/stackcollapse-perf.pl perf.unfold &>perf.folded
+./build/FlameGraph/flamegraph.pl perf.folded >perf.svg
+
+rm -f perf.data perf.unfold perf.folded
+]]
+
+    io.writefile('build/perf.sh', format(script, target))
+
+    sudo.exec('bash build/perf.sh')
   end)
 end)
