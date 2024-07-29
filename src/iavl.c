@@ -52,6 +52,9 @@ typedef struct {
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
+#undef COUNT
+#define COUNT 64
+
 #undef key
 #define key(node) (any(node) + sizeof(node_t))
 
@@ -76,6 +79,7 @@ typedef struct {
 pri node_ref_t avl_new_node(avl_ref_t self, node_ref_t parent, any_t key, any_t val) {
   node_ref_t node = nullptr;
 
+#if 1
   if (self->free_nodes != nullptr) {
     node             = self->free_nodes;
     self->free_nodes = node->parent;
@@ -83,6 +87,20 @@ pri node_ref_t avl_new_node(avl_ref_t self, node_ref_t parent, any_t key, any_t 
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
     u_end_if(node);
   }
+#else
+  if (self->free_nodes == nullptr) {
+    self->free_nodes = u_zalloc(64 * (sizeof(node_t) + self->ksize + self->vsize));
+    u_end_if(self->free_nodes);
+
+    u_each (i, COUNT - 1) {
+      self->free_nodes[i].parent = &self->free_nodes[i + 1];
+    }
+  }
+
+  /* get node */
+  node             = self->free_nodes;
+  self->free_nodes = node->parent;
+#endif
 
   node->left   = nullptr;
   node->right  = nullptr;
@@ -98,7 +116,7 @@ end:
   return nullptr;
 }
 
-pri void
+pri inline void
     avl_child_replace(avl_ref_t self, node_ref_t parent, node_ref_t oldnode, node_ref_t newnode) {
   if (parent == nullptr) {
     self->root = newnode;
@@ -112,7 +130,7 @@ pri void
   }
 }
 
-pri node_ref_t avl_rotate_left(avl_ref_t self, node_ref_t node) {
+pri inline node_ref_t avl_rotate_left(avl_ref_t self, node_ref_t node) {
   node_ref_t right  = node->right;
   node_ref_t parent = node->parent;
 
@@ -131,7 +149,7 @@ pri node_ref_t avl_rotate_left(avl_ref_t self, node_ref_t node) {
   return right;
 }
 
-pri node_ref_t avl_rotate_right(avl_ref_t self, node_ref_t node) {
+pri inline node_ref_t avl_rotate_right(avl_ref_t self, node_ref_t node) {
   node_ref_t left   = node->left;
   node_ref_t parent = node->parent;
 
@@ -149,7 +167,7 @@ pri node_ref_t avl_rotate_right(avl_ref_t self, node_ref_t node) {
   return left;
 }
 
-pri node_ref_t avl_fix_left(avl_ref_t self, node_ref_t node) {
+pri inline node_ref_t avl_fix_left(avl_ref_t self, node_ref_t node) {
   int lh           = 0;
   int rh           = 0;
   node_ref_t right = node->right;
@@ -169,7 +187,7 @@ pri node_ref_t avl_fix_left(avl_ref_t self, node_ref_t node) {
   return node;
 }
 
-pri node_ref_t avl_fix_right(avl_ref_t self, node_ref_t node) {
+pri inline node_ref_t avl_fix_right(avl_ref_t self, node_ref_t node) {
   int lh          = 0;
   int rh          = 0;
   node_ref_t left = node->left;

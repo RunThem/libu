@@ -1,4 +1,4 @@
-add_requires('libsock')
+add_requires('libsock', 'tbox', 'xxhash', 'avlmini')
 
 target('dev.c', function()
   set_kind('binary')
@@ -9,7 +9,7 @@ target('dev.c', function()
   add_rules('generic')
 
   add_deps('u')
-  add_packages('libsock')
+  add_packages('libsock', 'tbox', 'xxhash', 'avlmini')
 
   -- after_build(function(target)
   --   os.trycp('$(projectdir)/$(buildir)/$(plat)/$(arch)/$(mode)/' .. target:name(), '$(projectdir)')
