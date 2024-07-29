@@ -44,29 +44,7 @@ static inline int avl_node_compare(const void* n1, const void* n2) {
 
 int main(int argc, const u_cstr_t argv[]) {
 
-#define N 100'0000
-
-  /* libu */
-  /* #[[map<int, int>]] */
-  auto m = u_map_new(int, int);
-  /* #[[tree<int, int>]] */
-  auto t = u_tree_new(int, int, fn_cmp(int));
-
-  // u_bm_block("map", N) {
-  //   u_each (i, N) {
-  //     u_map_put(m, i, i);
-  //   }
-  // }
-  u_bm_block("tree", N) {
-    u_each (i, N) {
-      u_tree_put(t, i, i);
-    }
-  }
-
-  /*
-   *
-   *
-   * */
+#define N 10'0000
 
 #if 1
   /* avlmini */
@@ -92,23 +70,35 @@ int main(int argc, const u_cstr_t argv[]) {
   //   }
   // }
 
-  extern void avl_add(struct avl_root * tree,
-                      struct avl_node * node,
-                      u_cmp_fn fn,
-                      struct avl_node * dup);
   u_bm_block("avl tree", N) {
     u_each (i, N) {
       node      = u_talloc(MyNode);
       node->key = i;
       node->val = i;
-      avl_add(&tree, (struct avl_node*)node, avl_node_compare, dup);
+      avl_node_add(&tree, (struct avl_node*)node, avl_node_compare, dup);
     }
   }
 #endif
 
-  return EXIT_SUCCESS;
-}
+#if 1
+  /* libu */
+  /* #[[map<int, int>]] */
+  auto m = u_map_new(int, int);
+  /* #[[tree<int, int>]] */
+  auto t = u_tree_new(int, int, fn_cmp(int));
 
-void avl_add(struct avl_root* tree, struct avl_node* node, u_cmp_fn fn, struct avl_node* dup) {
-  avl_node_add(tree, node, fn, dup);
+  // u_bm_block("map", N) {
+  //   u_each (i, N) {
+  //     u_map_put(m, i, i);
+  //   }
+  // }
+  u_bm_block("tree", N) {
+    u_each (i, N) {
+      u_tree_put(t, i, i);
+    }
+  }
+
+#endif
+
+  return EXIT_SUCCESS;
 }
