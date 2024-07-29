@@ -152,3 +152,5 @@ compile_commands.json
 
 # clibs
 clib/
+
+perf.svg
