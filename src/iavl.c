@@ -22,7 +22,6 @@
  *
  * */
 
-#include "u/utils/debug.h"
 #include <u/u.h>
 
 /***************************************************************************************************
@@ -398,31 +397,32 @@ end:
 }
 
 pub void avl_clear(any_t _self) {
-  avl_ref_t self            = (avl_ref_t)_self;
-  node_ref_t node           = nullptr;
-  u_vec_t(node_ref_t) nodes = nullptr; /* #[[vec<node_ref_t>]] */
+  avl_ref_t self  = (avl_ref_t)_self;
+  node_ref_t node = nullptr;
+  node_ref_t head = self->root;
+  node_ref_t tail = self->root;
 
   u_chk_if(self->len == 0);
 
-  u_vec_init(nodes);
-  u_vec_put(nodes, self->root);
-
-  while (!u_vec_is_empty(nodes)) {
-    node = u_vec_at(nodes, 0);
+  while (head != nullptr) {
+    node = head;
 
     if (node->left) {
-      u_vec_put(nodes, node->left);
+      tail->parent = node->left;
+      tail         = tail->parent;
+      tail->parent = nullptr;
     }
+
     if (node->right) {
-      u_vec_put(nodes, node->right);
+      tail->parent = node->right;
+      tail         = tail->parent;
+      tail->parent = nullptr;
     }
+
+    head = head->parent;
 
     u_free(node);
-
-    u_vec_pop(nodes, 0);
   }
-
-  u_vec_cleanup(nodes);
 
   self->len = 0;
 }
