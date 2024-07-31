@@ -46,7 +46,7 @@ int main(int argc, const u_cstr_t argv[]) {
 
 #define N 1000'0000
 
-#if 0
+#if 1
   /* avlmini */
   struct avl_hash_map map = {};
   struct avl_root tree    = {};
@@ -64,20 +64,20 @@ int main(int argc, const u_cstr_t argv[]) {
     nodes[i]  = (struct avl_node*)node;
   }
 
-  u_bm_block("avl hash map", N) {
-    u_each (i, N) {
-      avl_map_set(&map, (void*)(intptr_t)i, (void*)(intptr_t)i);
-    }
-  }
-
-  // u_bm_block("avl tree", N) {
+  // u_bm_block("avl hash map", N) {
   //   u_each (i, N) {
-  //     node      = u_talloc(MyNode);
-  //     node->key = i;
-  //     node->val = i;
-  //     avl_node_add(&tree, (struct avl_node*)node, avl_node_compare, dup);
+  //     avl_map_add(&map, (void*)(intptr_t)i, (void*)(intptr_t)i, nullptr);
   //   }
   // }
+
+  u_bm_block("avl tree", N) {
+    u_each (i, N) {
+      node      = u_talloc(MyNode);
+      node->key = i;
+      node->val = i;
+      avl_node_add(&tree, (struct avl_node*)node, avl_node_compare, dup);
+    }
+  }
 #endif
 
   // #undef N
@@ -90,23 +90,64 @@ int main(int argc, const u_cstr_t argv[]) {
   /* #[[tree<int, int>]] */
   auto t = u_tree_new(int, int, fn_cmp(int));
 
-  u_bm_block("map", N) {
-    u_each (i, N) {
-      u_map_put(m, i, i);
-    }
-  }
+#  define u_bench(msg, cnt, ...)                                                                   \
+    do {                                                                                           \
+      struct timespec __st = {};                                                                   \
+      struct timespec __et = {};                                                                   \
+      u64_t __take         = 10'0000'0000L;                                                        \
+      u64_t __s            = 0; /* second */                                                       \
+      u64_t __ms           = 0; /* millisecond */                                                  \
+      u64_t __us           = 0; /* microsecond */                                                  \
+      u64_t __ns           = 0; /* nanosecond */                                                   \
+      u64_t __ave          = 0;                                                                    \
+                                                                                                   \
+      clock_gettime(CLOCK_MONOTONIC, &__st);                                                       \
+      for (i64_t i = 0; i < cnt; i++) {                                                            \
+        __VA_ARGS__                                                                                \
+      }                                                                                            \
+      clock_gettime(CLOCK_MONOTONIC, &__et);                                                       \
+                                                                                                   \
+      __take = 10'0000'0000L * (__et.tv_sec - __st.tv_sec) + (__et.tv_nsec - __st.tv_nsec);        \
+                                                                                                   \
+      __ave  = __take / cnt;                                                                       \
+      __ns   = __take % 1000;                                                                      \
+      __take = __take / 1000;                                                                      \
+      __us   = __take % 1000;                                                                      \
+      __take = __take / 1000;                                                                      \
+      __ms   = __take % 1000;                                                                      \
+      __take = __take / 1000;                                                                      \
+      __s    = __take % 1000;                                                                      \
+      __take = __take / 1000;                                                                      \
+                                                                                                   \
+      fprintf(stderr, "Total time: %zus, %zums, %zuus, %zuns. ", __s, __ms, __us, __ns);           \
+                                                                                                   \
+      if (cnt != 1) {                                                                              \
+        fprintf(stderr, "Average time: %zuns/%zu\n", __ave, (size_t)cnt);                          \
+      }                                                                                            \
+    } while (0)
 
-  u_each (i, N) {
-    auto v = u_map_pop(m, i);
-    u_dbg("[%d] = %d", i, v);
-    // u_die_if(i != v);
-  }
+  // u_bench("map put", N, {
+  //   ;
+  //   u_tree_put(t, i, i);
+  // });
 
-  // u_bm_block("tree", N) {
+  // u_bm_block("map", N) {
   //   u_each (i, N) {
-  //     u_tree_put(t, i, i);
+  //     u_map_put(m, i, i);
   //   }
   // }
+  //
+  // u_each (i, N) {
+  //   auto v = u_map_pop(m, i);
+  //   u_dbg("[%d] = %d", i, v);
+  //   // u_die_if(i != v);
+  // }
+
+// u_bm_block("tree", N) {
+//   u_each (i, N) {
+//     u_tree_put(t, i, i);
+//   }
+// }
 #endif
 
   return EXIT_SUCCESS;
