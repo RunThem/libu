@@ -125,8 +125,8 @@ extern bool   map_for       (any_t, any_t, any_t);
         u_check(self, 2, __u_map_ref_t);                                                           \
                                                                                                    \
         bool __ret             = false;                                                            \
-        u_types(self, 0) __a  = key;                                                               \
-        u_types(self, 1)* __b = {};                                                                \
+        u_types(self, 0) __a   = key;                                                              \
+        u_types(self, 1)* __b  = {};                                                               \
                                                                                                    \
         __b = map_at(self, &__a);                                                                  \
                                                                                                    \
@@ -159,32 +159,65 @@ extern bool   map_for       (any_t, any_t, any_t);
 #  define u_map_try(self, key)                                                                     \
     for (u_types(self, 1)* it = ({                                                                 \
            u_types(self, 0) __key = key;                                                           \
+                                                                                                   \
            map_at(self, &__key);                                                                   \
          });                                                                                       \
          it != nullptr;                                                                            \
          it = nullptr)
 
-#  define u_map_pop(self, key)                                                                     \
-    ({                                                                                             \
-      u_check(self, 2, __u_map_ref_t);                                                             \
+#  if 0
+#    define u_map_pop(self, key)                                                                   \
+      ({                                                                                           \
+        u_check(self, 2, __u_map_ref_t);                                                           \
                                                                                                    \
-      u_types(self, 0) __a = key;                                                                  \
-      u_types(self, 1) __b = {};                                                                   \
+        struct [[gnu::packed]] {                                                                   \
+          u_hash_t __hash;                                                                         \
+          size_t __ksize;                                                                          \
+          u_types(self, 0) __key;                                                                  \
+        } __a                = {.__key = key};                                                     \
+        u_types(self, 1) __b = {};                                                                 \
                                                                                                    \
-      map_pop(self, &__a, &__b);                                                                   \
+        map_pop(self, &__a, &__b);                                                                 \
                                                                                                    \
-      __b;                                                                                         \
-    })
+        __b;                                                                                       \
+      })
 
-#  define u_map_put(self, key, val)                                                                \
-    do {                                                                                           \
-      u_check(self, 2, __u_map_ref_t);                                                             \
+#    define u_map_put(self, key, val)                                                              \
+      do {                                                                                         \
+        u_check(self, 2, __u_map_ref_t);                                                           \
                                                                                                    \
-      u_types(self, 0) __a = key;                                                                  \
-      u_types(self, 1) __b = val;                                                                  \
+        struct [[gnu::packed]] {                                                                   \
+          u_hash_t __hash;                                                                         \
+          size_t __ksize;                                                                          \
+          u_types(self, 0) __key;                                                                  \
+        } __a                = {.__key = key};                                                     \
+        u_types(self, 1) __b = val;                                                                \
                                                                                                    \
-      map_put(self, &__a, &__b);                                                                   \
-    } while (0)
+        map_put(self, &__a, &__b);                                                                 \
+      } while (0)
+#  else
+#    define u_map_pop(self, key)                                                                   \
+      ({                                                                                           \
+        u_check(self, 2, __u_map_ref_t);                                                           \
+                                                                                                   \
+        u_types(self, 0) __a = key;                                                                \
+        u_types(self, 1) __b = {};                                                                 \
+                                                                                                   \
+        map_pop(self, &__a, &__b);                                                                 \
+                                                                                                   \
+        __b;                                                                                       \
+      })
+
+#    define u_map_put(self, key, val)                                                              \
+      do {                                                                                         \
+        u_check(self, 2, __u_map_ref_t);                                                           \
+                                                                                                   \
+        u_types(self, 0) __a = key;                                                                \
+        u_types(self, 1) __b = val;                                                                \
+                                                                                                   \
+        map_put(self, &__a, &__b);                                                                 \
+      } while (0)
+#  endif
 
 #  define u_map_for(self, key, val)                                                                \
     for (u_types(self, 0) key = {}; map_for_init(self, 1); map_for_end(self))                      \

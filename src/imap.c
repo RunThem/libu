@@ -24,6 +24,225 @@
 
 #include <u/u.h>
 
+#if 0
+
+#  include <sys/queue.h>
+
+#  include "iavl.c"
+/***************************************************************************************************
+ * Tyoe
+ **************************************************************************************************/
+typedef struct [[gnu::packed]] {
+  u_hash_t hash;
+  size_t ksize;
+  u8_t key[];
+} mnode_t, *mnode_ref_t;
+
+typedef struct {
+  size_t ksize;
+  size_t vsize;
+  size_t len;
+
+  u_hash_fn hash_fn;
+
+  size_t buckets_size;
+  avl_ref_t* buckets;
+} map_t, *map_ref_t;
+
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
+#  define MAP_BUCKET_INIT_SIZE   64
+#  define MAP_BUCKET_RESIZE_SIZE 16
+
+// #  define U_RESIZE_RADIO 0.75
+
+// #  undef hash
+// #  define hash(node) (*(mnode_t*)node)
+
+// #  undef key
+// #  define key(node) (any(node) + sizeof(mnode_t))
+//
+// #  undef val
+// #  define val(node) (any(node) + sizeof(mnode_t) + self->ksize)
+
+/***************************************************************************************************
+ * Function
+ **************************************************************************************************/
+/* fnv 64-bit hash function */
+pri u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
+  u_hash_t hash = 1469'5981'0393'4665'6037U;
+
+  for (size_t i = 0; i < len; ++i) {
+    hash *= 1'0995'1162'8211U;
+    hash ^= (u64_t)ptr[i];
+  }
+
+  return hash;
+}
+
+[[gnu::always_inline]]
+pri inline int map_cmp_fn(const void* x, const void* y) {
+  mnode_ref_t a = (mnode_ref_t)x;
+  mnode_ref_t b = (mnode_ref_t)y;
+
+  return (a->hash == b->hash) ? fn_cmp(int, a->key, b->key) : (a->hash > b->hash ? 1 : -1);
+}
+
+pri void map_new_buckets(map_ref_t self, size_t buckets_size) {
+  avl_ref_t* buckets = nullptr;
+  avl_ref_t bucket   = nullptr;
+  node_ref_t node    = nullptr;
+  node_ref_t head    = nullptr;
+  node_ref_t tail    = nullptr;
+  node_ref_t* link   = nullptr;
+  node_ref_t parent  = nullptr;
+  mnode_ref_t mnode  = nullptr;
+  int i              = 0;
+  int result         = 0;
+  u_hash_t hash      = 0;
+
+  buckets = u_calloc(sizeof(avl_ref_t), buckets_size);
+  u_end_if(buckets);
+
+  for (i = 0; i < buckets_size; i++) {
+    buckets[i] = avl_new(sizeof(mnode_t) + self->ksize, self->vsize, map_cmp_fn);
+    u_end_if(buckets[i]);
+  }
+
+  if (self->buckets != nullptr) {
+    for (i = 0; i < self->buckets_size; i++) {
+      if (self->buckets[i]->len == 0) {
+        continue;
+      }
+
+      head = self->buckets[i]->root;
+      tail = self->buckets[i]->root;
+      while (head != nullptr) {
+        node = head;
+        if (node->left) {
+          tail->parent = node->left;
+          tail         = tail->parent;
+          tail->parent = nullptr;
+        }
+
+        if (node->right) {
+          tail->parent = node->right;
+          tail         = tail->parent;
+          tail->parent = nullptr;
+        }
+
+        head = head->parent;
+
+        mnode  = (mnode_ref_t)(node + 1);
+        bucket = buckets[mnode->hash % buckets_size];
+        parent = nullptr;
+        link   = &bucket->root;
+
+        while (*link) {
+          parent = *link;
+          result = bucket->cmp_fn(mnode, key(parent));
+          u_end_if(result == 0);
+
+          link = (result < 0) ? &(parent->left) : &(parent->right);
+        }
+
+        node->left   = nullptr;
+        node->right  = nullptr;
+        node->parent = parent;
+        node->height = 1;
+        *link        = node;
+
+        bucket->len++;
+
+        avl_push_rebalance(bucket, node);
+      }
+
+      self->buckets[i]->len = 0;
+    }
+
+    for (i = 0; i < self->buckets_size; i++) {
+      avl_cleanup(self->buckets[i]);
+    }
+  }
+
+  self->buckets      = buckets;
+  self->buckets_size = buckets_size;
+
+  return;
+
+end:
+}
+
+pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
+  map_ref_t self = nullptr;
+
+  u_chk_if(ksize == 0, nullptr);
+  u_chk_if(vsize == 0, nullptr);
+
+  self = u_zalloc(sizeof(map_t) + ksize);
+  u_end_if(self);
+
+  self->ksize        = ksize;
+  self->vsize        = vsize;
+  self->len          = 0;
+  self->hash_fn      = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
+  self->buckets_size = MAP_BUCKET_INIT_SIZE;
+
+  map_new_buckets(self, self->buckets_size);
+
+  return self;
+
+end:
+  u_free_if(self);
+
+  return nullptr;
+}
+
+pub void map_pop(any_t _self, any_t key, any_t val) {
+  map_ref_t self    = (map_ref_t)_self;
+  avl_ref_t bucket  = nullptr;
+  mnode_ref_t mnode = (mnode_ref_t)key;
+
+  u_chk_if(self);
+  u_chk_if(key);
+  u_chk_if(val);
+
+  int ey = *(int*)(mnode->key);
+
+  mnode->hash  = self->hash_fn(key + sizeof(mnode_t), self->ksize);
+  mnode->ksize = self->ksize;
+  bucket       = self->buckets[mnode->hash % self->buckets_size];
+
+  avl_pop(bucket, key, val);
+}
+
+pub void map_put(any_t _self, any_t key, any_t val) {
+  map_ref_t self    = (map_ref_t)_self;
+  avl_ref_t bucket  = nullptr;
+  mnode_ref_t mnode = (mnode_ref_t)key;
+
+  u_chk_if(self);
+  u_chk_if(key);
+  u_chk_if(val);
+
+  if (self->len > self->buckets_size * MAP_BUCKET_RESIZE_SIZE * 0.75) {
+    map_new_buckets(self, self->buckets_size * 2);
+  }
+
+  int ey = *(int*)(mnode->key);
+
+  mnode->hash  = self->hash_fn(key + sizeof(mnode_t), self->ksize);
+  mnode->ksize = self->ksize;
+  bucket       = self->buckets[mnode->hash % self->buckets_size];
+
+  avl_put(bucket, key, val);
+
+  self->len++;
+}
+
+#else
+
 /* clang-format off */
 pri size_t bucket_sizes[] = {
 #if 0 /* debug */
@@ -67,13 +286,13 @@ typedef struct {
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
-#define U_RESIZE_RADIO 0.75
+#  define U_RESIZE_RADIO 0.75
 
-#undef key
-#define key(node) (any(node) + sizeof(node_t))
+#  undef key
+#  define key(node) (any(node) + sizeof(node_t))
 
-#undef val
-#define val(node) (any(node) + sizeof(node_t) + self->ksize)
+#  undef val
+#  define val(node) (any(node) + sizeof(node_t) + self->ksize)
 
 /***************************************************************************************************
  * Function
@@ -446,3 +665,4 @@ pub bool map_for(any_t _self, any_t key, any_t val) {
 end:
   return false;
 }
+#endif
