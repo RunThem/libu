@@ -376,10 +376,8 @@ pub any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
   avl_ref_t self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
-#if 0 /* support set */
-  u_chk_if(vsize == 0, nullptr);
-#endif
-  u_chk_if(cmp_fn, nullptr);
+  /* vsize == 0, support set */
+  /* cmp_fn == nullptr, default use memcmp() */
 
   self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
   u_end_if(self);
@@ -462,7 +460,12 @@ pub bool avl_exist(any_t _self, any_t key) {
   u_chk_if(key, false);
 
   while (node) {
-    result = self->cmp_fn(key, key(node));
+    if (self->cmp_fn) {
+      result = self->cmp_fn(key, key(node));
+    } else {
+      result = memcmp(key, key(node), self->ksize);
+    }
+
     if (result == 0) {
       break;
     }
@@ -483,7 +486,12 @@ pub any_t avl_at(any_t _self, any_t key) {
   u_chk_if(self->len == 0, nullptr);
 
   while (node) {
-    result = self->cmp_fn(key, key(node));
+    if (self->cmp_fn) {
+      result = self->cmp_fn(key, key(node));
+    } else {
+      result = memcmp(key, key(node), self->ksize);
+    }
+
     u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
@@ -542,7 +550,12 @@ pub void avl_pop(any_t _self, any_t key, any_t val) {
   u_chk_if(val);
 
   while (node) {
-    result = self->cmp_fn(key, key(node));
+    if (self->cmp_fn) {
+      result = self->cmp_fn(key, key(node));
+    } else {
+      result = memcmp(key, key(node), self->ksize);
+    }
+
     u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
@@ -587,7 +600,11 @@ pub void avl_put(any_t _self, any_t key, any_t val) {
   while (*link) {
     parent = *link;
 
-    result = self->cmp_fn(key, key(parent));
+    if (self->cmp_fn) {
+      result = self->cmp_fn(key, key(parent));
+    } else {
+      result = memcmp(key, key(parent), self->ksize);
+    }
     /* node already exists */
     u_end_if(result == 0);
 

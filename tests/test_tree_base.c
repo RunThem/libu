@@ -69,7 +69,7 @@ test() {
   mut_nn(m);
 
   /* init */
-  u_tree_init(m, fn_cmp(int));
+  u_tree_init(m);
   mut_n(m);
 
   mut_e(0, u_tree_len(m));

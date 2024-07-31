@@ -65,18 +65,20 @@ extern bool     avl_for       (any_t, any_t, any_t);
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#  define u_tree_init(self, fn)                                                                    \
+#  define u_tree_init(self, ...)                                                                   \
     do {                                                                                           \
       u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      self = avl_new(sizeof(u_types(self, 0)), sizeof(u_types(self, 1)), fn);                      \
+      self = avl_new(sizeof(u_types(self, 0)),                                                     \
+                     sizeof(u_types(self, 1)),                                                     \
+                     u_va_0th(nullptr, __VA_ARGS__));                                              \
     } while (0)
 
-#  define u_tree_new(K, V, fn)                                                                     \
+#  define u_tree_new(K, V, ...)                                                                    \
     ({                                                                                             \
       u_tree_t(K, V) self = nullptr;                                                               \
                                                                                                    \
-      u_tree_init(self, fn);                                                                       \
+      u_tree_init(self, __VA_ARGS__);                                                              \
                                                                                                    \
       self;                                                                                        \
     })
