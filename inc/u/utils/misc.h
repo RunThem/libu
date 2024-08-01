@@ -81,46 +81,7 @@ extern "C" {
       for (auto it = &arr[i]; it; it = nullptr)
 
 extern bool __bm_entry(const char*, size_t);
-#  define u_bm_block(msg, ...) while (__bm_entry(msg, u_va_0th(1, __VA_ARGS__)))
-
-#  define u_bench(msg, cnt, ...)                                                                   \
-    do {                                                                                           \
-      struct timespec __st = {};                                                                   \
-      struct timespec __et = {};                                                                   \
-      u64_t __total        = 0;                                                                    \
-      u64_t __tmp          = 10'0000'0000L;                                                        \
-      u64_t __s            = 0; /* second */                                                       \
-      u64_t __ms           = 0; /* millisecond */                                                  \
-      u64_t __us           = 0; /* microsecond */                                                  \
-      u64_t __ns           = 0; /* nanosecond */                                                   \
-      u64_t __ave          = 0;                                                                    \
-                                                                                                   \
-      clock_gettime(CLOCK_REALTIME, &__st);                                                        \
-      for (i64_t i = 0; i < cnt; i++) {                                                            \
-        __VA_ARGS__                                                                                \
-      }                                                                                            \
-      clock_gettime(CLOCK_REALTIME, &__et);                                                        \
-                                                                                                   \
-      __total = __tmp =                                                                            \
-          10'0000'0000L * (__et.tv_sec - __st.tv_sec) + (__et.tv_nsec - __st.tv_nsec);             \
-                                                                                                   \
-      __ave = __tmp / cnt;                                                                         \
-      __ns  = __tmp % 1000;                                                                        \
-      __tmp = __tmp / 1000;                                                                        \
-      __us  = __tmp % 1000;                                                                        \
-      __tmp = __tmp / 1000;                                                                        \
-      __ms  = __tmp % 1000;                                                                        \
-      __tmp = __tmp / 1000;                                                                        \
-      __s   = __tmp % 1000;                                                                        \
-      __tmp = __tmp / 1000;                                                                        \
-                                                                                                   \
-      fprintf(stderr, "Benchmark %s:\n", msg);                                                     \
-      fprintf(stderr, "Total time: %zus, %zums, %zuus, %zuns. ", __s, __ms, __us, __ns);           \
-                                                                                                   \
-      if (cnt != 1) {                                                                              \
-        fprintf(stderr, "Average time: %zuns/%zu\n", __ave, (size_t)cnt);                          \
-      }                                                                                            \
-    } while (0)
+#  define u_bench(msg, ...) while (__bm_entry(msg, u_va_0th(1, __VA_ARGS__)))
 /* clang-format on */
 
 /***************************************************************************************************

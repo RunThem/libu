@@ -149,12 +149,12 @@ typedef struct {
 thread_local u_bm_t bm;
 
 pub bool __bm_entry(const char* msg, size_t cnt) {
-  size_t take = 10'0000'0000L; /* nanoseconds/per second */
-  size_t ave  = 0;
-  size_t s    = 0; /* second */
-  size_t ms   = 0; /* millisecond */
-  size_t us   = 0; /* microsecond */
-  size_t ns   = 0; /* nanosecond */
+  size_t total = 10'0000'0000L; /* nanoseconds/per second */
+  size_t ave   = 0;
+  size_t s     = 0; /* second */
+  size_t ms    = 0; /* millisecond */
+  size_t us    = 0; /* microsecond */
+  size_t ns    = 0; /* nanosecond */
 
   /* start */
   if (!bm.run) {
@@ -165,35 +165,26 @@ pub bool __bm_entry(const char* msg, size_t cnt) {
   } else { /* end */
     bm.run = false;
     clock_gettime(CLOCK_MONOTONIC, &bm.e);
-    take = take * (bm.e.tv_sec - bm.s.tv_sec) + (bm.e.tv_nsec - bm.s.tv_nsec);
-    ave  = take / (f64_t)bm.cnt;
-    ns   = BASE_THOUSANDS(take, 1000);
-    us   = BASE_THOUSANDS(take, 1000);
-    ms   = BASE_THOUSANDS(take, 1000);
-    s    = take;
+    total = total * (bm.e.tv_sec - bm.s.tv_sec) + (bm.e.tv_nsec - bm.s.tv_nsec);
 
-    printf("Total time: ");
-    if (s != 0) {
-      printf("%zus, ", s);
+    ave   = total / cnt;
+    ns    = total % 1000;
+    total = total / 1000;
+    us    = total % 1000;
+    total = total / 1000;
+    ms    = total % 1000;
+    total = total / 1000;
+    s     = total % 1000;
+    total = total / 1000;
+
+    fprintf(stderr, "Benchmark %s:\n", bm.msg);
+    fprintf(stderr, "Total time: %zus, %zums, %zuus, %zuns. ", s, ms, us, ns);
+
+    if (cnt != 1) {
+      fprintf(stderr, "Average time: %zuns/%zu\n", ave, (size_t)cnt);
     }
 
-    if (ms != 0) {
-      printf("%zums, ", ms);
-    }
-
-    if (us != 0) {
-      printf("%zuus, ", us);
-    }
-
-    if (ns != 0) {
-      printf("%zuns.", ns);
-    }
-
-    if (bm.cnt != 1) {
-      printf(" Average time: %zuns/%zu", ave, bm.cnt);
-    }
-
-    printf("\n");
+    free(bm.msg);
   }
 
   return bm.run;
