@@ -78,7 +78,6 @@ typedef struct {
 pri node_ref_t avl_new_node(avl_ref_t self, node_ref_t parent, any_t key, any_t val) {
   node_ref_t node = nullptr;
 
-#if 1
   if (self->free_nodes != nullptr) {
     node             = self->free_nodes;
     self->free_nodes = node->parent;
@@ -86,20 +85,6 @@ pri node_ref_t avl_new_node(avl_ref_t self, node_ref_t parent, any_t key, any_t 
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
     u_end_if(node);
   }
-#else
-  if (self->free_nodes == nullptr) {
-    self->free_nodes = u_zalloc(64 * (sizeof(node_t) + self->ksize + self->vsize));
-    u_end_if(self->free_nodes);
-
-    u_each (i, COUNT - 1) {
-      self->free_nodes[i].parent = &self->free_nodes[i + 1];
-    }
-  }
-
-  /* get node */
-  node             = self->free_nodes;
-  self->free_nodes = node->parent;
-#endif
 
   node->left   = nullptr;
   node->right  = nullptr;
@@ -597,15 +582,14 @@ pub void avl_put(any_t _self, any_t key, any_t val) {
   u_chk_if(key);
   u_chk_if(val);
 
-  while (*link) {
-    parent = *link;
+  while (link[0]) {
+    parent = link[0];
 
     if (self->cmp_fn) {
       result = self->cmp_fn(key, key(parent));
     } else {
       result = memcmp(key, key(parent), self->ksize);
     }
-    /* node already exists */
     u_end_if(result == 0);
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
@@ -673,4 +657,15 @@ pub bool avl_for(any_t _self, any_t key, any_t val) {
 
 end:
   return false;
+}
+
+pub void avl_benchmark() {
+#define N 100'0000
+  /* #[[tree<int, int>]] */
+  auto t = u_tree_new(int, int, fn_cmp(int));
+
+  u_bench("tree.put()", N, {
+    ;
+    u_tree_put(t, i, i);
+  });
 }
