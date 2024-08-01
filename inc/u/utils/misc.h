@@ -46,6 +46,22 @@ extern "C" {
       for (int i = 0; i < n; i++)                                                                  \
     )
 
+#define u_align_of_2pow(n)                                                                         \
+  ({                                                                                               \
+    u64_t __n = n;                                                                                 \
+                                                                                                   \
+    __n--;                                                                                         \
+    __n |= __n >> 1;                                                                               \
+    __n |= __n >> 2;                                                                               \
+    __n |= __n >> 4;                                                                               \
+    __n |= __n >> 8;                                                                               \
+    __n |= __n >> 16;                                                                              \
+    __n |= __n >> 32;                                                                              \
+                                                                                                   \
+    __n + 1;                                                                                       \
+  })
+
+
 #  define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
 #  define u_container_of(ptr, type, member)                                                        \
