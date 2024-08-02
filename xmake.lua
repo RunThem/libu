@@ -55,6 +55,17 @@ if has_config('mimalloc') then
   add_defines('USE_MIMALLOC')
 end
 
+--- Debug option
+option('debug', function()
+  set_default(false)
+  set_category('option')
+  set_description('Use debug info')
+end)
+
+if has_config('debug') then
+  add_defines('LIBU_DEBUG')
+end
+
 --- Project common header file path
 add_includedirs('$(projectdir)/inc')
 
@@ -69,10 +80,6 @@ target('u', function()
   end
 
   add_rules('generic')
-
-  --[[
-  add_defines('LIBU_DEBUG')
-  --]]
 end)
 
 includes('dev', 'tests')
