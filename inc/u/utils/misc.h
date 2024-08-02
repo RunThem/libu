@@ -191,12 +191,12 @@ extern thread_local __err__t __err__;
     extern int fn_cmp_##type(cany_t, cany_t)
 
 #  define fn_compe_def(type, eq, cmp)                                                              \
-    inline bool fn_eq_##type(cany_t _x, cany_t _y) {                                               \
+    bool fn_eq_##type(cany_t _x, cany_t _y) {                                                      \
       type x = *(type*)_x, y = *(type*)_y;                                                         \
       return (eq);                                                                                 \
     }                                                                                              \
                                                                                                    \
-    inline int fn_cmp_##type(cany_t _x, cany_t _y) {                                               \
+    int fn_cmp_##type(cany_t _x, cany_t _y) {                                                      \
       type x = *(type*)_x, y = *(type*)_y;                                                         \
       return (eq) ? 0 : ((cmp) ? 1 : -1);                                                          \
     }
