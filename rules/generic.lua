@@ -45,6 +45,17 @@ rule('generic', function()
               return m
             end
 
+            ---@param t T|string
+            ---@return string
+            local function _dump(t)
+              if t.typ == 'map' or t.typ == 'tree' then
+                return string.format('%s<%s, %s>', t.typ, _dump(t.arg0), _dump(t.arg1))
+              elseif t.typ == 'vec' or t.typ == 'set' or t.typ == 'list' or t.typ == 'heap' then
+                return string.format('%s<%s>', t.typ, _dump(t.arg0))
+              end
+              return t.typ
+            end
+
             ---@param t T
             ---@return string
             local function _output(t)
@@ -88,11 +99,19 @@ rule('generic', function()
             local pattern = '#%[%[(.-)%]%]'
             local content = io.readfile(sourcefile)
 
+            local all_tbl = {}
+
             for code in string.gmatch(content, pattern) do
               local types = code:gsub('%s+', ' '):gsub('[<>,]', '$'):split('$', { plain = true })
 
-              _output(_parse(types))
-              tbl.run = true
+              local typ = _parse(types)
+              local dump = _dump(typ)
+
+              if not all_tbl[dump] then
+                _output(typ)
+                tbl.run = true
+                all_tbl[dump] = true
+              end
             end
 
             return tbl
