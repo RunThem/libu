@@ -5,7 +5,7 @@ add_requires(unpack(deps))
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
-  add_files('*.c')
+  add_files('*.c|tree.c')
   set_rundir('$(projectdir)')
 
   add_rules('generic')

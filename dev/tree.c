@@ -1,4 +1,27 @@
-#include <sys/time.h>
+/* MIT License
+ *
+ * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * */
+
 #include <u/u.h>
 
 /***************************************************************************************************
@@ -46,8 +69,13 @@ typedef struct {
 pri node_ref_t tree_new_node(avl_ref_t self, node_ref_t* link, K key, V val) {
   node_ref_t node = nullptr;
 
-  node = u_zalloc(sizeof(node_t));
-  u_end_if(node);
+  if (self->free_nodes != nullptr) {
+    node             = self->free_nodes;
+    self->free_nodes = node->parent;
+  } else {
+    node = u_zalloc(sizeof(node_t));
+    u_end_if(node);
+  }
 
   node->left   = nullptr;
   node->right  = nullptr;
@@ -249,7 +277,7 @@ pri void tree_push_rebalance(avl_ref_t self, node_ref_t node) {
   int diff      = 0;
   size_t height = 0;
 
-  for (node = node->parent; node != nullptr; node = node->parent) {
+  for (node = node->parent; node; node = node->parent) {
     lh     = lh(node);
     rh     = rh(node);
     height = max(lh, rh) + 1;
@@ -504,92 +532,19 @@ pub void tree_put(any_t _self, K key, V val) {
 
   while (link[0]) {
     parent = link[0];
-    if (key == parent->key) {
-      return;
-    }
-    u_end_if(key == parent->key);
-
-    result = key > parent->key ? 1 : -1;
+    result = key > parent->key ? 1 : (key == parent->key) ? 0 : -1;
+    u_end_if(result == 0);
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
 
-#if 0
   node = tree_new_node(self, link, key, val);
   u_end_if(node);
-#else
-  node = u_zalloc(sizeof(node_t));
-  u_end_if(node);
 
-  node->left   = nullptr;
-  node->right  = nullptr;
-  node->parent = link[0];
-  node->height = 1;
-  node->key    = key;
-  node->val    = val;
-
-  link[0] = node;
-#endif
-
-  // self->len++;
-  // tree_push_rebalance(self, node);
+  self->len++;
+  tree_push_rebalance(self, node);
 
   return;
 
 end:
-}
-
-/*
- * namespace
- *
- * ua: arr
- * uv: vec
- * um: map
- * ut: avl
- * ul: lst
- * us: str
- * ub: buf
- * uf: file
- * ug: log
- * un: net
- * */
-
-/* 全新版本的字符串原始实现 */
-typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
-
-int main(int argc, const u_cstr_t argv[]) {
-
-  while (true);
-
-#define N 1000'0000
-
-  struct timespec s  = {};
-  struct timespec e  = {};
-  struct timezone tz = {0, 0};
-  struct timeval sv  = {};
-  struct timeval ev  = {};
-
-  u_bench("int.any_t -> tree", N) {
-    auto t = tree_new();
-
-    u_each (i, N) {
-      tree_put(t, i, (any_t)(intptr_t)i);
-
-      // node_ref_t* link = &((avl_ref_t)t)->root;
-      // tree_new_node(t, link, i, (any_t)(intptr_t)i);
-    }
-  }
-
-#if 0
-  /* #[[tree<int, int>]] */
-  auto t = u_tree_new(int, int, fn_cmp(int));
-
-  u_bench("tree.put()", N) {
-    u_each (i, N) {
-      u_tree_put(t, i, i);
-    }
-  }
-#endif
-
-  return EXIT_SUCCESS;
 }
