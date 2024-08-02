@@ -22,14 +22,11 @@
  *
  * */
 
-#include <u/u.h>
+#include "tree.h"
 
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef intmax_t K;
-typedef any_t V;
-
 typedef struct node_t node_t, *node_ref_t;
 struct node_t {
   node_ref_t left;
@@ -37,16 +34,9 @@ struct node_t {
   node_ref_t parent;
   size_t height;
 
-  K key;
-  V val;
+  tree_key_t key;
+  tree_val_t val;
 };
-
-typedef struct {
-  size_t len;
-
-  node_ref_t root;
-  node_ref_t free_nodes;
-} avl_t, *avl_ref_t;
 
 /***************************************************************************************************
  * Macro
@@ -66,47 +56,20 @@ typedef struct {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri node_ref_t tree_new_node(avl_ref_t self, node_ref_t* link, K key, V val) {
-  node_ref_t node = nullptr;
-
-  if (self->free_nodes != nullptr) {
-    node             = self->free_nodes;
-    self->free_nodes = node->parent;
-  } else {
-    node = u_zalloc(sizeof(node_t));
-    u_end_if(node);
-  }
-
-  node->left   = nullptr;
-  node->right  = nullptr;
-  node->parent = link[0];
-  node->height = 1;
-  node->key    = key;
-  node->val    = val;
-
-  link[0] = node;
-
-  return node;
-
-end:
-  return nullptr;
-}
-
 pri void
-    tree_child_replace(avl_ref_t self, node_ref_t parent, node_ref_t oldnode, node_ref_t newnode) {
+    tree_child_replace(tree_ref_t self, node_ref_t parent, node_ref_t oldnode, node_ref_t newnode) {
   if (parent == nullptr) {
     self->root = newnode;
-    return;
-  }
-
-  if (parent->left == oldnode) {
-    parent->left = newnode;
   } else {
-    parent->right = newnode;
+    if (parent->left == oldnode) {
+      parent->left = newnode;
+    } else {
+      parent->right = newnode;
+    }
   }
 }
 
-pri node_ref_t tree_rotate_left(avl_ref_t self, node_ref_t node) {
+pri node_ref_t tree_rotate_left(tree_ref_t self, node_ref_t node) {
   node_ref_t right  = node->right;
   node_ref_t parent = node->parent;
 
@@ -125,7 +88,7 @@ pri node_ref_t tree_rotate_left(avl_ref_t self, node_ref_t node) {
   return right;
 }
 
-pri node_ref_t tree_rotate_right(avl_ref_t self, node_ref_t node) {
+pri node_ref_t tree_rotate_right(tree_ref_t self, node_ref_t node) {
   node_ref_t left   = node->left;
   node_ref_t parent = node->parent;
 
@@ -143,7 +106,7 @@ pri node_ref_t tree_rotate_right(avl_ref_t self, node_ref_t node) {
   return left;
 }
 
-pri node_ref_t tree_fix_left(avl_ref_t self, node_ref_t node) {
+pri node_ref_t tree_fix_left(tree_ref_t self, node_ref_t node) {
   int lh           = 0;
   int rh           = 0;
   node_ref_t right = node->right;
@@ -163,7 +126,7 @@ pri node_ref_t tree_fix_left(avl_ref_t self, node_ref_t node) {
   return node;
 }
 
-pri node_ref_t tree_fix_right(avl_ref_t self, node_ref_t node) {
+pri node_ref_t tree_fix_right(tree_ref_t self, node_ref_t node) {
   int lh          = 0;
   int rh          = 0;
   node_ref_t left = node->left;
@@ -183,8 +146,7 @@ pri node_ref_t tree_fix_right(avl_ref_t self, node_ref_t node) {
   return node;
 }
 
-#if 0
-pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
+pri node_ref_t tree_pop_left_and_right(tree_ref_t self, node_ref_t node) {
   node_ref_t old    = node;
   node_ref_t parent = nullptr;
   node_ref_t left   = nullptr;
@@ -202,7 +164,7 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
     child->parent = parent;
   }
 
-  avl_child_replace(self, parent, node, child);
+  tree_child_replace(self, parent, node, child);
 
   if (node->parent == old) {
     parent = node;
@@ -213,7 +175,7 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
   node->parent = old->parent;
   node->height = old->height;
 
-  avl_child_replace(self, old->parent, old, node);
+  tree_child_replace(self, old->parent, old, node);
   old->left->parent = node;
 
   if (old->right) {
@@ -223,7 +185,7 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
   return parent;
 }
 
-pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
+pri node_ref_t tree_pop_left_or_right(tree_ref_t self, node_ref_t node) {
   node_ref_t child  = nullptr;
   node_ref_t parent = nullptr;
 
@@ -242,7 +204,7 @@ pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
   return parent;
 }
 
-pri void tree_pop_rebalance(avl_ref_t self, node_ref_t node) {
+pri void tree_pop_rebalance(tree_ref_t self, node_ref_t node) {
   int lh;
   int rh;
   int diff;
@@ -269,9 +231,8 @@ pri void tree_pop_rebalance(avl_ref_t self, node_ref_t node) {
     node = node->parent;
   }
 }
-#endif
 
-pri void tree_push_rebalance(avl_ref_t self, node_ref_t node) {
+pri void tree_push_rebalance(tree_ref_t self, node_ref_t node) {
   int lh        = 0;
   int rh        = 0;
   int diff      = 0;
@@ -295,68 +256,10 @@ pri void tree_push_rebalance(avl_ref_t self, node_ref_t node) {
   }
 }
 
-#if 0
-pri void avl_next(avl_ref_t self) {
-  node_ref_t node = self->iter;
-  node_ref_t last = nullptr;
-
-  if (node == nullptr) {
-    node = self->root;
-    while (node->left) {
-      node = node->left;
-    }
-  } else {
-    if (node->right) {
-      node = node->right;
-      while (node->left) {
-        node = node->left;
-      }
-    } else {
-      while (true) {
-        last = node;
-        node = node->parent;
-
-        u_brk_if(node == nullptr || node->left == last);
-      }
-    }
-  }
-
-  self->iter = node;
-}
-
-pri void avl_prev(avl_ref_t self) {
-  node_ref_t node = self->iter;
-  node_ref_t last = nullptr;
-
-  if (node == nullptr) {
-    node = self->root;
-    while (node->right) {
-      node = node->right;
-    }
-  } else {
-    if (node->left) {
-      node = node->left;
-      while (node->right) {
-        node = node->right;
-      }
-    } else {
-      while (true) {
-        last = node;
-        node = node->parent;
-
-        u_brk_if(node == nullptr || node->right == last);
-      }
-    }
-  }
-
-  self->iter = node;
-}
-#endif
-
 pub any_t tree_new() {
-  avl_ref_t self = nullptr;
+  tree_ref_t self = nullptr;
 
-  self = u_zalloc(sizeof(avl_t));
+  self = u_zalloc(sizeof(tree_t));
   u_end_if(self);
 
   self->len  = 0;
@@ -368,14 +271,10 @@ end:
   return nullptr;
 }
 
-#if 0
-pub void avl_clear(any_t _self) {
-  avl_ref_t self  = (avl_ref_t)_self;
+pub void tree_clear(tree_ref_t self) {
   node_ref_t node = nullptr;
   node_ref_t head = self->root;
   node_ref_t tail = self->root;
-
-  u_chk_if(self->len == 0);
 
   while (head != nullptr) {
     node = head;
@@ -400,50 +299,24 @@ pub void avl_clear(any_t _self) {
   self->len = 0;
 }
 
-pub void avl_cleanup(any_t _self) {
-  avl_ref_t self  = (avl_ref_t)_self;
+pub void tree_cleanup(tree_ref_t self) {
   node_ref_t node = nullptr;
 
-  u_chk_if(self);
-
-  avl_clear(_self);
-
-  while (self->free_nodes != nullptr) {
-    node             = self->free_nodes;
-    self->free_nodes = node->parent;
-
-    u_free(node);
-  }
-
+  tree_clear(self);
   u_free(self);
 }
 
-pub size_t avl_len(any_t _self) {
-  avl_ref_t self = (avl_ref_t)_self;
-
-  u_chk_if(self, 0);
-
+pub size_t tree_len(tree_ref_t self) {
   return self->len;
 }
 
-pub bool avl_exist(any_t _self, any_t key) {
-  avl_ref_t self  = (avl_ref_t)_self;
+pub bool tree_exist(tree_ref_t self, tree_key_t key) {
   node_ref_t node = self->root;
   ret_t result    = 0;
 
-  u_chk_if(self, false);
-  u_chk_if(key, false);
-
   while (node) {
-    if (self->cmp_fn) {
-      result = self->cmp_fn(key, key(node));
-    } else {
-      result = memcmp(key, key(node), self->ksize);
-    }
-
-    if (result == 0) {
-      break;
-    }
+    result = key > node->key ? 1 : (key == node->key) ? 0 : -1;
+    u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
   }
@@ -451,22 +324,12 @@ pub bool avl_exist(any_t _self, any_t key) {
   return node != nullptr;
 }
 
-pub any_t avl_at(any_t _self, any_t key) {
-  avl_ref_t self  = (avl_ref_t)_self;
+pub any_t tree_at(tree_ref_t self, tree_key_t key) {
   node_ref_t node = self->root;
   ret_t result    = 0;
 
-  u_chk_if(self, nullptr);
-  u_chk_if(key, nullptr);
-  u_chk_if(self->len == 0, nullptr);
-
   while (node) {
-    if (self->cmp_fn) {
-      result = self->cmp_fn(key, key(node));
-    } else {
-      result = memcmp(key, key(node), self->ksize);
-    }
-
+    result = key > node->key ? 1 : (key == node->key) ? 0 : -1;
     u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
@@ -474,19 +337,17 @@ pub any_t avl_at(any_t _self, any_t key) {
 
   u_end_if(node);
 
-  return val(node);
+  return node->val;
 
 end:
   return nullptr;
 }
 
-pub void tree_pop(any_t _self, K key, V val) {
-  avl_ref_t self    = (avl_ref_t)_self;
+pub tree_val_t tree_pop(tree_ref_t self, tree_key_t key) {
   node_ref_t node   = self->root;
   node_ref_t parent = nullptr;
   ret_t result      = 0;
-
-  u_chk_if(self);
+  tree_val_t val    = nullptr;
 
   while (node) {
     result = key > node->key ? 1 : (key == node->key) ? 0 : -1;
@@ -498,37 +359,30 @@ pub void tree_pop(any_t _self, K key, V val) {
   u_end_if(node);
 
   if (node->left && node->right) {
-    parent = avl_pop_left_and_right(self, node);
+    parent = tree_pop_left_and_right(self, node);
   } else {
-    parent = avl_pop_left_or_right(self, node);
+    parent = tree_pop_left_or_right(self, node);
   }
-
-  memcpy(key, key(node), self->ksize);
-  memcpy(val, val(node), self->vsize);
-
-  node->parent     = self->free_nodes;
-  self->free_nodes = node;
-
-  self->len--;
 
   if (parent) {
-    avl_pop_rebalance(self, parent);
+    tree_pop_rebalance(self, parent);
   }
 
-  return;
+  self->len--;
+  val = node->val;
+  u_free(val);
+
+  return val;
 
 end:
+  return nullptr;
 }
-#endif
 
-pub void tree_put(any_t _self, K key, V val) {
-  avl_ref_t self    = (avl_ref_t)_self;
-  node_ref_t* link  = &self->root;
+pub void tree_put(tree_ref_t self, tree_key_t key, tree_val_t val) {
+  node_ref_t* link  = (node_ref_t*)&self->root;
   node_ref_t parent = nullptr;
   node_ref_t node   = nullptr;
   ret_t result      = 0;
-
-  u_chk_if(self);
 
   while (link[0]) {
     parent = link[0];
@@ -538,8 +392,17 @@ pub void tree_put(any_t _self, K key, V val) {
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
 
-  node = tree_new_node(self, link, key, val);
+  node = u_zalloc(sizeof(node_t));
   u_end_if(node);
+
+  node->left   = nullptr;
+  node->right  = nullptr;
+  node->parent = parent;
+  node->height = 1;
+  node->key    = key;
+  node->val    = val;
+
+  link[0] = node;
 
   self->len++;
   tree_push_rebalance(self, node);
@@ -547,4 +410,104 @@ pub void tree_put(any_t _self, K key, V val) {
   return;
 
 end:
+}
+
+/***************************************************************************************************
+ * Dump
+ **************************************************************************************************/
+#define MAX_LEVEL   64
+#define LEFT_INDEX  0
+#define RIGHT_INDEX 1
+
+typedef struct {
+  node_ref_t node;  /* node backlogged */
+  int next_sub_idx; /* the index next to the backtrack point, valid when >= 1 */
+} node_backlog_t, *node_backlog_ref_t;
+
+pri inline void
+    nbl_put(node_backlog_ref_t nbl, node_backlog_ref_t* top, node_backlog_ref_t* bottom) {
+  if (*top - *bottom < MAX_LEVEL) {
+    (*(*top)++) = *nbl;
+  }
+}
+
+pri inline node_backlog_ref_t nbl_pop(node_backlog_ref_t* top, node_backlog_ref_t* bottom) {
+  return *top > *bottom ? --*top : nullptr;
+}
+
+pri inline bool nbl_is_empty(node_backlog_ref_t top, node_backlog_ref_t bottom) {
+  return top == bottom;
+}
+
+pri inline bool is_leaf(node_ref_t node) {
+  return node->left == nullptr && node->right == nullptr;
+}
+
+pri inline void tree_node_dump(node_ref_t node) {
+  node_ref_t parent = nullptr;
+
+  u_chk_if(node);
+
+  parent = node->parent;
+  if (parent != nullptr) {
+    putchar(node == parent->left ? 'L' : 'R');
+  }
+
+  printf("{ %jd }\n", node->key);
+}
+
+pub void tree_dump(tree_ref_t self) {
+  int level                           = 0;
+  int sub_index                       = 0;
+  node_ref_t node                     = self->root;
+  node_backlog_t nbl                  = {};
+  node_backlog_t nbl_stack[MAX_LEVEL] = {};
+  node_backlog_ref_t p_nbl            = nullptr;
+  node_backlog_ref_t top              = nullptr;
+  node_backlog_ref_t bottom           = nullptr;
+
+  top = bottom = nbl_stack;
+
+  while (true) {
+    if (node != nullptr) {
+      sub_index = p_nbl != nullptr ? p_nbl->next_sub_idx : LEFT_INDEX;
+      p_nbl     = nullptr;
+
+      if (is_leaf(node) || sub_index == RIGHT_INDEX) {
+        nbl.node         = nullptr;
+        nbl.next_sub_idx = LEFT_INDEX;
+      } else {
+        nbl.node         = node;
+        nbl.next_sub_idx = RIGHT_INDEX;
+      }
+
+      nbl_put(&nbl, &top, &bottom);
+      level++;
+
+      /* draw lines as long as sub_idx is the first one */
+      if (sub_index == LEFT_INDEX) {
+        u_each (i, level) {
+          if (i == level - 1) {
+            printf("%-4s", "+---");
+          } else {
+            if (nbl_stack[i - 1].node != nullptr) {
+              printf("%-4s", "|");
+            } else {
+              printf("%-4s", " ");
+            }
+          }
+        }
+
+        tree_node_dump(node);
+      }
+
+      node = sub_index == LEFT_INDEX ? node->left : node->right;
+    } else {
+      p_nbl = nbl_pop(&top, &bottom);
+      u_brk_if(p_nbl);
+
+      node = p_nbl->node;
+      level--;
+    }
+  }
 }

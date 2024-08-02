@@ -2,15 +2,24 @@ local deps = { 'libsock', 'avlmini' }
 
 add_requires(unpack(deps))
 
+target('tree', function()
+  set_kind('static')
+  set_default('false')
+  add_files('tree.c')
+
+  add_deps('u')
+end)
+
 target('dev.c', function()
   set_kind('binary')
   set_default('false')
-  add_files('*.c|tree.c')
+  add_files('dev.c')
   set_rundir('$(projectdir)')
 
   add_rules('generic')
 
   add_deps('u')
+  add_deps('tree')
   add_packages(unpack(deps))
 
   -- after_build(function(target)
