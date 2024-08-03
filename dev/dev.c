@@ -40,18 +40,27 @@ pri inline u_hash_t hash(cu8_t* ptr, size_t len) {
 
 int main(int argc, const u_cstr_t argv[]) {
 
-#define N 1000'0000
+#define N 100'0000
 
+#if 1
   /* #[[map<int, int>]] */
-  auto m = u_map_new(int, int, u_hash_int32bit);
+  auto m = u_map_new(int, int, nullptr);
   /*
-   * N = 100'0000 (release)
+   * N = 100'0000 (release, hash(x) = x)
    *
    * Total time:   0s,  86ms, 823us,  18ns. Average time:    86ns/1000000
    * Total time:   0s,  82ms,  98us, 804ns. Average time:    82ns/1000000
    * Total time:   0s, 102ms, 306us, 412ns. Average time:   102ns/1000000
    * Total time:   0s,  88ms, 380us, 525ns. Average time:    88ns/1000000
    * Total time:   0s,  84ms, 515us, 995ns. Average time:    84ns/1000000
+   *
+   * N = 100'0000 (release, xxhash.XXH64)
+   *
+   * Total time:   0s, 223ms, 706us, 433ns. Average time:   223ns/1000000
+   * Total time:   0s, 254ms, 678us,  31ns. Average time:   254ns/1000000
+   * Total time:   0s, 214ms, 508us, 634ns. Average time:   214ns/1000000
+   * Total time:   0s, 216ms, 430us, 124ns. Average time:   216ns/1000000
+   * Total time:   0s, 256ms, 143us, 588ns. Average time:   256ns/1000000
    * */
 
   u_bench("map.put()", N) {
@@ -60,7 +69,7 @@ int main(int argc, const u_cstr_t argv[]) {
     }
   }
 
-  u_map_at(m, 0);
+#endif
 
   tree_t l = tree_new();
   /*
@@ -116,6 +125,7 @@ int main(int argc, const u_cstr_t argv[]) {
   /* #[[map<int, int>]] */
   /*
    * N = 100'0000 (release)
+   *
    * Total time: 0s, 278ms, 275us, 681ns. Average time: 278ns/1000000
    * Total time: 0s, 283ms, 520us, 869ns. Average time: 283ns/1000000
    * Total time: 0s, 285ms, 333us, 494ns. Average time: 285ns/1000000
