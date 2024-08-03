@@ -69,8 +69,6 @@ end
 --- Project common header file path
 add_includedirs('$(projectdir)/inc')
 
-add_requires('xxhash')
-
 --- libu target
 target('u', function()
   set_kind('static')
@@ -80,8 +78,6 @@ target('u', function()
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })
   end
-
-  add_packages('xxhash')
 
   add_rules('generic')
 end)
