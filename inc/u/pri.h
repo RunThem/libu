@@ -66,7 +66,7 @@ if(t==0)return;l=(t<0)?&(n->l):&(n->r);}p=n;n=calloc(sizeof(*n),1);if(!n)return;
 #  endif
 
 typedef struct tnode_t* tnode_t;
-struct tnode_t { tnode_t l, r, p; int h; char u[0]; };
+struct tnode_t { tnode_t l, r, p; int h, ud; char u[0]; };
 typedef struct { int len; tnode_t root; }* tree_t;
 
 static inline int __lh(tnode_t n) { return n->l ? n->l->h : 0; }
@@ -127,10 +127,10 @@ static inline tnode_t tree_at(tree_t T, tnode_t n) {
 static inline void tree_pop(tree_t T, tnode_t n) {
   tnode_t p = NULL; p = (n->l && n->r ? __pop_and : __pop_or)(T, n);
   if (p) { __pop_rebalance(T, p); } T->len--; }
-static inline void tree_put(tree_t T, tnode_t n) {
+static inline bool tree_put(tree_t T, tnode_t n) {
   tnode_t *l = &T->root, p = NULL; int t = 0; while (l[0]) { p = l[0];
-  t = tree_cmp_fn(n, p); if (t == 0) { return; } l = (t < 0) ? &p->l : &p->r;
-  } n->p = p; l[0] = n; T->len++; __put_rebalance(T, n); }
+  t = tree_cmp_fn(n, p); if (t == 0) { return false; } l = (t < 0) ? &p->l : &p->r;
+  } n->p = p; l[0] = n; T->len++; __put_rebalance(T, n); return true; }
 
 static inline tnode_t tree_tear(tree_t T, tnode_t* next) {
   tnode_t n = *next, p; if (!n) { if (!T->root) { return NULL; } n = T->root; }
@@ -149,7 +149,7 @@ static inline tnode_t tree_prev(tnode_t n) {
   tnode_t last; if (n) { if (n->l) { n = n->l; while (n->r) { n = n->r; } } else { while (true) {
   last = n; n    = n->p; if (!n) { break; } if (n->r == last) { break; } } } } return n; }
 
-#  ifndef NDEBUG
+#  ifdef U_PRI_DEBUG
 static inline void tree_node_dump(tnode_t n);
 typedef struct { tnode_t n; int i; } tnodebl_t, *tnodebl_ref_t;
 static void nbl_put(tnodebl_ref_t nbl, tnodebl_ref_t* top, tnodebl_ref_t* bottom) {
