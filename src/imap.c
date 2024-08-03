@@ -328,17 +328,19 @@ pub void map_put(any_t _self, any_t key, any_t val) {
   node = tree_new_node(sizeof(u_hash_t) + self->ksize + self->vsize);
   u_end_if(node);
 
-  if (self->len > self->resize_max) {
-    map_rehash(self);
-  }
-
   node->ud   = (int)self->ksize;
   hash(node) = hash;
   memcpy(key(node), key, self->ksize);
   memcpy(val(node), val, self->vsize);
 
-  result = tree_put(self->buckets[idx], node);
-  u_end_if(result == false);
+  if (self->buckets[idx]->root == nullptr) {
+    self->buckets[idx]->root = node;
+  } else {
+    result = tree_put(self->buckets[idx], node);
+    u_end_if(result == false);
+  }
+
+  map_rehash(self);
 
   self->len++;
 
