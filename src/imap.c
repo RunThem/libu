@@ -30,6 +30,8 @@
 #  define U_PRI_FREE(ptr)   mi_free(ptr)
 #endif
 
+#define U_PRI_DEBUG
+
 #include <u/pri.h>
 
 /***************************************************************************************************
@@ -73,6 +75,10 @@ static inline int tree_cmp_fn(tnode_t x, tnode_t y) {
     return memcmp(x->u + sizeof(u_hash_t), y->u + sizeof(u_hash_t), x->ud);
   }
   return a > b ? 1 : -1;
+}
+
+static inline void tree_node_dump(tnode_t n) {
+  printf("h(%d), %d\n", n->h, *(int*)key(n));
 }
 
 /* fnv 64-bit hash function */
@@ -175,7 +181,7 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   self->ksize   = ksize;
   self->vsize   = vsize;
   self->len     = 0;
-  self->hash_fn = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
+  self->hash_fn = hash_fn != nullptr ? hash_fn : hash_xxhash;
 
   return self;
 
@@ -313,17 +319,17 @@ end:
 
 pub void map_put(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
+  tree_t tree    = nullptr;
   tnode_t node   = nullptr;
   u_hash_t hash  = 0;
   int result     = 0;
-  int idx        = 0;
 
   u_chk_if(self);
   u_chk_if(key);
   u_chk_if(val);
 
   hash = self->hash_fn(key, self->ksize);
-  idx  = (int)(hash % self->bucket_size);
+  tree = self->buckets[hash % self->bucket_size];
 
   node = tree_new_node(sizeof(u_hash_t) + self->ksize + self->vsize);
   u_end_if(node);
@@ -333,10 +339,11 @@ pub void map_put(any_t _self, any_t key, any_t val) {
   memcpy(key(node), key, self->ksize);
   memcpy(val(node), val, self->vsize);
 
-  if (self->buckets[idx]->root == nullptr) {
-    self->buckets[idx]->root = node;
+  if (tree->len == 0) {
+    tree->root = node;
+    tree->len++;
   } else {
-    result = tree_put(self->buckets[idx], node);
+    result = tree_put(tree, node);
     u_end_if(result == false);
   }
 
