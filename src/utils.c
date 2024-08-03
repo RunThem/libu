@@ -197,8 +197,10 @@ pub bool __bm_entry(const char* msg, size_t cnt) {
             ns);
 
     if (cnt != 1) {
-      fprintf(stderr, "Average time: %5zu" C(ns) "/%zu\n", ave, (size_t)cnt);
+      fprintf(stderr, "Average time: %5zu" C(ns) "/%zu", ave, (size_t)cnt);
     }
+
+    fprintf(stderr, "\n");
 
     free(bm.msg);
   }
