@@ -22,16 +22,16 @@
  *
  * */
 
-#include <xxhash.h>
 #include <u/u.h>
 
 #ifdef USE_MIMALLOC
 #  define U_PRI_ALLOC(size) mi_calloc(size, 1)
 #  define U_PRI_FREE(ptr)   mi_free(ptr)
 #endif
-
+#define U_PRI_TREE_USERDATA                                                                        \
+  size_t ksize;                                                                                    \
+  u_hash_t hash
 #define U_PRI_DEBUG
-
 #include <u/pri.h>
 
 /***************************************************************************************************
@@ -45,6 +45,7 @@ typedef struct {
 
   u_hash_fn hash_fn;
 
+  int mask_size;
   int bucket_size;
   tree_t* buckets;
 
@@ -60,21 +61,18 @@ typedef struct {
  **************************************************************************************************/
 #define U_MAP_BUCKET_INIT_SIZE 8
 
-#define hash(node) *(u_hash_t*)(node->u)
-#define key(node)  (node->u + sizeof(u_hash_t))
-#define val(node)  (node->u + sizeof(u_hash_t) + self->ksize)
+#define key(node) (node->u)
+#define val(node) (node->u + self->ksize)
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
 static inline int tree_cmp_fn(tnode_t x, tnode_t y) {
-  auto a = *(u_hash_t*)((void*)x->u);
-  auto b = *(u_hash_t*)((void*)y->u);
-
-  if (a == b) {
-    return memcmp(x->u + sizeof(u_hash_t), y->u + sizeof(u_hash_t), x->ud);
+  if (x->hash == y->hash) {
+    return memcmp(x->u, y->u, x->ksize);
   }
-  return a > b ? 1 : -1;
+
+  return x->hash > y->hash ? 1 : -1;
 }
 
 static inline void tree_node_dump(tnode_t n) {
@@ -93,17 +91,11 @@ pri inline u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   return hash;
 }
 
-pri inline u_hash_t hash_xxhash(cu8_t* ptr, size_t len) {
-  XXH64_hash_t seed = 0;
-  return XXH64(ptr, len, seed);
-}
-
 pri void map_rehash(map_ref_t self) {
   tree_t* buckets = nullptr;
   int size        = self->bucket_size;
   tnode_t next    = nullptr;
   tnode_t node    = nullptr;
-  u_hash_t hash   = 0;
   size_t limit    = 0;
 
   limit = (self->len * 6) >> 2;
@@ -124,8 +116,7 @@ pri void map_rehash(map_ref_t self) {
   u_each (i, self->bucket_size) {
     if (self->buckets[i]->len != 0) {
       while ((node = tree_tear(self->buckets[i], &next))) {
-        hash = *(u_hash_t*)(node->u);
-        tree_put(buckets[hash % size], node);
+        tree_put(buckets[node->hash % size], node);
       }
     }
 
@@ -134,6 +125,7 @@ pri void map_rehash(map_ref_t self) {
 
   self->bucket_size = size;
   self->buckets     = buckets;
+  self->mask_size   = size - 1;
 
   return;
 end:
@@ -165,9 +157,10 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   self = u_zalloc(sizeof(map_t));
   u_end_if(self);
 
-  self->key = tree_new_node(sizeof(u_hash_t) + ksize + vsize);
+  self->key = tree_new_node(ksize + vsize);
   u_end_if(self->key);
 
+  self->mask_size   = U_MAP_BUCKET_INIT_SIZE - 1;
   self->bucket_size = U_MAP_BUCKET_INIT_SIZE;
   self->buckets     = u_calloc(sizeof(tree_t), self->bucket_size);
   u_end_if(self->buckets);
@@ -177,17 +170,17 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
     u_end_if(self->buckets[i]);
   }
 
-  self->key->ud = ksize;
-  self->ksize   = ksize;
-  self->vsize   = vsize;
-  self->len     = 0;
-  self->hash_fn = hash_fn != nullptr ? hash_fn : hash_xxhash;
+  self->key->ksize = ksize;
+  self->ksize      = ksize;
+  self->vsize      = vsize;
+  self->len        = 0;
+  self->hash_fn    = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
 
   return self;
 
 end:
   u_each (i, self->bucket_size) {
-    u_free_if(self->buckets[i]);
+    tree_del(self->buckets[i]);
   }
 
   u_free_if(self->buckets);
@@ -250,9 +243,9 @@ pub bool map_exist(any_t _self, any_t key) {
   u_chk_if(key, false);
 
   hash = self->hash_fn(key, self->ksize);
-  idx  = (int)(hash % self->bucket_size);
+  idx  = (int)(hash & self->mask_size);
 
-  hash(self->key) = hash;
+  self->key->hash = hash;
   memcpy(key(self->key), key, self->ksize);
 
   node = tree_at(self->buckets[idx], self->key);
@@ -271,9 +264,9 @@ pub any_t map_at(any_t _self, any_t key) {
   u_chk_if(key, nullptr);
 
   hash = self->hash_fn(key, self->ksize);
-  idx  = (int)(hash % self->bucket_size);
+  idx  = (int)(hash & self->mask_size);
 
-  hash(self->key) = hash;
+  self->key->hash = hash;
   memcpy(key(self->key), key, self->ksize);
 
   node = tree_at(self->buckets[idx], self->key);
@@ -297,15 +290,15 @@ pub void map_pop(any_t _self, any_t key, any_t val) {
   u_chk_if(val);
 
   hash = self->hash_fn(key, self->ksize);
-  idx  = (int)(hash % self->bucket_size);
+  idx  = (int)(hash & self->mask_size);
 
-  hash(self->key) = hash;
+  self->key->hash = hash;
   memcpy(key(self->key), key, self->ksize);
 
   node = tree_at(self->buckets[idx], self->key);
   u_end_if(node);
 
-  memcpy(val, node->u + sizeof(u_hash_t) + self->ksize, self->vsize);
+  memcpy(val, val(node), self->vsize);
 
   tree_pop(self->buckets[idx], node);
   tree_del_node(node);
@@ -329,13 +322,13 @@ pub void map_put(any_t _self, any_t key, any_t val) {
   u_chk_if(val);
 
   hash = self->hash_fn(key, self->ksize);
-  tree = self->buckets[hash % self->bucket_size];
+  tree = self->buckets[hash & self->mask_size];
 
-  node = tree_new_node(sizeof(u_hash_t) + self->ksize + self->vsize);
+  node = tree_new_node(self->ksize + self->vsize);
   u_end_if(node);
 
-  node->ud   = (int)self->ksize;
-  hash(node) = hash;
+  node->ksize = (int)self->ksize;
+  node->hash  = hash;
   memcpy(key(node), key, self->ksize);
   memcpy(val(node), val, self->vsize);
 
