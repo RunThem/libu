@@ -177,11 +177,17 @@ pub bool __bm_entry(const char* msg, size_t cnt) {
     s     = total % 1000;
     total = total / 1000;
 
+#define C(s) "\x1b[32m" #s "\x1b[0m"
     fprintf(stderr, "Benchmark %s:\n", bm.msg);
-    fprintf(stderr, "Total time: %zus, %zums, %zuus, %zuns. ", s, ms, us, ns);
+    fprintf(stderr,
+            "Total time: %3zu" C(s) ", %3zu" C(ms) ", %3zu" C(us) ", %3zu" C(ns) ". ",
+            s,
+            ms,
+            us,
+            ns);
 
     if (cnt != 1) {
-      fprintf(stderr, "Average time: %zuns/%zu\n", ave, (size_t)cnt);
+      fprintf(stderr, "Average time: %5zu" C(ns) "/%zu\n", ave, (size_t)cnt);
     }
 
     free(bm.msg);
