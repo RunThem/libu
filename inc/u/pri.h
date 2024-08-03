@@ -65,8 +65,12 @@ if(t==0)return;l=(t<0)?&(n->l):&(n->r);}p=n;n=calloc(sizeof(*n),1);if(!n)return;
 #  define U_PRI_FREE(ptr) free(ptr)
 #  endif
 
+#  ifndef U_PRI_TREE_USERDATA
+#  define U_PRI_TREE_USERDATA
+#  endif
+
 typedef struct tnode_t* tnode_t;
-struct tnode_t { tnode_t l, r, p; int h, ud; char u[0]; };
+struct tnode_t { tnode_t l, r, p; int h; U_PRI_TREE_USERDATA; char u[0]; };
 typedef struct { int len; tnode_t root; }* tree_t;
 
 static inline int __lh(tnode_t n) { return n->l ? n->l->h : 0; }
