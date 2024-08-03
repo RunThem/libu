@@ -40,7 +40,6 @@ typedef struct {
   size_t ksize;
   size_t vsize;
   size_t len;
-  size_t resize_max;
 
   u_hash_fn hash_fn;
 
@@ -57,8 +56,7 @@ typedef struct {
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
-#define U_RESIZE_SIZE 512
-#define U_RESIZE_INIT 64
+#define U_MAP_BUCKET_INIT_SIZE 8
 
 #define hash(node) *(u_hash_t*)(node->u)
 #define key(node)  (node->u + sizeof(u_hash_t))
@@ -96,12 +94,20 @@ pri inline u_hash_t hash_xxhash(cu8_t* ptr, size_t len) {
 
 pri void map_rehash(map_ref_t self) {
   tree_t* buckets = nullptr;
-  int size        = 0;
+  int size        = self->bucket_size;
   tnode_t next    = nullptr;
   tnode_t node    = nullptr;
   u_hash_t hash   = 0;
+  size_t limit    = 0;
 
-  size    = self->bucket_size == 0 ? U_RESIZE_INIT : 2 * self->bucket_size;
+  limit = (self->len * 6) >> 2;
+
+  u_chk_if(limit <= self->bucket_size);
+
+  while (size < limit) {
+    size <<= 1;
+  }
+
   buckets = u_calloc(sizeof(tree_t), size);
   u_end_if(buckets);
 
@@ -109,21 +115,17 @@ pri void map_rehash(map_ref_t self) {
     buckets[i] = tree_new();
   }
 
-  /* rehash */
-  if (self->bucket_size != 0) {
-    u_each (i, self->bucket_size) {
-      if (self->buckets[i]->len != 0) {
-        while ((node = tree_tear(self->buckets[i], &next))) {
-          hash = *(u_hash_t*)(node->u);
-          tree_put(buckets[hash % size], node);
-        }
+  u_each (i, self->bucket_size) {
+    if (self->buckets[i]->len != 0) {
+      while ((node = tree_tear(self->buckets[i], &next))) {
+        hash = *(u_hash_t*)(node->u);
+        tree_put(buckets[hash % size], node);
       }
-
-      tree_del(self->buckets[i]);
     }
+
+    tree_del(self->buckets[i]);
   }
 
-  self->resize_max  = size * U_RESIZE_SIZE;
   self->bucket_size = size;
   self->buckets     = buckets;
 
@@ -149,6 +151,7 @@ end:
 
 pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   map_ref_t self = nullptr;
+  size_t size    = 0;
 
   u_chk_if(ksize == 0, nullptr);
   u_chk_if(vsize == 0, nullptr);
@@ -159,8 +162,14 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   self->key = tree_new_node(sizeof(u_hash_t) + ksize + vsize);
   u_end_if(self->key);
 
-  map_rehash(self);
+  self->bucket_size = U_MAP_BUCKET_INIT_SIZE;
+  self->buckets     = u_calloc(sizeof(tree_t), self->bucket_size);
   u_end_if(self->buckets);
+
+  u_each (i, self->bucket_size) {
+    self->buckets[i] = tree_new();
+    u_end_if(self->buckets[i]);
+  }
 
   self->key->ud = ksize;
   self->ksize   = ksize;
@@ -171,8 +180,13 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   return self;
 
 end:
-  u_free_if(self);
+  u_each (i, self->bucket_size) {
+    u_free_if(self->buckets[i]);
+  }
+
+  u_free_if(self->buckets);
   u_free_if(self->key);
+  u_free_if(self);
 
   return nullptr;
 }
