@@ -227,4 +227,9 @@ fn_compe_dec(u128_t);
 } /* extern "C" */
 #  endif
 
+extern u_hash_t u_hash_int8bit(cu8_t* ptr, size_t len);
+extern u_hash_t u_hash_int16bit(cu8_t* ptr, size_t len);
+extern u_hash_t u_hash_int32bit(cu8_t* ptr, size_t len);
+extern u_hash_t u_hash_int64bit(cu8_t* ptr, size_t len);
+
 #endif /* !U_MISC_H__ */

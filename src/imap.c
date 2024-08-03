@@ -22,84 +22,63 @@
  *
  * */
 
+#include <xxhash.h>
 #include <u/u.h>
 
-/* clang-format off */
-pri size_t bucket_sizes[] = {
-#if 0 /* debug */
-    7,
+#ifdef USE_MIMALLOC
+#  define U_PRI_ALLOC(size) mi_calloc(size, 1)
+#  define U_PRI_FREE(ptr)   mi_free(ptr)
 #endif
 
-    61,         127,        251,        509,        1021,        2039,
-    4093,       8191,       16381,      32749,      65521,       131071,
-    262139,     524287,     1048573,    2097143,    4194301,     8388593,
-    16777213,   33554393,   67108859,   134217689,  268435399,   536870909,
-    1073741789, 2147483647, 4294967291, 8589934583, 17179869143, 34359738337,
-};
-/* clang-format on */
+#include <u/pri.h>
 
 /***************************************************************************************************
  * Tyoe
  **************************************************************************************************/
-typedef u64_t u_hash_t;
-
-typedef struct node_t node_t, *node_ref_t;
-struct node_t {
-  node_ref_t next;
-  u_hash_t hash;
-};
-
 typedef struct {
-  u8_t flags[4];
+  i8_t flags[4];
   size_t ksize;
   size_t vsize;
   size_t len;
+  size_t resize_max;
 
   u_hash_fn hash_fn;
 
-  node_ref_t iter;
-  node_ref_t free_nodes;
+  int bucket_size;
+  tree_t* buckets;
 
-  i8_t bucket_idx;
-  node_ref_t buckets;
+  int iter_idx;
+  tnode_t iter_node;
+  tnode_t next_node;
+
+  tnode_t key;
 } map_t, *map_ref_t;
 
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
-#define U_RESIZE_RADIO 0.75
+#define U_RESIZE_SIZE 512
+#define U_RESIZE_INIT 64
 
-#undef key
-#define key(node) (any(node) + sizeof(node_t))
-
-#undef val
-#define val(node) (any(node) + sizeof(node_t) + self->ksize)
+#define hash(node) *(u_hash_t*)(node->u)
+#define key(node)  (node->u + sizeof(u_hash_t))
+#define val(node)  (node->u + sizeof(u_hash_t) + self->ksize)
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-/* [idx, len] { 0xffff } { 0xfffe } */
-pri void map_debug(map_ref_t self) {
-  fprintf(stderr,
-          "ksize(%zu), vsize(%zu), len(%zu), buckets(%zu)\n",
-          self->ksize,
-          self->vsize,
-          self->len,
-          bucket_sizes[self->bucket_idx]);
+static inline int tree_cmp_fn(tnode_t x, tnode_t y) {
+  auto a = *(u_hash_t*)((void*)x->u);
+  auto b = *(u_hash_t*)((void*)y->u);
 
-  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
-    fprintf(stderr, "[%zu, %zu] ", i, self->buckets[i].hash);
-
-    for (node_ref_t node = &self->buckets[i]; node != nullptr; node = node->next) {
-      fprintf(stderr, "{ %p } ", node);
-    }
-
-    fprintf(stderr, "\n");
+  if (a == b) {
+    return memcmp(x->u + sizeof(u_hash_t), y->u + sizeof(u_hash_t), x->ud);
   }
+  return a > b ? 1 : -1;
 }
 
 /* fnv 64-bit hash function */
-pri u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
+pri inline u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   u_hash_t hash = 1469'5981'0393'4665'6037U;
 
   for (size_t i = 0; i < len; ++i) {
@@ -110,131 +89,62 @@ pri u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
   return hash;
 }
 
-pri node_ref_t map_new_node(map_ref_t self, any_t key, any_t val) {
-  node_ref_t node = nullptr;
-
-  if (self->free_nodes != nullptr) {
-    node             = self->free_nodes;
-    self->free_nodes = node->next;
-  } else {
-    node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
-    u_end_if(node);
-  }
-
-  node->hash = self->hash_fn(key, self->ksize);
-  memcpy(key(node), key, self->ksize);
-  memcpy(val(node), val, self->vsize);
-
-  return node;
-
-end:
-  return nullptr;
+pri inline u_hash_t hash_xxhash(cu8_t* ptr, size_t len) {
+  XXH64_hash_t seed = 0;
+  return XXH64(ptr, len, seed);
 }
 
-pri node_ref_t map_find(map_ref_t self, node_ref_t idx[2], any_t key) {
+pri void map_rehash(map_ref_t self) {
+  tree_t* buckets = nullptr;
+  int size        = 0;
+  tnode_t next    = nullptr;
+  tnode_t node    = nullptr;
   u_hash_t hash   = 0;
-  node_ref_t node = nullptr;
 
-  hash   = self->hash_fn(key, self->ksize);
-  idx[0] = &self->buckets[hash % bucket_sizes[self->bucket_idx]];
-
-  for (idx[1] = idx[0], node = (idx[0])->next; node->next != nullptr;
-       idx[1] = node, node = node->next) {
-
-    u_brk_if(hash == node->hash && memcmp(key(node), key, self->ksize) == 0);
-  }
-
-  return node;
-}
-
-pri node_ref_t map_make_buckets(size_t bs) {
-  node_ref_t buckets = nullptr;
-
-  buckets = u_calloc(bs * 2, sizeof(node_t));
+  size    = self->bucket_size == 0 ? U_RESIZE_INIT : 2 * self->bucket_size;
+  buckets = u_calloc(sizeof(tree_t), size);
   u_end_if(buckets);
 
-  for (size_t i = 0, j = bs; i < bs; i++, j++) {
-    buckets[i].next = &buckets[j];
-    buckets[i].hash = 0;
-
-    buckets[j].next = nullptr;
-    buckets[j].hash = i + 1;
+  u_each (i, size) {
+    buckets[i] = tree_new();
   }
 
-  buckets[bs * 2 - 1].hash = 0;
+  /* rehash */
+  if (self->bucket_size != 0) {
+    u_each (i, self->bucket_size) {
+      if (self->buckets[i]->len != 0) {
+        while ((node = tree_tear(self->buckets[i], &next))) {
+          hash = *(u_hash_t*)(node->u);
+          tree_put(buckets[hash % size], node);
+        }
+      }
 
-  return buckets;
+      tree_del(self->buckets[i]);
+    }
+  }
 
+  self->resize_max  = size * U_RESIZE_SIZE;
+  self->bucket_size = size;
+  self->buckets     = buckets;
+
+  return;
 end:
-  return nullptr;
 }
 
-pri void map_next(map_ref_t self) {
-  size_t idx = 0;
-  size_t i   = 0;
+pri inline void map_next(map_ref_t self) {
+  while (true) {
+    self->iter_node = tree_tear(self->buckets[self->iter_idx], &self->next_node);
+    u_brk_if(self->iter_node != nullptr);
 
-  if (self->iter != nullptr) {
-    self->iter = self->iter->next;
-
-    /* ok */
-    u_end_if(self->iter->next != nullptr);
-
-    /* end */
-    u_end_if(self->iter->hash == 0);
-
-    idx        = self->iter->hash;
-    self->iter = nullptr;
+    self->iter_idx++;
+    self->next_node = nullptr;
+    u_end_if(self->iter_idx == self->bucket_size);
   }
-
-  for (i = idx; i < bucket_sizes[self->bucket_idx]; i++) {
-    u_brk_if(self->buckets[i].hash != 0);
-  }
-
-  self->iter = self->buckets[i].next;
 
   return;
 
 end:
-  if (self->iter->hash == 0) {
-    self->iter = nullptr;
-  }
-}
-
-pri bool map_resize(map_ref_t self) {
-  node_ref_t nbuckets = nullptr;
-  node_ref_t node     = nullptr;
-  node_ref_t tmp      = nullptr;
-  node_ref_t list     = nullptr;
-  node_ref_t nlist    = nullptr;
-  size_t bucket_idx   = 0;
-
-  bucket_idx = bucket_sizes[self->bucket_idx + 1];
-  nbuckets   = map_make_buckets(bucket_idx);
-  u_end_if(nbuckets);
-
-  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
-    u_cnt_if(self->buckets[i].hash == 0);
-
-    for (node = self->buckets[i].next, list = node->next; node->next != nullptr;
-         node = list, list = list->next) {
-      nlist = &nbuckets[node->hash % bucket_idx];
-
-      node->next  = nlist->next;
-      nlist->next = node;
-
-      nlist->hash++;
-    }
-  }
-
-  self->bucket_idx++;
-
-  u_free(self->buckets);
-  self->buckets = nbuckets;
-
-  return true;
-
-end:
-  return false;
+  self->iter_node = nullptr;
 }
 
 pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
@@ -243,49 +153,45 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   u_chk_if(ksize == 0, nullptr);
   u_chk_if(vsize == 0, nullptr);
 
-  self = u_zalloc(sizeof(map_t) + ksize + vsize);
+  self = u_zalloc(sizeof(map_t));
   u_end_if(self);
 
-  self->buckets = map_make_buckets(bucket_sizes[0]);
+  self->key = tree_new_node(sizeof(u_hash_t) + ksize + vsize);
+  u_end_if(self->key);
+
+  map_rehash(self);
   u_end_if(self->buckets);
 
-  self->ksize      = ksize;
-  self->vsize      = vsize;
-  self->len        = 0;
-  self->bucket_idx = 0;
-  self->hash_fn    = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
+  self->key->ud = ksize;
+  self->ksize   = ksize;
+  self->vsize   = vsize;
+  self->len     = 0;
+  self->hash_fn = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
 
   return self;
 
 end:
   u_free_if(self);
+  u_free_if(self->key);
 
   return nullptr;
 }
 
 pub void map_clear(any_t _self) {
-  map_ref_t self  = (map_ref_t)_self;
-  node_ref_t node = nullptr;
-  node_ref_t list = nullptr;
+  map_ref_t self = (map_ref_t)_self;
+  tnode_t node   = nullptr;
+  tnode_t next   = nullptr;
 
   u_chk_if(self);
 
-  for (size_t i = 0; i < bucket_sizes[self->bucket_idx]; i++) {
-    list = self->buckets[i].next;
-
-    for (node = list, list = list->next; node->next != nullptr; node = list, list = list->next) {
-      u_free(node);
+  u_each (i, self->bucket_size) {
+    if (self->buckets[i]->len == 0) {
+      continue;
     }
 
-    self->buckets[i].next = node;
-    self->buckets[i].hash = 0;
-  }
-
-  while (self->free_nodes != nullptr) {
-    node             = self->free_nodes;
-    self->free_nodes = node->next;
-
-    u_free(node);
+    while ((node = tree_tear(self->buckets[i], &next))) {
+      tree_del_node(node);
+    }
   }
 
   self->len = 0;
@@ -296,13 +202,16 @@ pub void map_cleanup(any_t _self) {
 
   u_chk_if(self);
 
-  map_clear(_self);
+  u_each (i, self->bucket_size) {
+    tree_del(self->buckets[i]);
+  }
 
-  u_free_if(self->buckets);
-  u_free_if(self);
+  u_free(self->buckets);
+  u_free(self->key);
+  u_free(self);
 }
 
-pub size_t map_len(any_t _self) {
+pub inline size_t map_len(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
   u_chk_if(self, 0);
@@ -311,29 +220,44 @@ pub size_t map_len(any_t _self) {
 }
 
 pub bool map_exist(any_t _self, any_t key) {
-  map_ref_t self    = (map_ref_t)_self;
-  node_ref_t node   = nullptr;
-  node_ref_t idx[2] = {};
+  map_ref_t self = (map_ref_t)_self;
+  tnode_t node   = nullptr;
+  u_hash_t hash  = 0;
+  int result     = 0;
+  int idx        = 0;
 
   u_chk_if(self, false);
   u_chk_if(key, false);
 
-  node = map_find(self, idx, key);
+  hash = self->hash_fn(key, self->ksize);
+  idx  = (int)(hash % self->bucket_size);
 
-  return node->next != nullptr;
+  hash(self->key) = hash;
+  memcpy(key(self->key), key, self->ksize);
+
+  node = tree_at(self->buckets[idx], self->key);
+
+  return node != nullptr;
 }
 
 pub any_t map_at(any_t _self, any_t key) {
-  map_ref_t self    = (map_ref_t)_self;
-  node_ref_t node   = nullptr;
-  node_ref_t idx[2] = {};
+  map_ref_t self = (map_ref_t)_self;
+  tnode_t node   = nullptr;
+  u_hash_t hash  = 0;
+  int result     = 0;
+  int idx        = 0;
 
   u_chk_if(self, nullptr);
   u_chk_if(key, nullptr);
-  u_chk_if(self->len == 0, nullptr);
 
-  node = map_find(self, idx, key);
-  u_end_if(node->next);
+  hash = self->hash_fn(key, self->ksize);
+  idx  = (int)(hash % self->bucket_size);
+
+  hash(self->key) = hash;
+  memcpy(key(self->key), key, self->ksize);
+
+  node = tree_at(self->buckets[idx], self->key);
+  u_end_if(node);
 
   return val(node);
 
@@ -342,63 +266,67 @@ end:
 }
 
 pub void map_pop(any_t _self, any_t key, any_t val) {
-  map_ref_t self    = (map_ref_t)_self;
-  node_ref_t node   = nullptr;
-  node_ref_t idx[2] = {};
+  map_ref_t self = (map_ref_t)_self;
+  tnode_t node   = nullptr;
+  u_hash_t hash  = 0;
+  int result     = 0;
+  int idx        = 0;
 
   u_chk_if(self);
   u_chk_if(key);
   u_chk_if(val);
 
-  node = map_find(self, idx, key);
-  u_end_if(node->next);
+  hash = self->hash_fn(key, self->ksize);
+  idx  = (int)(hash % self->bucket_size);
 
-  idx[0]->hash--;
-  idx[1]->next = node->next;
+  hash(self->key) = hash;
+  memcpy(key(self->key), key, self->ksize);
+
+  node = tree_at(self->buckets[idx], self->key);
+  u_end_if(node);
+
+  memcpy(val, node->u + sizeof(u_hash_t) + self->ksize, self->vsize);
+
+  tree_pop(self->buckets[idx], node);
+  tree_del_node(node);
 
   self->len--;
-
-  memcpy(val, val(node), self->vsize);
-
-  node->next       = self->free_nodes;
-  self->free_nodes = node;
 
   return;
 
 end:
-  bzero(val, self->vsize);
 }
 
 pub void map_put(any_t _self, any_t key, any_t val) {
-  map_ref_t self    = (map_ref_t)_self;
-  node_ref_t node   = nullptr;
-  node_ref_t idx[2] = {};
-  ret_t result      = 0;
+  map_ref_t self = (map_ref_t)_self;
+  tnode_t node   = nullptr;
+  u_hash_t hash  = 0;
+  int result     = 0;
+  int idx        = 0;
 
   u_chk_if(self);
   u_chk_if(key);
   u_chk_if(val);
 
-  if (self->len >= (size_t)(0.75 * (f64_t)bucket_sizes[self->bucket_idx])) {
-    result = map_resize(self);
-    u_end_if(result != true);
+  hash = self->hash_fn(key, self->ksize);
+  idx  = (int)(hash % self->bucket_size);
+
+  node = tree_new_node(sizeof(u_hash_t) + self->ksize + self->vsize);
+  u_end_if(node);
+
+  if (self->len > self->resize_max) {
+    map_rehash(self);
   }
 
-  node = map_find(self, idx, key);
+  node->ud   = (int)self->ksize;
+  hash(node) = hash;
+  memcpy(key(node), key, self->ksize);
+  memcpy(val(node), val, self->vsize);
 
-  /* node already exists */
-  if (node->next != nullptr) {
-    memcpy(val(node), val, self->vsize);
-  } else {
-    node = map_new_node(self, key, val);
-    u_end_if(node);
+  result = tree_put(self->buckets[idx], node);
+  u_end_if(result == false);
 
-    node->next   = idx[0]->next;
-    idx[0]->next = node;
-
-    idx[0]->hash++;
-    self->len++;
-  }
+  self->len++;
 
   return;
 
@@ -417,7 +345,9 @@ pub bool map_for_init(any_t _self, bool flag) {
     self->flags[0] = 0;
   }
 
-  self->iter = nullptr;
+  self->next_node = nullptr;
+  self->iter_node = nullptr;
+  self->iter_idx  = 0;
 
   return self->flags[0];
 }
@@ -436,10 +366,10 @@ pub bool map_for(any_t _self, any_t key, any_t val) {
   u_chk_if(self, false);
 
   map_next(self);
-  u_end_if(self->iter);
+  u_end_if(self->iter_node);
 
-  memcpy(key, key(self->iter), self->ksize);
-  memcpy(val, val(self->iter), self->vsize);
+  memcpy(key, key(self->iter_node), self->ksize);
+  memcpy(val, val(self->iter_node), self->vsize);
 
   return true;
 
