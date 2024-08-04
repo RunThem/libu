@@ -79,10 +79,10 @@ extern void*        lfq_pop       (u_lfq_ref_t);
     self = nullptr;                                                                                \
   } while (0)
 
-#define u_lfq_pop(self)                                                                            \
+#define u_lfq_pop(self, type)                                                                      \
   ({                                                                                               \
     ;                                                                                              \
-    lfq_pop(self);                                                                                 \
+    (type) lfq_pop(self);                                                                          \
   })
 
 #define u_lfq_put(self, obj)                                                                       \
