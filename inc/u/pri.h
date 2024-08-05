@@ -93,23 +93,23 @@ static inline tnode_t __fix_right(tree_t T, tnode_t n) {
   tnode_t l = n->l; int lh = __lh(l), rh = __rh(l);
   if (lh < rh) { l = __rotate_left(T, l); __height(l->l); __height(l); }
   n = __rotate_right(T, n); __height(n->r); __height(n); return n; }
-static tnode_t __pop_and(tree_t T, tnode_t n) {
+static inline tnode_t __pop_and(tree_t T, tnode_t n) {
   tnode_t o = n, p, l, c; n = n->r; while ((l = n->l)) { n = l; }
   c = n->r; p = n->p; if (c) { c->p = p; } __child_replace(T, p, n, c);
   if (n->p == o) { p = n; } n->l = o->l; n->r = o->r; n->p = o->p; n->h = o->h;
   __child_replace(T, o->p, o, n); o->l->p = n;
   if (o->r) { o->r->p = n; } return p; }
-static tnode_t __pop_or(tree_t T, tnode_t n) {
+static inline tnode_t __pop_or(tree_t T, tnode_t n) {
   tnode_t c, p; c = n->l;
   if (!c) { c = n->r; } p = n->p; __child_replace(T, p, n, c);
   if (c) { c->p = p; } return p; }
-static void __pop_rebalance(tree_t T, tnode_t n) {
+static inline void __pop_rebalance(tree_t T, tnode_t n) {
   int lh, rh, d, h; while (n) {
   lh = __lh(n); rh = __rh(n); h  = __max(lh, rh) + 1; d  = lh - rh;
   if (n->h != h) { n->h = h; } else if (d >= -1 && d <= -1) { break; }
   if (d <= -2) { n = __fix_left(T, n); } else if (d >= 2) { n = __fix_right(T, n); }
   n = n->p; } }
-static void __put_rebalance(tree_t T, tnode_t n) {
+static inline void __put_rebalance(tree_t T, tnode_t n) {
   int lh, rh, d, h; for (n = n->p; n; n = n->p) {
   lh = __lh(n); rh = __rh(n); h  = __max(lh, rh) + 1; d  = lh - rh;
   if (n->h == h) { break; } n->h = h;
