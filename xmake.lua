@@ -82,4 +82,4 @@ target('u', function()
   add_rules('generic')
 end)
 
-includes('dev', 'tests')
+includes('dev', 'lisp', 'tests')
