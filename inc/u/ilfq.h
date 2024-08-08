@@ -27,12 +27,14 @@
  *
  * */
 
-#ifndef U_ILFQ_H__
-#define U_ILFQ_H__
+#pragma once
 
-#ifdef __cplusplus
+#ifndef U_ILFQ_H__
+#  define U_ILFQ_H__
+
+#  ifdef __cplusplus
 extern "C" {
-#endif
+#  endif
 
 /***************************************************************************************************
  * Type
@@ -54,45 +56,45 @@ extern void*        lfq_pop       (u_lfq_ref_t);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#define u_lfq_new()                                                                                \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_new();                                                                                     \
-  })
+#  define u_lfq_new()                                                                              \
+    ({                                                                                             \
+      ;                                                                                            \
+      lfq_new();                                                                                   \
+    })
 
-#define u_lfq_len(self)                                                                            \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_len(self);                                                                                 \
-  })
+#  define u_lfq_len(self)                                                                          \
+    ({                                                                                             \
+      ;                                                                                            \
+      lfq_len(self);                                                                               \
+    })
 
-#define u_lfq_is_empty(self)                                                                       \
-  ({                                                                                               \
-    ;                                                                                              \
-    0 == lfq_len(self);                                                                            \
-  })
+#  define u_lfq_is_empty(self)                                                                     \
+    ({                                                                                             \
+      ;                                                                                            \
+      0 == lfq_len(self);                                                                          \
+    })
 
-#define u_lfq_cleanup(self)                                                                        \
-  do {                                                                                             \
-    lfq_cleanup(self);                                                                             \
+#  define u_lfq_cleanup(self)                                                                      \
+    do {                                                                                           \
+      lfq_cleanup(self);                                                                           \
                                                                                                    \
-    self = nullptr;                                                                                \
-  } while (0)
+      self = nullptr;                                                                              \
+    } while (0)
 
-#define u_lfq_pop(self, type)                                                                      \
-  ({                                                                                               \
-    ;                                                                                              \
-    (type) lfq_pop(self);                                                                          \
-  })
+#  define u_lfq_pop(self, type)                                                                    \
+    ({                                                                                             \
+      ;                                                                                            \
+      (type) lfq_pop(self);                                                                        \
+    })
 
-#define u_lfq_put(self, obj)                                                                       \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_put(self, obj);                                                                            \
-  })
+#  define u_lfq_put(self, obj)                                                                     \
+    ({                                                                                             \
+      ;                                                                                            \
+      lfq_put(self, obj);                                                                          \
+    })
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 } /* extern "C" */
-#endif
+#  endif
 
 #endif /* !U_ILFQ_H__ */
