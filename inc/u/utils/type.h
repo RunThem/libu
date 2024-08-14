@@ -108,12 +108,12 @@ typedef fnt(u_hash_fn, u_hash_t, cu8_t*, size_t);
 typedef struct {
   u32_t type;
   u32_t len;
-  u8_t val[0];
+  u8_t val[];
 } u_tlv_t;
 
 typedef struct {
   u32_t len;
-  u8_t buf[0];
+  u8_t buf[];
 } u_msg_t;
 
 #  ifdef __cplusplus
