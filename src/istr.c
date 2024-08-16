@@ -27,6 +27,11 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
+thread_local byte_t chars[2] = {0, '\0'};
+
+/***************************************************************************************************
+ * Type
+ **************************************************************************************************/
 typedef struct [[gnu::packed]] {
   /* SSO */
   byte_t buff[48];
@@ -38,94 +43,42 @@ typedef struct [[gnu::packed]] {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri inline void __str_ins(u_str_t _self, int idx, byte_t* ptr, int len) {
-  str_ref_t self = nullptr;
-  byte_t* buff   = nullptr;
+pri inline ret_t str_resize(str_ref_t self, int len) {
+  byte_t* buff = nullptr;
 
-  self = u_container_of(_self, str_t, len);
+  self->cap = u_align_of_2pow(len + self->len);
 
-  /* resize */
-  if (len > self->cap - self->len) {
-    self->cap = u_align_of_2pow(len + self->len);
-
-    if (self->ptr == self->buff) {
-      self->ptr = u_zalloc(self->cap + 1);
-      memcpy(self->ptr, ptr, self->len);
-    } else {
-      buff = u_realloc(self->ptr, self->cap);
-      u_end_if(buff);
-
-      self->ptr = ptr;
-    }
+  if (self->ptr == self->buff) {
+    buff = u_zalloc(self->cap + 1);
+    memcpy(buff, self->ptr, self->len);
+  } else {
+    buff = u_realloc(self->ptr, self->cap);
+    u_end_if(buff);
   }
 
-  if (idx != self->len) {
-    memmove(&self->ptr[idx + len], &self->ptr[idx], self->len - idx);
-  }
-
-  memcpy(&self->ptr[idx], ptr, len);
-
-  self->len += len;
+  self->ptr            = buff;
   self->ptr[self->len] = '\0';
 
-  return;
-
-end:
-}
-
-pri inline int __str_cmp(u_str_t self, byte_t* ptr, int len) {
-  u_chk_if(len == 0, 0);
-
-  if (self->len == len) {
-    return strncmp(self->ptr, ptr, len);
-  }
-
-  return self->len > len ? 1 : -1;
-}
-
-pri inline int __str_prefix(u_str_t _self, byte_t* ptr, int len) {
-  str_ref_t self = nullptr;
-
-  u_chk_if(len == 0, false);
-  u_chk_if(len > _self->len, false);
-
-  self = u_container_of(_self, str_t, len);
-
-  return 0 == memcmp(&self->ptr[0], ptr, len);
-}
-
-pri inline int __str_suffix(u_str_t _self, byte_t* ptr, int len) {
-  str_ref_t self = nullptr;
-
-  u_chk_if(len == 0, false);
-  u_chk_if(len > _self->len, false);
-
-  self = u_container_of(_self, str_t, len);
-
-  return 0 == memcmp(&self->ptr[self->len - len], ptr, len);
-}
-
-pri inline int __str_find(u_str_t _self, byte_t* ptr, int len) {
-  str_ref_t self = nullptr;
-  byte_t* idx    = nullptr;
-
-  u_chk_if(len == 0, false);
-  u_chk_if(len > _self->len, false);
-
-  self = u_container_of(_self, str_t, len);
-
-  if (len == 1) {
-    idx = strchr(self->ptr, ptr[0]);
-  } else {
-    idx = strstr(self->ptr, ptr);
-  }
-
-  u_end_if(idx);
-
-  return (int)(idx - self->ptr);
+  return 0;
 
 end:
   return -1;
+}
+
+pri void inline str_parse(byte_t** ptr, int* len, any_t str, int type) {
+  u_die_if(type == 0);
+
+  if (type == 1) {
+    chars[0] = (char)(uintptr_t)str;
+    *ptr     = chars;
+    *len     = 1;
+  } else if (type == 2) {
+    *ptr = str;
+    *len = (int)strlen(str);
+  } else if (type == 3) {
+    *ptr = (byte_t*)((u_str_t)str)->ptr;
+    *len = ((u_str_t)str)->len;
+  }
 }
 
 pub u_str_t str_new() {
@@ -181,45 +134,6 @@ pub void str_slen(u_str_t _self, int len) {
 
   self->len            = len;
   self->ptr[self->len] = '\0';
-}
-
-pub void str_ins_str(u_str_t self, int idx, u_str_t str) {
-  u_chk_if(self);
-  u_chk_if(idx > self->len);
-  u_chk_if(str);
-  u_chk_if(str->len == 0);
-
-  __str_ins(self, idx, (byte_t*)str->ptr, str->len);
-}
-
-pub void str_ins_cstr(u_str_t self, int idx, u_cstr_t cstr) {
-  u_chk_if(self);
-  u_chk_if(idx > self->len);
-  u_chk_if(cstr);
-  u_chk_if(cstr[0] == '\0');
-
-  __str_ins(self, idx, cstr, (int)strlen(cstr));
-}
-
-pub void str_ins_char(u_str_t self, int idx, char ch) {
-  u_chk_if(self);
-  u_chk_if(idx > self->len);
-
-  __str_ins(self, idx, &ch, 1);
-}
-
-pub int str_cmp_str(u_str_t self, u_str_t str) {
-  u_chk_if(self, 0);
-  u_chk_if(str, 0);
-
-  return __str_cmp(self, (byte_t*)str->ptr, str->len);
-}
-
-pub int str_cmp_cstr(u_str_t self, u_cstr_t cstr) {
-  u_chk_if(self, 0);
-  u_chk_if(cstr, 0);
-
-  return __str_cmp(self, cstr, (int)strlen(cstr));
 }
 
 pub void str_2lower(u_str_t _self) {
@@ -283,62 +197,116 @@ pub void str_rtrim(u_str_t _self) {
   self->ptr[self->len] = '\0';
 }
 
-pub bool str_prefix_str(u_str_t self, u_str_t str) {
-  u_chk_if(self, false);
-  u_chk_if(str, false);
+pub void str_ins(u_str_t _self, int idx, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
+  int ret        = 0;
 
-  return __str_prefix(self, (byte_t*)str->ptr, self->len);
+  u_chk_if(_self);
+  u_chk_if(idx > _self->len);
+  u_chk_if(str);
+
+  str_parse(&ptr, &len, str, type);
+
+  self = u_container_of(_self, str_t, len);
+
+  /* resize */
+  if (len > self->cap - self->len) {
+    ret = str_resize(self, len);
+    u_end_if(ret != 0);
+  }
+
+  if (idx != self->len) {
+    memmove(&self->ptr[idx + len], &self->ptr[idx], self->len - idx);
+  }
+
+  memcpy(&self->ptr[idx], ptr, len);
+
+  self->len += len;
+  self->ptr[self->len] = '\0';
+
+  return;
+
+end:
 }
 
-pub bool str_prefix_cstr(u_str_t self, u_cstr_t cstr) {
-  u_chk_if(self, false);
-  u_chk_if(cstr, false);
+pub int str_cmp(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  return __str_prefix(self, cstr, (int)strlen(cstr));
+  u_chk_if(_self, -2);
+  u_chk_if(str, -2);
+
+  str_parse(&ptr, &len, str, type);
+
+  self = u_container_of(_self, str_t, len);
+
+  if (self->len == len) {
+    return strncmp(self->ptr, ptr, len);
+  }
+
+  return self->len > len ? 1 : -1;
 }
 
-pub bool str_prefix_char(u_str_t self, char ch) {
-  u_chk_if(self, false);
+pub bool str_prefix(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  return __str_prefix(self, &ch, 1);
+  u_chk_if(_self, 0);
+  u_chk_if(str, 0);
+
+  str_parse(&ptr, &len, str, type);
+  u_end_if(len == 0 && len > self->len);
+
+  self = u_container_of(_self, str_t, len);
+
+  return memcmp(&self->ptr[0], ptr, len) == 0;
+
+end:
+  return false;
 }
 
-pub bool str_suffix_str(u_str_t self, u_str_t str) {
-  u_chk_if(self, false);
-  u_chk_if(str, false);
+pub bool str_suffix(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  return __str_suffix(self, (byte_t*)str->ptr, self->len);
+  u_chk_if(_self, 0);
+  u_chk_if(str, 0);
+
+  str_parse(&ptr, &len, str, type);
+  u_end_if(len == 0 && len > self->len);
+
+  self = u_container_of(_self, str_t, len);
+
+  return memcmp(&self->ptr[self->len - len], ptr, len) == 0;
+
+end:
+  return false;
 }
 
-pub bool str_suffix_cstr(u_str_t self, u_cstr_t cstr) {
-  u_chk_if(self, false);
-  u_chk_if(cstr, false);
+pub int str_find(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* idx    = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  return __str_suffix(self, cstr, (int)strlen(cstr));
-}
+  u_chk_if(_self, -1);
+  u_chk_if(str, -1);
 
-pub bool str_suffix_char(u_str_t self, char ch) {
-  u_chk_if(self, false);
+  str_parse(&ptr, &len, str, type);
+  u_end_if(len == 0 && len > self->len);
 
-  return __str_suffix(self, &ch, 1);
-}
+  self = u_container_of(_self, str_t, len);
 
-pub bool str_find_str(u_str_t self, u_str_t str) {
-  u_chk_if(self, false);
-  u_chk_if(str, false);
+  idx = strstr(self->ptr, ptr);
+  u_end_if(idx);
 
-  return __str_find(self, (byte_t*)str->ptr, self->len);
-}
+  return (int)(idx - self->ptr);
 
-pub bool str_find_cstr(u_str_t self, u_cstr_t cstr) {
-  u_chk_if(self, false);
-  u_chk_if(cstr, false);
-
-  return __str_find(self, cstr, (int)strlen(cstr));
-}
-
-pub bool str_find_char(u_str_t self, char ch) {
-  u_chk_if(self, false);
-
-  return __str_find(self, &ch, 1);
+end:
+  return -1;
 }
