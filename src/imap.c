@@ -80,7 +80,7 @@ static inline void tree_node_dump(tnode_t n) {
 }
 
 /* fnv 64-bit hash function */
-pri inline u_hash_t hash_fnv64bit(cu8_t* ptr, size_t len) {
+pri inline u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
   u_hash_t hash = 1469'5981'0393'4665'6037U;
 
   for (size_t i = 0; i < len; ++i) {

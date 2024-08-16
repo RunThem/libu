@@ -56,16 +56,16 @@ fn_compe_def(u128_t, (x == y), (x > y));
  * Hahs function
  **************************************************************************************************/
 /* clang-format off */
-pub inline u_hash_t u_hash_int8bit(cu8_t* ptr, size_t len)  { return (u_hash_t) * (u8_t*)ptr; }
-pub inline u_hash_t u_hash_int16bit(cu8_t* ptr, size_t len) { return (u_hash_t) * (u16_t*)ptr; }
-pub inline u_hash_t u_hash_int32bit(cu8_t* ptr, size_t len) { return (u_hash_t) * (u32_t*)ptr; }
-pub inline u_hash_t u_hash_int64bit(cu8_t* ptr, size_t len) { return (u_hash_t) * (u64_t*)ptr; }
+pub inline u_hash_t u_hash_int8bit(const u8_t* ptr, size_t len)  { return (u_hash_t) * (u8_t*)ptr; }
+pub inline u_hash_t u_hash_int16bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u16_t*)ptr; }
+pub inline u_hash_t u_hash_int32bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u32_t*)ptr; }
+pub inline u_hash_t u_hash_int64bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u64_t*)ptr; }
 /* clang-format on */
 
 /***************************************************************************************************
  * Display
  **************************************************************************************************/
-pub void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
+pub void __printb(u_cstr_t name, const u8_t* mem, size_t size) {
   u8_t byte = 0;
 
 #if 0
@@ -95,7 +95,7 @@ pub void __printb(u_cstr_t name, cu8_t* mem, size_t size) {
 #endif
 }
 
-pub void __printh(u_cstr_t name, cu8_t* mem, size_t size) {
+pub void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
   char buf[17] = {0};
   size_t i     = 0;
   size_t pos   = 0;

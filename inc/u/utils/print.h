@@ -31,8 +31,8 @@
 extern "C" {
 #  endif
 
-extern void __printh(u_cstr_t name, cu8_t* mem, size_t size);
-extern void __printb(u_cstr_t name, cu8_t* mem, size_t size);
+extern void __printh(u_cstr_t name, const u8_t* mem, size_t size);
+extern void __printb(u_cstr_t name, const u8_t* mem, size_t size);
 
 #  define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
 #  define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
