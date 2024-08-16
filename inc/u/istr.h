@@ -68,6 +68,10 @@ extern bool    str_prefix_char (u_str_t, char);
 extern bool    str_suffix_str  (u_str_t, u_str_t);
 extern bool    str_suffix_cstr (u_str_t, u_cstr_t);
 extern bool    str_suffix_char (u_str_t, char);
+
+extern bool    str_find_str    (u_str_t, u_str_t);
+extern bool    str_find_cstr   (u_str_t, u_cstr_t);
+extern bool    str_find_char   (u_str_t, char);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -170,6 +174,17 @@ extern bool    str_suffix_char (u_str_t, char);
           char*: str_suffix_cstr,                                                                  \
           int: str_suffix_char,                                                                    \
           char: str_suffix_char);                                                                  \
+                                                                                                   \
+      __fn(self, str);                                                                             \
+    })
+
+#  define u_str_find(self, str)                                                                    \
+    ({                                                                                             \
+      auto __fn = _Generic(str,                                                                    \
+          u_str_t: str_find_str,                                                                   \
+          char*: str_find_cstr,                                                                    \
+          int: str_find_char,                                                                      \
+          char: str_find_char);                                                                    \
                                                                                                    \
       __fn(self, str);                                                                             \
     })

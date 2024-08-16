@@ -92,5 +92,13 @@ int main(int argc, const u_cstr_t argv[]) {
   u_dbg("suffix = %d", u_str_suffix(s, ",hello"));
   u_dbg("suffix = %d", u_str_suffix(s, ",ello"));
 
+  u_dbg("find = %d", u_str_find(s, 'h'));
+  u_dbg("find = %d", u_str_find(s, 'l'));
+  u_dbg("find = %d", u_str_find(s, 'o'));
+
+  u_dbg("find = %d", u_str_find(s, "he"));
+  u_dbg("find = %d", u_str_find(s, "el"));
+  u_dbg("find = %d", u_str_find(s, "lo"));
+
   return EXIT_SUCCESS;
 }

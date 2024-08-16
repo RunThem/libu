@@ -105,6 +105,29 @@ pri inline int __str_suffix(u_str_t _self, byte_t* ptr, int len) {
   return 0 == memcmp(&self->ptr[self->len - len], ptr, len);
 }
 
+pri inline int __str_find(u_str_t _self, byte_t* ptr, int len) {
+  str_ref_t self = nullptr;
+  byte_t* idx    = nullptr;
+
+  u_chk_if(len == 0, false);
+  u_chk_if(len > _self->len, false);
+
+  self = u_container_of(_self, str_t, len);
+
+  if (len == 1) {
+    idx = strchr(self->ptr, ptr[0]);
+  } else {
+    idx = strstr(self->ptr, ptr);
+  }
+
+  u_end_if(idx);
+
+  return (int)(idx - self->ptr);
+
+end:
+  return -1;
+}
+
 pub u_str_t str_new() {
   str_ref_t self = nullptr;
 
@@ -298,4 +321,24 @@ pub bool str_suffix_char(u_str_t self, char ch) {
   u_chk_if(self, false);
 
   return __str_suffix(self, &ch, 1);
+}
+
+pub bool str_find_str(u_str_t self, u_str_t str) {
+  u_chk_if(self, false);
+  u_chk_if(str, false);
+
+  return __str_find(self, (byte_t*)str->ptr, self->len);
+}
+
+pub bool str_find_cstr(u_str_t self, u_cstr_t cstr) {
+  u_chk_if(self, false);
+  u_chk_if(cstr, false);
+
+  return __str_find(self, cstr, (int)strlen(cstr));
+}
+
+pub bool str_find_char(u_str_t self, char ch) {
+  u_chk_if(self, false);
+
+  return __str_find(self, &ch, 1);
 }
