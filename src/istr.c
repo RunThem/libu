@@ -24,10 +24,17 @@
 
 #include <u/u.h>
 
+#ifdef USE_TGC
+#  include <tgc.h>
+#endif
+
 /***************************************************************************************************
- * Type
+ * Let
  **************************************************************************************************/
 thread_local byte_t chars[2] = {0, '\0'};
+#ifdef USE_TGC
+thread_local tgc_t tgc = {};
+#endif
 
 /***************************************************************************************************
  * Type
@@ -43,18 +50,42 @@ typedef struct [[gnu::packed]] {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
+#ifdef USE_TGC
+[[gnu::constructor]]
+pri void str_init() {
+  int _ = {};
+
+  tgc_start(&tgc, &_);
+}
+
+[[gnu::destructor]]
+pri void str_deinit() {
+  tgc_stop(&tgc);
+}
+#endif
+
 pri inline ret_t str_resize(str_ref_t self, int len) {
   byte_t* buff = nullptr;
 
   self->cap = u_align_of_2pow(len + self->len);
 
+#ifdef USE_TGC
+  if (self->ptr == self->buff) {
+    buff = tgc_calloc(&tgc, sizeof(1), self->cap + 1);
+    memcpy(buff, self->ptr, self->len);
+  } else {
+    buff = tgc_realloc(&tgc, self->ptr, self->cap + 1);
+    u_end_if(buff);
+  }
+#else
   if (self->ptr == self->buff) {
     buff = u_zalloc(self->cap + 1);
     memcpy(buff, self->ptr, self->len);
   } else {
-    buff = u_realloc(self->ptr, self->cap);
+    buff = u_realloc(self->ptr, self->cap + 1);
     u_end_if(buff);
   }
+#endif
 
   self->ptr            = buff;
   self->ptr[self->len] = '\0';
@@ -84,7 +115,12 @@ pri void inline str_parse(byte_t** ptr, int* len, any_t str, int type) {
 pub u_str_t str_new() {
   str_ref_t self = nullptr;
 
+#ifdef USE_TGC
+  self = tgc_calloc(&tgc, 1, sizeof(str_t));
+#else
   self = u_talloc(str_t);
+#endif
+
   u_end_if(self);
 
   self->ptr = self->buff;
@@ -117,11 +153,19 @@ pub void str_cleanup(u_str_t _self) {
 
   self = u_container_of(_self, str_t, len);
 
+#ifdef USE_TGC
+  if (self->ptr != self->buff) {
+    tgc_free(&tgc, self->ptr);
+  }
+
+  tgc_free(&tgc, self);
+#else
   if (self->ptr != self->buff) {
     u_free(self->ptr);
   }
 
   u_free(self);
+#endif
 }
 
 pub void str_slen(u_str_t _self, int len) {
