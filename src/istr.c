@@ -241,6 +241,37 @@ pub void str_rtrim(u_str_t _self) {
   self->ptr[self->len] = '\0';
 }
 
+pub void str_trim(u_str_t _self) {
+  str_ref_t self = nullptr;
+  int l          = 0;
+  int r          = 0;
+
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+
+  for (l = 0; l < self->len && isspace(self->ptr[l]); l++) {
+  }
+
+  u_end_if(l == self->len);
+
+  for (r = self->len - 1; r >= 0 && isspace(self->ptr[r]); r--) {
+  }
+
+  if (l != 0) {
+    memmove(&self->ptr[0], &self->ptr[l], r - l + 1);
+  }
+
+  self->len            = r - l + 1;
+  self->ptr[self->len] = '\0';
+
+  return;
+
+end:
+  self->len            = 0;
+  self->ptr[self->len] = '\0';
+}
+
 pub void str_ins(u_str_t _self, int idx, any_t str, int type) {
   str_ref_t self = nullptr;
   byte_t* ptr    = nullptr;

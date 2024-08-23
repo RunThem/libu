@@ -59,6 +59,7 @@ extern void    str_2upper      (u_str_t);
 
 extern void    str_ltrim       (u_str_t);
 extern void    str_rtrim       (u_str_t);
+extern void    str_trim        (u_str_t);
 
 extern void    str_ins         (u_str_t, int, any_t, int);
 extern int     str_cmp         (u_str_t, any_t, int);
@@ -81,6 +82,7 @@ extern int     str_find        (u_str_t, any_t, int);
                                                                                                    \
       self;                                                                                        \
     })
+/* clang-format on */
 
 #  define u_str_clear(self)                                                                        \
     do {                                                                                           \
@@ -119,26 +121,36 @@ extern int     str_find        (u_str_t, any_t, int);
       str_rtrim(self);                                                                             \
     } while (0)
 
+#  define u_str_trim(self)                                                                         \
+    do {                                                                                           \
+      str_trim(self);                                                                              \
+    } while (0)
+
 #  define u_str_cmp(self, str)                                                                     \
     ({                                                                                             \
+      ;                                                                                            \
       str_cmp(self, (any_t)(uintptr_t)str, str_type(str));                                         \
     })
 
 #  define u_str_prefix(self, str)                                                                  \
     ({                                                                                             \
+      ;                                                                                            \
       str_prefix(self, (any_t)(uintptr_t)str, str_type(str));                                      \
     })
 
 #  define u_str_suffix(self, str)                                                                  \
     ({                                                                                             \
+      ;                                                                                            \
       str_suffix(self, (any_t)(uintptr_t)str, str_type(str));                                      \
     })
 
 #  define u_str_find(self, str)                                                                    \
     ({                                                                                             \
+      ;                                                                                            \
       str_find(self, (any_t)(uintptr_t)str, str_type(str));                                        \
     })
 
+/* clang-format off */
 #  define u_str_ins(self, idx, ...)                                                                \
     do {                                                                                           \
       u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
@@ -162,7 +174,6 @@ extern int     str_find        (u_str_t, any_t, int);
         str_ins(self, self->len, __buff, 2);                                                       \
       )                                                                                            \
     } while (0)
-
 /* clang-format on */
 
 #  ifdef __cplusplus
