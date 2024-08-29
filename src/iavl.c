@@ -436,7 +436,7 @@ pub size_t avl_len(any_t _self) {
   return self->len;
 }
 
-pub bool avl_exist(any_t _self, any_t key) {
+pub bool avl_is_exist(any_t _self, any_t key) {
   avl_ref_t self  = (avl_ref_t)_self;
   node_ref_t node = self->root;
   ret_t result    = 0;

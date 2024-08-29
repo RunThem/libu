@@ -232,7 +232,7 @@ pub inline size_t map_len(any_t _self) {
   return self->len;
 }
 
-pub bool map_exist(any_t _self, any_t key) {
+pub bool map_is_exist(any_t _self, any_t key) {
   map_ref_t self = (map_ref_t)_self;
   tnode_t node   = nullptr;
   u_hash_t hash  = 0;

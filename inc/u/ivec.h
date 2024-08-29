@@ -44,7 +44,7 @@ typedef struct {
 extern any_t  vec_new       (size_t);
 extern size_t vec_len       (any_t);
 extern size_t vec_cap       (any_t);
-extern bool   vec_exist     (any_t, int);
+extern bool   vec_is_exist  (any_t, int);
 extern void   vec_clear     (any_t);
 extern void   vec_cleanup   (any_t);
 extern any_t  vec_at        (any_t, int);
@@ -107,7 +107,7 @@ extern bool   vec_for       (any_t, int*, any_t);
                                                                                                    \
       int _a = idx;                                                                                \
                                                                                                    \
-      vec_exist(self, _a);                                                                         \
+      vec_is_exist(self, _a);                                                                      \
     })
 
 #  define u_vec_clear(self)                                                                        \

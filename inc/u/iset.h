@@ -81,7 +81,7 @@ typedef struct {
                                                                                                    \
       u_types(self, 0) __a = item;                                                                 \
                                                                                                    \
-      avl_exist(self, &__a);                                                                       \
+      avl_is_exist(self, &__a);                                                                    \
     })
 
 #  define u_set_clear(self)                                                                        \

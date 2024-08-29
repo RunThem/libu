@@ -101,7 +101,7 @@ pub void vec_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-pub bool vec_exist(any_t _self, int idx) {
+pub bool vec_is_exist(any_t _self, int idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, false);

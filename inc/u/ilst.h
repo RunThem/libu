@@ -52,7 +52,7 @@ extern any_t  lst_new       (size_t);
 extern bool   lst_clear     (any_t, any_t);
 extern void   lst_cleanup   (any_t);
 extern size_t lst_len       (any_t);
-extern bool   lst_exist     (any_t, any_t);
+extern bool   lst_is_exist  (any_t, any_t);
 extern any_t  lst_head      (any_t);
 extern any_t  lst_tail      (any_t);
 extern any_t  lst_prev      (any_t, any_t);
@@ -108,7 +108,7 @@ extern any_t  lst_for       (any_t);
                                                                                                    \
       u_types(self, 0)* __a = ptr;                                                                 \
                                                                                                    \
-      lst_exist(self, __a);                                                                        \
+      lst_is_exist(self, __a);                                                                     \
     })
 
 #  define u_list_clear(self, it)                                                                   \

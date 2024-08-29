@@ -42,7 +42,7 @@ typedef struct {
 /* clang-format off */
 extern any_t  map_new       (size_t, size_t, u_hash_fn);
 extern size_t map_len       (any_t);
-extern bool   map_exist     (any_t, any_t);
+extern bool   map_is_exist  (any_t, any_t);
 extern void   map_clear     (any_t);
 extern void   map_cleanup   (any_t);
 extern any_t  map_at        (any_t, any_t);
@@ -101,7 +101,7 @@ extern bool   map_for       (any_t, any_t, any_t);
       u_types(self, 0) __a = key;                                                                  \
       u_types(self, 1) __b = {};                                                                   \
                                                                                                    \
-      map_exist(self, &__a);                                                                       \
+      map_is_exist(self, &__a);                                                                    \
     })
 
 #  define u_map_clear(self)                                                                        \

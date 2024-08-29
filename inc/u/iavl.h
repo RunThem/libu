@@ -43,7 +43,7 @@ typedef struct {
 /* clang-format off */
 extern any_t    avl_new       (size_t, size_t, u_cmp_fn);
 extern size_t   avl_len       (any_t);
-extern bool     avl_exist     (any_t, any_t);
+extern bool     avl_is_exist  (any_t, any_t);
 extern void     avl_clear     (any_t);
 extern void     avl_cleanup   (any_t);
 extern any_t    avl_at        (any_t, any_t);
@@ -103,7 +103,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
                                                                                                    \
       u_types(self, 0) __a = key;                                                                  \
                                                                                                    \
-      avl_exist(self, &__a);                                                                       \
+      avl_is_exist(self, &__a);                                                                    \
     })
 
 #  define u_tree_clear(self)                                                                       \

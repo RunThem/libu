@@ -99,7 +99,7 @@ pub size_t lst_len(any_t _self) {
   return self->len;
 }
 
-pub bool lst_exist(any_t _self, any_t ptr) {
+pub bool lst_is_exist(any_t _self, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
 
