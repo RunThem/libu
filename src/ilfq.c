@@ -20,6 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
+ * doc:
+ *    [](https://coolshell.cn/articles/8239.html)
+ *    [](https://github.com/supermartian/lockfree-queue)
+ *    [](https://github.com/golang-design/lockfree/blob/master/queue.go)
+ *
  * */
 
 #include <u/u.h>
@@ -58,13 +63,15 @@ end:
 }
 
 pub void lfq_cleanup(u_lfq_ref_t _self) {
-  lfq_ref_t self = (lfq_ref_t)_self;
+  lfq_ref_t self  = (lfq_ref_t)_self;
+  node_ref_t node = nullptr;
 
   u_chk_if(self);
   u_chk_if(u_atomic_pop(&self->len) == 0);
 
-  while (lfq_pop(_self))
-    ;
+  while ((node = lfq_pop(_self))) {
+    u_free(node);
+  }
 
   u_free(self);
 }
@@ -72,47 +79,9 @@ pub void lfq_cleanup(u_lfq_ref_t _self) {
 pub size_t lfq_len(u_lfq_ref_t _self) {
   lfq_ref_t self = (lfq_ref_t)_self;
 
-  u_chk_if(self, 0);
+  u_chk_if(self, -1);
 
   return u_atomic_pop(&self->len);
-}
-
-pub bool lfq_put(u_lfq_ref_t _self, any_t obj) {
-  lfq_ref_t self  = (lfq_ref_t)_self;
-  node_ref_t tail = nullptr;
-  node_ref_t next = nullptr;
-  node_ref_t node = nullptr;
-
-  u_chk_if(self, false);
-  u_chk_if(obj, false);
-
-  node = u_talloc(node_t);
-  u_end_if(node);
-
-  node->item = obj;
-  node->next = nullptr;
-
-  while (true) {
-    tail = u_atomic_pop(&self->tail);
-    next = u_atomic_pop(&tail->next);
-
-    u_cnt_if(u_atomic_pop(&self->tail) != tail);
-
-    if (next != nullptr) {
-      u_atomic_cswap(&self->tail, tail, next);
-      continue;
-    }
-
-    u_brk_if(u_atomic_cswap(&tail->next, next, node));
-  }
-
-  u_atomic_cswap(&self->tail, tail, node);
-  u_atomic_add(&self->len, 1);
-
-  return true;
-
-end:
-  return false;
 }
 
 pub any_t lfq_pop(u_lfq_ref_t _self) {
@@ -148,4 +117,42 @@ pub any_t lfq_pop(u_lfq_ref_t _self) {
 
 end:
   return nullptr;
+}
+
+pub bool lfq_put(u_lfq_ref_t _self, any_t obj) {
+  lfq_ref_t self  = (lfq_ref_t)_self;
+  node_ref_t tail = nullptr;
+  node_ref_t next = nullptr;
+  node_ref_t node = nullptr;
+
+  u_chk_if(self, false);
+  u_chk_if(obj, false);
+
+  node = u_talloc(node_t);
+  u_end_if(node);
+
+  node->item = obj;
+  node->next = nullptr;
+
+  while (true) {
+    tail = u_atomic_pop(&self->tail);
+    next = u_atomic_pop(&tail->next);
+
+    u_cnt_if(u_atomic_pop(&self->tail) != tail);
+
+    if (next) {
+      u_atomic_cswap(&self->tail, tail, next);
+      continue;
+    }
+
+    u_brk_if(u_atomic_cswap(&tail->next, next, node));
+  }
+
+  u_atomic_cswap(&self->tail, tail, node);
+  u_atomic_add(&self->len, 1);
+
+  return true;
+
+end:
+  return false;
 }

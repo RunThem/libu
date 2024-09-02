@@ -41,20 +41,16 @@ typedef struct {
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern any_t    avl_new       (size_t, size_t, u_cmp_fn);
-extern size_t   avl_len       (any_t);
-extern bool     avl_is_exist  (any_t, any_t);
-extern void     avl_clear     (any_t);
-extern void     avl_cleanup   (any_t);
-extern any_t    avl_at        (any_t, any_t);
-extern void     avl_min       (any_t, any_t, any_t);
-extern void     avl_max       (any_t, any_t, any_t);
-extern void     avl_pop       (any_t, any_t, any_t);
-extern void     avl_put       (any_t, any_t, any_t);
-extern u_cmp_fn avl_fn        (any_t);
-extern bool     avl_for_init  (any_t, bool);
-extern void     avl_for_end   (any_t);
-extern bool     avl_for       (any_t, any_t, any_t);
+extern any_t avl_new      (i64_t, i64_t, u_cmp_fn);
+extern i64_t avl_len      (any_t);
+extern bool  avl_is_exist (any_t, any_t);
+extern void  avl_clear    (any_t);
+extern void  avl_cleanup  (any_t);
+extern any_t avl_at       (any_t, any_t);
+extern void  avl_pole     (any_t, any_t, any_t, u_order_e);
+extern void  avl_pop      (any_t, any_t, any_t);
+extern void  avl_put      (any_t, any_t, any_t);
+extern bool  avl_for      (any_t, any_t, any_t, any_t*, u_order_e, any_t);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -65,20 +61,18 @@ extern bool     avl_for       (any_t, any_t, any_t);
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#  define u_tree_init(self, ...)                                                                   \
+#  define u_tree_init(self, cmp_fn)                                                                \
     do {                                                                                           \
       u_check(self, 2, __u_tree_ref_t);                                                            \
                                                                                                    \
-      self = avl_new(sizeof(u_types(self, 0)),                                                     \
-                     sizeof(u_types(self, 1)),                                                     \
-                     u_va_0th(nullptr, __VA_ARGS__));                                              \
+      self = avl_new(sizeof(u_types(self, 0)), sizeof(u_types(self, 1)), cmp_fn);                  \
     } while (0)
 
-#  define u_tree_new(K, V, ...)                                                                    \
+#  define u_tree_new(K, V, cmp_fn)                                                                 \
     ({                                                                                             \
       u_tree_t(K, V) self = nullptr;                                                               \
                                                                                                    \
-      u_tree_init(self, __VA_ARGS__);                                                              \
+      self = avl_new(sizeof(K), sizeof(V), cmp_fn);                                                \
                                                                                                    \
       self;                                                                                        \
     })
@@ -134,7 +128,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
                                                                                                    \
         __b = avl_at(self, &__a);                                                                  \
                                                                                                    \
-        if (__b != nullptr) {                                                                      \
+        if (__b) {                                                                                 \
           *__b = u_va_at(0, __VA_ARGS__);                                                          \
           __ret = true;                                                                            \
         }                                                                                          \
@@ -151,7 +145,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
                                                                                                    \
         __b = avl_at(self, &__a);                                                                  \
                                                                                                    \
-        if (__b == nullptr) {                                                                      \
+        if (!__b) {                                                                                \
           __b = &__it;                                                                             \
         }                                                                                          \
                                                                                                    \
@@ -161,12 +155,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
 /* clang-format on */
 
 #  define u_tree_try(self, key)                                                                    \
-    for (u_types(self, 1)* it = ({                                                                 \
-           u_types(self, 0) __key = key;                                                           \
-           avl_at(self, &__key);                                                                   \
-         });                                                                                       \
-         it != nullptr;                                                                            \
-         it = nullptr)
+    for (u_types(self, 1) __key = key, *it = avl_at(self, &__key); it; it = nullptr)
 
 #  define u_tree_min(self)                                                                         \
     ({                                                                                             \
@@ -177,7 +166,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
         u_types(self, 1) val;                                                                      \
       } __ = {};                                                                                   \
                                                                                                    \
-      avl_min(self, &__.key, &__.val);                                                             \
+      avl_pole(self, &__.key, &__.val, U_ORDER_ASCEND);                                            \
                                                                                                    \
       __;                                                                                          \
     })
@@ -191,7 +180,7 @@ extern bool     avl_for       (any_t, any_t, any_t);
         u_types(self, 1) val;                                                                      \
       } __ = {};                                                                                   \
                                                                                                    \
-      avl_max(self, &__.key, &__.val);                                                             \
+      avl_pole(self, &__.key, &__.val, U_ORDER_DESCEND);                                           \
                                                                                                    \
       __;                                                                                          \
     })
@@ -218,23 +207,11 @@ extern bool     avl_for       (any_t, any_t, any_t);
       avl_put(self, &__a, &__b);                                                                   \
     } while (0)
 
-#  define u_tree_fn(self, k1, k2)                                                                  \
-    ({                                                                                             \
-      u_check(self, 2, __u_tree_ref_t);                                                            \
-                                                                                                   \
-      u_types(self, 0) __a = k1;                                                                   \
-      u_types(self, 1) __b = k2;                                                                   \
-                                                                                                   \
-      avl_fn(self)(&__a, &__b);                                                                    \
-    })
-
-#  define u_tree_for(self, key, val)                                                               \
-    for (u_types(self, 0) key = {}; avl_for_init(self, 1); avl_for_end(self))                      \
-      for (u_types(self, 1) val = {}; avl_for(self, &key, &val);)
-
-#  define u_tree_rfor(self, key, val)                                                              \
-    for (u_types(self, 0) key = {}; avl_for_init(self, 0); avl_for_end(self))                      \
-      for (u_types(self, 1) val = {}; avl_for(self, &key, &val);)
+#  define u_tree_for(self, key, val, ...)                                                          \
+    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _;)                              \
+      for (u_types(self, 1) val = {};                                                              \
+           avl_for(self, &key, &val, (any_t*)&__iter, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);   \
+           _ = nullptr)
 
 #  ifdef __cplusplus
 } /* extern "C" */

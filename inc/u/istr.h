@@ -63,8 +63,8 @@ extern void    str_trim        (u_str_t);
 
 extern void    str_ins         (u_str_t, int, any_t, int);
 extern int     str_cmp         (u_str_t, any_t, int);
-extern bool    str_prefix      (u_str_t, any_t, int);
-extern bool    str_suffix      (u_str_t, any_t, int);
+extern bool    str_is_prefix   (u_str_t, any_t, int);
+extern bool    str_is_suffix   (u_str_t, any_t, int);
 extern int     str_find        (u_str_t, any_t, int);
 /* clang-format on */
 
@@ -129,24 +129,28 @@ extern int     str_find        (u_str_t, any_t, int);
 #  define u_str_cmp(self, str)                                                                     \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       str_cmp(self, (any_t)(uintptr_t)str, str_type(str));                                         \
     })
 
 #  define u_str_prefix(self, str)                                                                  \
     ({                                                                                             \
       ;                                                                                            \
-      str_prefix(self, (any_t)(uintptr_t)str, str_type(str));                                      \
+                                                                                                   \
+      str_is_prefix(self, (any_t)(uintptr_t)str, str_type(str));                                   \
     })
 
 #  define u_str_suffix(self, str)                                                                  \
     ({                                                                                             \
       ;                                                                                            \
-      str_suffix(self, (any_t)(uintptr_t)str, str_type(str));                                      \
+                                                                                                   \
+      str_is_suffix(self, (any_t)(uintptr_t)str, str_type(str));                                   \
     })
 
 #  define u_str_find(self, str)                                                                    \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       str_find(self, (any_t)(uintptr_t)str, str_type(str));                                        \
     })
 

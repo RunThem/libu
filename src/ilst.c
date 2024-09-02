@@ -28,20 +28,17 @@
  * Type
  **************************************************************************************************/
 typedef struct {
-  u8_t flags[4];
-
-  size_t offset;
-  size_t len;
+  i64_t offset;
+  i64_t len;
 
   u_node_ref_t head;
   u_node_ref_t tail;
-  u_node_ref_t iter;
 } lst_t, *lst_ref_t;
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pub any_t lst_new(size_t offset) {
+pub any_t lst_new(i64_t offset) {
   lst_ref_t self = nullptr;
 
   self = u_talloc(lst_t);
@@ -70,10 +67,9 @@ pub bool lst_clear(any_t _self, any_t ptr) {
   node = ptr + self->offset;
 
   self->head = self->head->next;
-  if (self->head == nullptr) {
+  if (!self->head) {
     self->len  = 0;
     self->tail = nullptr;
-    self->iter = nullptr;
   }
 
   node->prev = nullptr;
@@ -91,10 +87,10 @@ pub void lst_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-pub size_t lst_len(any_t _self) {
+pub i64_t lst_len(any_t _self) {
   lst_ref_t self = (lst_ref_t)_self;
 
-  u_chk_if(self, 0);
+  u_chk_if(self, -1);
 
   return self->len;
 }
@@ -174,13 +170,13 @@ pub void lst_pop(any_t _self, any_t ptr) {
   node = ptr + self->offset;
   u_end_if(node->ptr != self);
 
-  if (node->prev != nullptr) {
+  if (node->prev) {
     node->prev->next = node->next;
   } else {
     self->head = node->next;
   }
 
-  if (node->next != nullptr) {
+  if (node->next) {
     node->next->prev = node->prev;
   } else {
     self->tail = node->prev;
@@ -197,7 +193,7 @@ pub void lst_pop(any_t _self, any_t ptr) {
 end:
 }
 
-pub void lst_put(any_t _self, any_t idx, any_t ptr) {
+pub void lst_put(any_t _self, any_t idx_ptr, any_t ptr) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t node = nullptr;
   u_node_ref_t prev = nullptr;
@@ -212,11 +208,11 @@ pub void lst_put(any_t _self, any_t idx, any_t ptr) {
   node->next = nullptr;
   node->ptr  = self;
 
-  if (idx == nullptr) {
+  if (!idx_ptr) {
     node->next = self->head;
     self->head = node;
   } else {
-    _idx = idx + self->offset;
+    _idx = idx_ptr + self->offset;
     u_end_if(_idx->ptr != self);
 
     node->next = _idx->next;
@@ -237,52 +233,27 @@ pub void lst_put(any_t _self, any_t idx, any_t ptr) {
 end:
 }
 
-pub bool lst_for_init(any_t _self, bool flag) {
-  lst_ref_t self = (lst_ref_t)_self;
+pub bool lst_for(any_t _self, any_t* it, u_order_e order, any_t init) {
+  lst_ref_t self    = (lst_ref_t)_self;
+  u_node_ref_t iter = nullptr;
 
   u_chk_if(self, false);
+  u_chk_if(self->len == 0, false);
 
-  if (self->flags[0] == 0) {
-    self->flags[0] = 1;
-  } else if (self->flags[0] == 2) {
-    self->flags[0] = 0;
+  /* init */
+  if (init) {
+    iter = order == U_ORDER_ASCEND ? self->head : self->tail;
+  } else { /* range */
+    iter = any(*it) + self->offset;
+    iter = order == U_ORDER_ASCEND ? iter->next : iter->prev;
   }
 
-  self->flags[1] = flag;
-  self->flags[2] = true;
-  self->flags[3] = false;
+  u_end_if(iter);
 
-  return self->flags[0];
-}
+  *it = any(iter) - self->offset;
 
-pub void lst_for_end(any_t _self) {
-  lst_ref_t self = (lst_ref_t)_self;
+  return true;
 
-  u_chk_if(self);
-
-  self->flags[0] = 2;
-}
-
-pub any_t lst_for(any_t _self) {
-  lst_ref_t self = (lst_ref_t)_self;
-
-  u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
-  u_chk_if(self->flags[3], nullptr);
-
-  /* 初始化 */
-  if (self->flags[2]) {
-    self->iter     = self->flags[1] ? self->head : self->tail;
-    self->flags[2] = !self->flags[2];
-  } else { /* 迭代 */
-    self->iter = self->flags[1] ? self->iter->next : self->iter->prev;
-
-    /* 判断是否继续迭代 */
-    if ((self->flags[1] && self->iter->next == nullptr) ||
-        (!self->flags[1] && self->iter->prev == nullptr)) {
-      self->flags[3] = true;
-    }
-  }
-
-  return any(self->iter) - self->offset;
+end:
+  return false;
 }

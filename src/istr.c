@@ -29,14 +29,6 @@
 #endif
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-thread_local byte_t chars[2] = {0, '\0'};
-#ifdef USE_TGC
-thread_local tgc_t tgc = {};
-#endif
-
-/***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct [[gnu::packed]] {
@@ -46,6 +38,14 @@ typedef struct [[gnu::packed]] {
   int len;
   byte_t* ptr; /* { ... } \0 */
 } str_t, *str_ref_t;
+
+/***************************************************************************************************
+ * Let
+ **************************************************************************************************/
+thread_local byte_t chars[2] = {0, '\0'};
+#ifdef USE_TGC
+thread_local tgc_t tgc = {};
+#endif
 
 /***************************************************************************************************
  * Function
@@ -71,7 +71,7 @@ pri inline ret_t str_resize(str_ref_t self, int len) {
 
 #ifdef USE_TGC
   if (self->ptr == self->buff) {
-    buff = tgc_calloc(&tgc, sizeof(1), self->cap + 1);
+    buff = tgc_calloc(&tgc, sizeof(byte_t), self->cap + 1);
     memcpy(buff, self->ptr, self->len);
   } else {
     buff = tgc_realloc(&tgc, self->ptr, self->cap + 1);
@@ -187,7 +187,7 @@ pub void str_2lower(u_str_t _self) {
 
   self = u_container_of(_self, str_t, len);
 
-  u_each (i, self->len) {
+  for (int i = 0; i < self->len; i++) {
     self->ptr[i] = (byte_t)tolower(self->ptr[i]);
   }
 }
@@ -199,7 +199,7 @@ pub void str_2upper(u_str_t _self) {
 
   self = u_container_of(_self, str_t, len);
 
-  u_each (i, self->len) {
+  for (int i = 0; i < self->len; i++) {
     self->ptr[i] = (byte_t)toupper(self->ptr[i]);
   }
 }
@@ -325,7 +325,7 @@ pub int str_cmp(u_str_t _self, any_t str, int type) {
   return self->len > len ? 1 : -1;
 }
 
-pub bool str_prefix(u_str_t _self, any_t str, int type) {
+pub bool str_is_prefix(u_str_t _self, any_t str, int type) {
   str_ref_t self = nullptr;
   byte_t* ptr    = nullptr;
   int len        = 0;
@@ -344,7 +344,7 @@ end:
   return false;
 }
 
-pub bool str_suffix(u_str_t _self, any_t str, int type) {
+pub bool str_is_suffix(u_str_t _self, any_t str, int type) {
   str_ref_t self = nullptr;
   byte_t* ptr    = nullptr;
   int len        = 0;

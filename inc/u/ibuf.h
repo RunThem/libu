@@ -55,18 +55,21 @@ extern void         buf_put     (u_buf_ref_t, any_t, size_t);
 #  define u_buf_new(rawbuf, cap)                                                                   \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       buf_new(rawbuf, cap);                                                                        \
     })
 
 #  define u_buf_len(self)                                                                          \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       buf_len(self);                                                                               \
     })
 
 #  define u_buf_is_empty(self)                                                                     \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       0 == buf_len(self);                                                                          \
     })
 

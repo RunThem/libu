@@ -37,23 +37,28 @@ extern "C" {
 typedef struct {
 }* __u_vec_ref_t;
 
+typedef enum {
+  U_VEC_SORT_REVERSE_MIN,
+  U_VEC_SORT_REVERSE_MAX,
+} u_vec_order;
+
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern any_t  vec_new       (size_t);
-extern size_t vec_len       (any_t);
-extern size_t vec_cap       (any_t);
-extern bool   vec_is_exist  (any_t, int);
-extern void   vec_clear     (any_t);
-extern void   vec_cleanup   (any_t);
-extern any_t  vec_at        (any_t, int);
-extern void   vec_pop       (any_t, int, any_t);
-extern void   vec_put       (any_t, int, any_t);
-extern void   vec_sort      (any_t, u_cmp_fn);
-extern bool   vec_for_init  (any_t, bool);
-extern void   vec_for_end   (any_t);
-extern bool   vec_for       (any_t, int*, any_t);
+extern any_t vec_new      (i64_t);
+extern i64_t vec_len      (any_t);
+extern i64_t vec_cap      (any_t);
+extern bool  vec_is_exist (any_t, i64_t);
+extern void  vec_clear    (any_t);
+extern void  vec_cleanup  (any_t);
+extern any_t vec_at       (any_t, i64_t);
+extern void  vec_pop      (any_t, i64_t, any_t);
+extern void  vec_put      (any_t, i64_t, any_t);
+extern void  vec_sort     (any_t, u_cmp_fn, u_order_e);
+extern bool  vec_is_sort  (any_t, u_cmp_fn, u_order_e);
+extern i64_t vec_pole     (any_t, u_cmp_fn, u_order_e);
+extern bool  vec_for      (any_t, i64_t*, any_t, u_order_e, any_t);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -75,7 +80,7 @@ extern bool   vec_for       (any_t, int*, any_t);
     ({                                                                                             \
       u_vec_t(T) self = nullptr;                                                                   \
                                                                                                    \
-      u_vec_init(self);                                                                            \
+      self = vec_new(sizeof(T));                                                                   \
                                                                                                    \
       self;                                                                                        \
     })
@@ -105,9 +110,7 @@ extern bool   vec_for       (any_t, int*, any_t);
     ({                                                                                             \
       u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      int _a = idx;                                                                                \
-                                                                                                   \
-      vec_is_exist(self, _a);                                                                      \
+      vec_is_exist(self, idx);                                                                     \
     })
 
 #  define u_vec_clear(self)                                                                        \
@@ -138,7 +141,7 @@ extern bool   vec_for       (any_t, int*, any_t);
                                                                                                    \
         __b = vec_at(self, __a);                                                                   \
                                                                                                    \
-        if (__b != nullptr) {                                                                      \
+        if (__b) {                                                                                 \
           *__b = u_va_at(0, __VA_ARGS__);                                                          \
           __ret = true;                                                                            \
         }                                                                                          \
@@ -154,7 +157,7 @@ extern bool   vec_for       (any_t, int*, any_t);
                                                                                                    \
         __b = vec_at(self, idx);                                                                   \
                                                                                                    \
-        if (__b == nullptr) {                                                                      \
+        if (!__b) {                                                                                \
           __b = &__it;                                                                             \
         }                                                                                          \
                                                                                                    \
@@ -163,15 +166,54 @@ extern bool   vec_for       (any_t, int*, any_t);
     )
 /* clang-format on */
 
-#  define u_vec_try(self, i)                                                                       \
-    for (u_types(self, 0)* it = vec_at(self, i); it != nullptr; it = nullptr)
+#  define u_vec_minidx(self, cmp_fn)                                                               \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      vec_pole(self, cmp_fn, U_ORDER_ASCEND);                                                      \
+    })
+
+#  define u_vec_maxidx(self, cmp_fn)                                                               \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      vec_pole(self, cmp_fn, U_ORDER_DESCEND);                                                     \
+    })
+
+#  define u_vec_min(self, cmp_fn)                                                                  \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      i64_t __idx           = {};                                                                  \
+      u_types(self, 0)* __b = {};                                                                  \
+                                                                                                   \
+      __idx = vec_pole(self, cmp_fn, U_ORDER_ASCEND);                                              \
+      __b   = vec_at(self, __idx);                                                                 \
+                                                                                                   \
+      *__b;                                                                                        \
+    })
+
+#  define u_vec_max(self, cmp_fn)                                                                  \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      i64_t __idx           = {};                                                                  \
+      u_types(self, 0)* __b = {};                                                                  \
+                                                                                                   \
+      __idx = vec_pole(self, cmp_fn, U_ORDER_DESCEND);                                             \
+      __b   = vec_at(self, __idx);                                                                 \
+                                                                                                   \
+      *__b;                                                                                        \
+    })
+
+#  define u_vec_try(self, i) for (u_types(self, 0)* it = vec_at(self, i); it; it = nullptr)
 
 /* clang-format off */
 #  define u_vec_pop(self, ...)                                                                     \
     ({                                                                                             \
       u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      int __a              = u_va_0th(-1, __VA_ARGS__);                                            \
+      i64_t __a            = u_va_0th(-1, __VA_ARGS__);                                            \
       u_types(self, 0) __b = {};                                                                   \
                                                                                                    \
       vec_pop(self, __a, &__b);                                                                    \
@@ -184,10 +226,10 @@ extern bool   vec_for       (any_t, int*, any_t);
       u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
       u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
-        int __a             = tmp;                                                                 \
+        i64_t __a            = tmp;                                                                \
         u_types(self, 0) __b = u_va_at(0, __VA_ARGS__);                                            \
       )(                                                                                           \
-        int __a              = -1;                                                                 \
+        i64_t __a            = -1;                                                                 \
         u_types(self, 0) __b = tmp;                                                                \
       )                                                                                            \
                                                                                                    \
@@ -195,20 +237,25 @@ extern bool   vec_for       (any_t, int*, any_t);
     } while (0)
 /* clang-format on */
 
-#  define u_vec_sort(self, cmp_fn)                                                                 \
+#  define u_vec_sort(self, cmp_fn, ...)                                                            \
     do {                                                                                           \
       u_check(self, 1, __u_vec_ref_t);                                                             \
                                                                                                    \
-      vec_sort(self, cmp_fn);                                                                      \
+      vec_sort(self, cmp_fn, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__));                               \
     } while (0)
 
-#  define u_vec_for(self, i, it)                                                                   \
-    for (int i = 0; vec_for_init(self, 1); vec_for_end(self))                                      \
-      for (u_types(self, 0) it = {}; vec_for(self, &i, &it);)
+#  define u_vec_is_sort(self, cmp_fn, ...)                                                         \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      vec_is_sort(self, cmp_fn, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__));                            \
+    })
 
-#  define u_vec_rfor(self, i, it)                                                                  \
-    for (int i = 0; vec_for_init(self, 0); vec_for_end(self))                                      \
-      for (u_types(self, 0) it = {}; vec_for(self, &i, &it);)
+#  define u_vec_for(self, i, it, ...)                                                              \
+    for (i64_t i = 0, *_ = &i; _;)                                                                 \
+      for (u_types(self, 0) it = {};                                                               \
+           vec_for(self, &i, &it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);                       \
+           _ = nullptr)
 
 #  ifdef __cplusplus
 } /* extern "C" */

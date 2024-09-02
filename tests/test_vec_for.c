@@ -29,7 +29,7 @@ test() {
   }
 
   _i = N1W - 1;
-  u_vec_rfor (v, i, it) {
+  u_vec_for (v, i, it, U_ORDER_DESCEND) {
     mut_e(_i, it);
     mut_e(i, _i--);
   }

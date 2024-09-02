@@ -32,28 +32,23 @@ struct node_t {
   node_ref_t left;
   node_ref_t right;
   node_ref_t parent;
-  size_t height;
+  i64_t height;
 };
 
 typedef struct {
-  u8_t flags[4];
-  size_t ksize;
-  size_t vsize;
-  size_t len;
+  i64_t ksize;
+  i64_t vsize;
+  i64_t len;
 
   u_cmp_fn cmp_fn;
 
   node_ref_t root;
-  node_ref_t iter;
-  node_ref_t free_nodes;
+  node_ref_t free;
 } avl_t, *avl_ref_t;
 
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
-#undef COUNT
-#define COUNT 64
-
 #undef key
 #define key(node) (any(node) + sizeof(node_t))
 
@@ -78,9 +73,9 @@ typedef struct {
 pri node_ref_t avl_new_node(avl_ref_t self, node_ref_t parent, any_t key, any_t val) {
   node_ref_t node = nullptr;
 
-  if (self->free_nodes != nullptr) {
-    node             = self->free_nodes;
-    self->free_nodes = node->parent;
+  if (self->free) {
+    node       = self->free;
+    self->free = node->parent;
   } else {
     node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
     u_end_if(node);
@@ -102,7 +97,7 @@ end:
 
 pri inline void
     avl_child_replace(avl_ref_t self, node_ref_t parent, node_ref_t oldnode, node_ref_t newnode) {
-  if (parent == nullptr) {
+  if (!parent) {
     self->root = newnode;
     return;
   }
@@ -198,7 +193,7 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
   node_ref_t child  = nullptr;
 
   node = node->right;
-  while ((left = node->left) != nullptr) {
+  while ((left = node->left)) {
     node = left;
   }
 
@@ -235,7 +230,7 @@ pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
   node_ref_t parent = nullptr;
 
   child = node->left;
-  if (child == nullptr) {
+  if (!child) {
     child = node->right;
   }
 
@@ -250,10 +245,10 @@ pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
 }
 
 pri void avl_pop_rebalance(avl_ref_t self, node_ref_t node) {
-  int lh;
-  int rh;
-  int diff;
-  size_t height;
+  int lh       = 0;
+  int rh       = 0;
+  int diff     = 0;
+  i64_t height = 0;
 
   while (node) {
     lh     = lh(node);
@@ -277,13 +272,13 @@ pri void avl_pop_rebalance(avl_ref_t self, node_ref_t node) {
   }
 }
 
-pri void avl_push_rebalance(avl_ref_t self, node_ref_t node) {
-  int lh        = 0;
-  int rh        = 0;
-  int diff      = 0;
-  size_t height = 0;
+pri void avl_put_rebalance(avl_ref_t self, node_ref_t node) {
+  int lh       = 0;
+  int rh       = 0;
+  int diff     = 0;
+  i64_t height = 0;
 
-  for (node = node->parent; node != nullptr; node = node->parent) {
+  for (node = node->parent; node; node = node->parent) {
     lh     = lh(node);
     rh     = rh(node);
     height = max(lh, rh) + 1;
@@ -301,70 +296,13 @@ pri void avl_push_rebalance(avl_ref_t self, node_ref_t node) {
   }
 }
 
-pri void avl_next(avl_ref_t self) {
-  node_ref_t node = self->iter;
-  node_ref_t last = nullptr;
-
-  if (node == nullptr) {
-    node = self->root;
-    while (node->left) {
-      node = node->left;
-    }
-  } else {
-    if (node->right) {
-      node = node->right;
-      while (node->left) {
-        node = node->left;
-      }
-    } else {
-      while (true) {
-        last = node;
-        node = node->parent;
-
-        u_brk_if(node == nullptr || node->left == last);
-      }
-    }
-  }
-
-  self->iter = node;
-}
-
-pri void avl_prev(avl_ref_t self) {
-  node_ref_t node = self->iter;
-  node_ref_t last = nullptr;
-
-  if (node == nullptr) {
-    node = self->root;
-    while (node->right) {
-      node = node->right;
-    }
-  } else {
-    if (node->left) {
-      node = node->left;
-      while (node->right) {
-        node = node->right;
-      }
-    } else {
-      while (true) {
-        last = node;
-        node = node->parent;
-
-        u_brk_if(node == nullptr || node->right == last);
-      }
-    }
-  }
-
-  self->iter = node;
-}
-
-pub any_t avl_new(size_t ksize, size_t vsize, u_cmp_fn cmp_fn) {
+pub any_t avl_new(i64_t ksize, i64_t vsize, u_cmp_fn cmp_fn) {
   avl_ref_t self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
   /* vsize == 0, support set */
-  /* cmp_fn == nullptr, default use memcmp() */
 
-  self = u_zalloc(sizeof(avl_t) + ksize + vsize + sizeof(any_t));
+  self = u_zalloc(sizeof(avl_t) + ksize + vsize);
   u_end_if(self);
 
   self->ksize  = ksize;
@@ -387,7 +325,7 @@ pub void avl_clear(any_t _self) {
 
   u_chk_if(self->len == 0);
 
-  while (head != nullptr) {
+  while (head) {
     node = head;
 
     if (node->left) {
@@ -418,9 +356,9 @@ pub void avl_cleanup(any_t _self) {
 
   avl_clear(_self);
 
-  while (self->free_nodes != nullptr) {
-    node             = self->free_nodes;
-    self->free_nodes = node->parent;
+  while (self->free != nullptr) {
+    node       = self->free;
+    self->free = node->parent;
 
     u_free(node);
   }
@@ -428,10 +366,10 @@ pub void avl_cleanup(any_t _self) {
   u_free(self);
 }
 
-pub size_t avl_len(any_t _self) {
+pub i64_t avl_len(any_t _self) {
   avl_ref_t self = (avl_ref_t)_self;
 
-  u_chk_if(self, 0);
+  u_chk_if(self, -1);
 
   return self->len;
 }
@@ -442,7 +380,6 @@ pub bool avl_is_exist(any_t _self, any_t key) {
   ret_t result    = 0;
 
   u_chk_if(self, false);
-  u_chk_if(key, false);
 
   while (node) {
     if (self->cmp_fn) {
@@ -467,7 +404,6 @@ pub any_t avl_at(any_t _self, any_t key) {
   ret_t result    = 0;
 
   u_chk_if(self, nullptr);
-  u_chk_if(key, nullptr);
   u_chk_if(self->len == 0, nullptr);
 
   while (node) {
@@ -490,40 +426,6 @@ end:
   return nullptr;
 }
 
-pub void avl_min(any_t _self, any_t key, any_t val) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = self->root;
-
-  u_chk_if(self);
-  u_chk_if(key);
-  u_chk_if(val);
-  u_chk_if(self->len == 0);
-
-  while (node->left) {
-    node = node->left;
-  }
-
-  memcpy(key, key(node), self->ksize);
-  memcpy(val, val(node), self->vsize);
-}
-
-pub void avl_max(any_t _self, any_t key, any_t val) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = self->root;
-
-  u_chk_if(self);
-  u_chk_if(key);
-  u_chk_if(val);
-  u_chk_if(self->len == 0);
-
-  while (node->right) {
-    node = node->right;
-  }
-
-  memcpy(key, key(node), self->ksize);
-  memcpy(val, val(node), self->vsize);
-}
-
 pub void avl_pop(any_t _self, any_t key, any_t val) {
   avl_ref_t self    = (avl_ref_t)_self;
   node_ref_t node   = self->root;
@@ -531,8 +433,6 @@ pub void avl_pop(any_t _self, any_t key, any_t val) {
   ret_t result      = 0;
 
   u_chk_if(self);
-  u_chk_if(key);
-  u_chk_if(val);
 
   while (node) {
     if (self->cmp_fn) {
@@ -557,8 +457,8 @@ pub void avl_pop(any_t _self, any_t key, any_t val) {
   memcpy(key, key(node), self->ksize);
   memcpy(val, val(node), self->vsize);
 
-  node->parent     = self->free_nodes;
-  self->free_nodes = node;
+  node->parent = self->free;
+  self->free   = node;
 
   self->len--;
 
@@ -579,8 +479,6 @@ pub void avl_put(any_t _self, any_t key, any_t val) {
   ret_t result      = 0;
 
   u_chk_if(self);
-  u_chk_if(key);
-  u_chk_if(val);
 
   while (link[0]) {
     parent = link[0];
@@ -601,71 +499,95 @@ pub void avl_put(any_t _self, any_t key, any_t val) {
   *link = node;
   self->len++;
 
-  avl_push_rebalance(self, node);
+  avl_put_rebalance(self, node);
 
   return;
 
 end:
 }
 
-pub u_cmp_fn avl_fn(any_t _self) {
-  avl_ref_t self = (avl_ref_t)_self;
-
-  u_chk_if(self, nullptr);
-
-  return self->cmp_fn;
-}
-
-pub bool avl_for_init(any_t _self, bool flag) {
-  avl_ref_t self = (avl_ref_t)_self;
-
-  u_chk_if(self, false);
-
-  if (self->flags[0] == 0) {
-    self->flags[0] = 1;
-  } else if (self->flags[0] == 2) {
-    self->flags[0] = 0;
-  }
-
-  self->flags[1] = flag;
-  self->iter     = nullptr;
-
-  return self->flags[0];
-}
-
-pub void avl_for_end(any_t _self) {
-  avl_ref_t self = (avl_ref_t)_self;
+pub void avl_pole(any_t _self, any_t key, any_t val, u_order_e order) {
+  avl_ref_t self  = (avl_ref_t)_self;
+  node_ref_t node = self->root;
 
   u_chk_if(self);
+  u_chk_if(self->len == 0);
 
-  self->flags[0] = 2;
+  if (order == U_ORDER_ASCEND) {
+    while (node->left) {
+      node = node->left;
+    }
+  } else {
+    while (node->right) {
+      node = node->right;
+    }
+  }
+
+  memcpy(key, key(node), self->ksize);
+  memcpy(val, val(node), self->vsize);
 }
 
-pub bool avl_for(any_t _self, any_t key, any_t val) {
-  avl_ref_t self = (avl_ref_t)_self;
+pub bool avl_for(any_t _self, any_t key, any_t val, any_t* _iter, u_order_e order, any_t init) {
+  avl_ref_t self  = (avl_ref_t)_self;
+  node_ref_t iter = *(node_ref_t*)_iter;
+  node_ref_t last = nullptr;
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
 
-  (self->flags[1] ? avl_next : avl_prev)(self);
-  u_end_if(self->iter == nullptr);
+  /* init */
+  if (init) {
+    iter = self->root;
+    if (order == U_ORDER_ASCEND) {
+      while (iter->left) {
+        iter = iter->left;
+      }
+    } else {
+      while (iter->right) {
+        iter = iter->right;
+      }
+    }
+  } else { /* range */
+    if (order == U_ORDER_ASCEND) {
+      if (iter->right) {
+        iter = iter->right;
+        while (iter->left) {
+          iter = iter->left;
+        }
+      } else {
+        while (true) {
+          last = iter;
+          iter = iter->parent;
 
-  memcpy(key, key(self->iter), self->ksize);
-  memcpy(val, val(self->iter), self->vsize);
+          u_brk_if(!iter || iter->left == last);
+        }
+      }
+    } else {
+      if (iter->left) {
+        iter = iter->left;
+        while (iter->right) {
+          iter = iter->right;
+        }
+      } else {
+        while (true) {
+          last = iter;
+          iter = iter->parent;
+
+          u_brk_if(!iter || iter->right == last);
+        }
+      }
+    }
+  }
+
+  u_end_if(iter);
+
+  *_iter = iter;
+
+  memcpy(key, key(iter), self->ksize);
+  memcpy(val, val(iter), self->vsize);
 
   return true;
 
 end:
   return false;
-}
-
-pub void avl_benchmark() {
-#define N 100'0000
-  /* #[[tree<int, int>]] */
-  auto t = u_tree_new(int, int, fn_cmp(int));
-
-  u_bench("tree.put()", N, {
-    ;
-    u_tree_put(t, i, i);
-  });
 }

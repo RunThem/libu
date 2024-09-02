@@ -46,11 +46,11 @@ typedef struct {
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern u_lfq_ref_t  lfq_new       ();
-extern void         lfq_cleanup   (u_lfq_ref_t);
-extern size_t       lfq_len       (u_lfq_ref_t);
-extern bool         lfq_put       (u_lfq_ref_t, any_t);
-extern void*        lfq_pop       (u_lfq_ref_t);
+extern u_lfq_ref_t lfq_new     ();
+extern void        lfq_cleanup (u_lfq_ref_t);
+extern size_t      lfq_len     (u_lfq_ref_t);
+extern bool        lfq_put     (u_lfq_ref_t, any_t);
+extern void*       lfq_pop     (u_lfq_ref_t);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -59,18 +59,21 @@ extern void*        lfq_pop       (u_lfq_ref_t);
 #  define u_lfq_new()                                                                              \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       lfq_new();                                                                                   \
     })
 
 #  define u_lfq_len(self)                                                                          \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       lfq_len(self);                                                                               \
     })
 
 #  define u_lfq_is_empty(self)                                                                     \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       0 == lfq_len(self);                                                                          \
     })
 
@@ -84,12 +87,14 @@ extern void*        lfq_pop       (u_lfq_ref_t);
 #  define u_lfq_pop(self, type)                                                                    \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       (type) lfq_pop(self);                                                                        \
     })
 
 #  define u_lfq_put(self, obj)                                                                     \
     ({                                                                                             \
       ;                                                                                            \
+                                                                                                   \
       lfq_put(self, obj);                                                                          \
     })
 

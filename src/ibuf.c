@@ -91,7 +91,7 @@ pub void buf_cleanup(u_buf_ref_t _self) {
 pub size_t buf_len(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
-  u_chk_if(self, 0);
+  u_chk_if(self, -1);
 
   return self->end - self->begin;
 }

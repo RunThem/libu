@@ -45,18 +45,18 @@ typedef struct {
 /***************************************************************************************************
  * iApi avl
  **************************************************************************************************/
-#  define u_set_init(self, fn)                                                                     \
+#  define u_set_init(self, cmp_fn)                                                                 \
     do {                                                                                           \
       u_check(self, 1, __u_set_ref_t);                                                             \
                                                                                                    \
-      self = avl_new(sizeof(u_types(self, 0)), 0, fn);                                             \
+      self = avl_new(sizeof(u_types(self, 0)), 0, cmp_fn);                                         \
     } while (0)
 
-#  define u_set_new(T, fn)                                                                         \
+#  define u_set_new(T, cmp_fn)                                                                     \
     ({                                                                                             \
       u_set_t(T) self = nullptr;                                                                   \
                                                                                                    \
-      u_set_init(self, fn);                                                                        \
+      self = avl_new(sizeof(T), 0, cmp_fn);                                                        \
                                                                                                    \
       self;                                                                                        \
     })
@@ -109,13 +109,11 @@ typedef struct {
         bool __ret              = false;                                                           \
         u_types(self, 0) __item = item;                                                            \
         u_types(self, 0) __a    = u_va_at(0, __VA_ARGS__);                                         \
-        u_types(self, 0)* __b   = {};                                                              \
                                                                                                    \
-        __b = avl_at(self, &__item);                                                               \
-                                                                                                   \
-        if (__b != nullptr && 0 == avl_fn(self)(&__item, &__a)) {                                  \
-          *(__b - 1) = u_va_at(0, __VA_ARGS__);                                                    \
+        if (avl_is_exist(self, &__item)) {                                                         \
           __ret = true;                                                                            \
+          avl_pop(self, &__item, &__item);                                                         \
+          avl_put(self, &__a, &__a);                                                               \
         }                                                                                          \
                                                                                                    \
         __ret;                                                                                     \
@@ -142,13 +140,7 @@ typedef struct {
 /* clang-format on */
 
 #  define u_set_try(self, item)                                                                    \
-    for (u_types(self, 0)* it = ({                                                                 \
-           u_types(self, 0) __item = item;                                                         \
-                                                                                                   \
-           avl_at(self, &__item);                                                                  \
-         });                                                                                       \
-         it != nullptr && (it -= 1);                                                               \
-         it = nullptr)
+    for (u_types(self, 0) __item = item, *it = avl_at(self, &__item); it && (it -= 1); it = nullptr)
 
 #  define u_set_pop(self, item)                                                                    \
     ({                                                                                             \
@@ -170,23 +162,10 @@ typedef struct {
       avl_put(self, &__item, &__item);                                                             \
     } while (0)
 
-#  define u_set_fn(self, it1, it2)                                                                 \
-    ({                                                                                             \
-      u_check(self, 1, __u_set_ref_t);                                                             \
-                                                                                                   \
-      u_types(self, 0) __a = it1;                                                                  \
-      u_types(self, 0) __b = it2;                                                                  \
-                                                                                                   \
-      avl_fn(self)(&__a, &__b);                                                                    \
-    })
-
-#  define u_set_for(self, it)                                                                      \
-    for (u_types(self, 0) it = {}; avl_for_init(self, 1); avl_for_end(self))                       \
-      for (; avl_for(self, &it, &it);)
-
-#  define u_set_rfor(self, it)                                                                     \
-    for (u_types(self, 0) it = {}; avl_for_init(self, 0); avl_for_end(self))                       \
-      for (; avl_for(self, &it, &it);)
+#  define u_set_for(self, it, ...)                                                                 \
+    for (u_types(self, 0) it = {}, *_ = &it, *__iter = nullptr; _;)                                \
+      for (; avl_for(self, &it, &it, (any_t*)&__iter, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);   \
+           _ = nullptr)
 
 #  ifdef __cplusplus
 } /* extern "C" */

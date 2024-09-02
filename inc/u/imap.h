@@ -40,18 +40,17 @@ typedef struct {
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern any_t  map_new       (size_t, size_t, u_hash_fn);
-extern size_t map_len       (any_t);
-extern bool   map_is_exist  (any_t, any_t);
-extern void   map_clear     (any_t);
-extern void   map_cleanup   (any_t);
-extern any_t  map_at        (any_t, any_t);
-extern void   map_pop       (any_t, any_t, any_t);
-extern void   map_put       (any_t, any_t, any_t);
-extern void   vec_sort      (any_t, u_cmp_fn);
-extern bool   map_for_init  (any_t, bool);
-extern void   map_for_end   (any_t);
-extern bool   map_for       (any_t, any_t, any_t);
+extern any_t map_new      (i64_t, i64_t, u_hash_fn);
+extern i64_t map_len      (any_t);
+extern bool  map_is_exist (any_t, any_t);
+extern void  map_clear    (any_t);
+extern void  map_cleanup  (any_t);
+extern any_t map_at       (any_t, any_t);
+extern void  map_pop      (any_t, any_t, any_t);
+extern void  map_put      (any_t, any_t, any_t);
+extern bool  map_for_init (any_t, bool);
+extern void  map_for_end  (any_t);
+extern bool  map_for      (any_t, any_t, any_t, any_t*, any_t);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -75,7 +74,7 @@ extern bool   map_for       (any_t, any_t, any_t);
     ({                                                                                             \
       u_map_t(K, V) self = nullptr;                                                                \
                                                                                                    \
-      u_map_init(self, __VA_ARGS__);                                                               \
+      self = map_new(sizeof(K), sizeof(V), u_va_0th(nullptr, __VA_ARGS__));                        \
                                                                                                    \
       self;                                                                                        \
     })
@@ -159,13 +158,7 @@ extern bool   map_for       (any_t, any_t, any_t);
 /* clang-format on */
 
 #  define u_map_try(self, key)                                                                     \
-    for (u_types(self, 1)* it = ({                                                                 \
-           u_types(self, 0) __key = key;                                                           \
-                                                                                                   \
-           map_at(self, &__key);                                                                   \
-         });                                                                                       \
-         it != nullptr;                                                                            \
-         it = nullptr)
+    for (u_types(self, 1) __key = key, *it = map_at(self, &__key); it != nullptr; it = nullptr)
 
 #  define u_map_pop(self, key)                                                                     \
     ({                                                                                             \
@@ -190,8 +183,8 @@ extern bool   map_for       (any_t, any_t, any_t);
     } while (0)
 
 #  define u_map_for(self, key, val)                                                                \
-    for (u_types(self, 0) key = {}; map_for_init(self, 1); map_for_end(self))                      \
-      for (u_types(self, 1) val = {}; map_for(self, &key, &val);)
+    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _;)                              \
+      for (u_types(self, 1) val = {}; map_for(self, &key, &val, (any_t*)&__iter, _); _ = nullptr)
 
 #  ifdef __cplusplus
 } /* extern "C" */

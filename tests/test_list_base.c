@@ -179,7 +179,7 @@ test() {
   }
 
   i = 5;
-  u_list_rfor (l, it) {
+  u_list_for (l, it, U_ORDER_DESCEND) {
     mut_e(&items[i--], it);
   }
 }

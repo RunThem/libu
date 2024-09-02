@@ -87,6 +87,11 @@ typedef struct {
   u8_t buf[];
 } u_msg_t;
 
+typedef enum {
+  U_ORDER_DESCEND = -1,
+  U_ORDER_ASCEND  = 1,
+} u_order_e;
+
 #  ifdef __cplusplus
 } /* extern "C" */
 #  endif

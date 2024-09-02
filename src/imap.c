@@ -32,16 +32,16 @@
   size_t ksize;                                                                                    \
   u_hash_t hash
 #define U_PRI_DEBUG
+
 #include <u/pri.h>
 
 /***************************************************************************************************
  * Tyoe
  **************************************************************************************************/
 typedef struct {
-  i8_t flags[4];
-  size_t ksize;
-  size_t vsize;
-  size_t len;
+  i64_t ksize;
+  i64_t vsize;
+  i64_t len;
 
   u_hash_fn hash_fn;
 
@@ -49,10 +49,10 @@ typedef struct {
   int bucket_size;
   tree_t* buckets;
 
-  int iter_idx;
-  tnode_t iter_node;
-  tnode_t next_node;
+  /* iterator index */
+  int idx;
 
+  /* buffer */
   tnode_t key;
 } map_t, *map_ref_t;
 
@@ -93,66 +93,48 @@ pri inline u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
 
 pri void map_rehash(map_ref_t self) {
   tree_t* buckets = nullptr;
-  int size        = self->bucket_size;
   tnode_t next    = nullptr;
   tnode_t node    = nullptr;
-  size_t limit    = 0;
+  int bucket_size = self->bucket_size;
+  i64_t limit     = 0;
 
   limit = (self->len * 6) >> 2;
+  u_end_if(limit <= self->bucket_size);
 
-  u_chk_if(limit <= self->bucket_size);
-
-  while (size < limit) {
-    size <<= 1;
+  while (bucket_size < limit) {
+    bucket_size <<= 1;
   }
 
-  buckets = u_calloc(sizeof(tree_t), size);
+  buckets = u_calloc(sizeof(tree_t), bucket_size);
   u_end_if(buckets);
 
-  u_each (i, size) {
+  for (int i = 0; i < bucket_size; i++) {
     buckets[i] = tree_new();
   }
 
-  u_each (i, self->bucket_size) {
+  for (int i = 0; i < self->bucket_size; i++) {
     if (self->buckets[i]->len != 0) {
       while ((node = tree_tear(self->buckets[i], &next))) {
-        tree_put(buckets[node->hash % size], node);
+        tree_put(buckets[node->hash % bucket_size], node);
       }
     }
 
     tree_del(self->buckets[i]);
   }
 
-  self->bucket_size = size;
+  self->bucket_size = bucket_size;
   self->buckets     = buckets;
-  self->mask_size   = size - 1;
-
-  return;
-end:
-}
-
-pri inline void map_next(map_ref_t self) {
-  while (true) {
-    self->iter_node = tree_tear(self->buckets[self->iter_idx], &self->next_node);
-    u_brk_if(self->iter_node != nullptr);
-
-    self->iter_idx++;
-    self->next_node = nullptr;
-    u_end_if(self->iter_idx == self->bucket_size);
-  }
+  self->mask_size   = bucket_size - 1;
 
   return;
 
 end:
-  self->iter_node = nullptr;
 }
 
-pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
+pub any_t map_new(i64_t ksize, i64_t vsize, u_hash_fn hash_fn) {
   map_ref_t self = nullptr;
-  size_t size    = 0;
 
-  u_chk_if(ksize == 0, nullptr);
-  u_chk_if(vsize == 0, nullptr);
+  assert(ksize);
 
   self = u_zalloc(sizeof(map_t));
   u_end_if(self);
@@ -165,7 +147,7 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   self->buckets     = u_calloc(sizeof(tree_t), self->bucket_size);
   u_end_if(self->buckets);
 
-  u_each (i, self->bucket_size) {
+  for (int i = 0; i < self->bucket_size; i++) {
     self->buckets[i] = tree_new();
     u_end_if(self->buckets[i]);
   }
@@ -174,12 +156,12 @@ pub any_t map_new(size_t ksize, size_t vsize, u_hash_fn hash_fn) {
   self->ksize      = ksize;
   self->vsize      = vsize;
   self->len        = 0;
-  self->hash_fn    = hash_fn != nullptr ? hash_fn : hash_fnv64bit;
+  self->hash_fn    = hash_fn ? hash_fn : hash_fnv64bit;
 
   return self;
 
 end:
-  u_each (i, self->bucket_size) {
+  for (int i = 0; i < self->bucket_size; i++) {
     tree_del(self->buckets[i]);
   }
 
@@ -197,7 +179,7 @@ pub void map_clear(any_t _self) {
 
   u_chk_if(self);
 
-  u_each (i, self->bucket_size) {
+  for (int i = 0; i < self->bucket_size; i++) {
     if (self->buckets[i]->len == 0) {
       continue;
     }
@@ -215,7 +197,7 @@ pub void map_cleanup(any_t _self) {
 
   u_chk_if(self);
 
-  u_each (i, self->bucket_size) {
+  for (int i = 0; i < self->bucket_size; i++) {
     tree_del(self->buckets[i]);
   }
 
@@ -224,10 +206,10 @@ pub void map_cleanup(any_t _self) {
   u_free(self);
 }
 
-pub inline size_t map_len(any_t _self) {
+pub inline i64_t map_len(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
 
-  u_chk_if(self, 0);
+  u_chk_if(self, -1);
 
   return self->len;
 }
@@ -240,7 +222,6 @@ pub bool map_is_exist(any_t _self, any_t key) {
   int idx        = 0;
 
   u_chk_if(self, false);
-  u_chk_if(key, false);
 
   hash = self->hash_fn(key, self->ksize);
   idx  = (int)(hash & self->mask_size);
@@ -250,7 +231,7 @@ pub bool map_is_exist(any_t _self, any_t key) {
 
   node = tree_at(self->buckets[idx], self->key);
 
-  return node != nullptr;
+  return node;
 }
 
 pub any_t map_at(any_t _self, any_t key) {
@@ -261,7 +242,6 @@ pub any_t map_at(any_t _self, any_t key) {
   int idx        = 0;
 
   u_chk_if(self, nullptr);
-  u_chk_if(key, nullptr);
 
   hash = self->hash_fn(key, self->ksize);
   idx  = (int)(hash & self->mask_size);
@@ -286,8 +266,6 @@ pub void map_pop(any_t _self, any_t key, any_t val) {
   int idx        = 0;
 
   u_chk_if(self);
-  u_chk_if(key);
-  u_chk_if(val);
 
   hash = self->hash_fn(key, self->ksize);
   idx  = (int)(hash & self->mask_size);
@@ -318,8 +296,6 @@ pub void map_put(any_t _self, any_t key, any_t val) {
   int result     = 0;
 
   u_chk_if(self);
-  u_chk_if(key);
-  u_chk_if(val);
 
   hash = self->hash_fn(key, self->ksize);
   tree = self->buckets[hash & self->mask_size];
@@ -350,42 +326,31 @@ end:
   u_free_if(node);
 }
 
-pub bool map_for_init(any_t _self, bool flag) {
+pub bool map_for(any_t _self, any_t key, any_t val, any_t* _iter, any_t init) {
   map_ref_t self = (map_ref_t)_self;
+  tnode_t iter   = *(tnode_t*)_iter;
 
   u_chk_if(self, false);
+  u_chk_if(self->len == 0, false);
 
-  if (self->flags[0] == 0) {
-    self->flags[0] = 1;
-  } else if (self->flags[0] == 2) {
-    self->flags[0] = 0;
+  /* init */
+  if (init) {
+    self->idx = 0;
   }
 
-  self->next_node = nullptr;
-  self->iter_node = nullptr;
-  self->iter_idx  = 0;
+  while (true) {
+    iter = tree_tear(self->buckets[self->idx], (tnode_t*)_iter);
+    u_brk_if(iter != nullptr);
 
-  return self->flags[0];
-}
+    self->idx++;
+    *_iter = nullptr;
+    u_end_if(self->idx == self->bucket_size);
+  }
 
-pub void map_for_end(any_t _self) {
-  map_ref_t self = (map_ref_t)_self;
+  u_end_if(iter);
 
-  u_chk_if(self);
-
-  self->flags[0] = 2;
-}
-
-pub bool map_for(any_t _self, any_t key, any_t val) {
-  map_ref_t self = (map_ref_t)_self;
-
-  u_chk_if(self, false);
-
-  map_next(self);
-  u_end_if(self->iter_node);
-
-  memcpy(key, key(self->iter_node), self->ksize);
-  memcpy(val, val(self->iter_node), self->vsize);
+  memcpy(key, key(iter), self->ksize);
+  memcpy(val, val(iter), self->vsize);
 
   return true;
 

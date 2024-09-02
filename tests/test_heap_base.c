@@ -5,7 +5,7 @@ test() {
   u_heap_t(int) h = nullptr;
 
   /* new min */
-  h = u_heap_new(int, true, fn_cmp(int));
+  h = u_heap_new(int, U_ORDER_ASCEND, fn_cmp(int));
   mut_n(h);
 
   mut_e(0, u_heap_len(h));
@@ -121,7 +121,7 @@ test() {
   u_heap_cleanup(h);
 
   /* new max */
-  h = u_heap_new(int, false, fn_cmp(int));
+  h = u_heap_new(int, U_ORDER_DESCEND, fn_cmp(int));
   mut_n(h);
 
   mut_e(0, u_heap_len(h));
@@ -179,7 +179,7 @@ test() {
   u_heap_cleanup(h);
 
   /* init max */
-  u_heap_init(h, false, fn_cmp(int));
+  u_heap_init(h, U_ORDER_DESCEND, fn_cmp(int));
   mut_n(h);
 
   mut_e(0, u_heap_len(h));

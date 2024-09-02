@@ -58,7 +58,8 @@ test() {
   mut_e(201, u_set_at(s, me(st_t, .a = 1)).b);
   mut_e(202, u_set_at(s, me(st_t, .a = 2)).b);
 
-  u_set_try(s, me(st_t, .a = 0)) {
+  st_t st = {.a = 0};
+  u_set_try(s, st) {
     mut_e(200, it->b);
     it->b = 2 * it->b;
   }
