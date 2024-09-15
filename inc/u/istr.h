@@ -45,6 +45,8 @@ typedef struct [[gnu::packed]] {
 #  define str_type(s)                                                                              \
     (_Generic(s, char: 1, int: 1, char*: 2, const char*: 2, u_str_t: 3, default: 0))
 
+#  define u_string_t [[gnu::cleanup(str_gc_cleanup)]] u_str_t
+
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
@@ -52,6 +54,7 @@ typedef struct [[gnu::packed]] {
 extern u_str_t str_new();
 extern void    str_clear       (u_str_t);
 extern void    str_cleanup     (u_str_t);
+extern void    str_gc_cleanup  (u_str_t*);
 extern void    str_slen        (u_str_t, int);
 
 extern void    str_2lower      (u_str_t);
@@ -66,6 +69,8 @@ extern int     str_cmp         (u_str_t, any_t, int);
 extern bool    str_is_prefix   (u_str_t, any_t, int);
 extern bool    str_is_suffix   (u_str_t, any_t, int);
 extern int     str_find        (u_str_t, any_t, int);
+
+extern u_str_t str_sub         (u_str_t, int, int);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -179,6 +184,13 @@ extern int     str_find        (u_str_t, any_t, int);
       )                                                                                            \
     } while (0)
 /* clang-format on */
+
+#  define u_str_sub(self, s, ...)                                                                  \
+    ({                                                                                             \
+      ;                                                                                            \
+                                                                                                   \
+      str_sub(self, s, u_va_0th((self)->len, __VA_ARGS__));                                        \
+    })
 
 #  ifdef __cplusplus
 } /* extern "C" */

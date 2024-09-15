@@ -24,16 +24,17 @@
 
 #include <u/u.h>
 
-#ifdef USE_TGC
-#  include <tgc.h>
-#endif
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
+#define U_STR_BUFF_SIZE 47
 
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
 typedef struct [[gnu::packed]] {
   /* SSO */
-  byte_t buff[48];
+  byte_t buff[U_STR_BUFF_SIZE + 1];
   int cap;
   int len;
   byte_t* ptr; /* { ... } \0 */
@@ -43,41 +44,15 @@ typedef struct [[gnu::packed]] {
  * Let
  **************************************************************************************************/
 thread_local byte_t chars[2] = {0, '\0'};
-#ifdef USE_TGC
-thread_local tgc_t tgc = {};
-#endif
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-#ifdef USE_TGC
-[[gnu::constructor]]
-pri void str_init() {
-  int _ = {};
-
-  tgc_start(&tgc, &_);
-}
-
-[[gnu::destructor]]
-pri void str_deinit() {
-  tgc_stop(&tgc);
-}
-#endif
-
 pri inline ret_t str_resize(str_ref_t self, int len) {
   byte_t* buff = nullptr;
 
   self->cap = u_align_of_2pow(len + self->len);
 
-#ifdef USE_TGC
-  if (self->ptr == self->buff) {
-    buff = tgc_calloc(&tgc, sizeof(byte_t), self->cap + 1);
-    memcpy(buff, self->ptr, self->len);
-  } else {
-    buff = tgc_realloc(&tgc, self->ptr, self->cap + 1);
-    u_end_if(buff);
-  }
-#else
   if (self->ptr == self->buff) {
     buff = u_zalloc(self->cap + 1);
     memcpy(buff, self->ptr, self->len);
@@ -85,7 +60,6 @@ pri inline ret_t str_resize(str_ref_t self, int len) {
     buff = u_realloc(self->ptr, self->cap + 1);
     u_end_if(buff);
   }
-#endif
 
   self->ptr            = buff;
   self->ptr[self->len] = '\0';
@@ -115,17 +89,12 @@ pri void inline str_parse(byte_t** ptr, int* len, any_t str, int type) {
 pub u_str_t str_new() {
   str_ref_t self = nullptr;
 
-#ifdef USE_TGC
-  self = tgc_calloc(&tgc, 1, sizeof(str_t));
-#else
   self = u_talloc(str_t);
-#endif
-
   u_end_if(self);
 
   self->ptr = self->buff;
   self->len = 0;
-  self->cap = sizeof(self->buff) - 1;
+  self->cap = U_STR_BUFF_SIZE;
 
   self->ptr[self->len] = '\0';
 
@@ -152,20 +121,25 @@ pub void str_cleanup(u_str_t _self) {
   u_chk_if(_self);
 
   self = u_container_of(_self, str_t, len);
-
-#ifdef USE_TGC
-  if (self->ptr != self->buff) {
-    tgc_free(&tgc, self->ptr);
-  }
-
-  tgc_free(&tgc, self);
-#else
   if (self->ptr != self->buff) {
     u_free(self->ptr);
   }
 
   u_free(self);
-#endif
+}
+
+pub void str_gc_cleanup(u_str_t* _self) {
+  str_ref_t self = nullptr;
+
+  u_chk_if(_self);
+  u_chk_if(*_self);
+
+  self = u_container_of(*_self, str_t, len);
+  if (self->ptr != self->buff) {
+    u_free(self->ptr);
+  }
+
+  u_free(self);
 }
 
 pub void str_slen(u_str_t _self, int len) {
@@ -384,4 +358,41 @@ pub int str_find(u_str_t _self, any_t str, int type) {
 
 end:
   return -1;
+}
+
+pub u_str_t str_sub(u_str_t _self, int s, int e) {
+  str_ref_t new = nullptr;
+  int len       = 0;
+
+  /*
+   * h e l l o
+   * 0 1 2 3 4
+   *
+   * <1, 3> = el
+   * */
+  u_chk_if(_self, nullptr);
+  u_chk_if(e > _self->len, nullptr);
+  u_chk_if(e < s, nullptr);
+
+  new = u_talloc(str_t);
+  u_end_if(new);
+
+  new->len = e - s;
+
+  if (new->len > U_STR_BUFF_SIZE) {
+    new->cap = u_align_of_2pow(new->len);
+    new->ptr = u_zalloc(new->cap + 1);
+  } else {
+    new->cap = U_STR_BUFF_SIZE;
+    new->ptr = new->buff;
+  }
+
+  memcpy(new->ptr, &_self->ptr[s], new->len);
+
+  return (u_str_t)(&new->len);
+
+end:
+  u_free_if(new);
+
+  return nullptr;
 }

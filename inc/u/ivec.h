@@ -52,6 +52,7 @@ extern i64_t vec_cap      (any_t);
 extern bool  vec_is_exist (any_t, i64_t);
 extern void  vec_clear    (any_t);
 extern void  vec_cleanup  (any_t);
+extern int   vec_resize   (any_t, i64_t);
 extern any_t vec_at       (any_t, i64_t);
 extern void  vec_pop      (any_t, i64_t, any_t);
 extern void  vec_put      (any_t, i64_t, any_t);
@@ -128,6 +129,13 @@ extern bool  vec_for      (any_t, i64_t*, any_t, u_order_e, any_t);
                                                                                                    \
       self = nullptr;                                                                              \
     } while (0)
+
+#  define u_vec_resize(self, cap)                                                                  \
+    ({                                                                                             \
+      u_check(self, 1, __u_vec_ref_t);                                                             \
+                                                                                                   \
+      vec_resize(self, cap);                                                                       \
+    })
 
 /* clang-format off */
 #  define u_vec_at(self, idx, ...)                                                                 \

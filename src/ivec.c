@@ -55,24 +55,6 @@ pri inline int vec_cmp_fn(cany_t a, cany_t b) {
   return th_cmp_order == U_ORDER_ASCEND ? res : -res;
 }
 
-pri ret_t vec_resize(vec_ref_t self) {
-  i64_t cap   = 0;
-  any_t items = nullptr;
-
-  cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
-
-  items = u_realloc(self->items, self->itsize * cap);
-  u_end_if(items);
-
-  self->items = items;
-  self->cap   = cap;
-
-  return 0;
-
-end:
-  return -1;
-}
-
 pub any_t vec_new(i64_t itsize) {
   vec_ref_t self = nullptr;
 
@@ -136,6 +118,25 @@ pub i64_t vec_cap(any_t _self) {
   return self->cap;
 }
 
+pub int vec_resize(any_t _self, i64_t cap) {
+  vec_ref_t self = (vec_ref_t)_self;
+  any_t items    = nullptr;
+
+  u_chk_if(self, -1);
+  u_chk_if(cap < self->cap, -1);
+
+  items = u_realloc(self->items, self->itsize * cap);
+  u_end_if(items);
+
+  self->items = items;
+  self->cap   = cap;
+
+  return 0;
+
+end:
+  return -1;
+}
+
 pub any_t vec_at(any_t _self, i64_t idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
@@ -182,15 +183,17 @@ pub void vec_pop(any_t _self, i64_t idx, any_t item) {
  * */
 pub void vec_put(any_t _self, i64_t idx, any_t item) {
   vec_ref_t self = (vec_ref_t)_self;
-  ret_t result   = 0;
+  i64_t cap      = 0;
+  int ret        = 0;
 
   u_chk_if(self);
   u_chk_if(idx > self->len || idx < -(self->len + 1));
 
   idx += (idx < 0) ? self->len + 1 : 0;
   if (self->len == self->cap) {
-    result = vec_resize(self);
-    u_end_if(result != 0);
+    cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
+    ret = vec_resize(_self, cap);
+    u_end_if(ret != 0);
   }
 
   if (idx != self->len) {

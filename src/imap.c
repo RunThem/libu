@@ -28,10 +28,10 @@
 #  define U_PRI_ALLOC(size) mi_calloc(size, 1)
 #  define U_PRI_FREE(ptr)   mi_free(ptr)
 #endif
+
 #define U_PRI_TREE_USERDATA                                                                        \
   size_t ksize;                                                                                    \
   u_hash_t hash
-#define U_PRI_DEBUG
 
 #include <u/pri.h>
 
@@ -67,16 +67,12 @@ typedef struct {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static inline int tree_cmp_fn(tnode_t x, tnode_t y) {
+static inline int node_cmp(tnode_t x, tnode_t y) {
   if (x->hash == y->hash) {
     return memcmp(x->u, y->u, x->ksize);
   }
 
   return x->hash > y->hash ? 1 : -1;
-}
-
-static inline void tree_node_dump(tnode_t n) {
-  printf("h(%d), %d\n", n->h, *(int*)key(n));
 }
 
 /* fnv 64-bit hash function */
@@ -109,7 +105,7 @@ pri void map_rehash(map_ref_t self) {
   u_end_if(buckets);
 
   for (int i = 0; i < bucket_size; i++) {
-    buckets[i] = tree_new();
+    buckets[i] = tree_new(node_cmp);
   }
 
   for (int i = 0; i < self->bucket_size; i++) {
@@ -148,7 +144,7 @@ pub any_t map_new(i64_t ksize, i64_t vsize, u_hash_fn hash_fn) {
   u_end_if(self->buckets);
 
   for (int i = 0; i < self->bucket_size; i++) {
-    self->buckets[i] = tree_new();
+    self->buckets[i] = tree_new(node_cmp);
     u_end_if(self->buckets[i]);
   }
 
@@ -161,7 +157,7 @@ pub any_t map_new(i64_t ksize, i64_t vsize, u_hash_fn hash_fn) {
   return self;
 
 end:
-  for (int i = 0; i < self->bucket_size; i++) {
+  for (int i = 0; self && i < self->bucket_size; i++) {
     tree_del(self->buckets[i]);
   }
 
@@ -218,7 +214,6 @@ pub bool map_is_exist(any_t _self, any_t key) {
   map_ref_t self = (map_ref_t)_self;
   tnode_t node   = nullptr;
   u_hash_t hash  = 0;
-  int result     = 0;
   int idx        = 0;
 
   u_chk_if(self, false);
@@ -238,7 +233,6 @@ pub any_t map_at(any_t _self, any_t key) {
   map_ref_t self = (map_ref_t)_self;
   tnode_t node   = nullptr;
   u_hash_t hash  = 0;
-  int result     = 0;
   int idx        = 0;
 
   u_chk_if(self, nullptr);

@@ -8,7 +8,7 @@ set_version('3.0.0')
 set_xmakever('2.6.1')
 
 --- Build mode
-add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.release')
+add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.check', 'mode.release')
 
 --- Project file
 add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
@@ -55,18 +55,6 @@ if has_config('mimalloc') then
   add_defines('USE_MIMALLOC')
 end
 
---- Tgc option
-option('tgc', function()
-  set_default(true)
-  set_category('option')
-  set_description('Enable or disable "tgc"')
-end)
-
-if has_config('tgc') then
-  add_requires('tgc')
-  add_defines('USE_TGC')
-end
-
 --- Debug option
 option('debug', function()
   set_default(false)
@@ -89,10 +77,6 @@ target('u', function()
 
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })
-  end
-
-  if has_config('tgc') then
-    add_packages('tgc')
   end
 
   add_rules('generic')

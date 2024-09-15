@@ -20,7 +20,20 @@
  * un: net
  * */
 
+/*
+ * network
+ *
+ * tcp4://0.0.0.0:8080
+ * udp4://0.0.0.0:8080
+ * tcp6://[::1]:8080
+ * udp6://[::1]:8080
+ * tcpu:///mnt/tcp.sock
+ * udpu:///mnt/tcp.sock
+ * */
+
 int main(int argc, const u_cstr_t argv[]) {
+  /* #[[vec<int>]] */
+  /* #[[vec<char>]] */
 
   return EXIT_SUCCESS;
 }
