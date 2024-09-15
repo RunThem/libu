@@ -183,7 +183,7 @@ extern bool  map_for      (any_t, any_t, any_t, any_t*, any_t);
     } while (0)
 
 #  define u_map_for(self, key, val)                                                                \
-    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _;)                              \
+    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _; _ = nullptr)                  \
       for (u_types(self, 1) val = {}; map_for(self, &key, &val, (any_t*)&__iter, _); _ = nullptr)
 
 #  ifdef __cplusplus

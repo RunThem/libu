@@ -260,7 +260,7 @@ extern bool  vec_for      (any_t, i64_t*, any_t, u_order_e, any_t);
     })
 
 #  define u_vec_for(self, i, it, ...)                                                              \
-    for (i64_t i = 0, *_ = &i; _;)                                                                 \
+    for (i64_t i = 0, *_ = &i; _; _ = nullptr)                                                     \
       for (u_types(self, 0) it = {};                                                               \
            vec_for(self, &i, &it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);                       \
            _ = nullptr)
