@@ -38,11 +38,10 @@
  * Type
  **************************************************************************************************/
 typedef struct {
-  bool attr; /* { true: min, false: max } */
-  u8_t flags[4];
-  size_t itsize;
-  size_t len;
-  size_t cap;
+  u_order_e order; /* { true: min, false: max } */
+  i64_t itsize;
+  i64_t len;
+  i64_t cap;
 
   u_cmp_fn cmp_fn;
 
@@ -53,7 +52,7 @@ typedef struct {
  * Function
  **************************************************************************************************/
 pri ret_t heap_resize(heap_ref_t self) {
-  size_t cap = 0;
+  i64_t cap  = 0;
   any_t root = nullptr;
 
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
@@ -70,7 +69,7 @@ end:
   return -1;
 }
 
-pub any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
+pub any_t heap_new(i64_t itsize, u_order_e order, u_cmp_fn fn) {
   heap_ref_t self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
@@ -85,7 +84,7 @@ pub any_t heap_new(size_t itsize, bool attr, u_cmp_fn fn) {
   self->cmp_fn = fn;
   self->len    = 0;
   self->cap    = 32;
-  self->attr   = attr;
+  self->order  = order;
 
   return self;
 
@@ -112,10 +111,10 @@ pub void heap_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-pub size_t heap_len(any_t _self) {
+pub i64_t heap_len(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_chk_if(self, 0);
+  u_chk_if(self, -1);
 
   return self->len;
 }
@@ -131,18 +130,16 @@ pub void heap_at(any_t _self, any_t item) {
 
 pub void heap_pop(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
-  size_t idx      = 0;
-  size_t lidx     = 0;
-  size_t ridx     = 0;
-  size_t pidx     = 0;
-  int flag        = 0;
+  i64_t idx       = 0;
+  i64_t lidx      = 0;
+  i64_t ridx      = 0;
+  i64_t pidx      = 0;
 
   u_chk_if(self);
   u_chk_if(self->len == 0);
 
   memcpy(item, self->root, self->itsize);
 
-  flag = self->attr ? 1 : -1;
   while (true) {
     lidx = left(pidx);
     ridx = right(pidx);
@@ -152,15 +149,15 @@ pub void heap_pop(any_t _self, any_t item) {
 
     idx = lidx;
 
-    /* if there are two child nodes, select the node that meets the rules(flag) */
+    /* if there are two child nodes, select the node that meets the rules(order) */
     if (ridx < self->len) {
-      if (self->cmp_fn(at(lidx), at(ridx)) == flag) {
+      if (self->cmp_fn(at(lidx), at(ridx)) == self->order) {
         idx = ridx;
       }
     }
 
-    /* compare the child node with the current node to see if they meet the rules(flag) */
-    u_brk_if(self->cmp_fn(at(idx), at(self->len - 1)) == flag);
+    /* compare the child node with the current node to see if they meet the rules(order) */
+    u_brk_if(self->cmp_fn(at(idx), at(self->len - 1)) == self->order);
 
     /* exchange child node with current node  */
     memcpy(at(pidx), at(idx), self->itsize);
@@ -181,9 +178,8 @@ end:
 pub void heap_put(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
   ret_t result    = 0;
-  size_t idx      = 0;
-  size_t pidx     = 0;
-  int flag        = 0;
+  i64_t idx       = 0;
+  i64_t pidx      = 0;
 
   u_chk_if(self);
 
@@ -192,11 +188,10 @@ pub void heap_put(any_t _self, any_t item) {
     u_end_if(result != 0);
   }
 
-  flag = self->attr ? 1 : -1;
   for (idx = self->len; idx > 0; idx = pidx) {
     pidx = parent(idx);
 
-    u_brk_if(self->cmp_fn(item, at(pidx)) == flag);
+    u_brk_if(self->cmp_fn(item, at(pidx)) == self->order);
 
     memcpy(at(idx), at(pidx), self->itsize);
   }

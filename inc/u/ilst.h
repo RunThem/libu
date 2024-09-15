@@ -48,20 +48,18 @@ struct u_node_t {
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern any_t  lst_new       (size_t);
-extern bool   lst_clear     (any_t, any_t);
-extern void   lst_cleanup   (any_t);
-extern size_t lst_len       (any_t);
-extern bool   lst_exist     (any_t, any_t);
-extern any_t  lst_head      (any_t);
-extern any_t  lst_tail      (any_t);
-extern any_t  lst_prev      (any_t, any_t);
-extern any_t  lst_next      (any_t, any_t);
-extern void   lst_pop       (any_t, any_t);
-extern void   lst_put       (any_t, any_t, any_t);
-extern bool   lst_for_init  (any_t, bool);
-extern void   lst_for_end   (any_t);
-extern any_t  lst_for       (any_t);
+extern any_t  lst_new      (i64_t);
+extern bool   lst_clear    (any_t, any_t);
+extern void   lst_cleanup  (any_t);
+extern i64_t  lst_len      (any_t);
+extern bool   lst_is_exist (any_t, any_t);
+extern any_t  lst_head     (any_t);
+extern any_t  lst_tail     (any_t);
+extern any_t  lst_prev     (any_t, any_t);
+extern any_t  lst_next     (any_t, any_t);
+extern void   lst_pop      (any_t, any_t);
+extern void   lst_put      (any_t, any_t, any_t);
+extern bool   lst_for      (any_t, any_t*, u_order_e, any_t);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -83,7 +81,7 @@ extern any_t  lst_for       (any_t);
     ({                                                                                             \
       u_list_t(T) self = nullptr;                                                                  \
                                                                                                    \
-      u_list_init(self, T, filed);                                                                 \
+      self = lst_new(offsetof(T, filed));                                                          \
                                                                                                    \
       self;                                                                                        \
     })
@@ -108,7 +106,7 @@ extern any_t  lst_for       (any_t);
                                                                                                    \
       u_types(self, 0)* __a = ptr;                                                                 \
                                                                                                    \
-      lst_exist(self, __a);                                                                        \
+      lst_is_exist(self, __a);                                                                     \
     })
 
 #  define u_list_clear(self, it)                                                                   \
@@ -197,13 +195,9 @@ extern any_t  lst_for       (any_t);
   } while (0)
 /* clang-format on */
 
-#  define u_list_for(self, it)                                                                     \
-    for (; lst_for_init(self, 1); lst_for_end(self))                                               \
-      for (u_types(self, 0)* it = {}; (it = lst_for(self));)
-
-#  define u_list_rfor(self, it)                                                                    \
-    for (; lst_for_init(self, 0); lst_for_end(self))                                               \
-      for (u_types(self, 0)* it = {}; (it = lst_for(self));)
+#  define u_list_for(self, it, ...)                                                                \
+    for (u_types(self, 0)* it = {}, *_ = (any_t)(&it); _;)                                         \
+      for (; lst_for(self, (any_t*)&it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _); _ = nullptr)
 
 #  ifdef __cplusplus
 } /* extern "C" */

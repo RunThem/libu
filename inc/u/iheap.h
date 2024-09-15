@@ -40,13 +40,13 @@ typedef struct {
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern any_t  heap_new      (size_t, bool, u_cmp_fn);
-extern void   heap_clear    (any_t);
-extern void   heap_cleanup  (any_t);
-extern size_t heap_len      (any_t);
-extern void   heap_at       (any_t, any_t);
-extern void   heap_pop      (any_t, any_t);
-extern void   heap_put      (any_t, any_t);
+extern any_t heap_new     (i64_t, u_order_e, u_cmp_fn);
+extern void  heap_clear   (any_t);
+extern void  heap_cleanup (any_t);
+extern i64_t heap_len     (any_t);
+extern void  heap_at      (any_t, any_t);
+extern void  heap_pop     (any_t, any_t);
+extern void  heap_put     (any_t, any_t);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -57,18 +57,18 @@ extern void   heap_put      (any_t, any_t);
 /***************************************************************************************************
  * iApi heap
  **************************************************************************************************/
-#  define u_heap_init(self, attr, fn)                                                              \
+#  define u_heap_init(self, order, cmp_fn)                                                         \
     do {                                                                                           \
       u_check(self, 1, __u_heap_ref_t);                                                            \
                                                                                                    \
-      self = heap_new(sizeof(u_types(self, 0)), attr, fn);                                         \
+      self = heap_new(sizeof(u_types(self, 0)), order, cmp_fn);                                    \
     } while (0)
 
-#  define u_heap_new(T, attr, fn)                                                                  \
+#  define u_heap_new(T, order, cmp_fn)                                                             \
     ({                                                                                             \
       u_heap_t(T) self = nullptr;                                                                  \
                                                                                                    \
-      u_heap_init(self, attr, fn);                                                                 \
+      self = heap_new(sizeof(T), order, cmp_fn);                                                   \
                                                                                                    \
       self;                                                                                        \
     })

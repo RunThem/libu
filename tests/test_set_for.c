@@ -27,7 +27,7 @@ test() {
     mut_e(it.a + 100, it.b);
   }
 
-  u_set_rfor (s, it) {
+  u_set_for (s, it, U_ORDER_DESCEND) {
     mut_e(it.a + 100, it.b);
   }
 

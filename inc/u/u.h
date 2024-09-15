@@ -84,6 +84,7 @@ extern "C" {
 #  include "ivec.h"
 #  include "ilfq.h"
 #  include "iheap.h"
+#  include "istr.h"
 /* clang-format on */
 
 #  ifdef __cplusplus

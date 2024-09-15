@@ -8,7 +8,7 @@ set_version('3.0.0')
 set_xmakever('2.6.1')
 
 --- Build mode
-add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.release')
+add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.check', 'mode.release')
 
 --- Project file
 add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
