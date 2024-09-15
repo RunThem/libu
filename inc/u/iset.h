@@ -163,7 +163,7 @@ typedef struct {
     } while (0)
 
 #  define u_set_for(self, it, ...)                                                                 \
-    for (u_types(self, 0) it = {}, *_ = &it, *__iter = nullptr; _;)                                \
+    for (u_types(self, 0) it = {}, *_ = &it, *__iter = nullptr; _; _ = nullptr)                    \
       for (; avl_for(self, &it, &it, (any_t*)&__iter, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);   \
            _ = nullptr)
 

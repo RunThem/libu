@@ -196,7 +196,7 @@ extern bool   lst_for      (any_t, any_t*, u_order_e, any_t);
 /* clang-format on */
 
 #  define u_list_for(self, it, ...)                                                                \
-    for (u_types(self, 0)* it = {}, *_ = (any_t)(&it); _;)                                         \
+    for (u_types(self, 0)* it = {}, *_ = (any_t)(&it); _; _ = nullptr)                             \
       for (; lst_for(self, (any_t*)&it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _); _ = nullptr)
 
 #  ifdef __cplusplus

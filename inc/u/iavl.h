@@ -208,7 +208,7 @@ extern bool  avl_for      (any_t, any_t, any_t, any_t*, u_order_e, any_t);
     } while (0)
 
 #  define u_tree_for(self, key, val, ...)                                                          \
-    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _;)                              \
+    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _; _ = nullptr)                  \
       for (u_types(self, 1) val = {};                                                              \
            avl_for(self, &key, &val, (any_t*)&__iter, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);   \
            _ = nullptr)
