@@ -253,15 +253,15 @@ pub i64_t vec_pole(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
   return result;
 }
 
-pub bool vec_for(any_t _self, i64_t* idx, any_t item, u_order_e order, any_t init) {
+pub bool vec_for(any_t _self, bool* init, i64_t* idx, any_t item, u_order_e order) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
 
-  /* init */
-  if (init) {
-    *idx = order == U_ORDER_ASCEND ? 0 : self->len - 1;
+  if (!*init) {
+    *init = true;
+    *idx  = order == U_ORDER_ASCEND ? 0 : self->len - 1;
   } else { /* range */
     *idx += order;
   }

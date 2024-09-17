@@ -40,6 +40,9 @@
 #ifndef U_VA_H__
 #define U_VA_H__
 
+#define u_va_for_let(type, var, val)\
+  for (type var = val, *____##var = &var; ____##var; ____##var = nullptr)
+
 #ifndef LIBU_VA_EVAL
 
 #define u_va_first(first, ...) first

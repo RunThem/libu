@@ -163,9 +163,14 @@ typedef struct {
     } while (0)
 
 #  define u_set_for(self, it, ...)                                                                 \
-    for (u_types(self, 0) it = {}, *_ = &it, *__iter = nullptr; _; _ = nullptr)                    \
-      for (; avl_for(self, &it, &it, (any_t*)&__iter, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);   \
-           _ = nullptr)
+    u_va_for_let (bool, __init, {})                                                                \
+      u_va_for_let (any_t, __iter, {})                                                             \
+        for (u_types(self, 0) it = {}; avl_for(self,                                               \
+                                               &__init,                                            \
+                                               &it,                                                \
+                                               &it,                                                \
+                                               (any_t*)&__iter,                                    \
+                                               u_va_0th(U_ORDER_ASCEND, __VA_ARGS__));)
 
 #  ifdef __cplusplus
 } /* extern "C" */

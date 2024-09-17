@@ -34,6 +34,7 @@
 int main(int argc, const u_cstr_t argv[]) {
   /* #[[vec<int>]] */
   /* #[[vec<char>]] */
+  /* #[[map<int, char>]] */
 
   return EXIT_SUCCESS;
 }

@@ -527,7 +527,7 @@ pub void avl_pole(any_t _self, any_t key, any_t val, u_order_e order) {
   memcpy(val, val(node), self->vsize);
 }
 
-pub bool avl_for(any_t _self, any_t key, any_t val, any_t* _iter, u_order_e order, any_t init) {
+pub bool avl_for(any_t _self, bool* init, any_t key, any_t val, any_t* _iter, u_order_e order) {
   avl_ref_t self  = (avl_ref_t)_self;
   node_ref_t iter = *(node_ref_t*)_iter;
   node_ref_t last = nullptr;
@@ -536,7 +536,9 @@ pub bool avl_for(any_t _self, any_t key, any_t val, any_t* _iter, u_order_e orde
   u_chk_if(self->len == 0, false);
 
   /* init */
-  if (init) {
+  if (!*init) {
+    *init = true;
+
     iter = self->root;
     if (order == U_ORDER_ASCEND) {
       while (iter->left) {

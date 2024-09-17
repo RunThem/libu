@@ -50,7 +50,7 @@ extern any_t avl_at       (any_t, any_t);
 extern void  avl_pole     (any_t, any_t, any_t, u_order_e);
 extern void  avl_pop      (any_t, any_t, any_t);
 extern void  avl_put      (any_t, any_t, any_t);
-extern bool  avl_for      (any_t, any_t, any_t, any_t*, u_order_e, any_t);
+extern bool  avl_for      (any_t, bool*, any_t, any_t, any_t*, u_order_e);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -208,10 +208,15 @@ extern bool  avl_for      (any_t, any_t, any_t, any_t*, u_order_e, any_t);
     } while (0)
 
 #  define u_tree_for(self, key, val, ...)                                                          \
-    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _; _ = nullptr)                  \
-      for (u_types(self, 1) val = {};                                                              \
-           avl_for(self, &key, &val, (any_t*)&__iter, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);   \
-           _ = nullptr)
+    u_va_for_let (bool, __init, {})                                                                \
+      u_va_for_let (any_t, __iter, {})                                                             \
+        u_va_for_let (u_types(self, 0), key, {})                                                   \
+          for (u_types(self, 1) val = {}; avl_for(self,                                            \
+                                                  &__init,                                         \
+                                                  &key,                                            \
+                                                  &val,                                            \
+                                                  (any_t*)&__iter,                                 \
+                                                  u_va_0th(U_ORDER_ASCEND, __VA_ARGS__));)
 
 #  ifdef __cplusplus
 } /* extern "C" */

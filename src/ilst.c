@@ -233,7 +233,7 @@ pub void lst_put(any_t _self, any_t idx_ptr, any_t ptr) {
 end:
 }
 
-pub bool lst_for(any_t _self, any_t* it, u_order_e order, any_t init) {
+pub bool lst_for(any_t _self, bool* init, any_t* it, u_order_e order) {
   lst_ref_t self    = (lst_ref_t)_self;
   u_node_ref_t iter = nullptr;
 
@@ -241,7 +241,9 @@ pub bool lst_for(any_t _self, any_t* it, u_order_e order, any_t init) {
   u_chk_if(self->len == 0, false);
 
   /* init */
-  if (init) {
+  if (!*init) {
+    *init = true;
+
     iter = order == U_ORDER_ASCEND ? self->head : self->tail;
   } else { /* range */
     iter = any(*it) + self->offset;

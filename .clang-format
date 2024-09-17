@@ -54,6 +54,7 @@ SpacesInLineCommentPrefix:
   Maximum: 1
 
 ForEachMacros: [
+  'u_va_for_let',
   'u_each',
   'u_arr_for',
   'u_map_for',

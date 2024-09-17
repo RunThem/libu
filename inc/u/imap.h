@@ -50,7 +50,8 @@ extern void  map_pop      (any_t, any_t, any_t);
 extern void  map_put      (any_t, any_t, any_t);
 extern bool  map_for_init (any_t, bool);
 extern void  map_for_end  (any_t);
-extern bool  map_for      (any_t, any_t, any_t, any_t*, any_t);
+extern bool  map_for      (any_t, bool*, any_t, any_t, any_t*);
+extern bool  map_map_by   (any_t, bool*, any_t, any_t, any_t*);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -158,7 +159,7 @@ extern bool  map_for      (any_t, any_t, any_t, any_t*, any_t);
 /* clang-format on */
 
 #  define u_map_try(self, key)                                                                     \
-    for (u_types(self, 1) __key = key, *it = map_at(self, &__key); it != nullptr; it = nullptr)
+    for (u_types(self, 1) __key = key, *it = map_at(self, &__key); it; it = nullptr)
 
 #  define u_map_pop(self, key)                                                                     \
     ({                                                                                             \
@@ -183,8 +184,10 @@ extern bool  map_for      (any_t, any_t, any_t, any_t*, any_t);
     } while (0)
 
 #  define u_map_for(self, key, val)                                                                \
-    for (u_types(self, 0) key = {}, *_ = &key, *__iter = nullptr; _; _ = nullptr)                  \
-      for (u_types(self, 1) val = {}; map_for(self, &key, &val, (any_t*)&__iter, _); _ = nullptr)
+    u_va_for_let (bool, __init, {})                                                                \
+      u_va_for_let (any_t, __iter, {})                                                             \
+        u_va_for_let (u_types(self, 0), key, {})                                                   \
+          for (u_types(self, 1) val = {}; map_for(self, &__init, &key, &val, &__iter);)
 
 #  ifdef __cplusplus
 } /* extern "C" */

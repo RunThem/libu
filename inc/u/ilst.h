@@ -59,7 +59,7 @@ extern any_t  lst_prev     (any_t, any_t);
 extern any_t  lst_next     (any_t, any_t);
 extern void   lst_pop      (any_t, any_t);
 extern void   lst_put      (any_t, any_t, any_t);
-extern bool   lst_for      (any_t, any_t*, u_order_e, any_t);
+extern bool   lst_for      (any_t, bool*, any_t*, u_order_e);
 /* clang-format on */
 
 /***************************************************************************************************
@@ -196,8 +196,9 @@ extern bool   lst_for      (any_t, any_t*, u_order_e, any_t);
 /* clang-format on */
 
 #  define u_list_for(self, it, ...)                                                                \
-    for (u_types(self, 0)* it = {}, *_ = (any_t)(&it); _; _ = nullptr)                             \
-      for (; lst_for(self, (any_t*)&it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _); _ = nullptr)
+    u_va_for_let (bool, __init, {})                                                                \
+      for (u_types(self, 0)* it = {};                                                              \
+           lst_for(self, &__init, (any_t*)&it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__));)
 
 #  ifdef __cplusplus
 } /* extern "C" */

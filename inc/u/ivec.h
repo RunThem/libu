@@ -59,7 +59,10 @@ extern void  vec_put      (any_t, i64_t, any_t);
 extern void  vec_sort     (any_t, u_cmp_fn, u_order_e);
 extern bool  vec_is_sort  (any_t, u_cmp_fn, u_order_e);
 extern i64_t vec_pole     (any_t, u_cmp_fn, u_order_e);
-extern bool  vec_for      (any_t, i64_t*, any_t, u_order_e, any_t);
+extern bool  vec_for      (any_t, bool*, i64_t*, any_t, u_order_e);
+extern bool  vec_map_by   (any_t, bool*, i64_t*, any_t);
+extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
+
 /* clang-format on */
 
 /***************************************************************************************************
@@ -260,10 +263,10 @@ extern bool  vec_for      (any_t, i64_t*, any_t, u_order_e, any_t);
     })
 
 #  define u_vec_for(self, i, it, ...)                                                              \
-    for (i64_t i = 0, *_ = &i; _; _ = nullptr)                                                     \
-      for (u_types(self, 0) it = {};                                                               \
-           vec_for(self, &i, &it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__), _);                       \
-           _ = nullptr)
+    u_va_for_let (bool, __init, {})                                                                \
+      u_va_for_let (i64_t, i, {})                                                                  \
+        for (u_types(self, 0) it = {};                                                             \
+             vec_for(self, &__init, &i, &it, u_va_0th(U_ORDER_ASCEND, __VA_ARGS__));)
 
 #  ifdef __cplusplus
 } /* extern "C" */

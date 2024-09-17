@@ -320,28 +320,34 @@ end:
   u_free_if(node);
 }
 
-pub bool map_for(any_t _self, any_t key, any_t val, any_t* _iter, any_t init) {
+pub bool map_for(any_t _self, bool* init, any_t key, any_t val, any_t* _iter) {
   map_ref_t self = (map_ref_t)_self;
   tnode_t iter   = *(tnode_t*)_iter;
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
 
-  /* init */
-  if (init) {
+  if (!*init) {
+    *init     = true;
     self->idx = 0;
   }
 
   while (true) {
-    iter = tree_tear(self->buckets[self->idx], (tnode_t*)_iter);
+    if (iter == nullptr) {
+      iter = tree_first(self->buckets[self->idx]);
+    } else {
+      iter = tree_next(iter);
+    }
+
     u_brk_if(iter != nullptr);
 
     self->idx++;
-    *_iter = nullptr;
     u_end_if(self->idx == self->bucket_size);
   }
 
   u_end_if(iter);
+
+  *_iter = iter;
 
   memcpy(key, key(iter), self->ksize);
   memcpy(val, val(iter), self->vsize);
