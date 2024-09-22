@@ -86,16 +86,32 @@ pri void inline str_parse(byte_t** ptr, int* len, any_t str, int type) {
   }
 }
 
-pub u_str_t str_new() {
+pub u_str_t str_new(any_t str, int type, int _len) {
   str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
   self = u_talloc(str_t);
   u_end_if(self);
 
   self->ptr = self->buff;
-  self->len = 0;
   self->cap = U_STR_BUFF_SIZE;
 
+  if (str != nullptr) {
+    str_parse(&ptr, &len, str, type);
+    if (_len != 0) {
+      len = _len;
+    }
+
+    if (len > U_STR_BUFF_SIZE) {
+      self->cap = u_align_of_2pow(len);
+      self->ptr = u_zalloc(self->cap + 1);
+    }
+
+    memcpy(&self->ptr[0], ptr, len);
+  }
+
+  self->len            = len;
   self->ptr[self->len] = '\0';
 
   return (u_str_t)(&self->len);

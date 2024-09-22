@@ -26,15 +26,12 @@ test() {
   mut_e(5, s->len);
   mut_t(0 == strcmp(s->ptr, "hello"));
 
-  /*  */
-  s = u_str_t("h%so", "ell");
-  mut_n(s);
-  mut_n(s->ptr);
-  mut_e(5, s->len);
-  mut_t(0 == strcmp(s->ptr, "hello"));
-
   s = u_str_t("l");
   u_str_cat(s, 'o');
+
+  s = u_str_t("hello", 2);
+  mut_e(2, s->len);
+  mut_t(0 == strcmp(s->ptr, "he"));
 
   u_string_t s1 = u_str_t("hello");
 }

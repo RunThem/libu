@@ -51,7 +51,8 @@ typedef struct [[gnu::packed]] {
  * Api
  **************************************************************************************************/
 /* clang-format off */
-extern u_str_t str_new();
+// extern u_str_t str_new();
+extern u_str_t str_new         (any_t, int, int);
 extern void    str_clear       (u_str_t);
 extern void    str_cleanup     (u_str_t);
 extern void    str_gc_cleanup  (u_str_t*);
@@ -79,10 +80,20 @@ extern u_str_t str_sub         (u_str_t, int, int);
 /* clang-format off */
 #  define u_str_t(...)                                                                             \
     ({                                                                                             \
-      u_str_t self = str_new();                                                                    \
+      u_str_t self = nullptr;                                                                      \
+     int __len = 0;                                                                                \
                                                                                                    \
-      u_va_if(u_va_has(__VA_ARGS__)) (                                                             \
-        u_str_cat(self, __VA_ARGS__);                                                              \
+      u_va_elseif(u_va_has(__VA_ARGS__)) (                                                         \
+        u_va_if(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
+          __len = u_va_at(1, __VA_ARGS__);                                                         \
+        )                                                                                          \
+                                                                                                   \
+        self = str_new(                                                                            \
+                       (any_t)(uintptr_t)u_va_at(0, __VA_ARGS__),                                  \
+                       str_type(u_va_at(0, __VA_ARGS__)),                                          \
+                       __len);                                                                     \
+      ) (                                                                                          \
+        self = str_new(nullptr, 0, 0);                                                             \
       )                                                                                            \
                                                                                                    \
       self;                                                                                        \
@@ -110,7 +121,6 @@ extern u_str_t str_sub         (u_str_t, int, int);
     do {                                                                                           \
       str_2lower(self);                                                                            \
     } while (0)
-
 #  define u_str_2upper(self)                                                                       \
     do {                                                                                           \
       str_2upper(self);                                                                            \
