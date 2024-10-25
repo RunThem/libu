@@ -60,9 +60,7 @@ extern "C" {
 #  include <strings.h>
 #  include <sys/socket.h>
 #  include <sys/types.h>
-#  include <threads.h>
 #  include <time.h>
-#  include <ucontext.h>
 #  include <unistd.h>
 
 /* clang-format off */

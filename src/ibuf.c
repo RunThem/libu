@@ -29,7 +29,6 @@
  **************************************************************************************************/
 typedef struct {
   bool is_alloc;
-  bool is_append;
   size_t cap;
 
   u8_t* rawbuf;
@@ -103,13 +102,8 @@ pub void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
   u_chk_if(buf);
   u_chk_if(len > self->end - self->begin);
 
-  if (self->is_append) {
-    self->end -= len;
-    memcpy(buf, self->end, len);
-  } else {
-    memcpy(buf, self->begin, len);
-    self->begin += len;
-  }
+  memcpy(buf, self->begin, len);
+  self->begin += len;
 }
 
 pub void buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
