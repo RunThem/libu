@@ -33,7 +33,6 @@
 fn_compe_def(char, (x == y), (x > y));
 fn_compe_def(int, (x == y), (x > y));
 fn_compe_def(uint, (x == y), (x > y));
-
 fn_compe_def(byte_t, (x == y), (x > y));
 fn_compe_def(i8_t, (x == y), (x > y));
 fn_compe_def(u8_t, (x == y), (x > y));
@@ -70,31 +69,32 @@ pub inline u_hash_t u_hash_int64bit(const u8_t* ptr, size_t len) { return (u_has
 pub void __printb(u_cstr_t name, const u8_t* mem, size_t size) {
   u8_t byte = 0;
 
-#if 0
-  println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);
+  printf("\x1b[36;1m%s\x1b[0m(%ld)\n", name, size);
 
-  for (ssize_t i = (ssize_t)size - 1; i >= 0; i--) {
-    byte = mem[i];
+  for (size_t pos = 0; pos < size; pos++) {
+    byte = mem[pos];
 
-    print("    %u%u%u%u%u%u%u%u",
-          bit(byte, 7),
-          bit(byte, 6),
-          bit(byte, 7),
-          bit(byte, 4),
-          bit(byte, 3),
-          bit(byte, 2),
-          bit(byte, 1),
-          bit(byte, 0));
+    if ((pos % 8) == 0) {
+      printf("  0x%08lx: ", pos);
+    }
 
-    if (i != 0 && (i + 1) % 2) {
-      print("\n");
-    } else {
-      print(" ");
+    printf("%d%d%d%d%d%d%d%d %s",
+           bit(byte, 7),
+           bit(byte, 6),
+           bit(byte, 5),
+           bit(byte, 4),
+           bit(byte, 3),
+           bit(byte, 2),
+           bit(byte, 1),
+           bit(byte, 0),
+           (pos % 4) == 3 ? " " : "");
+
+    if (pos != 0 && pos != size - 1 && (pos + 1) % 8 == 0) {
+      printf("\n");
     }
   }
 
-  println();
-#endif
+  printf("\n");
 }
 
 pub void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
@@ -103,23 +103,22 @@ pub void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
   size_t pos   = 0;
   size_t idx   = 0;
 
-#if 0
-  println("\x1b[36;1m%s\x1b[0m(%ld)", name, size);
+  printf("\x1b[36;1m%s\x1b[0m(%ld)\n", name, size);
 
   for (; pos < size; pos++) {
     if ((pos % 16) == 0) {
-      print("   %08lx: ", pos);
+      printf("  0x%08lx: ", pos);
     }
 
-    print("%02x %s", mem[pos] & 0xff, (pos % 16) == 7 ? " " : "");
+    printf("%02x %s", mem[pos] & 0xff, (pos % 16) == 7 ? " " : "");
     if ((pos % 16) == 15) {
-      u_arr_for (buf, i, it) {
-        idx = pos - 16 + i;
-        *it = isprint(mem[idx]) ? mem[idx] : '.';
+      for (i = 0; i < sizeof(buf) - 1; i++) {
+        idx    = pos - 15 + i;
+        buf[i] = isprint(mem[idx]) ? mem[idx] : '.';
       }
 
       buf[i - 1] = '\0';
-      println("%s", buf);
+      printf("%s\n", buf);
     }
   }
 
@@ -130,9 +129,8 @@ pub void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
     }
 
     buf[i - 1] = '\0';
-    println("%*s", 47 - 3 * ((int)pos % 16) + (int)i, buf);
+    printf("%*s\n", 47 - 3 * ((int)pos % 16) + (int)i, buf);
   }
-#endif
 }
 
 /***************************************************************************************************
