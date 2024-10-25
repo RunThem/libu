@@ -57,7 +57,6 @@ fn_compe_def(u_str_t, (x->len == y->len && 0 == strcmp(x->ptr, y->ptr)), (strcmp
  * Hahs function
  **************************************************************************************************/
 /* clang-format off */
-[[gnu::unused]]
 pub inline u_hash_t u_hash_int8bit(const u8_t* ptr, size_t len)  { return (u_hash_t) * (u8_t*)ptr; }
 pub inline u_hash_t u_hash_int16bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u16_t*)ptr; }
 pub inline u_hash_t u_hash_int32bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u32_t*)ptr; }
