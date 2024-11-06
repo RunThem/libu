@@ -25,6 +25,10 @@ rule('generic', function()
           ---@return table
           local function handle(sourcefile)
             local tbl = { run = false, {}, {} }
+            local pattern = '#%[%[(.-)%]%]'
+            local content = io.readfile(sourcefile)
+
+            local all_tbl = {}
 
             ---@param tbl table<string>
             ---@return T
@@ -77,6 +81,12 @@ rule('generic', function()
                   typ = ('%s<%s>'):format(t.typ, arg0)
                 end
 
+                if all_tbl[typ] ~= nil then
+                  return ''
+                end
+
+                all_tbl[typ] = true
+
                 if t.typ == 'map' or t.typ == 'tree' then
                   txt = ('typeof(__u_%s_ref_t(*)(%s*, %s*)): (%s){}'):format(t.typ, arg0, arg1, arg0)
                   table.insert(tbl[1], txt)
@@ -95,11 +105,6 @@ rule('generic', function()
 
               return g_typ
             end
-
-            local pattern = '#%[%[(.-)%]%]'
-            local content = io.readfile(sourcefile)
-
-            local all_tbl = {}
 
             for code in string.gmatch(content, pattern) do
               local types = code:gsub('%s+', ' '):gsub('[<>,]', '$'):split('$', { plain = true })
