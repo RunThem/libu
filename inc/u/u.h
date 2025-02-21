@@ -31,10 +31,6 @@
 extern "C" {
 #  endif
 
-#  if 0
-#    define u_defs(type, ...) u_va_map(_u_##type##_defs, __VA_ARGS__)
-#  endif
-
 #  if defined(__clang__) && __clang_major__ < 16
 #    error "Please use the Clang.v16 or later toolchain."
 #  endif
@@ -71,18 +67,19 @@ extern "C" {
 #  include "utils/misc.h"
 #  include "utils/debug.h"
 #  include "utils/print.h"
+
 #  include "iatomic.h"
-#  include "iavl.h"
-#  include "ibuf.h"
 #  include "ilock.h"
-#  include "idbg.h"
-#  include "ilst.h"
-#  include "imap.h"
-#  include "iset.h"
-#  include "ivec.h"
-#  include "ilfq.h"
-#  include "iheap.h"
+
+#  include "ibuf.h"
 #  include "istr.h"
+#  include "ilfq.h"
+
+#  include "ivec.h"
+#  include "imap.h"
+#  include "ilist.h"
+#  include "itree.h"
+#  include "iheap.h"
 /* clang-format on */
 
 #  ifdef __cplusplus

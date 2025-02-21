@@ -2,7 +2,7 @@
 set_project('libu')
 
 --- Project version
-set_version('3.0.0')
+set_version('4.0.0')
 
 --- xmake configure
 set_xmakever('2.6.1')
@@ -37,7 +37,7 @@ add_cflags(
 --- Use reserved identifier
 add_cflags('-Wno-reserved-macro-identifier', '-Wno-reserved-identifier')
 
---- Disable VLA extensons
+--- Disable VLA extensions
 add_cflags('-Werror=vla')
 
 --- Repositories
@@ -78,8 +78,6 @@ target('u', function()
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })
   end
-
-  add_rules('generic')
 end)
 
 includes('dev', 'tests')

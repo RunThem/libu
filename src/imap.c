@@ -24,50 +24,46 @@
 
 #include <u/u.h>
 
-#ifdef USE_MIMALLOC
-#  define U_PRI_ALLOC(size) mi_calloc(size, 1)
-#  define U_PRI_FREE(ptr)   mi_free(ptr)
-#endif
-
-#define U_PRI_TREE_USERDATA                                                                        \
-  size_t ksize;                                                                                    \
-  u_hash_t hash
-
-#include <u/pri.h>
-
-/***************************************************************************************************
- * Tyoe
- **************************************************************************************************/
-typedef struct {
-  i64_t ksize;
-  i64_t vsize;
-  i64_t len;
-
-  u_hash_fn hash_fn;
-
-  int mask_size;
-  int bucket_size;
-  tree_t* buckets;
-
-  /* iterator index */
-  int idx;
-
-  /* buffer */
-  tnode_t key;
-} map_t, *map_ref_t;
+#include <u/tree.h>
+U_TREE_DEFINE(m, u_malloc, u_free, int ksize; u_hash_t hash)
 
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
 #define U_MAP_BUCKET_INIT_SIZE 8
 
+#undef key
 #define key(node) (node->u)
+
+#undef val
 #define val(node) (node->u + self->ksize)
+
+/***************************************************************************************************
+ * type
+ **************************************************************************************************/
+typedef struct map_t map_t, *map_ref_t;
+struct map_t {
+  typeof_unqual(*(u_map_t(map_ref_t, map_ref_t)){}) m;
+
+  i32_t ksize;
+  i32_t vsize;
+  i32_t len;
+
+  u_hash_fn hash_fn;
+
+  int mask_size;
+  int bucket_size;
+  mtree_t* buckets;
+
+  /* iterator index or node */
+  int iter_idx;
+  mnode_t iter_node;
+};
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static inline int node_cmp(tnode_t x, tnode_t y) {
+static inline int node_cmp(mnode_t x, mnode_t y) {
   if (x->hash == y->hash) {
     return memcmp(x->u, y->u, x->ksize);
   }
@@ -88,11 +84,11 @@ pri inline u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
 }
 
 pri void map_rehash(map_ref_t self) {
-  tree_t* buckets = nullptr;
-  tnode_t next    = nullptr;
-  tnode_t node    = nullptr;
-  int bucket_size = self->bucket_size;
-  i64_t limit     = 0;
+  mtree_t* buckets = nullptr;
+  mnode_t next     = nullptr;
+  mnode_t node     = nullptr;
+  int bucket_size  = self->bucket_size;
+  i64_t limit      = 0;
 
   limit = (self->len * 6) >> 2;
   u_end_if(limit <= self->bucket_size);
@@ -101,21 +97,21 @@ pri void map_rehash(map_ref_t self) {
     bucket_size <<= 1;
   }
 
-  buckets = u_calloc(sizeof(tree_t), bucket_size);
+  buckets = u_calloc(sizeof(mtree_t), bucket_size);
   u_end_if(buckets);
 
   for (int i = 0; i < bucket_size; i++) {
-    buckets[i] = tree_new(node_cmp);
+    buckets[i] = mtree_new(node_cmp);
   }
 
   for (int i = 0; i < self->bucket_size; i++) {
     if (self->buckets[i]->len != 0) {
-      while ((node = tree_tear(self->buckets[i], &next))) {
-        tree_put(buckets[node->hash % bucket_size], node);
+      while ((node = mtree_tear(self->buckets[i], &next))) {
+        mtree_put(buckets[node->hash % bucket_size], node);
       }
     }
 
-    tree_del(self->buckets[i]);
+    mtree_del(self->buckets[i]);
   }
 
   self->bucket_size = bucket_size;
@@ -127,7 +123,7 @@ pri void map_rehash(map_ref_t self) {
 end:
 }
 
-pub any_t map_new(i64_t ksize, i64_t vsize, u_hash_fn hash_fn) {
+pub any_t $map_new(i32_t ksize, i32_t vsize, u_hash_fn hash_fn) {
   map_ref_t self = nullptr;
 
   assert(ksize);
@@ -135,43 +131,43 @@ pub any_t map_new(i64_t ksize, i64_t vsize, u_hash_fn hash_fn) {
   self = u_zalloc(sizeof(map_t));
   u_end_if(self);
 
-  self->key = tree_new_node(ksize + vsize);
-  u_end_if(self->key);
+  self->iter_node = mtree_new_node(ksize + vsize);
+  u_end_if(self->iter_node);
 
   self->mask_size   = U_MAP_BUCKET_INIT_SIZE - 1;
   self->bucket_size = U_MAP_BUCKET_INIT_SIZE;
-  self->buckets     = u_calloc(sizeof(tree_t), self->bucket_size);
+  self->buckets     = u_calloc(sizeof(mtree_t), self->bucket_size);
   u_end_if(self->buckets);
 
   for (int i = 0; i < self->bucket_size; i++) {
-    self->buckets[i] = tree_new(node_cmp);
+    self->buckets[i] = mtree_new(node_cmp);
     u_end_if(self->buckets[i]);
   }
 
-  self->key->ksize = ksize;
-  self->ksize      = ksize;
-  self->vsize      = vsize;
-  self->len        = 0;
-  self->hash_fn    = hash_fn ? hash_fn : hash_fnv64bit;
+  self->iter_node->ksize = ksize;
+  self->ksize            = ksize;
+  self->vsize            = vsize;
+  self->hash_fn          = hash_fn ? hash_fn : hash_fnv64bit;
+  self->m.ref            = self;
 
   return self;
 
 end:
   for (int i = 0; self && i < self->bucket_size; i++) {
-    tree_del(self->buckets[i]);
+    mtree_del(self->buckets[i]);
   }
 
   u_free_if(self->buckets);
-  u_free_if(self->key);
+  u_free_if(self->iter_node);
   u_free_if(self);
 
   return nullptr;
 }
 
-pub void map_clear(any_t _self) {
+pub void $map_clear(any_t _self) {
   map_ref_t self = (map_ref_t)_self;
-  tnode_t node   = nullptr;
-  tnode_t next   = nullptr;
+  mnode_t node   = nullptr;
+  mnode_t next   = nullptr;
 
   u_chk_if(self);
 
@@ -180,12 +176,13 @@ pub void map_clear(any_t _self) {
       continue;
     }
 
-    while ((node = tree_tear(self->buckets[i], &next))) {
-      tree_del_node(node);
+    while ((node = mtree_tear(self->buckets[i], &next))) {
+      mtree_del_node(node);
     }
   }
 
-  self->len = 0;
+  self->len   = 0;
+  self->m.len = 0;
 }
 
 pub void map_cleanup(any_t _self) {
@@ -194,44 +191,17 @@ pub void map_cleanup(any_t _self) {
   u_chk_if(self);
 
   for (int i = 0; i < self->bucket_size; i++) {
-    tree_del(self->buckets[i]);
+    mtree_del(self->buckets[i]);
   }
 
   u_free(self->buckets);
-  u_free(self->key);
+  u_free(self->iter_node);
   u_free(self);
 }
 
-pub inline i64_t map_len(any_t _self) {
+pub any_t $map_at(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
-
-  u_chk_if(self, -1);
-
-  return self->len;
-}
-
-pub bool map_is_exist(any_t _self, any_t key) {
-  map_ref_t self = (map_ref_t)_self;
-  tnode_t node   = nullptr;
-  u_hash_t hash  = 0;
-  int idx        = 0;
-
-  u_chk_if(self, false);
-
-  hash = self->hash_fn(key, self->ksize);
-  idx  = (int)(hash & self->mask_size);
-
-  self->key->hash = hash;
-  memcpy(key(self->key), key, self->ksize);
-
-  node = tree_at(self->buckets[idx], self->key);
-
-  return node;
-}
-
-pub any_t map_at(any_t _self, any_t key) {
-  map_ref_t self = (map_ref_t)_self;
-  tnode_t node   = nullptr;
+  mnode_t node   = nullptr;
   u_hash_t hash  = 0;
   int idx        = 0;
 
@@ -240,11 +210,15 @@ pub any_t map_at(any_t _self, any_t key) {
   hash = self->hash_fn(key, self->ksize);
   idx  = (int)(hash & self->mask_size);
 
-  self->key->hash = hash;
-  memcpy(key(self->key), key, self->ksize);
+  self->iter_node->hash = hash;
+  memcpy(key(self->iter_node), key, self->ksize);
 
-  node = tree_at(self->buckets[idx], self->key);
+  node = mtree_at(self->buckets[idx], self->iter_node);
   u_end_if(node);
+
+  if (val != nullptr) {
+    memcpy(val(node), val, self->vsize);
+  }
 
   return val(node);
 
@@ -252,9 +226,9 @@ end:
   return nullptr;
 }
 
-pub void map_pop(any_t _self, any_t key, any_t val) {
+pub void $map_pop(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
-  tnode_t node   = nullptr;
+  mnode_t node   = nullptr;
   u_hash_t hash  = 0;
   int result     = 0;
   int idx        = 0;
@@ -264,28 +238,29 @@ pub void map_pop(any_t _self, any_t key, any_t val) {
   hash = self->hash_fn(key, self->ksize);
   idx  = (int)(hash & self->mask_size);
 
-  self->key->hash = hash;
-  memcpy(key(self->key), key, self->ksize);
+  self->iter_node->hash = hash;
+  memcpy(key(self->iter_node), key, self->ksize);
 
-  node = tree_at(self->buckets[idx], self->key);
+  node = mtree_at(self->buckets[idx], self->iter_node);
   u_end_if(node);
 
   memcpy(val, val(node), self->vsize);
 
-  tree_pop(self->buckets[idx], node);
-  tree_del_node(node);
+  mtree_pop(self->buckets[idx], node);
+  mtree_del_node(node);
 
   self->len--;
+  self->m.len--;
 
   return;
 
 end:
 }
 
-pub void map_put(any_t _self, any_t key, any_t val) {
+pub void $map_put(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
-  tree_t tree    = nullptr;
-  tnode_t node   = nullptr;
+  mtree_t tree   = nullptr;
+  mnode_t node   = nullptr;
   u_hash_t hash  = 0;
   int result     = 0;
 
@@ -294,7 +269,7 @@ pub void map_put(any_t _self, any_t key, any_t val) {
   hash = self->hash_fn(key, self->ksize);
   tree = self->buckets[hash & self->mask_size];
 
-  node = tree_new_node(self->ksize + self->vsize);
+  node = mtree_new_node(self->ksize + self->vsize);
   u_end_if(node);
 
   node->ksize = (int)self->ksize;
@@ -306,13 +281,14 @@ pub void map_put(any_t _self, any_t key, any_t val) {
     tree->root = node;
     tree->len++;
   } else {
-    result = tree_put(tree, node);
+    result = mtree_put(tree, node);
     u_end_if(result == false);
   }
 
   map_rehash(self);
 
   self->len++;
+  self->m.len++;
 
   return;
 
@@ -320,37 +296,38 @@ end:
   u_free_if(node);
 }
 
-pub bool map_for(any_t _self, bool* init, any_t key, any_t val, any_t* _iter) {
+pub bool $map_each(any_t _self, any_t key, any_t val) {
   map_ref_t self = (map_ref_t)_self;
-  tnode_t iter   = *(tnode_t*)_iter;
+  mnode_t iter   = nullptr;
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
 
-  if (!*init) {
-    *init     = true;
-    self->idx = 0;
-  }
+  if (key == nullptr) {
+    self->iter_idx  = 0;
+    self->iter_node = nullptr;
+  } else {
+    iter = self->iter_node;
+    while (true) {
+      if (iter == nullptr) {
+        iter = mtree_first(self->buckets[self->iter_idx]);
+      } else {
+        iter = mtree_next(iter);
+      }
 
-  while (true) {
-    if (iter == nullptr) {
-      iter = tree_first(self->buckets[self->idx]);
-    } else {
-      iter = tree_next(iter);
+      u_brk_if(iter != nullptr);
+
+      self->iter_idx++;
+      u_end_if(self->iter_idx == self->bucket_size);
     }
 
-    u_brk_if(iter != nullptr);
+    u_end_if(iter);
 
-    self->idx++;
-    u_end_if(self->idx == self->bucket_size);
+    self->iter_node = iter;
+
+    memcpy(key, key(iter), self->ksize);
+    memcpy(val, val(iter), self->vsize);
   }
-
-  u_end_if(iter);
-
-  *_iter = iter;
-
-  memcpy(key, key(iter), self->ksize);
-  memcpy(val, val(iter), self->vsize);
 
   return true;
 

@@ -21,8 +21,9 @@
  * SOFTWARE.
  *
  * */
+#if 0
 
-#include <u/u.h>
+#  include <u/u.h>
 
 /***************************************************************************************************
  * Type
@@ -39,7 +40,7 @@ typedef struct {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pub u_buf_ref_t buf_new(u8_t* buf, size_t cap) {
+pub u_buf_ref_t $buf_new(u8_t* buf, size_t cap) {
   buf_ref_t self = nullptr;
 
   self = u_talloc(buf_t);
@@ -66,7 +67,7 @@ end:
   return nullptr;
 }
 
-pub void buf_clear(u_buf_ref_t _self) {
+pub void $buf_clear(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self);
@@ -75,7 +76,7 @@ pub void buf_clear(u_buf_ref_t _self) {
   self->end   = self->rawbuf;
 }
 
-pub void buf_cleanup(u_buf_ref_t _self) {
+pub void $buf_cleanup(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self);
@@ -87,7 +88,7 @@ pub void buf_cleanup(u_buf_ref_t _self) {
   u_free(self);
 }
 
-pub size_t buf_len(u_buf_ref_t _self) {
+pub size_t $buf_len(u_buf_ref_t _self) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self, -1);
@@ -95,7 +96,7 @@ pub size_t buf_len(u_buf_ref_t _self) {
   return self->end - self->begin;
 }
 
-pub void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
+pub void $buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
   buf_ref_t self = (buf_ref_t)_self;
 
   u_chk_if(self);
@@ -106,7 +107,7 @@ pub void buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
   self->begin += len;
 }
 
-pub void buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
+pub void $buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
   size_t diff    = 0;
   size_t size    = 0;
   buf_ref_t self = (buf_ref_t)_self;
@@ -145,3 +146,4 @@ pub void buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
 
 end:
 }
+#endif

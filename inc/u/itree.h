@@ -19,12 +19,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  * */
 
 #pragma once
 
-#ifndef U_IMAP_H__
-#  define U_IMAP_H__
+#ifndef U_ITREE_H__
+#  define U_ITREE_H__
 
 #  ifdef __cplusplus
 extern "C" {
@@ -35,18 +36,19 @@ extern "C" {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t $map_new      (i32_t, i32_t, u_hash_fn);
-extern void  $map_clear    (any_t);
-extern void  $map_cleanup  (any_t);
-extern any_t $map_at       (any_t, any_t, any_t);
-extern void  $map_pop      (any_t, any_t, any_t);
-extern void  $map_put      (any_t, any_t, any_t);
-extern bool  $map_each     (any_t, any_t, any_t);
+extern any_t $tree_new      (i32_t, i32_t, u_cmp_fn);
+extern bool  $tree_is_exist (any_t, any_t);
+extern void  $tree_clear    (any_t);
+extern void  $tree_cleanup  (any_t);
+extern any_t $tree_at       (any_t, any_t, any_t);
+extern void  $tree_pop      (any_t, any_t, any_t);
+extern void  $tree_put      (any_t, any_t, any_t);
+extern bool  $tree_each     (any_t, any_t, any_t);
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_map_t(K, V)                                                                            \
+#  define u_tree_t(K, V)                                                                           \
     typeof(const struct [[gnu::packed]] {                                                          \
       void* ref;                                                                                   \
       int len;                                                                                     \
@@ -57,80 +59,80 @@ extern bool  $map_each     (any_t, any_t, any_t);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#  define u_map_new(K, V, ...)                                                                     \
+#  define u_tree_new(K, V, cmp_fn)                                                                 \
     ({                                                                                             \
-      u_map_t(K, V) self = $map_new(sizeof(K), sizeof(V), u_va_0th(nullptr, __VA_ARGS__));         \
+      u_tree_t(K, V) self = $tree_new(sizeof(K), sizeof(V), cmp_fn);                               \
                                                                                                    \
       self->ref;                                                                                   \
     })
 
-#  define u_map_is_empty(self)                                                                     \
+#  define u_tree_is_empty(self)                                                                    \
     ({                                                                                             \
-      0 == map_len(self);                                                                          \
+      0 == tree_len(self->ref);                                                                    \
     })
 
-#  define u_map_is_exist(self, k)                                                                  \
+#  define u_tree_is_exist(self, k)                                                                 \
     ({                                                                                             \
       typeof_unqual(self->_[0]) __it__ = {k};                                                      \
                                                                                                    \
-      nullptr != $map_at(self->ref, &__it__.key, nullptr);                                         \
+      nullptr != $tree_at(self->ref, &__it__.key, nullptr);                                        \
     })
 
-#  define u_map_clear(self)                                                                        \
+#  define u_tree_clear(self)                                                                       \
     do {                                                                                           \
-      $map_clear(self->ref);                                                                       \
+      $tree_clear(self->ref);                                                                      \
     } while (0)
 
-#  define u_map_cleanup(self)                                                                      \
+#  define u_tree_cleanup(self)                                                                     \
     do {                                                                                           \
-      $map_cleanup(self->ref);                                                                     \
+      $tree_cleanup(self->ref);                                                                    \
                                                                                                    \
       self = nullptr;                                                                              \
     } while (0)
 
-#  define u_map_at(self, k, ...)                                                                   \
+#  define u_tree_at(self, k, ...)                                                                  \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
         typeof_unqual(self->_[0]) __it__ = {k, u_va_at(0, __VA_ARGS__)};                           \
                                                                                                    \
-        $map_at(self->ref, &__it__.key, &__it__.val);                                              \
+        $tree_at(self->ref, &__it__.key, &__it__.val);                                             \
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
         typeof_unqual(self->_[0].key) __key__  = k;                                                \
         typeof_unqual(self->_[0].val)* __val__ = nullptr;                                          \
                                                                                                    \
-        __val__ = $map_at(self->ref, &__key__, nullptr);                                           \
+        __val__ = $tree_at(self->ref, &__key__, nullptr);                                          \
                                                                                                    \
         *__val__;                                                                                  \
       })                                                                                           \
     )
 
-#  define u_map_try(self, k)                                                                       \
+#  define u_tree_try(self, k)                                                                      \
     for (typeof_unqual(self->_[0].val)* it =                                                       \
-             $map_at(self->ref, &(typeof_unqual(self->_[0].key)){k}, nullptr);                     \
+             $tree_at(self->ref, &(typeof_unqual(self->_[0].key)){k}, nullptr);                    \
          it;                                                                                       \
          it = nullptr)
 
-#  define u_map_pop(self, k)                                                                       \
+#  define u_tree_pop(self, k)                                                                      \
     ({                                                                                             \
       typeof_unqual(self->_[0]) __it__ = {k};                                                      \
                                                                                                    \
-      $map_pop(self->ref, &__it__.key, &__it__.val);                                               \
+      $tree_pop(self->ref, &__it__.key, &__it__.val);                                              \
                                                                                                    \
       __it__.val;                                                                                  \
     })
 
-#  define u_map_put(self, k, v)                                                                    \
+#  define u_tree_put(self, k, v)                                                                   \
     do {                                                                                           \
       typeof_unqual(self->_[0]) __it__ = {k, v};                                                   \
                                                                                                    \
-      $map_put(self->ref, &__it__.key, &__it__.val);                                               \
+      $tree_put(self->ref, &__it__.key, &__it__.val);                                              \
     } while (0)
 
-#  define u_map_each(self, it)                                                                     \
-    $map_each(self->ref, nullptr, nullptr);                                                        \
-    for (typeof_unqual(self->_[0]) it = {}; $map_each(self->ref, &it.key, &it.val);)
+#  define u_tree_each(self, it)                                                                    \
+    $tree_each(self->ref, nullptr, nullptr);                                                       \
+    for (typeof_unqual(self->_[0]) it = {}; $tree_each(self->ref, &it.key, &it.val);)
 
 /* clang-format on */
 
@@ -138,4 +140,4 @@ extern bool  $map_each     (any_t, any_t, any_t);
 } /* extern "C" */
 #  endif
 
-#endif /* !U_IMAP_H__ */
+#endif /* !U_ITREE_H__ */

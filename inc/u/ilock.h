@@ -31,6 +31,8 @@
 extern "C" {
 #  endif
 
+/* clang-format off */
+
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
@@ -46,7 +48,6 @@ typedef struct {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-/* clang-format off */
 extern void u_spmtx_init    (u_spmtx_ref_t);
 extern void u_spmtx_lock    (u_spmtx_ref_t);
 extern void u_spmtx_unlock  (u_spmtx_ref_t);
@@ -55,7 +56,6 @@ extern void u_rwmtx_rlock   (u_rwmtx_ref_t);
 extern void u_rwmtx_runlock (u_rwmtx_ref_t);
 extern void u_rwmtx_wlock   (u_rwmtx_ref_t);
 extern void u_rwmtx_wunlock (u_rwmtx_ref_t);
-/* clang-format on */
 
 /***************************************************************************************************
  * iApi
@@ -67,6 +67,8 @@ extern void u_rwmtx_wunlock (u_rwmtx_ref_t);
 
 #  define u_rwmtx_if(mtx, m)                                                                       \
     for (bool _ = ({ u_rwmtx_##m##lock(mtx), true; }); _; _ = false, u_rwmtx_##m##unlock(mtx))
+
+/* clang-format on */
 
 #  ifdef __cplusplus
 } /* extern "C" */

@@ -22,46 +22,54 @@
  *
  * */
 
-#include "u/utils/debug.h"
 #include <u/u.h>
 
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
-#define left(i)   (i * 2 + 1)
-#define right(i)  (i * 2 + 2)
+#undef left
+#define left(i) (i * 2 + 1)
+
+#undef right
+#define right(i) (i * 2 + 2)
+
+#undef parent
 #define parent(i) ((i - 1) / 2)
 
-#define at(idx) (self->root + self->itsize * (idx))
+#undef at
+#define at(idx) (self->items + self->itsize * (idx))
 
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef struct {
+typedef struct heap_t heap_t, *heap_ref_t;
+struct [[gnu::packed]] heap_t {
+  typeof_unqual(*(u_vec_t(heap_ref_t)){}) m;
+
   u_order_e order; /* { true: min, false: max } */
-  i64_t itsize;
-  i64_t len;
-  i64_t cap;
+  i32_t itsize;
+  i32_t len;
+  i32_t cap;
 
   u_cmp_fn cmp_fn;
 
-  any_t root;
-} heap_t, *heap_ref_t;
+  any_t items;
+};
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri ret_t heap_resize(heap_ref_t self) {
-  i64_t cap  = 0;
+pri int heap_resize(heap_ref_t self) {
+  i32_t cap  = 0;
   any_t root = nullptr;
 
   cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
 
-  root = u_realloc(self->root, self->itsize * cap);
+  root = u_realloc(self->items, self->itsize * cap);
   u_end_if(root);
 
-  self->root = root;
-  self->cap  = cap;
+  self->items = root;
+  self->cap   = cap;
 
   return 0;
 
@@ -69,7 +77,7 @@ end:
   return -1;
 }
 
-pub any_t heap_new(i64_t itsize, u_order_e order, u_cmp_fn fn) {
+pub any_t $heap_new(i32_t itsize, u_order_e order, u_cmp_fn fn) {
   heap_ref_t self = nullptr;
 
   u_chk_if(itsize == 0, nullptr);
@@ -77,14 +85,15 @@ pub any_t heap_new(i64_t itsize, u_order_e order, u_cmp_fn fn) {
   self = u_talloc(heap_t);
   u_end_if(self);
 
-  self->root = u_calloc(32, itsize);
-  u_end_if(self->root);
+  self->items = u_calloc(32, itsize);
+  u_end_if(self->items);
 
   self->itsize = itsize;
   self->cmp_fn = fn;
-  self->len    = 0;
-  self->cap    = 32;
   self->order  = order;
+  self->cap    = 32;
+  self->m.cap  = 32;
+  self->m.ref  = self;
 
   return self;
 
@@ -94,41 +103,34 @@ end:
   return nullptr;
 }
 
-pub void heap_clear(any_t _self) {
+pub void $heap_clear(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self);
 
-  self->len = 0;
+  self->len   = 0;
+  self->m.len = 0;
 }
 
-pub void heap_cleanup(any_t _self) {
+pub void $heap_cleanup(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
   u_chk_if(self);
 
-  u_free_if(self->root);
+  u_free_if(self->items);
   u_free_if(self);
 }
 
-pub i64_t heap_len(any_t _self) {
+pub any_t $heap_at(any_t _self) {
   heap_ref_t self = (heap_ref_t)_self;
 
-  u_chk_if(self, -1);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
-  return self->len;
+  return self->items;
 }
 
-pub void heap_at(any_t _self, any_t item) {
-  heap_ref_t self = (heap_ref_t)_self;
-
-  u_chk_if(self);
-  u_chk_if(self->len == 0);
-
-  memcpy(item, self->root, self->itsize);
-}
-
-pub void heap_pop(any_t _self, any_t item) {
+pub void $heap_pop(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
   i64_t idx       = 0;
   i64_t lidx      = 0;
@@ -138,7 +140,7 @@ pub void heap_pop(any_t _self, any_t item) {
   u_chk_if(self);
   u_chk_if(self->len == 0);
 
-  memcpy(item, self->root, self->itsize);
+  memcpy(item, self->items, self->itsize);
 
   while (true) {
     lidx = left(pidx);
@@ -169,15 +171,12 @@ pub void heap_pop(any_t _self, any_t item) {
   memcpy(at(idx), at(self->len - 1), self->itsize);
 
   self->len--;
-
-  return;
-
-end:
+  self->m.len--;
 }
 
-pub void heap_put(any_t _self, any_t item) {
+pub void $heap_put(any_t _self, any_t item) {
   heap_ref_t self = (heap_ref_t)_self;
-  ret_t result    = 0;
+  int result      = 0;
   i64_t idx       = 0;
   i64_t pidx      = 0;
 
@@ -199,6 +198,7 @@ pub void heap_put(any_t _self, any_t item) {
   memcpy(at(idx), item, self->itsize);
 
   self->len++;
+  self->m.len++;
 
   return;
 

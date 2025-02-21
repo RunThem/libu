@@ -1,11 +1,12 @@
-local deps = { 'libsock', 'avlmini' }
+local deps = { 'mimalloc' }
 
 add_requires(unpack(deps))
 
 target('dep', function()
   set_kind('static')
   set_default('false')
-  -- add_files('')
+
+  add_packages(unpack(deps))
 end)
 
 target('dev.c', function()
@@ -16,7 +17,7 @@ target('dev.c', function()
 
   add_rules('generic')
 
-  add_deps('dep')
+  -- add_deps('dep')
   add_deps('u')
 
   add_packages(unpack(deps))

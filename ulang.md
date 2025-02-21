@@ -57,5 +57,7 @@ fn main() {
   let nu128: u128 = 0;
 
   let s: str = 'hello';
+
+  fmt::println("{}", s);
 }
 ```

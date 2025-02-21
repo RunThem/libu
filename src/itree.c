@@ -25,35 +25,13 @@
 #include <u/u.h>
 
 /***************************************************************************************************
- * Type
- **************************************************************************************************/
-typedef struct node_t node_t, *node_ref_t;
-struct node_t {
-  node_ref_t left;
-  node_ref_t right;
-  node_ref_t parent;
-  i64_t height;
-};
-
-typedef struct {
-  i64_t ksize;
-  i64_t vsize;
-  i64_t len;
-
-  u_cmp_fn cmp_fn;
-
-  node_ref_t root;
-  node_ref_t free;
-} avl_t, *avl_ref_t;
-
-/***************************************************************************************************
  * Macro
  **************************************************************************************************/
 #undef key
-#define key(node) (any(node) + sizeof(node_t))
+#define key(node) (any(node) + sizeof(tnode_t))
 
 #undef val
-#define val(node) (any(node) + sizeof(node_t) + self->ksize)
+#define val(node) (any(node) + sizeof(tnode_t) + self->ksize)
 
 #undef lh
 #define lh(node) (((node)->left) ? ((node)->left)->height : 0)
@@ -68,16 +46,42 @@ typedef struct {
   } while (0)
 
 /***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+typedef struct tnode_t tnode_t, *tnode_ref_t;
+struct tnode_t {
+  tnode_ref_t left;
+  tnode_ref_t right;
+  tnode_ref_t parent;
+  i32_t height;
+};
+
+typedef struct tree_t tree_t, *tree_ref_t;
+struct tree_t {
+  typeof_unqual(*(u_tree_t(tree_ref_t, tree_ref_t)){}) m;
+
+  i32_t ksize;
+  i32_t vsize;
+  i32_t len;
+
+  u_cmp_fn cmp_fn;
+
+  tnode_ref_t root;
+  tnode_ref_t free;
+  tnode_ref_t iter; /* iter */
+};
+
+/***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri node_ref_t avl_new_node(avl_ref_t self, node_ref_t parent, any_t key, any_t val) {
-  node_ref_t node = nullptr;
+pri tnode_ref_t tree_new_node(tree_ref_t self, tnode_ref_t parent, any_t key, any_t val) {
+  tnode_ref_t node = nullptr;
 
   if (self->free) {
     node       = self->free;
     self->free = node->parent;
   } else {
-    node = u_zalloc(sizeof(node_t) + self->ksize + self->vsize);
+    node = u_zalloc(sizeof(tnode_t) + self->ksize + self->vsize);
     u_end_if(node);
   }
 
@@ -95,8 +99,10 @@ end:
   return nullptr;
 }
 
-pri inline void
-    avl_child_replace(avl_ref_t self, node_ref_t parent, node_ref_t oldnode, node_ref_t newnode) {
+pri inline void tree_child_replace(tree_ref_t self,
+                                   tnode_ref_t parent,
+                                   tnode_ref_t oldnode,
+                                   tnode_ref_t newnode) {
   if (!parent) {
     self->root = newnode;
     return;
@@ -109,9 +115,9 @@ pri inline void
   }
 }
 
-pri inline node_ref_t avl_rotate_left(avl_ref_t self, node_ref_t node) {
-  node_ref_t right  = node->right;
-  node_ref_t parent = node->parent;
+pri inline tnode_ref_t tree_rotate_left(tree_ref_t self, tnode_ref_t node) {
+  tnode_ref_t right  = node->right;
+  tnode_ref_t parent = node->parent;
 
   node->right = right->left;
   if (right->left) {
@@ -121,16 +127,16 @@ pri inline node_ref_t avl_rotate_left(avl_ref_t self, node_ref_t node) {
   right->left   = node;
   right->parent = parent;
 
-  avl_child_replace(self, parent, node, right);
+  tree_child_replace(self, parent, node, right);
 
   node->parent = right;
 
   return right;
 }
 
-pri inline node_ref_t avl_rotate_right(avl_ref_t self, node_ref_t node) {
-  node_ref_t left   = node->left;
-  node_ref_t parent = node->parent;
+pri inline tnode_ref_t tree_rotate_right(tree_ref_t self, tnode_ref_t node) {
+  tnode_ref_t left   = node->left;
+  tnode_ref_t parent = node->parent;
 
   node->left = left->right;
   if (left->right) {
@@ -140,57 +146,57 @@ pri inline node_ref_t avl_rotate_right(avl_ref_t self, node_ref_t node) {
   left->right  = node;
   left->parent = parent;
 
-  avl_child_replace(self, parent, node, left);
+  tree_child_replace(self, parent, node, left);
   node->parent = left;
 
   return left;
 }
 
-pri inline node_ref_t avl_fix_left(avl_ref_t self, node_ref_t node) {
-  int lh           = 0;
-  int rh           = 0;
-  node_ref_t right = node->right;
+pri inline tnode_ref_t tree_fix_left(tree_ref_t self, tnode_ref_t node) {
+  int lh            = 0;
+  int rh            = 0;
+  tnode_ref_t right = node->right;
 
   lh = lh(right);
   rh = rh(right);
   if (lh > rh) {
-    right = avl_rotate_right(self, right);
+    right = tree_rotate_right(self, right);
     height(right->right);
     height(right);
   }
 
-  node = avl_rotate_left(self, node);
+  node = tree_rotate_left(self, node);
   height(node->left);
   height(node);
 
   return node;
 }
 
-pri inline node_ref_t avl_fix_right(avl_ref_t self, node_ref_t node) {
-  int lh          = 0;
-  int rh          = 0;
-  node_ref_t left = node->left;
+pri inline tnode_ref_t tree_fix_right(tree_ref_t self, tnode_ref_t node) {
+  int lh           = 0;
+  int rh           = 0;
+  tnode_ref_t left = node->left;
 
   lh = lh(left);
   rh = rh(left);
   if (lh < rh) {
-    left = avl_rotate_left(self, left);
+    left = tree_rotate_left(self, left);
     height(left->left);
     height(left);
   }
 
-  node = avl_rotate_right(self, node);
+  node = tree_rotate_right(self, node);
   height(node->right);
   height(node);
 
   return node;
 }
 
-pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
-  node_ref_t old    = node;
-  node_ref_t parent = nullptr;
-  node_ref_t left   = nullptr;
-  node_ref_t child  = nullptr;
+pri tnode_ref_t tree_pop_left_and_right(tree_ref_t self, tnode_ref_t node) {
+  tnode_ref_t old    = node;
+  tnode_ref_t parent = nullptr;
+  tnode_ref_t left   = nullptr;
+  tnode_ref_t child  = nullptr;
 
   node = node->right;
   while ((left = node->left)) {
@@ -204,7 +210,7 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
     child->parent = parent;
   }
 
-  avl_child_replace(self, parent, node, child);
+  tree_child_replace(self, parent, node, child);
 
   if (node->parent == old) {
     parent = node;
@@ -215,7 +221,7 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
   node->parent = old->parent;
   node->height = old->height;
 
-  avl_child_replace(self, old->parent, old, node);
+  tree_child_replace(self, old->parent, old, node);
   old->left->parent = node;
 
   if (old->right) {
@@ -225,9 +231,9 @@ pri node_ref_t avl_pop_left_and_right(avl_ref_t self, node_ref_t node) {
   return parent;
 }
 
-pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
-  node_ref_t child  = nullptr;
-  node_ref_t parent = nullptr;
+pri tnode_ref_t tree_pop_left_or_right(tree_ref_t self, tnode_ref_t node) {
+  tnode_ref_t child  = nullptr;
+  tnode_ref_t parent = nullptr;
 
   child = node->left;
   if (!child) {
@@ -235,7 +241,7 @@ pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
   }
 
   parent = node->parent;
-  avl_child_replace(self, parent, node, child);
+  tree_child_replace(self, parent, node, child);
 
   if (child) {
     child->parent = parent;
@@ -244,11 +250,11 @@ pri node_ref_t avl_pop_left_or_right(avl_ref_t self, node_ref_t node) {
   return parent;
 }
 
-pri void avl_pop_rebalance(avl_ref_t self, node_ref_t node) {
+pri void tree_pop_rebalance(tree_ref_t self, tnode_ref_t node) {
   int lh       = 0;
   int rh       = 0;
   int diff     = 0;
-  i64_t height = 0;
+  i32_t height = 0;
 
   while (node) {
     lh     = lh(node);
@@ -263,20 +269,20 @@ pri void avl_pop_rebalance(avl_ref_t self, node_ref_t node) {
     }
 
     if (diff <= -2) {
-      node = avl_fix_left(self, node);
+      node = tree_fix_left(self, node);
     } else if (diff >= 2) {
-      node = avl_fix_right(self, node);
+      node = tree_fix_right(self, node);
     }
 
     node = node->parent;
   }
 }
 
-pri void avl_put_rebalance(avl_ref_t self, node_ref_t node) {
+pri void tree_put_rebalance(tree_ref_t self, tnode_ref_t node) {
   int lh       = 0;
   int rh       = 0;
   int diff     = 0;
-  i64_t height = 0;
+  i32_t height = 0;
 
   for (node = node->parent; node; node = node->parent) {
     lh     = lh(node);
@@ -289,27 +295,26 @@ pri void avl_put_rebalance(avl_ref_t self, node_ref_t node) {
     node->height = height;
 
     if (diff <= -2) {
-      node = avl_fix_left(self, node);
+      node = tree_fix_left(self, node);
     } else if (diff >= 2) {
-      node = avl_fix_right(self, node);
+      node = tree_fix_right(self, node);
     }
   }
 }
 
-pub any_t avl_new(i64_t ksize, i64_t vsize, u_cmp_fn cmp_fn) {
-  avl_ref_t self = nullptr;
+pub any_t $tree_new(i32_t ksize, i32_t vsize, u_cmp_fn cmp_fn) {
+  tree_ref_t self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
   /* vsize == 0, support set */
 
-  self = u_zalloc(sizeof(avl_t) + ksize + vsize);
+  self = u_zalloc(sizeof(tree_t) + ksize + vsize);
   u_end_if(self);
 
   self->ksize  = ksize;
   self->vsize  = vsize;
-  self->len    = 0;
   self->cmp_fn = cmp_fn;
-  self->root   = nullptr;
+  self->m.ref  = self;
 
   return self;
 
@@ -317,11 +322,11 @@ end:
   return nullptr;
 }
 
-pub void avl_clear(any_t _self) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = nullptr;
-  node_ref_t head = self->root;
-  node_ref_t tail = self->root;
+pub void $tree_clear(any_t _self) {
+  tree_ref_t self  = (tree_ref_t)_self;
+  tnode_ref_t node = nullptr;
+  tnode_ref_t head = self->root;
+  tnode_ref_t tail = self->root;
 
   u_chk_if(self->len == 0);
 
@@ -345,16 +350,17 @@ pub void avl_clear(any_t _self) {
     u_free(node);
   }
 
-  self->len = 0;
+  self->len   = 0;
+  self->m.len = 0;
 }
 
-pub void avl_cleanup(any_t _self) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = nullptr;
+pub void $tree_cleanup(any_t _self) {
+  tree_ref_t self  = (tree_ref_t)_self;
+  tnode_ref_t node = nullptr;
 
   u_chk_if(self);
 
-  avl_clear(_self);
+  $tree_clear(_self);
 
   while (self->free != nullptr) {
     node       = self->free;
@@ -366,53 +372,16 @@ pub void avl_cleanup(any_t _self) {
   u_free(self);
 }
 
-pub i64_t avl_len(any_t _self) {
-  avl_ref_t self = (avl_ref_t)_self;
-
-  u_chk_if(self, -1);
-
-  return self->len;
-}
-
-pub bool avl_is_exist(any_t _self, any_t key) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = self->root;
-  ret_t result    = 0;
-
-  u_chk_if(self, false);
-
-  while (node) {
-    if (self->cmp_fn) {
-      result = self->cmp_fn(key, key(node));
-    } else {
-      result = memcmp(key, key(node), self->ksize);
-    }
-
-    if (result == 0) {
-      break;
-    }
-
-    node = (result < 0) ? node->left : node->right;
-  }
-
-  return node != nullptr;
-}
-
-pub any_t avl_at(any_t _self, any_t key) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = self->root;
-  ret_t result    = 0;
+pub any_t $tree_at(any_t _self, any_t key, any_t val) {
+  tree_ref_t self  = (tree_ref_t)_self;
+  tnode_ref_t node = self->root;
+  int result       = 0;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->len == 0, nullptr);
 
   while (node) {
-    if (self->cmp_fn) {
-      result = self->cmp_fn(key, key(node));
-    } else {
-      result = memcmp(key, key(node), self->ksize);
-    }
-
+    result = self->cmp_fn(key, key(node));
     u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
@@ -420,27 +389,26 @@ pub any_t avl_at(any_t _self, any_t key) {
 
   u_end_if(node);
 
+  if (val != nullptr) {
+    memcpy(val(node), val, self->vsize);
+  }
+
   return val(node);
 
 end:
   return nullptr;
 }
 
-pub void avl_pop(any_t _self, any_t key, any_t val) {
-  avl_ref_t self    = (avl_ref_t)_self;
-  node_ref_t node   = self->root;
-  node_ref_t parent = nullptr;
-  ret_t result      = 0;
+pub void $tree_pop(any_t _self, any_t key, any_t val) {
+  tree_ref_t self    = (tree_ref_t)_self;
+  tnode_ref_t node   = self->root;
+  tnode_ref_t parent = nullptr;
+  int result         = 0;
 
   u_chk_if(self);
 
   while (node) {
-    if (self->cmp_fn) {
-      result = self->cmp_fn(key, key(node));
-    } else {
-      result = memcmp(key, key(node), self->ksize);
-    }
-
+    result = self->cmp_fn(key, key(node));
     u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
@@ -449,9 +417,9 @@ pub void avl_pop(any_t _self, any_t key, any_t val) {
   u_end_if(node);
 
   if (node->left && node->right) {
-    parent = avl_pop_left_and_right(self, node);
+    parent = tree_pop_left_and_right(self, node);
   } else {
-    parent = avl_pop_left_or_right(self, node);
+    parent = tree_pop_left_or_right(self, node);
   }
 
   memcpy(key, key(node), self->ksize);
@@ -461,9 +429,10 @@ pub void avl_pop(any_t _self, any_t key, any_t val) {
   self->free   = node;
 
   self->len--;
+  self->m.len--;
 
   if (parent) {
-    avl_pop_rebalance(self, parent);
+    tree_pop_rebalance(self, parent);
   }
 
   return;
@@ -471,86 +440,58 @@ pub void avl_pop(any_t _self, any_t key, any_t val) {
 end:
 }
 
-pub void avl_put(any_t _self, any_t key, any_t val) {
-  avl_ref_t self    = (avl_ref_t)_self;
-  node_ref_t* link  = &self->root;
-  node_ref_t parent = nullptr;
-  node_ref_t node   = nullptr;
-  ret_t result      = 0;
+pub void $tree_put(any_t _self, any_t key, any_t val) {
+  tree_ref_t self    = (tree_ref_t)_self;
+  tnode_ref_t* link  = &self->root;
+  tnode_ref_t parent = nullptr;
+  tnode_ref_t node   = nullptr;
+  int result         = 0;
 
   u_chk_if(self);
 
   while (link[0]) {
     parent = link[0];
 
-    if (self->cmp_fn) {
-      result = self->cmp_fn(key, key(parent));
-    } else {
-      result = memcmp(key, key(parent), self->ksize);
-    }
+    result = self->cmp_fn(key, key(parent));
     u_end_if(result == 0);
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
 
-  node = avl_new_node(self, parent, key, val);
+  node = tree_new_node(self, parent, key, val);
   u_end_if(node);
 
   *link = node;
   self->len++;
+  self->m.len++;
 
-  avl_put_rebalance(self, node);
+  tree_put_rebalance(self, node);
 
   return;
 
 end:
 }
 
-pub void avl_pole(any_t _self, any_t key, any_t val, u_order_e order) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t node = self->root;
-
-  u_chk_if(self);
-  u_chk_if(self->len == 0);
-
-  if (order == U_ORDER_ASCEND) {
-    while (node->left) {
-      node = node->left;
-    }
-  } else {
-    while (node->right) {
-      node = node->right;
-    }
-  }
-
-  memcpy(key, key(node), self->ksize);
-  memcpy(val, val(node), self->vsize);
-}
-
-pub bool avl_for(any_t _self, bool* init, any_t key, any_t val, any_t* _iter, u_order_e order) {
-  avl_ref_t self  = (avl_ref_t)_self;
-  node_ref_t iter = *(node_ref_t*)_iter;
-  node_ref_t last = nullptr;
+pub bool $tree_each(any_t _self, any_t key, any_t val) {
+  tree_ref_t self  = (tree_ref_t)_self;
+  tnode_ref_t iter = nullptr;
+  tnode_ref_t last = nullptr;
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
 
-  /* init */
-  if (!*init) {
-    *init = true;
+  if (key == nullptr) {
+    self->iter = nullptr;
+  } else {
+    if (self->iter == nullptr) {
+      iter = self->root;
 
-    iter = self->root;
-    if (order == U_ORDER_ASCEND) {
       while (iter->left) {
         iter = iter->left;
       }
     } else {
-      while (iter->right) {
-        iter = iter->right;
-      }
-    }
-  } else { /* range */
-    if (order == U_ORDER_ASCEND) {
+      iter = self->iter;
+
       if (iter->right) {
         iter = iter->right;
         while (iter->left) {
@@ -564,29 +505,15 @@ pub bool avl_for(any_t _self, bool* init, any_t key, any_t val, any_t* _iter, u_
           u_brk_if(!iter || iter->left == last);
         }
       }
-    } else {
-      if (iter->left) {
-        iter = iter->left;
-        while (iter->right) {
-          iter = iter->right;
-        }
-      } else {
-        while (true) {
-          last = iter;
-          iter = iter->parent;
-
-          u_brk_if(!iter || iter->right == last);
-        }
-      }
     }
+
+    u_end_if(iter);
+
+    self->iter = iter;
+
+    memcpy(key, key(iter), self->ksize);
+    memcpy(val, val(iter), self->vsize);
   }
-
-  u_end_if(iter);
-
-  *_iter = iter;
-
-  memcpy(key, key(iter), self->ksize);
-  memcpy(val, val(iter), self->vsize);
 
   return true;
 

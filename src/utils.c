@@ -24,8 +24,10 @@
 
 #include <u/u.h>
 
+/* clang-format off */
+
 /***************************************************************************************************
- * Macro
+ * Cmp
  **************************************************************************************************/
 /*
  * cmp & eq func from base type
@@ -54,19 +56,22 @@ fn_compe_def(u128_t, (x == y), (x > y));
 fn_compe_def(u_str_t, (x->len == y->len && 0 == strcmp(x->ptr, y->ptr)), (strcmp(x->ptr, y->ptr)));
 
 /***************************************************************************************************
- * Hahs function
+ * Hahs
  **************************************************************************************************/
-/* clang-format off */
-pub inline u_hash_t u_hash_int8bit(const u8_t* ptr, size_t len)  { return (u_hash_t) * (u8_t*)ptr; }
-pub inline u_hash_t u_hash_int16bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u16_t*)ptr; }
-pub inline u_hash_t u_hash_int32bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u32_t*)ptr; }
-pub inline u_hash_t u_hash_int64bit(const u8_t* ptr, size_t len) { return (u_hash_t) * (u64_t*)ptr; }
-/* clang-format on */
+pub inline u_hash_t u_hash_i8(const u8_t* ptr, size_t len)  { return (u_hash_t) * (i8_t*)ptr; }
+pub inline u_hash_t u_hash_i16(const u8_t* ptr, size_t len) { return (u_hash_t) * (i16_t*)ptr; }
+pub inline u_hash_t u_hash_i32(const u8_t* ptr, size_t len) { return (u_hash_t) * (i32_t*)ptr; }
+pub inline u_hash_t u_hash_i64(const u8_t* ptr, size_t len) { return (u_hash_t) * (i64_t*)ptr; }
+
+pub inline u_hash_t u_hash_u8(const u8_t* ptr, size_t len)  { return (u_hash_t) * (u8_t*)ptr; }
+pub inline u_hash_t u_hash_u16(const u8_t* ptr, size_t len) { return (u_hash_t) * (u16_t*)ptr; }
+pub inline u_hash_t u_hash_u32(const u8_t* ptr, size_t len) { return (u_hash_t) * (u32_t*)ptr; }
+pub inline u_hash_t u_hash_u64(const u8_t* ptr, size_t len) { return (u_hash_t) * (u64_t*)ptr; }
 
 /***************************************************************************************************
  * Display
  **************************************************************************************************/
-pub void __printb(u_cstr_t name, const u8_t* mem, size_t size) {
+pub void $printb(u_cstr_t name, const u8_t* mem, size_t size) {
   u8_t byte = 0;
 
   printf("\x1b[36;1m%s\x1b[0m(%ld)\n", name, size);
@@ -97,8 +102,8 @@ pub void __printb(u_cstr_t name, const u8_t* mem, size_t size) {
   printf("\n");
 }
 
-pub void __printh(u_cstr_t name, const u8_t* mem, size_t size) {
-  char buf[17] = {0};
+pub void $printh(u_cstr_t name, const u8_t* mem, size_t size) {
+  u8_t buf[17] = {0};
   size_t i     = 0;
   size_t pos   = 0;
   size_t idx   = 0;
@@ -154,11 +159,11 @@ typedef struct {
   size_t cnt;
   char* msg;
   bool run;
-} u_bm_t;
+} benchmark_t;
 
-thread_local u_bm_t bm;
+thread_local benchmark_t bm;
 
-pub bool __bm_entry(const char* msg, size_t cnt) {
+pub bool $benchmark_entry(const char* msg, size_t cnt) {
   size_t total = 10'0000'0000L; /* nanoseconds/per second */
   size_t ave   = 0;
   size_t s     = 0; /* second */
@@ -172,7 +177,7 @@ pub bool __bm_entry(const char* msg, size_t cnt) {
     bm.msg = strdup(msg);
     bm.cnt = cnt == 0 ? 1 : cnt;
     clock_gettime(CLOCK_MONOTONIC, &bm.s);
-  } else { /* end */
+  } else if (bm.cnt == 0) { /* end */
     bm.run = false;
     clock_gettime(CLOCK_MONOTONIC, &bm.e);
     total = total * (bm.e.tv_sec - bm.s.tv_sec) + (bm.e.tv_nsec - bm.s.tv_nsec);
@@ -205,5 +210,47 @@ pub bool __bm_entry(const char* msg, size_t cnt) {
     free(bm.msg);
   }
 
+  bm.cnt--;
+
   return bm.run;
 }
+
+/***************************************************************************************************
+ * Debug
+ **************************************************************************************************/
+#define FMT "%s %s%s\x1b[0m \x1b[02m%s:%d\x1b[0m"
+
+pri const char* dbg_level[] = {"ERR", "WAR", "INF", "DBG", " U "};
+pri const char* dbg_color[] = {"\x1b[31m", "\x1b[33m", "\x1b[34m", "\x1b[35m", "\x1b[32m"};
+
+pub void $dbg_write(int level, const char* file, int line, const char* fmt, ...) {
+  char protmp[256] = {};
+  char buf[4096]   = {};
+  char timebuf[64] = {};
+  char errbuf[128] = {};
+  time_t t         = {};
+  struct tm* tm    = {};
+  va_list ap       = {};
+  error_t err      = {};
+
+  err = errno;
+
+  t  = time(nullptr);
+  tm = localtime(&t);
+
+  va_start(ap, fmt);
+  vsnprintf(buf, sizeof(buf), fmt, ap);
+  va_end(ap);
+
+  timebuf[strftime(timebuf, sizeof(timebuf), "%H:%M:%S", tm)] = '\0';
+
+  snprintf(protmp, sizeof(protmp), FMT, timebuf, dbg_color[level], dbg_level[level], file, line);
+
+  if (err == 0) {
+    fprintf(stderr, "%s : %s", protmp, buf);
+  } else {
+    fprintf(stderr, "%s {%s} : %s", protmp, strerror(err), buf);
+  }
+}
+
+/* clang-format on */

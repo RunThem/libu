@@ -31,6 +31,8 @@
 extern "C" {
 #  endif
 
+/* clang-format off */
+
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
@@ -39,7 +41,6 @@ typedef struct atomic_flag u_atomic_flag_t;
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-/* clang-format off */
 #define u_once_call_def(fun) once_flag _##fun##__once_call_flag = ONCE_FLAG_INIT;
 
 #define u_once_call(fun)                                                                           \
@@ -156,6 +157,7 @@ typedef struct atomic_flag u_atomic_flag_t;
       atomic_flag_clear(obj);                                                                      \
     )                                                                                              \
   } while (0)
+
 /* clang-format on */
 
 #  ifdef __cplusplus

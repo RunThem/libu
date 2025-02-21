@@ -32,6 +32,7 @@ extern "C" {
 #  endif
 
 /* clang-format off */
+
 typedef int ret_t;
 
 typedef char* u_cstr_t;
@@ -57,7 +58,6 @@ typedef long double f128_t;
 typedef __int128_t  i128_t;
 typedef __uint128_t u128_t;
 #  endif
-/* clang-format on */
 
 #  define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
 
@@ -91,6 +91,8 @@ typedef enum {
   U_ORDER_DESCEND = -1,
   U_ORDER_ASCEND  = 1,
 } u_order_e;
+
+/* clang-format on */
 
 #  ifdef __cplusplus
 } /* extern "C" */
