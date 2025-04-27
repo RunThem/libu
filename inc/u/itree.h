@@ -134,6 +134,11 @@ extern bool  $tree_each     (any_t, any_t, any_t);
     $tree_each(self->ref, nullptr, nullptr);                                                       \
     for (typeof_unqual(self->_[0]) it = {}; $tree_each(self->ref, &it.key, &it.val);)
 
+#  define u_tree_each_if(self, it, cond)                                                           \
+    $tree_each(self->ref, nullptr, nullptr);                                                       \
+    for (typeof_unqual(self->_[0]) it = {}; $tree_each(self->ref, &it.key, &it.val);)              \
+      if (cond)
+
 /* clang-format on */
 
 #  ifdef __cplusplus

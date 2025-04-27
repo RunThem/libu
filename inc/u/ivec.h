@@ -146,6 +146,23 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
     $vec_each(self->ref, nullptr);                                                                 \
     for (typeof_unqual(self->_[0].val) it = {}; $vec_each(self->ref, &it);)
 
+#  define u_vec_each_if(self, it, cond)                                                            \
+    $vec_each(self->ref, nullptr);                                                                 \
+    for (typeof_unqual(self->_[0].val) it = {}; $vec_each(self->ref, &it);)                        \
+      if (cond)
+
+#  define u_vec_find_if(self, cond)                                                                \
+    ({                                                                                             \
+      typeof_unqual(self->_[0].val) __ = {};                                                       \
+                                                                                                   \
+      u_vec_each_if(self, it, cond) {                                                              \
+        __ = it;                                                                                   \
+        break;                                                                                     \
+      }                                                                                            \
+                                                                                                   \
+      __;                                                                                          \
+    })
+
 /* clang-format on */
 
 #  if 0

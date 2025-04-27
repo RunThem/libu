@@ -129,9 +129,26 @@ extern bool   $list_each     (any_t, any_t*);
       $list_put(self->ref, __pos__, __val__);                                                      \
     } while (0)
 
-#  define u_list_each(self, it, ...)                                                               \
+#  define u_list_each(self, it)                                                                    \
     $list_each(self->ref, nullptr);                                                                \
     for (typeof_unqual(self->_[0].val) it = {}; $list_each(self->ref, (any_t*)&it);)
+
+#  define u_list_each_if(self, it, cond)                                                           \
+    $list_each(self->ref, nullptr);                                                                \
+    for (typeof_unqual(self->_[0].val) it = {}; $list_each(self->ref, (any_t*)&it);)               \
+      if (cond)
+
+#  define u_list_find_if(self, cond)                                                               \
+    ({                                                                                             \
+      typeof_unqual(self->_[0].val) __ = {};                                                       \
+                                                                                                   \
+      u_list_each_if(self, it, cond) {                                                             \
+        __ = it;                                                                                   \
+        break;                                                                                     \
+      }                                                                                            \
+                                                                                                   \
+      __;                                                                                          \
+    })
 
 /* clang-format on */
 

@@ -132,6 +132,11 @@ extern bool  $map_each     (any_t, any_t, any_t);
     $map_each(self->ref, nullptr, nullptr);                                                        \
     for (typeof_unqual(self->_[0]) it = {}; $map_each(self->ref, &it.key, &it.val);)
 
+#  define u_map_each_if(self, it, cond)                                                            \
+    $map_each(self->ref, nullptr, nullptr);                                                        \
+    for (typeof_unqual(self->_[0]) it = {}; $map_each(self->ref, &it.key, &it.val);)               \
+      if (cond)
+
 /* clang-format on */
 
 #  ifdef __cplusplus
