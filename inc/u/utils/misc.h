@@ -41,6 +41,15 @@ extern "C" {
 #  define me(type, ...) ((type){__VA_ARGS__})
 #  define bit(byte, n)  (((byte) >> (n)) & 1)
 
+#  define new(type, ...)                                                                           \
+    ({                                                                                             \
+      type _ = u_talloc(type);                                                                     \
+                                                                                                   \
+      *_ = (typeof(*(type){})){__VA_ARGS__};                                                       \
+                                                                                                   \
+      _;                                                                                           \
+    })
+
 #define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
       for (int i = n; i < u_va_at(0, __VA_ARGS__); i++)                                            \
     )(                                                                                             \
