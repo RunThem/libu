@@ -220,15 +220,19 @@ pub bool $list_each(any_t _self, any_t* item) {
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
-  u_chk_if(item && !self->iter, false);
 
   /* init */
-  if (!item) {
+  if (item == nullptr) {
     self->iter = self->head;
   } else {
+    u_end_if(self->iter);
+
     *item      = self->iter->item;
     self->iter = self->iter->next;
   }
 
   return true;
+
+end:
+  return false;
 }

@@ -213,15 +213,19 @@ pub bool $vec_each(any_t _self, any_t item) {
 
   u_chk_if(self, false);
   u_chk_if(self->len == 0, false);
-  u_chk_if(self->idx == self->len, false);
 
   if (item == nullptr) {
     self->idx = 0;
-  } else { /* range */
+  } else {
+    u_end_if(self->idx == self->len);
+
     memcpy(item, at(self->idx++), self->itsize);
   }
 
   return true;
+
+end:
+  return false;
 }
 
 #if 0
