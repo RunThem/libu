@@ -91,7 +91,7 @@ extern "C" {
       for (auto it = &arr[i]; it; it = nullptr)
 
 extern bool $benchmark_entry(const char*, size_t);
-#  define u_bench(msg, ...) while (__bm_entry(msg, u_va_0th(1, __VA_ARGS__)))
+#  define u_bench(msg, ...) while ($benchmark_entry(msg, u_va_0th(1, __VA_ARGS__)))
 
 /***************************************************************************************************
  * Try catch
