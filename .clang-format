@@ -30,7 +30,7 @@ BreakStringLiterals: false
 BreakAfterAttributes: Always
 
 IncludeBlocks: Regroup
-SortIncludes: false
+SortIncludes: CaseSensitive
 
 IndentCaseBlocks: false
 IndentCaseLabels: true
@@ -56,10 +56,26 @@ SpacesInLineCommentPrefix:
 ForEachMacros: [
   'u_each',
   'u_arr_each',
+
   'u_map_each',
   'u_vec_each',
   'u_tree_each',
   'u_list_each',
+
+  'u_map_each_if',
+  'u_vec_each_if',
+  'u_tree_each_if',
+  'u_list_each_if',
 ]
-IfMacros: [ 'u_mtx_if', 'u_spmtx_if', 'u_rwmtx_if' ]
+
+IfMacros: [
+  'u_mtx_if',
+  'u_spmtx_if',
+  'u_rwmtx_if',
+
+  'u_map_try',
+  'u_vec_try',
+  'u_tree_try',
+  'u_list_try',
+]
 ...
