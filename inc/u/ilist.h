@@ -67,11 +67,6 @@ extern bool   $list_each     (any_t, any_t*);
       self->ref;                                                                                   \
     })
 
-#  define u_list_is_empty(self)                                                                    \
-    ({                                                                                             \
-      0 == self->len;                                                                              \
-    })
-
 #  define u_list_cleanup(self, ...)                                                                \
     do {                                                                                           \
       list_cleanup(self);                                                                          \

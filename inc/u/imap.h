@@ -64,11 +64,6 @@ extern bool  $map_each     (any_t, any_t, any_t);
       self->ref;                                                                                   \
     })
 
-#  define u_map_is_empty(self)                                                                     \
-    ({                                                                                             \
-      0 == map_len(self);                                                                          \
-    })
-
 #  define u_map_is_exist(self, k)                                                                  \
     ({                                                                                             \
       typeof_unqual(self->_[0]) __it__ = {k};                                                      \

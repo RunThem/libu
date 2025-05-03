@@ -77,11 +77,6 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
       self->ref;                                                                                   \
     })
 
-#  define u_vec_is_empty(self)                                                                     \
-    ({                                                                                             \
-      0 == self->len;                                                                              \
-    })
-
 #  define u_vec_is_exist(self, idx)                                                                \
     ({                                                                                             \
       nullptr != $vec_at(self->ref, idx, nullptr);                                                 \
