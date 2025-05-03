@@ -65,11 +65,6 @@ extern void  $heap_put     (any_t, any_t);
       self->ref;                                                                                   \
     })
 
-#  define u_heap_is_empty(self)                                                                    \
-    ({                                                                                             \
-      0 == $heap_len(self->ref);                                                                   \
-    })
-
 #  define u_heap_clear(self)                                                                       \
     do {                                                                                           \
       $heap_clear(self->ref);                                                                      \
