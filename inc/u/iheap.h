@@ -36,6 +36,8 @@ extern "C" {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
+typedef struct {}* $heap_t;
+
 extern any_t $heap_new     (i32_t, u_order_e, u_cmp_fn);
 extern void  $heap_clear   (any_t);
 extern void  $heap_cleanup (any_t);
@@ -48,7 +50,7 @@ extern void  $heap_put     (any_t, any_t);
  **************************************************************************************************/
 #  define u_heap_t(T)                                                                              \
     typeof(const struct [[gnu::packed]] {                                                          \
-      void* ref;                                                                                   \
+      $heap_t ref;                                                                                 \
       int len;                                                                                     \
       int cap;                                                                                     \
                                                                                                    \
@@ -62,16 +64,20 @@ extern void  $heap_put     (any_t, any_t);
     ({                                                                                             \
       u_heap_t(T) self = $heap_new(sizeof(T), order, cmp_fn);                                      \
                                                                                                    \
-      self->ref;                                                                                   \
+      (any_t)self->ref;                                                                            \
     })
 
 #  define u_heap_clear(self)                                                                       \
     do {                                                                                           \
+      typecheck($heap_t, self->ref, "mete type not's Heap<T>");                                    \
+                                                                                                   \
       $heap_clear(self->ref);                                                                      \
     } while (0)
 
 #  define u_heap_cleanup(self)                                                                     \
     do {                                                                                           \
+      typecheck($heap_t, self->ref, "mete type not's Heap<T>");                                    \
+                                                                                                   \
       $heap_cleanup(self->ref);                                                                    \
                                                                                                    \
       self = nullptr;                                                                              \
@@ -79,6 +85,8 @@ extern void  $heap_put     (any_t, any_t);
 
 #  define u_heap_at(self)                                                                          \
     ({                                                                                             \
+      typecheck($heap_t, self->ref, "mete type not's Heap<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val)* __val__ = $heap_at(self->ref);                                \
                                                                                                    \
       *__val__;                                                                                    \
@@ -86,6 +94,8 @@ extern void  $heap_put     (any_t, any_t);
 
 #  define u_heap_pop(self)                                                                         \
     ({                                                                                             \
+      typecheck($heap_t, self->ref, "mete type not's Heap<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0]) __it__ = {};                                                       \
                                                                                                    \
       $heap_pop(self->ref, &__it__.val);                                                           \
@@ -95,6 +105,8 @@ extern void  $heap_put     (any_t, any_t);
 
 #  define u_heap_put(self, item)                                                                   \
     do {                                                                                           \
+      typecheck($heap_t, self->ref, "mete type not's Heap<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0]) __it__ = {item};                                                   \
                                                                                                    \
       heap_put(self, &__it__.val);                                                                 \
