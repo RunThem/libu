@@ -35,6 +35,8 @@ extern "C" {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
+typedef struct {}* $map_t;
+
 extern any_t $map_new      (i32_t, i32_t, u_hash_fn);
 extern void  $map_clear    (any_t);
 extern void  $map_cleanup  (any_t);
@@ -48,7 +50,7 @@ extern bool  $map_each     (any_t, any_t, any_t);
  **************************************************************************************************/
 #  define u_map_t(K, V)                                                                            \
     typeof(const struct [[gnu::packed]] {                                                          \
-      void* ref;                                                                                   \
+      $map_t ref;                                                                                  \
       int len;                                                                                     \
                                                                                                    \
       struct { K key; V val; } _[0]; /* Don't use this field. */                                   \
@@ -61,11 +63,13 @@ extern bool  $map_each     (any_t, any_t, any_t);
     ({                                                                                             \
       u_map_t(K, V) self = $map_new(sizeof(K), sizeof(V), u_va_0th(nullptr, __VA_ARGS__));         \
                                                                                                    \
-      self->ref;                                                                                   \
+      (any_t)self->ref;                                                                            \
     })
 
 #  define u_map_is_exist(self, k)                                                                  \
     ({                                                                                             \
+      typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                   \
+                                                                                                   \
       typeof_unqual(self->_[0]) __it__ = {k};                                                      \
                                                                                                    \
       nullptr != $map_at(self->ref, &__it__.key, nullptr);                                         \
@@ -73,11 +77,15 @@ extern bool  $map_each     (any_t, any_t, any_t);
 
 #  define u_map_clear(self)                                                                        \
     do {                                                                                           \
+      typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                   \
+                                                                                                   \
       $map_clear(self->ref);                                                                       \
     } while (0)
 
 #  define u_map_cleanup(self)                                                                      \
     do {                                                                                           \
+      typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                   \
+                                                                                                   \
       $map_cleanup(self->ref);                                                                     \
                                                                                                    \
       self = nullptr;                                                                              \
@@ -86,22 +94,29 @@ extern bool  $map_each     (any_t, any_t, any_t);
 #  define u_map_at(self, k, ...)                                                                   \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
+        typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                 \
+                                                                                                   \
         typeof_unqual(self->_[0]) __it__ = {k, u_va_at(0, __VA_ARGS__)};                           \
                                                                                                    \
         $map_at(self->ref, &__it__.key, &__it__.val);                                              \
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
+        typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                 \
+                                                                                                   \
         typeof_unqual(self->_[0].key) __key__  = k;                                                \
         typeof_unqual(self->_[0].val)* __val__ = nullptr;                                          \
                                                                                                    \
         __val__ = $map_at(self->ref, &__key__, nullptr);                                           \
+        assert(__val__);                                                                           \
                                                                                                    \
         *__val__;                                                                                  \
       })                                                                                           \
     )
 
 #  define u_map_try(self, k)                                                                       \
+    typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                     \
+                                                                                                   \
     for (typeof_unqual(self->_[0].val)* it =                                                       \
              $map_at(self->ref, &(typeof_unqual(self->_[0].key)){k}, nullptr);                     \
          it;                                                                                       \
@@ -109,6 +124,8 @@ extern bool  $map_each     (any_t, any_t, any_t);
 
 #  define u_map_pop(self, k)                                                                       \
     ({                                                                                             \
+      typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                   \
+                                                                                                   \
       typeof_unqual(self->_[0]) __it__ = {k};                                                      \
                                                                                                    \
       $map_pop(self->ref, &__it__.key, &__it__.val);                                               \
@@ -118,16 +135,22 @@ extern bool  $map_each     (any_t, any_t, any_t);
 
 #  define u_map_put(self, k, v)                                                                    \
     do {                                                                                           \
+      typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                   \
+                                                                                                   \
       typeof_unqual(self->_[0]) __it__ = {k, v};                                                   \
                                                                                                    \
       $map_put(self->ref, &__it__.key, &__it__.val);                                               \
     } while (0)
 
 #  define u_map_each(self, it)                                                                     \
+    typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                     \
+                                                                                                   \
     $map_each(self->ref, nullptr, nullptr);                                                        \
     for (typeof_unqual(self->_[0]) it = {}; $map_each(self->ref, &it.key, &it.val);)
 
 #  define u_map_each_if(self, it, cond)                                                            \
+    typecheck($map_t, self->ref, "mete type not's Map<K, V>");                                     \
+                                                                                                   \
     $map_each(self->ref, nullptr, nullptr);                                                        \
     for (typeof_unqual(self->_[0]) it = {}; $map_each(self->ref, &it.key, &it.val);)               \
       if (cond)

@@ -49,6 +49,14 @@ extern "C" {
 
 #  if __has_builtin(__builtin_types_compatible_p)
 #    define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+
+#    define typecheck(x, y, msg)                                                                   \
+      do {                                                                                         \
+        const int typecheck = __builtin_types_compatible_p(typeof(x), typeof(y));                  \
+        _Static_assert(typecheck, msg);                                                            \
+                                                                                                   \
+        (void)typecheck;                                                                           \
+      } while (0)
 #  else
 #    error "!__has_builtin(__builtin_types_compatible_p)"
 #  endif

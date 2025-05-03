@@ -36,6 +36,8 @@ extern "C" {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
+typedef struct {}* $list_t;
+
 extern any_t  $list_new      ();
 extern void   $list_cleanup  (any_t);
 extern any_t  $list_head     (any_t);
@@ -51,7 +53,7 @@ extern bool   $list_each     (any_t, any_t*);
  **************************************************************************************************/
 #  define u_list_t(T)                                                                              \
     typeof(const struct [[gnu::packed]] {                                                          \
-      void* ref;                                                                                   \
+      $list_t ref;                                                                                 \
       int len;                                                                                     \
                                                                                                    \
       struct { T* val; } _[0]; /* Don't use this field. */                                         \
@@ -64,11 +66,13 @@ extern bool   $list_each     (any_t, any_t*);
     ({                                                                                             \
       u_list_t(T) self = $list_new();                                                              \
                                                                                                    \
-      self->ref;                                                                                   \
+      (any_t)self->ref;                                                                            \
     })
 
 #  define u_list_cleanup(self, ...)                                                                \
     do {                                                                                           \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       list_cleanup(self);                                                                          \
                                                                                                    \
       self = nullptr;                                                                              \
@@ -76,6 +80,8 @@ extern bool   $list_each     (any_t, any_t*);
 
 #  define u_list_head(self)                                                                        \
     ({                                                                                             \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __val__ = $list_head(self->ref);                               \
                                                                                                    \
       __val__;                                                                                     \
@@ -83,6 +89,8 @@ extern bool   $list_each     (any_t, any_t*);
 
 #  define u_list_tail(self)                                                                        \
     ({                                                                                             \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __val__ = $list_tail(self->ref);                               \
                                                                                                    \
       __val__;                                                                                     \
@@ -90,6 +98,8 @@ extern bool   $list_each     (any_t, any_t*);
 
 #  define u_list_prev(self, item)                                                                  \
     ({                                                                                             \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __val__ = $list_prev(self->ref, item);                         \
                                                                                                    \
       __val__;                                                                                     \
@@ -97,6 +107,8 @@ extern bool   $list_each     (any_t, any_t*);
 
 #  define u_list_next(self, item)                                                                  \
     ({                                                                                             \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __val__ = $list_next(self->ref, item);                         \
                                                                                                    \
       __val__;                                                                                     \
@@ -104,6 +116,8 @@ extern bool   $list_each     (any_t, any_t*);
 
 #  define u_list_pop(self, ...)                                                                    \
     ({                                                                                             \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __val__ = u_va_0th($list_head(self->ref), __VA_ARGS__);        \
                                                                                                    \
       $list_pop(self->ref, __val__);                                                               \
@@ -113,6 +127,8 @@ extern bool   $list_each     (any_t, any_t*);
 
 #  define u_list_put(self, pos, ...)                                                               \
     do {                                                                                           \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
         typeof_unqual(self->_[0].val) __pos__ = pos;                                               \
         typeof_unqual(self->_[0].val) __val__ = u_va_at(0, __VA_ARGS__);                           \
@@ -125,16 +141,22 @@ extern bool   $list_each     (any_t, any_t*);
     } while (0)
 
 #  define u_list_each(self, it)                                                                    \
+    typecheck($list_t, self->ref, "mete type not's List<T>");                                      \
+                                                                                                   \
     $list_each(self->ref, nullptr);                                                                \
     for (typeof_unqual(self->_[0].val) it = {}; $list_each(self->ref, (any_t*)&it);)
 
 #  define u_list_each_if(self, it, cond)                                                           \
+    typecheck($list_t, self->ref, "mete type not's List<T>");                                      \
+                                                                                                   \
     $list_each(self->ref, nullptr);                                                                \
     for (typeof_unqual(self->_[0].val) it = {}; $list_each(self->ref, (any_t*)&it);)               \
       if (cond)
 
 #  define u_list_find_if(self, cond)                                                               \
     ({                                                                                             \
+      typecheck($list_t, self->ref, "mete type not's List<T>");                                    \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __ = {};                                                       \
                                                                                                    \
       u_list_each_if(self, it, cond) {                                                             \

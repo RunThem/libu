@@ -36,8 +36,9 @@ extern "C" {
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
+typedef struct {}* $vec_t;
+
 extern any_t $vec_new      (i32_t);
-extern bool  $vec_is_exist (any_t, i32_t);
 extern void  $vec_clear    (any_t);
 extern void  $vec_cleanup  (any_t);
 extern int   $vec_resize   (any_t, i32_t);
@@ -60,7 +61,7 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
  **************************************************************************************************/
 #  define u_vec_t(T)                                                                               \
     typeof(const struct [[gnu::packed]] {                                                          \
-      void* ref;                                                                                   \
+      $vec_t ref;                                                                                  \
       int len;                                                                                     \
       int cap;                                                                                     \
                                                                                                    \
@@ -74,26 +75,34 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
     ({                                                                                             \
       u_vec_t(T) self = $vec_new(sizeof(T));                                                       \
                                                                                                    \
-      self->ref;                                                                                   \
+      (any_t)self->ref;                                                                            \
     })
 
 #  define u_vec_is_exist(self, idx)                                                                \
     ({                                                                                             \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       nullptr != $vec_at(self->ref, idx, nullptr);                                                 \
     })
 
 #  define u_vec_resize(self, cap)                                                                  \
     ({                                                                                             \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       vec_resize(self->ref, cap);                                                                  \
     })
 
 #  define u_vec_clear(self)                                                                        \
     do {                                                                                           \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       $vec_clear(self->ref);                                                                       \
     } while (0)
 
 #  define u_vec_cleanup(self)                                                                      \
     do {                                                                                           \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       $vec_cleanup(self->ref);                                                                     \
                                                                                                    \
       self = nullptr;                                                                              \
@@ -102,23 +111,32 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
 #  define u_vec_at(self, i, ...)                                                                   \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
       ({                                                                                           \
+        typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                    \
+                                                                                                   \
         typeof_unqual(self->_[0]) __it__ = {i, u_va_at(0, __VA_ARGS__)};                           \
                                                                                                    \
         $vec_at(self->ref, __it__.idx, &__it__.val);                                               \
       })                                                                                           \
     ) (                                                                                            \
       ({                                                                                           \
+        typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                    \
+                                                                                                   \
         typeof_unqual(self->_[0].val)* __val__ = $vec_at(self->ref, i, nullptr);                   \
+        assert(__val__);                                                                           \
                                                                                                    \
         *__val__;                                                                                  \
       })                                                                                           \
     )
 
 #  define u_vec_try(self, i)                                                                       \
+    typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                        \
+                                                                                                   \
     for (typeof_unqual(self->_[0].val)* it = $vec_at(self->ref, i, nullptr); it; it = nullptr)
 
 #  define u_vec_pop(self, ...)                                                                     \
     ({                                                                                             \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       typeof_unqual(self->_[0]) __it__ = {u_va_0th(-1, __VA_ARGS__)};                              \
                                                                                                    \
       $vec_pop(self->ref, __it__.idx, &__it__.val);                                                \
@@ -128,6 +146,8 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
 
 #  define u_vec_put(self, tmp, ...)                                                                \
     do {                                                                                           \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
         typeof_unqual(self->_[0]) __it__ = {tmp, u_va_at(0, __VA_ARGS__)};                         \
       )(                                                                                           \
@@ -138,16 +158,22 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
     } while (0)
 
 #  define u_vec_each(self, it)                                                                     \
+    typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                        \
+                                                                                                   \
     $vec_each(self->ref, nullptr);                                                                 \
     for (typeof_unqual(self->_[0].val) it = {}; $vec_each(self->ref, &it);)
 
 #  define u_vec_each_if(self, it, cond)                                                            \
+    typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                        \
+                                                                                                   \
     $vec_each(self->ref, nullptr);                                                                 \
     for (typeof_unqual(self->_[0].val) it = {}; $vec_each(self->ref, &it);)                        \
       if (cond)
 
 #  define u_vec_find_if(self, cond)                                                                \
     ({                                                                                             \
+      typecheck($vec_t, self->ref, "mete type not's Vec<T>");                                      \
+                                                                                                   \
       typeof_unqual(self->_[0].val) __ = {};                                                       \
                                                                                                    \
       u_vec_each_if(self, it, cond) {                                                              \
