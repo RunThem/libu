@@ -148,7 +148,7 @@ pub any_t $map_new(i32_t ksize, i32_t vsize, u_hash_fn hash_fn) {
   self->ksize            = ksize;
   self->vsize            = vsize;
   self->hash_fn          = hash_fn ? hash_fn : hash_fnv64bit;
-  self->m.ref            = self;
+  self->m.ref            = any(self);
 
   return self;
 

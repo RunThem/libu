@@ -314,7 +314,7 @@ pub any_t $tree_new(i32_t ksize, i32_t vsize, u_cmp_fn cmp_fn) {
   self->ksize  = ksize;
   self->vsize  = vsize;
   self->cmp_fn = cmp_fn;
-  self->m.ref  = self;
+  self->m.ref  = any(self);
 
   return self;
 

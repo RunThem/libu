@@ -73,7 +73,7 @@ pub any_t $vec_new(i32_t itsize) {
   self->itsize = itsize;
   self->cap    = 16;
   self->m.cap  = 16;
-  self->m.ref  = self;
+  self->m.ref  = any(self);
 
   return self;
 

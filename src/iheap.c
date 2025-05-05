@@ -93,7 +93,7 @@ pub any_t $heap_new(i32_t itsize, u_order_e order, u_cmp_fn fn) {
   self->order  = order;
   self->cap    = 32;
   self->m.cap  = 32;
-  self->m.ref  = self;
+  self->m.ref  = any(self);
 
   return self;
 

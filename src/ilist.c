@@ -68,7 +68,7 @@ pub any_t $list_new() {
 
   self->head  = nullptr;
   self->tail  = nullptr;
-  self->m.ref = self;
+  self->m.ref = any(self);
 
   return self;
 
