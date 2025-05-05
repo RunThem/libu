@@ -32,9 +32,6 @@ extern "C" {
 #  endif
 
 /* clang-format off */
-
-typedef int ret_t;
-
 typedef char* u_cstr_t;
 
 typedef char        byte_t;
