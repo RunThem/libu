@@ -1,4 +1,4 @@
-local deps = { 'mimalloc' }
+local deps = { 'mimalloc', 'tbox' }
 
 add_requires(unpack(deps))
 
@@ -6,16 +6,18 @@ target('dep', function()
   set_kind('static')
   set_default('false')
 
+  -- add_files('dyad.c')
+
   add_packages(unpack(deps))
 end)
 
 target('dev.c', function()
   set_kind('binary')
-  set_default('false')
+  set_default(false)
   add_files('dev.c')
   set_rundir('$(projectdir)')
 
-  add_rules('generic')
+  -- add_rules('generic')
 
   -- add_deps('dep')
   add_deps('u')
@@ -23,7 +25,7 @@ target('dev.c', function()
   add_packages(unpack(deps))
 
   -- after_build(function(target)
-  --   os.trycp('$(projectdir)/$(buildir)/$(plat)/$(arch)/$(mode)/' .. target:name(), '$(projectdir)')
+  --   os.trycp('$(projectdir)/$(builddir)/$(plat)/$(arch)/$(mode)/' .. target:name(), '$(projectdir)')
   -- end)
 end)
 
@@ -54,8 +56,8 @@ task('perf', function()
     import('privilege.sudo')
     import('core.project.project')
 
-    local fg = vformat('$(buildir)/FlameGraph')
-    local sh = vformat('$(buildir)/perf.sh')
+    local fg = vformat('$(builddir)/FlameGraph')
+    local sh = vformat('$(builddir)/perf.sh')
     local target = project.target(option.get('target'))
 
     if not target then

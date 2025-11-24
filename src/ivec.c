@@ -38,8 +38,6 @@ struct [[gnu::packed]] vec_t {
   typeof_unqual(*(u_vec_t(vec_ref_t)){}) m;
 
   i32_t itsize;
-  i32_t len;
-  i32_t cap;
   i32_t idx; /* iter */
   any_t items;
 };
@@ -59,20 +57,19 @@ thread_local u_order_e th_cmp_order = {};
 //   return th_cmp_order == U_ORDER_ASCEND ? res : -res;
 // }
 
-pub any_t $vec_new(i32_t itsize) {
+pub any_t $vec_new(i32_t itsize, i32_t cap) {
   vec_ref_t self = nullptr;
-
-  assert(itsize);
 
   self = u_talloc(vec_t);
   u_end_if(self);
 
-  self->items = u_calloc(16, itsize);
+  self->items = u_calloc(cap, itsize);
   u_end_if(self->items);
 
+  self->idx    = 0;
   self->itsize = itsize;
-  self->cap    = 16;
-  self->m.cap  = 16;
+  self->m.cap  = cap;
+  self->m.len  = 0;
   self->m.ref  = any(self);
 
   return self;
@@ -88,7 +85,6 @@ pub void $vec_clear(any_t _self) {
 
   u_chk_if(self);
 
-  self->len   = 0;
   self->m.len = 0;
 }
 
@@ -101,18 +97,16 @@ pub void $vec_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-pub int $vec_resize(any_t _self, i32_t cap) {
+pub bool $vec_resize(any_t _self, i32_t cap) {
   vec_ref_t self = (vec_ref_t)_self;
   any_t items    = nullptr;
 
   u_chk_if(self, -1);
-  u_chk_if(cap < self->cap, -1);
 
   items = u_realloc(self->items, self->itsize * cap);
   u_end_if(items);
 
   self->items = items;
-  self->cap   = cap;
   self->m.cap = cap;
 
   return 0;
@@ -121,112 +115,91 @@ end:
   return -1;
 }
 
-/*
- * len = 7
- *
- * idx = (idx < 0) ? idx + len : idx
- * {  0,  1,  2,  3,  4,  5,  6 }
- * { -7, -6, -5, -4, -3, -2  -1 }
- * */
-pub any_t $vec_at(any_t _self, i32_t idx, any_t item) {
+pub any_t $vec_at(any_t _self, i32_t idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self, nullptr);
-  u_chk_if(idx >= self->len && idx < -self->len, nullptr);
-
-  idx += (idx < 0) ? self->len : 0;
-
-  if (item != nullptr) {
-    memcpy(at(idx), item, self->itsize);
-  }
 
   return at(idx);
 }
 
-/*
- * len = 7
- *
- * idx = (idx < 0) ? idx + len : idx
- * {  0,  1,  2,  3,  4,  5,  6 }
- * { -7, -6, -5, -4, -3, -2  -1 }
- * */
-pub void $vec_pop(any_t _self, i32_t idx, any_t item) {
+pub void $vec_del(any_t _self, i32_t idx) {
   vec_ref_t self = (vec_ref_t)_self;
 
   u_chk_if(self);
-  u_chk_if(self->len == 0);
-  u_chk_if(idx > self->len && idx < -self->len);
 
-  idx += (idx < 0) ? self->len : 0;
-
-  memcpy(item, at(idx), self->itsize);
-
-  if (idx != self->len - 1) {
-    memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
+  if (idx != self->m.len - 1) {
+    memmove(at(idx), at(idx + 1), (self->m.len - idx - 1) * self->itsize);
   }
 
-  self->len--;
   self->m.len--;
-
-  bzero(at(self->len), self->itsize);
 }
 
-/*
- * len = 7
- *
- * idx = (0 < idx) ? idx + 1 + len : idx
- *
- * {  0,  1,  2,  3,  4,  5,  6 }  7
- * { -8, -7, -6, -5, -4, -3, -2 } -1
- * */
-pub void $vec_put(any_t _self, i32_t idx, any_t item) {
+pub any_t $vec_add(any_t _self, i32_t idx) {
   vec_ref_t self = (vec_ref_t)_self;
   i32_t cap      = 0;
-  int ret        = 0;
+  int result     = 0;
 
-  u_chk_if(self);
-  u_chk_if(idx > self->len || idx < -(self->len + 1));
+  u_chk_if(self, nullptr);
 
-  idx += (idx < 0) ? self->len + 1 : 0;
-  if (self->len == self->cap) {
-    cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
-    ret = $vec_resize(_self, cap);
-    u_end_if(ret != 0);
+  if (self->m.len == self->m.cap) {
+    result = $vec_resize(_self, (i32_t)(self->m.cap * 1.5));
+    u_end_if(result != 0);
   }
 
-  if (idx != self->len) {
-    memmove(at(idx + 1), at(idx), (self->len - idx) * self->itsize);
+  if (idx != self->m.len) {
+    memmove(at(idx + 1), at(idx), (self->m.len - idx) * self->itsize);
   }
 
-  memcpy(at(idx), item, self->itsize);
-
-  self->len++;
   self->m.len++;
 
-  return;
+  return at(idx);
 
 end:
+  return nullptr;
 }
 
-pub bool $vec_each(any_t _self, any_t item) {
+pub any_t $vec_each(any_t _self, bool init) {
   vec_ref_t self = (vec_ref_t)_self;
 
-  u_chk_if(self, false);
-  u_chk_if(self->len == 0, false);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
-  if (item == nullptr) {
-    self->idx = 0;
-  } else {
-    u_end_if(self->idx == self->len);
-
-    memcpy(item, at(self->idx++), self->itsize);
+  if (!init) {
+    return (self->idx == self->m.len) ? nullptr : at(self->idx++);
   }
 
-  return true;
+  self->idx = 0;
 
-end:
-  return false;
+  return nullptr;
 }
+
+pub any_t $vec_reach(any_t _self, bool init) {
+  vec_ref_t self = (vec_ref_t)_self;
+
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
+
+  if (!init) {
+    return (self->idx == -1) ? nullptr : at(self->idx--);
+  }
+
+  self->idx = self->m.len - 1;
+
+  return nullptr;
+}
+
+// pub void vec_sort(any_t _self, int (^cmp_fn)(void*, void*), u_order_e order) {
+//   vec_ref_t self = (vec_ref_t)_self;
+//
+//   u_chk_if(self);
+//   u_chk_if(cmp_fn);
+//   u_chk_if(self->len < 2);
+//
+//   // th_cmp_fn    = cmp_fn;
+//   // th_cmp_order = order;
+//   qsort(self->items, self->len, self->itsize, cmp_fn);
+// }
 
 #if 0
 

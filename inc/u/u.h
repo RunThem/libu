@@ -75,7 +75,7 @@ extern "C" {
 #  include "ilfq.h"
 
 #  include "ivec.h"
-#  include "imap.h"
+#  include "idict.h"
 #  include "ilist.h"
 #  include "itree.h"
 #  include "iheap.h"

@@ -40,6 +40,9 @@ add_cflags('-Wno-reserved-macro-identifier', '-Wno-reserved-identifier')
 --- Disable VLA extensions
 add_cflags('-Werror=vla')
 
+--- Blocks
+add_cflags('-fblocks')
+
 --- Repositories
 add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
 

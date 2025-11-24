@@ -3,7 +3,7 @@ rule('generic', function()
     for _, batch in pairs(target:sourcebatches()) do
       if batch.sourcekind == 'cc' then
         for _, sourcefile in ipairs(batch.sourcefiles) do
-          local genericfile = vformat('$(buildir)/generic/' .. sourcefile .. '.h')
+          local genericfile = vformat('$(builddir)/generic/' .. sourcefile .. '.h')
           local Generic = { vec = {}, map = {}, set = {}, list = {}, tree = {} }
           local generic_type_flags = { vec = true, set = true, map = true, list = true, heap = true, tree = true }
 

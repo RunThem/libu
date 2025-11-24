@@ -1,0 +1,3 @@
+test() {
+  return 0;
+}

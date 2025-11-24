@@ -40,8 +40,11 @@
 #ifndef U_VA_H__
 #define U_VA_H__
 
-#define u_va_for_let(type, var, val)\
+#define u_va_for_let(type, var, val)                                                               \
   for (type var = val, *____##var = &var; ____##var; ____##var = nullptr)
+
+#define u_va_let(type, name, def) type u_va_cat($__, __line__, name) = def
+#define u_va_var(name)            u_va_cat($__, __line__, name)
 
 #ifndef LIBU_VA_EVAL
 

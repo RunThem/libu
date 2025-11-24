@@ -54,6 +54,8 @@ struct tnode_t {
   tnode_ref_t right;
   tnode_ref_t parent;
   i32_t height;
+
+  u8_t data[0];
 };
 
 typedef struct tree_t tree_t, *tree_ref_t;
@@ -74,7 +76,7 @@ struct tree_t {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri tnode_ref_t tree_new_node(tree_ref_t self, tnode_ref_t parent, any_t key, any_t val) {
+pri tnode_ref_t tree_new_node(tree_ref_t self, tnode_ref_t parent) {
   tnode_ref_t node = nullptr;
 
   if (self->free) {
@@ -89,9 +91,6 @@ pri tnode_ref_t tree_new_node(tree_ref_t self, tnode_ref_t parent, any_t key, an
   node->right  = nullptr;
   node->parent = parent;
   node->height = 1;
-
-  memcpy(key(node), key, self->ksize);
-  memcpy(val(node), val, self->vsize);
 
   return node;
 
@@ -372,7 +371,7 @@ pub void $tree_cleanup(any_t _self) {
   u_free(self);
 }
 
-pub any_t $tree_at(any_t _self, any_t key, any_t val) {
+pub any_t $tree_at(any_t _self, any_t key) {
   tree_ref_t self  = (tree_ref_t)_self;
   tnode_ref_t node = self->root;
   int result       = 0;
@@ -381,7 +380,7 @@ pub any_t $tree_at(any_t _self, any_t key, any_t val) {
   u_chk_if(self->len == 0, nullptr);
 
   while (node) {
-    result = self->cmp_fn(key, key(node));
+    result = self->cmp_fn(key, &node->data[0]);
     u_brk_if(result == 0);
 
     node = (result < 0) ? node->left : node->right;
@@ -389,41 +388,24 @@ pub any_t $tree_at(any_t _self, any_t key, any_t val) {
 
   u_end_if(node);
 
-  if (val != nullptr) {
-    memcpy(val(node), val, self->vsize);
-  }
-
-  return val(node);
+  return &node->data[0];
 
 end:
   return nullptr;
 }
 
-pub void $tree_pop(any_t _self, any_t key, any_t val) {
+pub void $tree_del(any_t _self, any_t data) {
   tree_ref_t self    = (tree_ref_t)_self;
-  tnode_ref_t node   = self->root;
+  tnode_ref_t node   = u_container_of(data, tnode_t, data);
   tnode_ref_t parent = nullptr;
-  int result         = 0;
 
   u_chk_if(self);
-
-  while (node) {
-    result = self->cmp_fn(key, key(node));
-    u_brk_if(result == 0);
-
-    node = (result < 0) ? node->left : node->right;
-  }
-
-  u_end_if(node);
 
   if (node->left && node->right) {
     parent = tree_pop_left_and_right(self, node);
   } else {
     parent = tree_pop_left_or_right(self, node);
   }
-
-  memcpy(key, key(node), self->ksize);
-  memcpy(val, val(node), self->vsize);
 
   node->parent = self->free;
   self->free   = node;
@@ -434,31 +416,27 @@ pub void $tree_pop(any_t _self, any_t key, any_t val) {
   if (parent) {
     tree_pop_rebalance(self, parent);
   }
-
-  return;
-
-end:
 }
 
-pub void $tree_put(any_t _self, any_t key, any_t val) {
+pub any_t $tree_add(any_t _self, any_t key) {
   tree_ref_t self    = (tree_ref_t)_self;
   tnode_ref_t* link  = &self->root;
   tnode_ref_t parent = nullptr;
   tnode_ref_t node   = nullptr;
   int result         = 0;
 
-  u_chk_if(self);
+  u_chk_if(self, nullptr);
 
   while (link[0]) {
     parent = link[0];
 
-    result = self->cmp_fn(key, key(parent));
+    result = self->cmp_fn(key, &parent->data[0]);
     u_end_if(result == 0);
 
     link = (result < 0) ? &(parent->left) : &(parent->right);
   }
 
-  node = tree_new_node(self, parent, key, val);
+  node = tree_new_node(self, parent);
   u_end_if(node);
 
   *link = node;
@@ -467,56 +445,54 @@ pub void $tree_put(any_t _self, any_t key, any_t val) {
 
   tree_put_rebalance(self, node);
 
-  return;
+  return &node->data[0];
 
 end:
+  return nullptr;
 }
 
-pub bool $tree_each(any_t _self, any_t key, any_t val) {
+pub any_t $tree_each(any_t _self, bool init) {
   tree_ref_t self  = (tree_ref_t)_self;
   tnode_ref_t iter = nullptr;
   tnode_ref_t last = nullptr;
 
-  u_chk_if(self, false);
-  u_chk_if(self->len == 0, false);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
-  if (key == nullptr) {
-    self->iter = nullptr;
+  if (init) {
+    return self->iter = nullptr;
+  }
+
+  if (self->iter == nullptr) {
+    iter = self->root;
+
+    while (iter->left) {
+      iter = iter->left;
+    }
   } else {
-    if (self->iter == nullptr) {
-      iter = self->root;
+    iter = self->iter;
 
+    if (iter->right) {
+      iter = iter->right;
       while (iter->left) {
         iter = iter->left;
       }
     } else {
-      iter = self->iter;
+      while (true) {
+        last = iter;
+        iter = iter->parent;
 
-      if (iter->right) {
-        iter = iter->right;
-        while (iter->left) {
-          iter = iter->left;
-        }
-      } else {
-        while (true) {
-          last = iter;
-          iter = iter->parent;
-
-          u_brk_if(!iter || iter->left == last);
-        }
+        u_brk_if(!iter || iter->left == last);
       }
     }
-
-    u_end_if(iter);
-
-    self->iter = iter;
-
-    memcpy(key, key(iter), self->ksize);
-    memcpy(val, val(iter), self->vsize);
   }
 
-  return true;
+  u_end_if(iter);
+
+  self->iter = iter;
+
+  return &iter->data[0];
 
 end:
-  return false;
+  return nullptr;
 }

@@ -51,6 +51,21 @@ extern bool   $list_each     (any_t, any_t*);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
+/**
+ * @brief Define a list type for specific element type T.
+ *        为特定元素类型 T 定义一个列表类型.
+ *
+ * This macro creates a packed struct that represents a list, including:
+ * - A reference to the underlying list implementation `ref`. This is used for type checking.
+ * - The current number of elements in the list `len`.
+ *
+ * 此宏创建一个表示列表的紧凑结构体，包括:
+ * - 底层列表实现的引用 `ref`，用于类型校验.
+ * - 列表中当前的元素数量 `len`.
+ *
+ * @tparam T      The type of elements stored in the list.
+ *                列表中存储的元素类型.
+ */
 #  define u_list_t(T)                                                                              \
     typeof(const struct [[gnu::packed]] {                                                          \
       $list_t ref;                                                                                 \
@@ -62,6 +77,23 @@ extern bool   $list_each     (any_t, any_t*);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
+
+/**
+ * @brief Create a new list for specific element type T.
+ *        创建特定元素类型 T 的新列表。
+ *
+ * This macro initializes a new list with the specified element type.
+ * 此宏初始化一个具有指定元素类型的新列表。
+
+ * ```c
+ * u_list_t(int) list = u_list_new(int);
+ * ```
+ *
+ * @tparam T      The type of elements stored in the list.
+ *                列表中存储的元素类型。
+ * @return Self   Reference to the newly created list.
+ *                新创建的列表引用。
+ */
 #  define u_list_new(T)                                                                            \
     ({                                                                                             \
       u_list_t(T) self = $list_new();                                                              \
