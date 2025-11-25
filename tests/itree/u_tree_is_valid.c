@@ -1,6 +1,6 @@
 test() {
   {
-    u_tree_t(int, int) t = u_tree_new(int, int, fn_cmp(int));
+    u_tree_t(int, int) t = u_tree_new(t, fn_cmp(int));
 
     mut_false(u_tree_is_valid(t, 0));
     mut_false(u_tree_is_valid(t, 1));

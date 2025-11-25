@@ -3,7 +3,7 @@ test() {
     u_tree_t(int, int) t = {};
     mut_ptr_eq_nil(t);
 
-    t = u_tree_new(int, int, fn_cmp(int));
+    t = u_tree_new(t, fn_cmp(int));
     mut_ptr_neq_nil(t);
     mut_ptr_eq(t, t->ref);
 
@@ -14,7 +14,7 @@ test() {
     u_tree_t(int, int) t = {};
     mut_ptr_eq_nil(t);
 
-    t = u_tree_new(int, int, fn_cmp(int));
+    t = u_tree_new(t, fn_cmp(int));
     mut_ptr_neq_nil(t);
     mut_ptr_eq(t, t->ref);
 

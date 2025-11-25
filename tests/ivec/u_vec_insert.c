@@ -1,6 +1,6 @@
 test() {
   {
-    u_vec_t(int) v = u_vec_new(int);
+    u_vec_t(int) v = u_vec_new(v);
 
     each(i, 0, N, +1) {
       u_vec_insert(v, v->len, i);
@@ -18,7 +18,7 @@ test() {
   }
 
   {
-    u_vec_t(int) v = u_vec_new(int);
+    u_vec_t(int) v = u_vec_new(v);
 
     each(i, 0, N, +1) {
       u_vec_insert(v, 0, i);

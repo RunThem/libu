@@ -1,7 +1,7 @@
 test() {
 
   {
-    u_vec_t(int) v = u_vec_new(int);
+    u_vec_t(int) v = u_vec_new(v);
 
     bool flag = true;
 

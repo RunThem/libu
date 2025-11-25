@@ -3,7 +3,7 @@ test() {
     u_vec_t(int) v = {};
     mut_ptr_eq_nil(v);
 
-    v = u_vec_new(i32_t);
+    v = u_vec_new(v);
     mut_ptr_neq_nil(v);
     mut_ptr_eq(v, v->ref);
 
@@ -15,7 +15,7 @@ test() {
     u_vec_t(int) v = {};
     mut_ptr_eq_nil(v);
 
-    v = u_vec_new(i32_t, 64);
+    v = u_vec_new(v, 64);
     mut_ptr_neq_nil(v);
     mut_ptr_eq(v, v->ref);
 

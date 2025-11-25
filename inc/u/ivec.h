@@ -86,12 +86,14 @@ extern any_t $vec_add     (any_t, i32_t);
 extern any_t $vec_each    (any_t, bool);
 extern any_t $vec_reach   (any_t, bool);
 
-#  define u_vec_new(T, ...)                                                                        \
+#  define u_vec_new(self, ...)                                                                     \
     ({                                                                                             \
+      typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                \
+                                                                                                   \
       i32_t __cap__ = u_va_0th(16, __VA_ARGS__);                                                   \
       assert(0 < __cap__ && __cap__ <= INT32_MAX);                                                 \
                                                                                                    \
-      u_vec_t(T) self = $vec_new(sizeof(T), __cap__);                                              \
+      self = $vec_new(sizeof(self->_[0].val), __cap__);                                            \
                                                                                                    \
       self->ref;                                                                                   \
     })
@@ -291,7 +293,7 @@ extern any_t $vec_reach   (any_t, bool);
       __val__;                                                                                     \
     })
 
-/** 
+/**
  * @return int
  * */
 #  define u_vec_rfind_nif(self, cond) u_vec_rfind_if(self, !(cond))

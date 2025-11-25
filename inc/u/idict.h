@@ -68,9 +68,11 @@ extern any_t $dict_each     (any_t, bool);
  * iApi
  **************************************************************************************************/
 
-#  define u_dict_new(K, V, ...)                                                                    \
+#  define u_dict_new(self, ...)                                                                    \
     ({                                                                                             \
-      u_dict_t(K, V) self = $dict_new(sizeof(K), sizeof(V), u_va_0th(nullptr, __VA_ARGS__));       \
+      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+                                                                                                   \
+      self = $dict_new(sizeof(self->_[0].key), sizeof(self->_[0].val), u_va_0th(nullptr, __VA_ARGS__));\
                                                                                                    \
       self->ref;                                                                                   \
     })

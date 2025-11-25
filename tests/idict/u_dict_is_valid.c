@@ -1,6 +1,6 @@
 test() {
   {
-    u_dict_t(int, int) t = u_dict_new(int, int);
+    u_dict_t(int, int) t = u_dict_new(t);
 
     mut_false(u_dict_is_valid(t, 0));
     mut_false(u_dict_is_valid(t, 1));

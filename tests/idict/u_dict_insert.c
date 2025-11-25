@@ -1,6 +1,6 @@
 test() {
   {
-    u_dict_t(int, int) t = u_dict_new(int, int);
+    u_dict_t(int, int) t = u_dict_new(t);
 
     each(i, 0, N, +1) {
       u_dict_insert(t, i, i);

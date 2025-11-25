@@ -1,6 +1,6 @@
 test() {
   {
-    u_tree_t(int, int) t = u_tree_new(int, int, fn_cmp(int));
+    u_tree_t(int, int) t = u_tree_new(t, fn_cmp(int));
 
     bool flag = true;
     u_tree_each_if_ref(t, it, it->key % 2 == 0) {

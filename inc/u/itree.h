@@ -69,9 +69,11 @@ extern any_t $tree_each     (any_t, bool);
  * iApi
  **************************************************************************************************/
 
-#  define u_tree_new(K, V, cmp_fn)                                                                 \
+#  define u_tree_new(self, cmp_fn)                                                                 \
     ({                                                                                             \
-      u_tree_t(K, V) self = $tree_new(sizeof(K), sizeof(V), cmp_fn);                               \
+      typecheck($tree_t, self->_[0].meta, "meta type not's Tree<K, V>");                           \
+                                                                                                   \
+      self = $tree_new(sizeof(self->_[0].key), sizeof(self->_[0].val), cmp_fn);                    \
                                                                                                    \
       self->ref;                                                                                   \
     })

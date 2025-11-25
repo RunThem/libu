@@ -1,6 +1,6 @@
 test() {
   {
-    u_tree_t(int, int) t = u_tree_new(int, int, fn_cmp(int));
+    u_tree_t(int, int) t = u_tree_new(t, fn_cmp(int));
 
     each(i, 0, N, +1) {
       u_tree_insert(t, i, i);

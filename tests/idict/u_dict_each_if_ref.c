@@ -1,6 +1,6 @@
 test() {
   {
-    u_dict_t(int, int) t = u_dict_new(int, int);
+    u_dict_t(int, int) t = u_dict_new(t);
 
     bool flag = true;
     u_dict_each_if_ref(t, it, it->key % 2 == 0) {

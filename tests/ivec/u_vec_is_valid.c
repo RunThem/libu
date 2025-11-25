@@ -1,6 +1,6 @@
 test() {
   {
-    u_vec_t(int) v = u_vec_new(int);
+    u_vec_t(int) v = u_vec_new(v);
 
     mut_false(u_vec_is_valid(v, 0));
     mut_false(u_vec_is_valid(v, 1));
