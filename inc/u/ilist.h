@@ -52,7 +52,6 @@ extern any_t  $list_reach    (any_t, bool);
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-
 #  define u_list_t(T)                                                                              \
     typeof(const struct [[gnu::packed]] {                                                          \
       any_t ref;                                                                                   \
@@ -68,7 +67,6 @@ extern any_t  $list_reach    (any_t, bool);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-
 #  define u_list_new(self)                                                                         \
     ({                                                                                             \
       typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                              \
@@ -78,21 +76,24 @@ extern any_t  $list_reach    (any_t, bool);
       self->ref;                                                                                   \
     })
 
+
 #  define u_list_cleanup(self, ...)                                                                \
     do {                                                                                           \
       typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                              \
                                                                                                    \
-      u_va_if(u_va_has(__VA_ARGS__)) ( u_list_each_ref(self, it) { __VA_ARGS__ } )                 \
+      u_va_has_if(__VA_ARGS__) ( u_list_each_ref(self, it) { __VA_ARGS__ } )                       \
                                                                                                    \
       $list_cleanup(self);                                                                         \
                                                                                                    \
       self = nullptr;                                                                              \
     } while (0)
 
+
 #  define u_list_head_ref(self)                                                                    \
     ({                                                                                             \
       (typeof(self->_[0].ref)) u_list_head_mut(self);                                              \
     })
+
 
 #  define u_list_head_mut(self)                                                                    \
     ({                                                                                             \
@@ -103,10 +104,12 @@ extern any_t  $list_reach    (any_t, bool);
       __mut__;                                                                                     \
     })
 
+
 #  define u_list_tail_ref(self)                                                                    \
     ({                                                                                             \
       (typeof(self->_[0].ref)) u_list_tail_mut(self);                                              \
     })
+
 
 #  define u_list_tail_mut(self)                                                                    \
     ({                                                                                             \
@@ -117,10 +120,12 @@ extern any_t  $list_reach    (any_t, bool);
       __mut__;                                                                                     \
     })
 
+
 #  define u_list_prev_ref(self, _uptr)                                                             \
     ({                                                                                             \
       (typeof(self->_[0].ref)) u_list_prev_mut(self, _uptr);                                       \
     })
+
 
 #  define u_list_prev_mut(self, _uptr)                                                             \
     ({                                                                                             \
@@ -131,10 +136,12 @@ extern any_t  $list_reach    (any_t, bool);
       __mut__;                                                                                     \
     })
 
+
 #  define u_list_next_ref(self, _uptr)                                                             \
     ({                                                                                             \
       (typeof(self->_[0].ref)) u_list_next_mut(self, _uptr);                                       \
     })
+
 
 #  define u_list_next_mut(self, _uptr)                                                             \
     ({                                                                                             \
@@ -145,6 +152,7 @@ extern any_t  $list_reach    (any_t, bool);
       __mut__;                                                                                     \
     })
 
+
 #  define u_list_remove(self, _uptr)                                                               \
     do {                                                                                           \
       typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                              \
@@ -152,9 +160,12 @@ extern any_t  $list_reach    (any_t, bool);
       $list_del(self->ref, _uptr);                                                                 \
     } while (0)
 
+
 #  define u_list_remove_head(self) u_list_remove(self, u_list_head_mut(self))
 
+
 #  define u_list_remove_tail(self) u_list_remove(self, u_list_tail_mut(self))
+
 
 #  define u_list_insert(self, _uidxptr, _uptr)                                                     \
     do {                                                                                           \
@@ -167,39 +178,49 @@ extern any_t  $list_reach    (any_t, bool);
       *__mut__ = _uptr;                                                                            \
     } while (0)
 
+
 #  define u_list_insert_head(self, _uptr) u_list_insert(self, nullptr, _uptr)
 
+
 #  define u_list_insert_tail(self, _uptr) u_list_insert(self, u_list_tail_mut(self), _uptr)
+
 
 #  define u_list_each_ref(self, it)                                                                \
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_each(self->ref, !0);                                                                     \
-    for (typeof_unqual(self->_[0].ref) it = {}; (it = $list_each(self->ref, !!0));)
+    for (typeof_unqual(self->_[0].ref) it = {}; (it = $list_each(self->ref, !!0)); )
+
 
 #  define u_list_each_if_ref(self, it, cond) u_list_each_ref(self, it) if (cond)
+
 
 #  define u_list_each_mut(self, it)                                                                \
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_each(self->ref, !0);                                                                     \
-    for (typeof_unqual(self->_[0].mut) it = {}; (it = $list_each(self->ref, !!0));)
+    for (typeof_unqual(self->_[0].mut) it = {}; (it = $list_each(self->ref, !!0)); )
+
 
 #  define u_list_each_if_mut(self, it, cond) u_list_each_mut(self, it) if (cond)
+
 
 #  define u_list_reach_ref(self, it)                                                               \
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_reach(self->ref, !0);                                                                    \
-    for (typeof_unqual(self->_[0].ref) it = {}; (it = $list_reach(self->ref, !!0));)
+    for (typeof_unqual(self->_[0].ref) it = {}; (it = $list_reach(self->ref, !!0)); )
+
 
 #  define u_list_reach_if_ref(self, it, cond) u_list_reach_ref(self, it) if (cond)
+
 
 #  define u_list_reach_mut(self, it)                                                               \
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_reach(self->ref, !0);                                                                    \
-    for (typeof_unqual(self->_[0].mut) it = {}; (it = $list_reach(self->ref, !!0));)
+    for (typeof_unqual(self->_[0].mut) it = {}; (it = $list_reach(self->ref, !!0)); )
+
 
 #  define u_list_reach_if_mut(self, it, cond) u_list_reach_mut(self, it) if (cond)
 

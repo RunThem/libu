@@ -38,14 +38,15 @@ extern "C" {
  **************************************************************************************************/
 typedef struct {}* $vec_t;
 
-//extern any_t $vec_new      (i32_t);
-//extern void  $vec_clear    (any_t);
-//extern void  $vec_cleanup  (any_t);
-//extern int   $vec_resize   (any_t, i32_t);
-//extern any_t $vec_at       (any_t, i32_t, any_t);
-//extern void  $vec_pop      (any_t, i32_t, any_t);
-//extern void  $vec_put      (any_t, i32_t, any_t);
-//extern bool  $vec_each     (any_t, any_t);
+extern any_t $vec_new     (i32_t, i32_t);
+extern bool  $vec_resize  (any_t, i32_t);
+extern void  $vec_clear   (any_t);
+extern void  $vec_cleanup (any_t);
+extern any_t $vec_at      (any_t, i32_t);
+extern void  $vec_del     (any_t, i32_t);
+extern any_t $vec_add     (any_t, i32_t);
+extern any_t $vec_each    (any_t, bool);
+extern any_t $vec_reach   (any_t, bool);
 
 #if 0
 extern void  vec_sort     (any_t, u_cmp_fn, u_order_e);
@@ -76,16 +77,6 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-extern any_t $vec_new     (i32_t, i32_t);
-extern bool  $vec_resize  (any_t, i32_t);
-extern void  $vec_clear   (any_t);
-extern void  $vec_cleanup (any_t);
-extern any_t $vec_at      (any_t, i32_t);
-extern void  $vec_del     (any_t, i32_t);
-extern any_t $vec_add     (any_t, i32_t);
-extern any_t $vec_each    (any_t, bool);
-extern any_t $vec_reach   (any_t, bool);
-
 #  define u_vec_new(self, ...)                                                                     \
     ({                                                                                             \
       typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                \
@@ -98,12 +89,14 @@ extern any_t $vec_reach   (any_t, bool);
       self->ref;                                                                                   \
     })
 
+
 #  define u_vec_is_valid(self, _idx)                                                               \
     ({                                                                                             \
       typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                \
                                                                                                    \
       (bool) (0 <= _idx && _idx < self->len);                                                      \
     })
+
 
 #  define u_vec_resize(self, _cap)                                                                 \
     ({                                                                                             \
@@ -114,35 +107,40 @@ extern any_t $vec_reach   (any_t, bool);
       $vec_resize(self->ref, _cap);                                                                \
     })
 
+
 #  define u_vec_clear(self, ...)                                                                   \
     do {                                                                                           \
       typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                \
                                                                                                    \
-      u_va_if(u_va_has(__VA_ARGS__)) ( u_vec_each(self, it) { __VA_ARGS__ } )                      \
+      u_va_has_if(__VA_ARGS__) ( u_vec_each(self, it) { __VA_ARGS__ } )                            \
                                                                                                    \
       $vec_clear(self->ref);                                                                       \
     } while (0)
+
 
 #  define u_vec_cleanup(self, ...)                                                                 \
     do {                                                                                           \
       typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                \
                                                                                                    \
-      u_va_if(u_va_has(__VA_ARGS__)) ( u_vec_each(self, it) { __VA_ARGS__ } )                      \
+      u_va_has_if(__VA_ARGS__) ( u_vec_each(self, it) { __VA_ARGS__ } )                            \
                                                                                                    \
       $vec_cleanup(self->ref);                                                                     \
                                                                                                    \
       self = nullptr;                                                                              \
     } while (0)
 
+
 #  define u_vec_at(self, _i, ...)                                                                  \
     ({                                                                                             \
-      *u_vec_at_mut(self, _i) u_va_if(u_va_has(__VA_ARGS__)) ( = u_va_at(0, __VA_ARGS__) );        \
+      *u_vec_at_mut(self, _i) u_va_has_if(__VA_ARGS__) ( = u_va_at(0, __VA_ARGS__) );              \
     })
+
 
 #  define u_vec_at_ref(self, _i)                                                                   \
     ({                                                                                             \
       (typeof(self->_[0].ref)) u_vec_at_mut(self, _i);                                             \
     })                                                                                             \
+
 
 #  define u_vec_at_mut(self, _i)                                                                   \
     ({                                                                                             \
@@ -155,20 +153,24 @@ extern any_t $vec_reach   (any_t, bool);
       __mut__;                                                                                     \
     })                                                                                             \
 
+
 #  define u_vec_try_at(self, _i, ...)                                                              \
     u_va_let(typeof_unqual(self->_[0].ref), ref, $vec_at(self->ref, _i));                          \
     if (u_vec_is_valid(self, _i) && u_va_var(ref))                                                 \
       for (auto u_va_0th(it, __VA_ARGS__) = *u_va_var(ref); u_va_var(ref); u_va_var(ref) = nullptr)
+
 
 #  define u_vec_try_at_ref(self, _i, ...)                                                          \
     u_va_let(typeof_unqual(self->_[0].ref), ref, $vec_at(self->ref, _i));                          \
     if (u_vec_is_valid(self, _i) && u_va_var(ref))                                                 \
       for (auto u_va_0th(it, __VA_ARGS__) = (typeof(self->_[0].ref)) u_va_var(ref); u_va_var(ref); u_va_var(ref) = nullptr)
 
+
 #  define u_vec_try_at_mut(self, _i, ...)                                                          \
     u_va_let(typeof_unqual(self->_[0].mut), ref, $vec_at(self->ref, _i));                          \
     if (u_vec_is_valid(self, _i) && u_va_var(ref))                                                 \
       for (auto u_va_0th(it, __VA_ARGS__) = (typeof(self->_[0].mut)) u_va_var(ref); u_va_var(ref); u_va_var(ref) = nullptr)
+
 
 #  define u_vec_remove(self, _i)                                                                   \
     ({                                                                                             \
@@ -181,9 +183,12 @@ extern any_t $vec_reach   (any_t, bool);
       __val__;                                                                                     \
     })
 
+
 #  define u_vec_remove_front(self) u_vec_remove(self, 0)
 
+
 #  define u_vec_remove_back(self) u_vec_remove(self, self->len-1)
+
 
 /*
  * [0, 1, 2, 3, 4, _]
@@ -199,61 +204,72 @@ extern any_t $vec_reach   (any_t, bool);
       *__mut__ = _val;                                                                             \
     } while (0)
 
+
 #  define u_vec_insert_front(self, _val) u_vec_insert(self, 0, _val)
 
+
 #  define u_vec_insert_back(self, _val) u_vec_insert(self, self->len, _val)
+
 
 #  define u_vec_each(self, it)                                                                     \
     typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                  \
                                                                                                    \
     (void)$vec_each(self->ref, !0);                                                                \
-    for (auto it = (typeof(self->_[0].val)) {};                                                    \
-         ({ typeof(it)* __ref__ = $vec_each(self->ref, !!0); if (__ref__) it = *__ref__; __ref__; }); \
-    )
+    for (auto it = (typeof(self->_[0].val)) {}; ({ typeof(it)* __ref__ = $vec_each(self->ref, !!0); if (__ref__) it = *__ref__; __ref__; }); )
+
 
 #  define u_vec_each_if(self, it, cond) u_vec_each(self, it) if (cond)
+
 
 #  define u_vec_each_ref(self, it)                                                                 \
     typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                  \
                                                                                                    \
     (void)$vec_each(self->ref, !0);                                                                \
-    for (auto it = (typeof(self->_[0].ref)) {}; (it = $vec_each(self->ref, !!0));)
+    for (auto it = (typeof(self->_[0].ref)) {}; (it = $vec_each(self->ref, !!0)); )
+
 
 #  define u_vec_each_if_ref(self, it, cond) u_vec_each_ref(self, it) if (cond)
+
 
 #  define u_vec_each_mut(self, it)                                                                 \
     typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                  \
                                                                                                    \
     (void)$vec_each(self->ref, !0);                                                                \
-    for (auto it = (typeof(self->_[0].mut)) {}; (it = $vec_each(self->ref, !!0));)
+    for (auto it = (typeof(self->_[0].mut)) {}; (it = $vec_each(self->ref, !!0)); )
+
 
 #  define u_vec_each_if_mut(self, it, cond) u_vec_each_mut(self, it) if (cond)
+
 
 #  define u_vec_reach(self, it)                                                                    \
     typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                  \
                                                                                                    \
     (void)$vec_reach(self->ref, !0);                                                               \
-    for (auto it = (typeof(self->_[0].val)) {};                                                    \
-         ({ typeof(it)* __ref__ = $vec_reach(self->ref, !!0); if (__ref__) it = *__ref__; __ref__; }); \
-    )
+    for (auto it = (typeof(self->_[0].val)) {}; ({ typeof(it)* __ref__ = $vec_reach(self->ref, !!0); if (__ref__) it = *__ref__; __ref__; }); )
+
 
 #  define u_vec_reach_if(self, it, cond) u_vec_reach(self, it) if (cond)
+
 
 #  define u_vec_reach_ref(self, it)                                                                \
     typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                  \
                                                                                                    \
     (void)$vec_reach(self->ref, !0);                                                               \
-    for (auto it = (typeof(self->_[0].ref)) {}; (it = $vec_reach(self->ref, !!0));)
+    for (auto it = (typeof(self->_[0].ref)) {}; (it = $vec_reach(self->ref, !!0)); )
+
 
 #  define u_vec_reach_if_ref(self, it, cond) u_vec_reach_ref(self, it) if (cond)
+
 
 #  define u_vec_reach_mut(self, it)                                                                \
     typecheck($vec_t, self->_[0].meta, "mete type not's Vec<T>");                                  \
                                                                                                    \
     (void)$vec_reach(self->ref, !0);                                                               \
-    for (auto it = (typeof(self->_[0].mut)) {}; (it = $vec_reach(self->ref, !!0));)
+    for (auto it = (typeof(self->_[0].mut)) {}; (it = $vec_reach(self->ref, !!0)); )
+
 
 #  define u_vec_reach_if_mut(self, it, cond) u_vec_reach_mut(self, it) if (cond)
+
 
 #  define u_vec_find_if(self, cond)                                                                \
     ({                                                                                             \
@@ -264,14 +280,18 @@ extern any_t $vec_reach   (any_t, bool);
       __val__;                                                                                     \
     })
 
+
 #  define u_vec_find_nif(self, cond) u_vec_find_if(self, !(cond))
+
 
 #  define u_vec_find_if_ref(self, cond)                                                            \
     ({                                                                                             \
       (typeof(self->_[0].ref)) u_vec_find_if_mut(self, cond);                                      \
     })
 
+
 #  define u_vec_find_nif_ref(self, cond) u_vec_find_if_ref(self, !(cond))
+
 
 #  define u_vec_find_if_mut(self, cond)                                                            \
     ({                                                                                             \
@@ -282,7 +302,9 @@ extern any_t $vec_reach   (any_t, bool);
       __mut__;                                                                                     \
     })
 
+
 #  define u_vec_find_nif_mut(self, cond) u_vec_find_if_mut(self, !(cond))
+
 
 #  define u_vec_rfind_if(self, cond)                                                               \
     ({                                                                                             \
@@ -293,17 +315,18 @@ extern any_t $vec_reach   (any_t, bool);
       __val__;                                                                                     \
     })
 
-/**
- * @return int
- * */
+
 #  define u_vec_rfind_nif(self, cond) u_vec_rfind_if(self, !(cond))
+
 
 #  define u_vec_rfind_if_ref(self, cond)                                                           \
     ({                                                                                             \
       (typeof(self->_[0].ref))u_vec_rfind_if_mut(self, cond);                                      \
     })
 
+
 #  define u_vec_rfind_nif_ref(self, cond) u_vec_rfind_if_ref(self, !(cond))
+
 
 #  define u_vec_rfind_if_mut(self, cond)                                                           \
     ({                                                                                             \
@@ -314,7 +337,9 @@ extern any_t $vec_reach   (any_t, bool);
       __mut__;                                                                                     \
     })
 
+
 #  define u_vec_rfind_nif_mut(self, cond) u_vec_rfind_if_mut(self, !(cond))
+
 
 #  define u_vec_map_by(self, block)                                                                \
     ({                                                                                             \
@@ -329,6 +354,7 @@ extern any_t $vec_reach   (any_t, bool);
       __self__;                                                                                    \
     })
 
+
 #  define u_vec_map_by_mut(self, block)                                                            \
     do {                                                                                           \
       for (i32_t __idx__ = {}; __idx__ < self->len; __idx__++) {                                   \
@@ -338,6 +364,7 @@ extern any_t $vec_reach   (any_t, bool);
         u_vec_at(self, __idx__, it);                                                               \
       }                                                                                            \
     } while (0)
+
 
 #  define u_vec_filter_if(self, cond)                                                              \
     ({                                                                                             \
@@ -349,6 +376,7 @@ extern any_t $vec_reach   (any_t, bool);
                                                                                                    \
       __self__;                                                                                    \
     })
+
 
 #  define u_vec_filter_if_mut(self, cond, ...)                                                     \
     do {                                                                                           \
@@ -362,6 +390,7 @@ extern any_t $vec_reach   (any_t, bool);
       }                                                                                            \
     } while (0)
 
+
 #  define u_vec_all_if(self, cond)                                                                 \
     ({                                                                                             \
       bool __result__ = !0;                                                                        \
@@ -369,6 +398,7 @@ extern any_t $vec_reach   (any_t, bool);
                                                                                                    \
       __result__;                                                                                  \
     })
+
 
 #  define u_vec_all_if_ref(self, cond)                                                             \
     ({                                                                                             \
@@ -378,6 +408,7 @@ extern any_t $vec_reach   (any_t, bool);
       __result__;                                                                                  \
     })
 
+
 #  define u_vec_any_if(self, cond)                                                                 \
     ({                                                                                             \
       bool __result__ = !!0;                                                                       \
@@ -385,6 +416,7 @@ extern any_t $vec_reach   (any_t, bool);
                                                                                                    \
       __result__;                                                                                  \
     })
+
 
 #  define u_vec_any_if_ref(self, cond)                                                             \
     ({                                                                                             \

@@ -43,15 +43,18 @@ typedef struct atomic_flag u_atomic_flag_t;
  **************************************************************************************************/
 #define u_once_call_def(fun) once_flag _##fun##__once_call_flag = ONCE_FLAG_INIT;
 
+
 #define u_once_call(fun)                                                                           \
   do {                                                                                             \
     call_once(&_##fun##__once_call_flag, fun);                                                     \
   } while (0)
 
+
 #define u_atomic_init(obj, v)                                                                      \
   do {                                                                                             \
     atomic_init(obj, v);                                                                           \
   } while (0)
+
 
 #define u_atomic_put(obj, v, ...)                                                                  \
   do {                                                                                             \
@@ -62,6 +65,7 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   } while (0)
 
+
 #define u_atomic_pop(obj, ...)                                                                     \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
@@ -71,6 +75,7 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   })
 
+
 #define u_atomic_swap(obj, v, ...)                                                                 \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
@@ -79,6 +84,7 @@ typedef struct atomic_flag u_atomic_flag_t;
       atomic_exchange(obj, v);                                                                     \
     )                                                                                              \
   })
+
 
 #define u_atomic_cswap(obj, c, v, ...)                                                             \
   ({                                                                                               \
@@ -95,6 +101,7 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   })
 
+
 #define u_atomic_add(obj, v, ...)                                                                  \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
@@ -103,6 +110,7 @@ typedef struct atomic_flag u_atomic_flag_t;
       atomic_fetch_add(obj, v);                                                                    \
     )                                                                                              \
   })
+
 
 #define u_atomic_sub(obj, v, ...)                                                                  \
   ({                                                                                               \
@@ -113,6 +121,7 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   })
 
+
 #define u_atomic_and(obj, v, ...)                                                                  \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
@@ -121,6 +130,7 @@ typedef struct atomic_flag u_atomic_flag_t;
       atomic_fetch_and(obj, v);                                                                    \
     )                                                                                              \
   })
+
 
 #define u_atomic_or(obj, v, ...)                                                                   \
   ({                                                                                               \
@@ -131,6 +141,7 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   })
 
+
 #define u_atomic_xor(obj, v, ...)                                                                  \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
@@ -140,6 +151,7 @@ typedef struct atomic_flag u_atomic_flag_t;
     )                                                                                              \
   })
 
+
 #define u_atomic_flag_true(obj, ...)                                                               \
   ({                                                                                               \
     u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
@@ -148,6 +160,7 @@ typedef struct atomic_flag u_atomic_flag_t;
       atomic_flag_test_and_set(obj);                                                               \
     )                                                                                              \
   })
+
 
 #define u_atomic_flag_false(obj, ...)                                                              \
   do {                                                                                             \

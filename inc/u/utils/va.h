@@ -74,6 +74,8 @@
 #define __u_va_if_1(...)   __VA_ARGS__
 #define __u_va_if_0(...)
 
+#define u_va_has_if(...) u_va_if(u_va_has(__VA_ARGS__))
+
 #define u_va_elseif(condition) u_va_cat(__u_va_elseif_, condition)
 #define __u_va_elseif_1(...)   __VA_ARGS__ __u_va_elseif_1_else
 #define __u_va_elseif_0(...)   __u_va_elseif_0_else
@@ -198,7 +200,7 @@ u_va_let(a)       /* : _a_100 */
 #endif
 
 
-/* 
+/*
  * unpack
  * */
 #define u_va_unpack(...)   __u_va_unpack __VA_ARGS__
@@ -585,7 +587,7 @@ u_va_if(1)(true)        /* : true */
 #endif
 
 
-/* 
+/*
  * elseif
  **/
 #define u_va_elseif(condition)    u_va_cat(__u_va_elseif_, condition)
@@ -665,11 +667,11 @@ u_va_cut(6, 0, 1, 2, 3, 4)        /* : 0 , 1 , 2 , 3 , 4 */
         , arg                                                                                      \
       )                                                                                            \
     )                                                                                              \
-  )                                                                                              
+  )
 
 #ifdef u_va_debug
 echo(slice)
-u_va_slice(0, 0, 1, 2, 3, 4)        /* : 0 , 1 , 2 , 3 , 4 */ 
+u_va_slice(0, 0, 1, 2, 3, 4)        /* : 0 , 1 , 2 , 3 , 4 */
 u_va_slice(1, 0, 1, 2, 3, 4)        /* : 1 , 2 , 3 , 4     */
 u_va_slice(2, 0, 1, 2, 3, 4)        /* : 2 , 3 , 4         */
 u_va_slice(3, 0, 1, 2, 3, 4)        /* : 3 , 4             */
@@ -696,7 +698,7 @@ u_va_at(5, 0, 1, 2, 3, 4)       /* :   */
 u_va_at(6, 0, 1, 2, 3, 4)       /* :   */
 #endif
 
-  
+
 /*
  * opt
  **/
@@ -745,7 +747,7 @@ u_va_th(3, Y, 0, 1, 2, 3, 4, 5)       /* : 3 */
     u_va_defer(2, __u_va_cnt_def)()(u_va_inc(first), __VA_ARGS__)                                  \
   )(                                                                                               \
     first                                                                                          \
-  )                                                                                             
+  )
 
 #ifdef u_va_debug
 echo(cnt)
@@ -758,7 +760,7 @@ u_va_cnt(1, 2, 3, 4, 5)        /* : 5 */
 #endif
 
 
-/* 
+/*
  * cnt_is
  **/
 #define u_va_cnt_is(n, ...)                                                                        \
