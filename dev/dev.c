@@ -128,9 +128,7 @@ struct json_t {
 int main(int argc, const u_cstr_t argv[]) {
   tb_init(nullptr, nullptr);
 
-  tb_trace_i("hello");
-  tb_trace_d("debug");
-
+#if 0
   auto f = ^(int a) {
     return a * 2;
   };
@@ -145,7 +143,7 @@ int main(int argc, const u_cstr_t argv[]) {
     return *a - *b;
   };
 
-#define labmbda_cmp(type) ^int(type * x, type * y)
+#  define labmbda_cmp(type) ^int(type * x, type * y)
 
   auto k = labmbda_cmp(int) {
     return *x - *y;
@@ -154,6 +152,18 @@ int main(int argc, const u_cstr_t argv[]) {
   auto m = Block_copy(f);
 
   u_inf("blocks is %d", __has_extension(blocks));
+
+#endif
+
+  u_tree_t(int, int) t = u_tree_new(t, fn_cmp(int));
+
+  u_each (i, 1000) {
+    u_tree_insert(t, i, i);
+  }
+
+  tb_trace_i("t.len is %d", t->len);
+
+  u_tree_cleanup(t);
 
   tb_exit();
 

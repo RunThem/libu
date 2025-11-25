@@ -55,42 +55,30 @@ task('perf', function()
     import('devel.git')
     import('privilege.sudo')
     import('core.project.project')
+    import('core.project.config')
 
-    local fg = vformat('$(builddir)/FlameGraph')
-    local sh = vformat('$(builddir)/perf.sh')
+    os.cd("$(builddir)")
+
     local target = project.target(option.get('target'))
-
     if not target then
       return
     end
 
-    target = vformat('%s/debug/%s', target:targetdir(), target:filename())
+    local bin = vformat('%s/$(mode)/%s', target:targetdir(), target:filename())
+    print(target:targetfile())
+    print(vformat('%s/$(mode)/%s', target:targetdir(), target:filename()))
+
+    print(vformat('%s/%s/%s', target:targetdir(), config.mode(), target:filename()))
 
     -- download [FlameGraph](https://github.com/brendangregg/FlameGraph)
-    if not os.exists(fg) then
-      git.clone('https://github.com/brendangregg/FlameGraph', { depth = 1, outputdir = fg })
+    if not os.exists("FlameGraph") then
+      git.clone('https://github.com/brendangregg/FlameGraph', { depth = 1 })
     end
 
-    local script = [[
-#!/usr/bin/env bash
+    -- sudo.exec("bash -c 'perf record -F 997 -g %s'", bin)
+    -- sudo.exec("bash -c 'perf script -i perf.data > perf.unfold'")
 
-set -x
-
-./build/linux/x86_64/debug/dev.c &>/dev/null &
-pid=$!
-
-sleep 1
-
-sudo perf record -g -o perf.data -p ${pid} -- sleep 10
-sudo perf script -i perf.data &>perf.unfold
-./build/FlameGraph/stackcollapse-perf.pl perf.unfold &>perf.folded
-./build/FlameGraph/flamegraph.pl perf.folded >perf.svg
-
-rm -f perf.data perf.unfold perf.folded
-]]
-
-    io.writefile('build/perf.sh', format(script, target))
-
-    sudo.exec('bash build/perf.sh')
+    -- sudo.exec("bash -c 'FlameGraph/stackcollapse-perf.pl perf.unfold > perf.folded'")
+    -- sudo.exec("bash -c 'FlameGraph/flamegraph.pl perf.folded > ../perf.svg'")
   end)
 end)
