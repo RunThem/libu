@@ -47,7 +47,6 @@ struct dict_t {
 
   i32_t ksize;
   i32_t vsize;
-  i32_t len;
 
   u_hash_fn hash_fn;
 
@@ -90,7 +89,7 @@ pri void dict_rehash(dict_ref_t self) {
   int bucket_size  = self->bucket_size;
   i64_t limit      = 0;
 
-  limit = (self->len * 6) >> 2;
+  limit = (self->m.len * 6) >> 2;
   u_end_if(limit <= self->bucket_size);
 
   while (bucket_size < limit) {
@@ -181,7 +180,6 @@ pub void $dict_clear(any_t _self) {
     }
   }
 
-  self->len   = 0;
   self->m.len = 0;
 }
 
@@ -234,7 +232,6 @@ pub void $dict_del(any_t _self, any_t data) {
   mtree_pop(self->buckets[idx], node);
   mtree_del_node(node);
 
-  self->len--;
   self->m.len--;
 }
 
@@ -267,7 +264,6 @@ pub any_t $dict_add(any_t _self, any_t key) {
 
   dict_rehash(self);
 
-  self->len++;
   self->m.len++;
 
   return &node->u[0];
@@ -283,7 +279,7 @@ pub any_t $dict_each(any_t _self, bool init) {
   mnode_t iter    = nullptr;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
   if (init) {
     self->iter_idx         = 0;

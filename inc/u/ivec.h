@@ -343,7 +343,7 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
 
 #  define u_vec_map_by(self, block)                                                                \
     ({                                                                                             \
-      typeof(self) __self__ = u_vec_new(typeof(self->_[0].val));                                   \
+      typeof(self) __self__ = u_vec_new(self);                                                     \
                                                                                                    \
       u_vec_each(self, it) {                                                                       \
         block;                                                                                     \
@@ -368,7 +368,7 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
 
 #  define u_vec_filter_if(self, cond)                                                              \
     ({                                                                                             \
-      typeof(self) __self__ = u_vec_new(typeof(self->_[0].val));                                   \
+      typeof(self) __self__ = u_vec_new(self);                                                     \
                                                                                                    \
       u_vec_each(self, it) {                                                                       \
         if (cond) u_vec_insert_back(__self__, it);                                                 \

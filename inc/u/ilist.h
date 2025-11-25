@@ -189,7 +189,7 @@ extern any_t  $list_reach    (any_t, bool);
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_each(self->ref, !0);                                                                     \
-    for (typeof_unqual(self->_[0].ref) it = {}; (it = $list_each(self->ref, !!0)); )
+    for (auto it = (typeof(self->_[0].ref)) {}; (it = $list_each(self->ref, !!0)); )
 
 
 #  define u_list_each_if_ref(self, it, cond) u_list_each_ref(self, it) if (cond)
@@ -199,7 +199,7 @@ extern any_t  $list_reach    (any_t, bool);
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_each(self->ref, !0);                                                                     \
-    for (typeof_unqual(self->_[0].mut) it = {}; (it = $list_each(self->ref, !!0)); )
+    for (auto it = (typeof(self->_[0].mut)) {}; (it = $list_each(self->ref, !!0)); )
 
 
 #  define u_list_each_if_mut(self, it, cond) u_list_each_mut(self, it) if (cond)
@@ -209,7 +209,7 @@ extern any_t  $list_reach    (any_t, bool);
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_reach(self->ref, !0);                                                                    \
-    for (typeof_unqual(self->_[0].ref) it = {}; (it = $list_reach(self->ref, !!0)); )
+    for (auto it = (typeof(self->_[0].ref)) {}; (it = $list_reach(self->ref, !!0)); )
 
 
 #  define u_list_reach_if_ref(self, it, cond) u_list_reach_ref(self, it) if (cond)
@@ -219,7 +219,7 @@ extern any_t  $list_reach    (any_t, bool);
     typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                                \
                                                                                                    \
     $list_reach(self->ref, !0);                                                                    \
-    for (typeof_unqual(self->_[0].mut) it = {}; (it = $list_reach(self->ref, !!0)); )
+    for (auto it = (typeof(self->_[0].mut)) {}; (it = $list_reach(self->ref, !!0)); )
 
 
 #  define u_list_reach_if_mut(self, it, cond) u_list_reach_mut(self, it) if (cond)

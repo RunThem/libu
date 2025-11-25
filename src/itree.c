@@ -64,7 +64,6 @@ struct tree_t {
 
   i32_t ksize;
   i32_t vsize;
-  i32_t len;
 
   u_cmp_fn cmp_fn;
 
@@ -327,7 +326,7 @@ pub void $tree_clear(any_t _self) {
   tnode_ref_t head = self->root;
   tnode_ref_t tail = self->root;
 
-  u_chk_if(self->len == 0);
+  u_chk_if(self->m.len == 0);
 
   while (head) {
     node = head;
@@ -349,7 +348,6 @@ pub void $tree_clear(any_t _self) {
     u_free(node);
   }
 
-  self->len   = 0;
   self->m.len = 0;
 }
 
@@ -377,7 +375,7 @@ pub any_t $tree_at(any_t _self, any_t key) {
   int result       = 0;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
   while (node) {
     result = self->cmp_fn(key, &node->data[0]);
@@ -410,7 +408,6 @@ pub void $tree_del(any_t _self, any_t data) {
   node->parent = self->free;
   self->free   = node;
 
-  self->len--;
   self->m.len--;
 
   if (parent) {
@@ -440,7 +437,6 @@ pub any_t $tree_add(any_t _self, any_t key) {
   u_end_if(node);
 
   *link = node;
-  self->len++;
   self->m.len++;
 
   tree_put_rebalance(self, node);
