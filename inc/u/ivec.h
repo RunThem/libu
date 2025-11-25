@@ -194,7 +194,7 @@ extern any_t $vec_reach   (any_t, bool);
                                                                                                    \
       assert(0 <= _i && _i <= self->len);                                                          \
                                                                                                    \
-      typeof_unqual(self->_[0].mut) __mut__ = $vec_add(self->ref, _i);                             \
+      typeof(self->_[0].mut) __mut__ = $vec_add(self->ref, _i);                                    \
                                                                                                    \
       *__mut__ = _val;                                                                             \
     } while (0)

@@ -33,14 +33,12 @@ struct lnode_t {
   lnode_ref_t prev;
   lnode_ref_t next;
 
-  any_t item;
+  any_t uptr;
 };
 
 typedef struct list_t list_t, *list_ref_t;
 struct [[gnu::packed]] list_t {
-  typeof_unqual(*(u_vec_t(list_ref_t)){}) m;
-
-  i32_t len;
+  typeof_unqual(*(u_list_t(list_ref_t)){}) m;
 
   lnode_ref_t head;
   lnode_ref_t tail;
@@ -51,10 +49,10 @@ struct [[gnu::packed]] list_t {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri lnode_ref_t list_find_node(list_ref_t self, any_t item) {
+pri lnode_ref_t list_find_node(list_ref_t self, any_t uptr) {
   lnode_ref_t node = nullptr;
 
-  for (node = self->head; node->item != item; node = node->next)
+  for (node = self->head; node->uptr != uptr; node = node->next)
     ;
 
   return node;
@@ -69,12 +67,11 @@ pub any_t $list_new() {
   self->head  = nullptr;
   self->tail  = nullptr;
   self->m.ref = any(self);
+  self->m.len = 0;
 
   return self;
 
 end:
-  u_free_if(self);
-
   return nullptr;
 }
 
@@ -90,62 +87,62 @@ pub any_t $list_head(any_t _self) {
   list_ref_t self = (list_ref_t)_self;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
-  return self->head->item;
+  return self->head->uptr;
 }
 
 pub any_t $list_tail(any_t _self) {
   list_ref_t self = (list_ref_t)_self;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
-  return self->tail->item;
+  return self->tail->uptr;
 }
 
-pub any_t $list_prev(any_t _self, any_t item) {
+pub any_t $list_prev(any_t _self, any_t uptr) {
   list_ref_t self  = (list_ref_t)_self;
   lnode_ref_t node = nullptr;
 
   u_chk_if(self, nullptr);
-  u_chk_if(item, nullptr);
+  u_chk_if(uptr, nullptr);
 
-  node = list_find_node(self, item);
+  node = list_find_node(self, uptr);
   u_end_if(node);
   u_end_if(node->prev);
 
-  return node->prev->item;
+  return node->prev->uptr;
 
 end:
   return nullptr;
 }
 
-pub any_t $list_next(any_t _self, any_t item) {
+pub any_t $list_next(any_t _self, any_t uptr) {
   list_ref_t self  = (list_ref_t)_self;
   lnode_ref_t node = nullptr;
 
   u_chk_if(self, nullptr);
-  u_chk_if(item, nullptr);
+  u_chk_if(uptr, nullptr);
 
-  node = list_find_node(self, item);
+  node = list_find_node(self, uptr);
   u_end_if(node);
   u_end_if(node->next);
 
-  return node->next->item;
+  return node->next->uptr;
 
 end:
   return nullptr;
 }
 
-pub void list_pop(any_t _self, any_t item) {
+pub void list_del(any_t _self, any_t uptr) {
   list_ref_t self  = (list_ref_t)_self;
   lnode_ref_t node = nullptr;
 
   u_chk_if(self);
-  u_chk_if(item);
+  u_chk_if(uptr);
 
-  node = list_find_node(self, item);
+  node = list_find_node(self, uptr);
   u_end_if(node);
 
   if (node->prev) {
@@ -160,7 +157,6 @@ pub void list_pop(any_t _self, any_t item) {
     self->tail = node->prev;
   }
 
-  self->len--;
   self->m.len--;
 
   node->next = self->free;
@@ -171,33 +167,29 @@ pub void list_pop(any_t _self, any_t item) {
 end:
 }
 
-pub void $list_put(any_t _self, any_t pos, any_t item) {
-  list_ref_t self      = (list_ref_t)_self;
-  lnode_ref_t node     = nullptr;
-  lnode_ref_t pos_node = nullptr;
+pub any_t $list_add(any_t _self, any_t uidxptr) {
+  list_ref_t self     = (list_ref_t)_self;
+  lnode_ref_t node    = nullptr;
+  lnode_ref_t idxnode = nullptr;
 
-  u_inf("pos{%p}, item{%p}", pos, item);
-
-  u_chk_if(self);
-  u_chk_if(item);
+  u_chk_if(self, nullptr);
 
   node = u_talloc(lnode_t);
   u_end_if(node);
 
   node->prev = nullptr;
   node->next = nullptr;
-  node->item = item;
 
-  if (!pos) {
+  if (!uidxptr) {
     node->next = self->head;
     self->head = node;
   } else {
-    pos_node = list_find_node(self, pos);
-    u_end_if(pos_node);
+    idxnode = list_find_node(self, uidxptr);
+    u_end_if(idxnode);
 
-    node->next     = pos_node->next;
-    node->prev     = pos_node;
-    pos_node->next = node;
+    node->next    = idxnode->next;
+    node->prev    = idxnode;
+    idxnode->next = node;
   }
 
   if (node->next == nullptr) {
@@ -206,33 +198,58 @@ pub void $list_put(any_t _self, any_t pos, any_t item) {
     node->next->prev = node;
   }
 
-  self->len++;
   self->m.len++;
 
-  return;
+  return &node->uptr;
 
 end:
   u_free_if(node);
+
+  return nullptr;
 }
 
-pub bool $list_each(any_t _self, any_t* item) {
-  list_ref_t self = (list_ref_t)_self;
+pub any_t $list_each(any_t _self, bool init) {
+  list_ref_t self  = (list_ref_t)_self;
+  lnode_ref_t iter = nullptr;
 
-  u_chk_if(self, false);
-  u_chk_if(self->len == 0, false);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
   /* init */
-  if (item == nullptr) {
-    self->iter = self->head;
+  if (init) {
+    iter = self->iter = self->head;
   } else {
     u_end_if(self->iter);
 
-    *item      = self->iter->item;
+    iter       = self->iter;
     self->iter = self->iter->next;
   }
 
-  return true;
+  return iter->uptr;
 
 end:
-  return false;
+  return nullptr;
+}
+
+pub any_t $list_reach(any_t _self, bool init) {
+  list_ref_t self  = (list_ref_t)_self;
+  lnode_ref_t iter = nullptr;
+
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
+
+  /* init */
+  if (init) {
+    iter = self->iter = self->tail;
+  } else {
+    u_end_if(self->iter);
+
+    iter       = self->iter;
+    self->iter = self->iter->prev;
+  }
+
+  return iter->uptr;
+
+end:
+  return nullptr;
 }
