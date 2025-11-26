@@ -33,9 +33,8 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef struct vec_t vec_t, *vec_ref_t;
-struct [[gnu::packed]] vec_t {
-  typeof_unqual(*(u_vec_t(vec_ref_t)){}) m;
+u_struct_def(vec, [[gnu::packed]]) {
+  typeof_unqual(*(u_vec_t(vec_mut_t)){}) m;
 
   i32_t itsize;
   i32_t idx; /* iter */
@@ -58,7 +57,7 @@ thread_local u_order_e th_cmp_order = {};
 // }
 
 pub any_t $vec_new(i32_t itsize, i32_t cap) {
-  vec_ref_t self = nullptr;
+  vec_mut_t self = nullptr;
 
   self = u_talloc(vec_t);
   u_end_if(self);
@@ -81,7 +80,7 @@ end:
 }
 
 pub void $vec_clear(any_t _self) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
 
@@ -89,7 +88,7 @@ pub void $vec_clear(any_t _self) {
 }
 
 pub void $vec_cleanup(any_t _self) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
 
@@ -98,7 +97,7 @@ pub void $vec_cleanup(any_t _self) {
 }
 
 pub bool $vec_resize(any_t _self, i32_t cap) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
   any_t items    = nullptr;
 
   u_chk_if(self, -1);
@@ -116,7 +115,7 @@ end:
 }
 
 pub any_t $vec_at(any_t _self, i32_t idx) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, nullptr);
 
@@ -124,7 +123,7 @@ pub any_t $vec_at(any_t _self, i32_t idx) {
 }
 
 pub void $vec_del(any_t _self, i32_t idx) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
 
@@ -136,7 +135,7 @@ pub void $vec_del(any_t _self, i32_t idx) {
 }
 
 pub any_t $vec_add(any_t _self, i32_t idx) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
   i32_t cap      = 0;
   int result     = 0;
 
@@ -160,7 +159,7 @@ end:
 }
 
 pub any_t $vec_each(any_t _self, bool init) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);
@@ -175,7 +174,7 @@ pub any_t $vec_each(any_t _self, bool init) {
 }
 
 pub any_t $vec_reach(any_t _self, bool init) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);
@@ -190,7 +189,7 @@ pub any_t $vec_reach(any_t _self, bool init) {
 }
 
 // pub void vec_sort(any_t _self, int (^cmp_fn)(void*, void*), u_order_e order) {
-//   vec_ref_t self = (vec_ref_t)_self;
+//   vec_mut_t self = (vec_mut_t)_self;
 //
 //   u_chk_if(self);
 //   u_chk_if(cmp_fn);
@@ -204,7 +203,7 @@ pub any_t $vec_reach(any_t _self, bool init) {
 #if 0
 
 pub void vec_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
   u_chk_if(cmp_fn);
@@ -216,7 +215,7 @@ pub void vec_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
 }
 
 pub bool vec_is_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, false);
   u_chk_if(cmp_fn, false);
@@ -232,7 +231,7 @@ pub bool vec_is_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
 
 
 pub i64_t vec_pole(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
-  vec_ref_t self = (vec_ref_t)_self;
+  vec_mut_t self = (vec_mut_t)_self;
   int result     = 0;
 
   u_chk_if(self, -1);

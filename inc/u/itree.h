@@ -58,9 +58,9 @@ extern any_t $tree_each     (any_t, bool);
         $tree_t meta;                                                                              \
         K key;                                                                                     \
         V val;                                                                                     \
-              struct { K key; V val; }   pair;                                                     \
-        const struct { K key; V val; } * ref ;                                                     \
-              struct { K key; V val; } * mut ;                                                     \
+        struct {       K key;       V val; }   pair;                                               \
+        struct { const K key;       V val; } * mut;                                                \
+        struct { const K key; const V val; } * ref;                                                \
       } _[0]; /* Don't use this field. */                                                          \
     }*)
 
@@ -182,7 +182,7 @@ extern any_t $tree_each     (any_t, bool);
       typecheck($tree_t, self->_[0].meta, "meta type not's Tree<K, V>");                           \
                                                                                                    \
       typeof_unqual(self->_[0].pair) __pair__ = {_key, _val};                                      \
-      typeof_unqual(self->_[0].mut) __mut__ = $tree_add(self->ref, &__pair__.key);                 \
+      typeof_unqual(__pair__)* __mut__ = $tree_add(self->ref, &__pair__.key);                      \
       assert(__mut__);                                                                             \
                                                                                                    \
       __mut__->key = __pair__.key;                                                                 \
@@ -214,7 +214,7 @@ extern any_t $tree_each     (any_t, bool);
     typecheck($tree_t, self->_[0].meta, "meta type not's Tree<K, V>");                             \
                                                                                                    \
     (void)$tree_each(self->ref, !0);                                                               \
-    for (typeof(struct { typeof(self->_[0].key) key; typeof_unqual(self->_[0].val) val; }*) it = {}; (it = $tree_each(self->ref, !!0)); )
+    for (auto it = (typeof(self->_[0].mut)) {}; (it = $tree_each(self->ref, !!0)); )
 
 
 #  define u_tree_each_if_mut(self, it, cond) u_tree_each_mut(self, it) if (cond)

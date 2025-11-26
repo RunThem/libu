@@ -41,9 +41,8 @@ U_TREE_DEFINE(m, u_malloc, u_free, int ksize; u_hash_t hash);
 /***************************************************************************************************
  * type
  **************************************************************************************************/
-typedef struct dict_t dict_t, *dict_ref_t;
-struct dict_t {
-  typeof_unqual(*(u_dict_t(dict_ref_t, dict_ref_t)){}) m;
+u_struct_def(dict, [[gnu::packed]]) {
+  typeof_unqual(*(u_dict_t(dict_mut_t, dict_mut_t)){}) m;
 
   i32_t ksize;
   i32_t vsize;
@@ -72,17 +71,17 @@ static inline int node_cmp(mnode_t x, mnode_t y) {
 
 /* fnv 64-bit hash function */
 pri inline u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
-  u_hash_t hash = 1469'5981'0393'4665'6037U;
+  u_hash_t hash = 14695981039346656037U;
 
   for (size_t i = 0; i < len; ++i) {
-    hash *= 1'0995'1162'8211U;
+    hash *= 1099511628211U;
     hash ^= (u64_t)ptr[i];
   }
 
   return hash;
 }
 
-pri void dict_rehash(dict_ref_t self) {
+pri void dict_rehash(dict_mut_t self) {
   mtree_t* buckets = nullptr;
   mnode_t next     = nullptr;
   mnode_t node     = nullptr;
@@ -123,7 +122,7 @@ end:
 }
 
 pub any_t $dict_new(i32_t ksize, i32_t vsize, u_hash_fn hash_fn) {
-  dict_ref_t self = nullptr;
+  dict_mut_t self = nullptr;
 
   assert(ksize);
 
@@ -164,7 +163,7 @@ end:
 }
 
 pub void $dict_clear(any_t _self) {
-  dict_ref_t self = (dict_ref_t)_self;
+  dict_mut_t self = (dict_mut_t)_self;
   mnode_t node    = nullptr;
   mnode_t next    = nullptr;
 
@@ -184,7 +183,7 @@ pub void $dict_clear(any_t _self) {
 }
 
 pub void $dict_cleanup(any_t _self) {
-  dict_ref_t self = (dict_ref_t)_self;
+  dict_mut_t self = (dict_mut_t)_self;
 
   u_chk_if(self);
 
@@ -198,7 +197,7 @@ pub void $dict_cleanup(any_t _self) {
 }
 
 pub any_t $dict_at(any_t _self, any_t key) {
-  dict_ref_t self = (dict_ref_t)_self;
+  dict_mut_t self = (dict_mut_t)_self;
   mnode_t node    = nullptr;
   u_hash_t hash   = 0;
   int idx         = 0;
@@ -221,7 +220,7 @@ end:
 }
 
 pub void $dict_del(any_t _self, any_t data) {
-  dict_ref_t self = (dict_ref_t)_self;
+  dict_mut_t self = (dict_mut_t)_self;
   mnode_t node    = u_container_of(data, typeof(*(mnode_t){}), u);
   int idx         = 0;
 
@@ -236,7 +235,7 @@ pub void $dict_del(any_t _self, any_t data) {
 }
 
 pub any_t $dict_add(any_t _self, any_t key) {
-  dict_ref_t self = (dict_ref_t)_self;
+  dict_mut_t self = (dict_mut_t)_self;
   mtree_t tree    = nullptr;
   mnode_t node    = nullptr;
   u_hash_t hash   = 0;
@@ -275,7 +274,7 @@ end:
 }
 
 pub any_t $dict_each(any_t _self, bool init) {
-  dict_ref_t self = (dict_ref_t)_self;
+  dict_mut_t self = (dict_mut_t)_self;
   mnode_t iter    = nullptr;
 
   u_chk_if(self, nullptr);

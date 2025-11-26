@@ -48,35 +48,33 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef struct tnode_t tnode_t, *tnode_ref_t;
-struct tnode_t {
-  tnode_ref_t left;
-  tnode_ref_t right;
-  tnode_ref_t parent;
+u_struct_def(tnode, [[gnu::packed]]) {
+  tnode_mut_t left;
+  tnode_mut_t right;
+  tnode_mut_t parent;
   i32_t height;
 
   u8_t data[0];
 };
 
-typedef struct tree_t tree_t, *tree_ref_t;
-struct tree_t {
-  typeof_unqual(*(u_tree_t(tree_ref_t, tree_ref_t)){}) m;
+u_struct_def(tree, [[gnu::packed]]) {
+  typeof_unqual(*(u_tree_t(tree_mut_t, tree_mut_t)){}) m;
 
   i32_t ksize;
   i32_t vsize;
 
   u_cmp_fn cmp_fn;
 
-  tnode_ref_t root;
-  tnode_ref_t free;
-  tnode_ref_t iter; /* iter */
+  tnode_mut_t root;
+  tnode_mut_t free;
+  tnode_mut_t iter; /* iter */
 };
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri tnode_ref_t tree_new_node(tree_ref_t self, tnode_ref_t parent) {
-  tnode_ref_t node = nullptr;
+pri tnode_mut_t tree_new_node(tree_mut_t self, tnode_mut_t parent) {
+  tnode_mut_t node = nullptr;
 
   if (self->free) {
     node       = self->free;
@@ -97,10 +95,10 @@ end:
   return nullptr;
 }
 
-pri inline void tree_child_replace(tree_ref_t self,
-                                   tnode_ref_t parent,
-                                   tnode_ref_t oldnode,
-                                   tnode_ref_t newnode) {
+pri inline void tree_child_replace(tree_mut_t self,
+                                   tnode_mut_t parent,
+                                   tnode_mut_t oldnode,
+                                   tnode_mut_t newnode) {
   if (!parent) {
     self->root = newnode;
     return;
@@ -113,9 +111,9 @@ pri inline void tree_child_replace(tree_ref_t self,
   }
 }
 
-pri inline tnode_ref_t tree_rotate_left(tree_ref_t self, tnode_ref_t node) {
-  tnode_ref_t right  = node->right;
-  tnode_ref_t parent = node->parent;
+pri inline tnode_mut_t tree_rotate_left(tree_mut_t self, tnode_mut_t node) {
+  tnode_mut_t right  = node->right;
+  tnode_mut_t parent = node->parent;
 
   node->right = right->left;
   if (right->left) {
@@ -132,9 +130,9 @@ pri inline tnode_ref_t tree_rotate_left(tree_ref_t self, tnode_ref_t node) {
   return right;
 }
 
-pri inline tnode_ref_t tree_rotate_right(tree_ref_t self, tnode_ref_t node) {
-  tnode_ref_t left   = node->left;
-  tnode_ref_t parent = node->parent;
+pri inline tnode_mut_t tree_rotate_right(tree_mut_t self, tnode_mut_t node) {
+  tnode_mut_t left   = node->left;
+  tnode_mut_t parent = node->parent;
 
   node->left = left->right;
   if (left->right) {
@@ -150,10 +148,10 @@ pri inline tnode_ref_t tree_rotate_right(tree_ref_t self, tnode_ref_t node) {
   return left;
 }
 
-pri inline tnode_ref_t tree_fix_left(tree_ref_t self, tnode_ref_t node) {
+pri inline tnode_mut_t tree_fix_left(tree_mut_t self, tnode_mut_t node) {
   int lh            = 0;
   int rh            = 0;
-  tnode_ref_t right = node->right;
+  tnode_mut_t right = node->right;
 
   lh = lh(right);
   rh = rh(right);
@@ -170,10 +168,10 @@ pri inline tnode_ref_t tree_fix_left(tree_ref_t self, tnode_ref_t node) {
   return node;
 }
 
-pri inline tnode_ref_t tree_fix_right(tree_ref_t self, tnode_ref_t node) {
+pri inline tnode_mut_t tree_fix_right(tree_mut_t self, tnode_mut_t node) {
   int lh           = 0;
   int rh           = 0;
-  tnode_ref_t left = node->left;
+  tnode_mut_t left = node->left;
 
   lh = lh(left);
   rh = rh(left);
@@ -190,11 +188,11 @@ pri inline tnode_ref_t tree_fix_right(tree_ref_t self, tnode_ref_t node) {
   return node;
 }
 
-pri tnode_ref_t tree_pop_left_and_right(tree_ref_t self, tnode_ref_t node) {
-  tnode_ref_t old    = node;
-  tnode_ref_t parent = nullptr;
-  tnode_ref_t left   = nullptr;
-  tnode_ref_t child  = nullptr;
+pri tnode_mut_t tree_pop_left_and_right(tree_mut_t self, tnode_mut_t node) {
+  tnode_mut_t old    = node;
+  tnode_mut_t parent = nullptr;
+  tnode_mut_t left   = nullptr;
+  tnode_mut_t child  = nullptr;
 
   node = node->right;
   while ((left = node->left)) {
@@ -229,9 +227,9 @@ pri tnode_ref_t tree_pop_left_and_right(tree_ref_t self, tnode_ref_t node) {
   return parent;
 }
 
-pri tnode_ref_t tree_pop_left_or_right(tree_ref_t self, tnode_ref_t node) {
-  tnode_ref_t child  = nullptr;
-  tnode_ref_t parent = nullptr;
+pri tnode_mut_t tree_pop_left_or_right(tree_mut_t self, tnode_mut_t node) {
+  tnode_mut_t child  = nullptr;
+  tnode_mut_t parent = nullptr;
 
   child = node->left;
   if (!child) {
@@ -248,7 +246,7 @@ pri tnode_ref_t tree_pop_left_or_right(tree_ref_t self, tnode_ref_t node) {
   return parent;
 }
 
-pri void tree_pop_rebalance(tree_ref_t self, tnode_ref_t node) {
+pri void tree_pop_rebalance(tree_mut_t self, tnode_mut_t node) {
   int lh       = 0;
   int rh       = 0;
   int diff     = 0;
@@ -276,7 +274,7 @@ pri void tree_pop_rebalance(tree_ref_t self, tnode_ref_t node) {
   }
 }
 
-pri void tree_put_rebalance(tree_ref_t self, tnode_ref_t node) {
+pri void tree_put_rebalance(tree_mut_t self, tnode_mut_t node) {
   int lh       = 0;
   int rh       = 0;
   int diff     = 0;
@@ -301,7 +299,7 @@ pri void tree_put_rebalance(tree_ref_t self, tnode_ref_t node) {
 }
 
 pub any_t $tree_new(i32_t ksize, i32_t vsize, u_cmp_fn cmp_fn) {
-  tree_ref_t self = nullptr;
+  tree_mut_t self = nullptr;
 
   u_chk_if(ksize == 0, nullptr);
   /* vsize == 0, support set */
@@ -321,10 +319,10 @@ end:
 }
 
 pub void $tree_clear(any_t _self) {
-  tree_ref_t self  = (tree_ref_t)_self;
-  tnode_ref_t node = nullptr;
-  tnode_ref_t head = self->root;
-  tnode_ref_t tail = self->root;
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t node = nullptr;
+  tnode_mut_t head = self->root;
+  tnode_mut_t tail = self->root;
 
   u_chk_if(self->m.len == 0);
 
@@ -352,8 +350,8 @@ pub void $tree_clear(any_t _self) {
 }
 
 pub void $tree_cleanup(any_t _self) {
-  tree_ref_t self  = (tree_ref_t)_self;
-  tnode_ref_t node = nullptr;
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t node = nullptr;
 
   u_chk_if(self);
 
@@ -370,8 +368,8 @@ pub void $tree_cleanup(any_t _self) {
 }
 
 pub any_t $tree_at(any_t _self, any_t key) {
-  tree_ref_t self  = (tree_ref_t)_self;
-  tnode_ref_t node = self->root;
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t node = self->root;
   int result       = 0;
 
   u_chk_if(self, nullptr);
@@ -393,9 +391,9 @@ end:
 }
 
 pub void $tree_del(any_t _self, any_t data) {
-  tree_ref_t self    = (tree_ref_t)_self;
-  tnode_ref_t node   = u_container_of(data, tnode_t, data);
-  tnode_ref_t parent = nullptr;
+  tree_mut_t self    = (tree_mut_t)_self;
+  tnode_mut_t node   = u_container_of(data, tnode_t, data);
+  tnode_mut_t parent = nullptr;
 
   u_chk_if(self);
 
@@ -416,10 +414,10 @@ pub void $tree_del(any_t _self, any_t data) {
 }
 
 pub any_t $tree_add(any_t _self, any_t key) {
-  tree_ref_t self    = (tree_ref_t)_self;
-  tnode_ref_t* link  = &self->root;
-  tnode_ref_t parent = nullptr;
-  tnode_ref_t node   = nullptr;
+  tree_mut_t self    = (tree_mut_t)_self;
+  tnode_mut_t* link  = &self->root;
+  tnode_mut_t parent = nullptr;
+  tnode_mut_t node   = nullptr;
   int result         = 0;
 
   u_chk_if(self, nullptr);
@@ -448,9 +446,9 @@ end:
 }
 
 pub any_t $tree_each(any_t _self, bool init) {
-  tree_ref_t self  = (tree_ref_t)_self;
-  tnode_ref_t iter = nullptr;
-  tnode_ref_t last = nullptr;
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t iter = nullptr;
+  tnode_mut_t last = nullptr;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);

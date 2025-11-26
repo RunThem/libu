@@ -27,30 +27,27 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-
-typedef struct lnode_t lnode_t, *lnode_ref_t;
-struct lnode_t {
-  lnode_ref_t prev;
-  lnode_ref_t next;
+u_struct_def(lnode, [[gnu::packed]]) {
+  lnode_mut_t prev;
+  lnode_mut_t next;
 
   any_t uptr;
 };
 
-typedef struct list_t list_t, *list_ref_t;
-struct [[gnu::packed]] list_t {
-  typeof_unqual(*(u_list_t(list_ref_t)){}) m;
+u_struct_def(list, [[gnu::packed]]) {
+  typeof_unqual(*(u_list_t(list_mut_t)){}) m;
 
-  lnode_ref_t head;
-  lnode_ref_t tail;
-  lnode_ref_t free;
-  lnode_ref_t iter;
+  lnode_mut_t head;
+  lnode_mut_t tail;
+  lnode_mut_t free;
+  lnode_mut_t iter;
 };
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-pri lnode_ref_t list_find_node(list_ref_t self, any_t uptr) {
-  lnode_ref_t node = nullptr;
+pri lnode_mut_t list_find_node(list_mut_t self, any_t uptr) {
+  lnode_mut_t node = nullptr;
 
   for (node = self->head; node->uptr != uptr; node = node->next)
     ;
@@ -59,7 +56,7 @@ pri lnode_ref_t list_find_node(list_ref_t self, any_t uptr) {
 }
 
 pub any_t $list_new() {
-  list_ref_t self = nullptr;
+  list_mut_t self = nullptr;
 
   self = u_talloc(list_t);
   u_end_if(self);
@@ -76,7 +73,7 @@ end:
 }
 
 pub void list_cleanup(any_t _self) {
-  list_ref_t self = (list_ref_t)_self;
+  list_mut_t self = (list_mut_t)_self;
 
   u_chk_if(self);
 
@@ -84,7 +81,7 @@ pub void list_cleanup(any_t _self) {
 }
 
 pub any_t $list_head(any_t _self) {
-  list_ref_t self = (list_ref_t)_self;
+  list_mut_t self = (list_mut_t)_self;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);
@@ -93,7 +90,7 @@ pub any_t $list_head(any_t _self) {
 }
 
 pub any_t $list_tail(any_t _self) {
-  list_ref_t self = (list_ref_t)_self;
+  list_mut_t self = (list_mut_t)_self;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);
@@ -102,8 +99,8 @@ pub any_t $list_tail(any_t _self) {
 }
 
 pub any_t $list_prev(any_t _self, any_t uptr) {
-  list_ref_t self  = (list_ref_t)_self;
-  lnode_ref_t node = nullptr;
+  list_mut_t self  = (list_mut_t)_self;
+  lnode_mut_t node = nullptr;
 
   u_chk_if(self, nullptr);
   u_chk_if(uptr, nullptr);
@@ -119,8 +116,8 @@ end:
 }
 
 pub any_t $list_next(any_t _self, any_t uptr) {
-  list_ref_t self  = (list_ref_t)_self;
-  lnode_ref_t node = nullptr;
+  list_mut_t self  = (list_mut_t)_self;
+  lnode_mut_t node = nullptr;
 
   u_chk_if(self, nullptr);
   u_chk_if(uptr, nullptr);
@@ -136,8 +133,8 @@ end:
 }
 
 pub void list_del(any_t _self, any_t uptr) {
-  list_ref_t self  = (list_ref_t)_self;
-  lnode_ref_t node = nullptr;
+  list_mut_t self  = (list_mut_t)_self;
+  lnode_mut_t node = nullptr;
 
   u_chk_if(self);
   u_chk_if(uptr);
@@ -167,18 +164,15 @@ pub void list_del(any_t _self, any_t uptr) {
 end:
 }
 
-pub any_t $list_add(any_t _self, any_t uidxptr) {
-  list_ref_t self     = (list_ref_t)_self;
-  lnode_ref_t node    = nullptr;
-  lnode_ref_t idxnode = nullptr;
+pub any_t $list_add(any_t _self, any_t uidxptr, any_t uptr) {
+  list_mut_t self     = (list_mut_t)_self;
+  lnode_mut_t node    = nullptr;
+  lnode_mut_t idxnode = nullptr;
 
   u_chk_if(self, nullptr);
 
-  node = u_talloc(lnode_t);
+  node = new(lnode_t, .uptr = uptr);
   u_end_if(node);
-
-  node->prev = nullptr;
-  node->next = nullptr;
 
   if (!uidxptr) {
     node->next = self->head;
@@ -209,8 +203,8 @@ end:
 }
 
 pub any_t $list_each(any_t _self, bool init) {
-  list_ref_t self  = (list_ref_t)_self;
-  lnode_ref_t iter = nullptr;
+  list_mut_t self  = (list_mut_t)_self;
+  lnode_mut_t iter = nullptr;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);
@@ -232,8 +226,8 @@ end:
 }
 
 pub any_t $list_reach(any_t _self, bool init) {
-  list_ref_t self  = (list_ref_t)_self;
-  lnode_ref_t iter = nullptr;
+  list_mut_t self  = (list_mut_t)_self;
+  lnode_mut_t iter = nullptr;
 
   u_chk_if(self, nullptr);
   u_chk_if(self->m.len == 0, nullptr);
