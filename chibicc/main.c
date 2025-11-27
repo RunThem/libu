@@ -15,6 +15,9 @@ u_struct_def(token) {
   int len;    // Token 的长度
 };
 
+/// 输入字符串
+pri char* current_input;
+
 /// 报错并退出程序
 pri void error(char* fmt, ...) {
   va_list ap = {};
@@ -26,6 +29,31 @@ pri void error(char* fmt, ...) {
   exit(1);
 }
 
+// 报告错误位置并退出程序
+pri void verror_at(char* loc, char* fmt, va_list ap) {
+  int pos = loc - current_input;
+  fprintf(stderr, "%s\n", current_input);
+  fprintf(stderr, "%*s", pos, "");  // 打印多个空格
+  fprintf(stderr, "^ ");
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
+pri void error_at(char* loc, char* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  verror_at(loc, fmt, ap);
+}
+
+pri void error_tok(token_ref_t tok, char* fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  verror_at(tok->loc, fmt, ap);
+}
+
 /// 如果 op 与当前 Token 匹配, 则消耗该 Token
 pri bool equal(token_ref_t tok, char* op) {
   return memcmp(tok->loc, op, tok->len) == 0 && op[tok->len] == '\0';
@@ -34,7 +62,7 @@ pri bool equal(token_ref_t tok, char* op) {
 /// 确保当前 Token 与 s 匹配
 pri token_mut_t skip(token_ref_t tok, char* s) {
   if (!equal(tok, s)) {
-    error("expected '%s'", s);
+    error_tok(tok, "expected '%s'", s);
   }
 
   return tok->next;
@@ -43,7 +71,7 @@ pri token_mut_t skip(token_ref_t tok, char* s) {
 /// 确保当前 Token 类型为 TK_NUM
 pri int get_number(token_ref_t tok) {
   if (tok->kind != TK_NUM) {
-    error("expected a number");
+    error_tok(tok, "expected a number");
   }
 
   return tok->val;
@@ -54,8 +82,9 @@ pri token_mut_t new_token(token_kind_e kind, char* start, char* end) {
   return new (token_t, .kind = kind, .loc = start, .len = end - start);
 }
 
-/// 对 `p` 进行分词并返回新的 Token
-pri token_mut_t tokenize(char* p) {
+/// 对 `current_input` 进行分词并返回新的 Token
+pri token_mut_t tokenize() {
+  char* p         = current_input;
   token_t head    = {};
   token_mut_t cur = &head;
 
@@ -79,7 +108,7 @@ pri token_mut_t tokenize(char* p) {
       continue;
     }
 
-    error("invalid token");
+    error_at(p, "invalid token");
   }
 
   cur = cur->next = new_token(TK_EOF, p, p);
@@ -90,7 +119,8 @@ pri token_mut_t tokenize(char* p) {
 int main(int argc, const char* argv[]) {
   u_chk_if(argc != 2, 1, "%s: invalid number of arguments\n", argv[0]);
 
-  token_ref_t tok = tokenize((char*)argv[1]);
+  current_input   = (char*)argv[1];
+  token_ref_t tok = tokenize();
 
   printf("  .globl main\n");
   printf("main:\n");
