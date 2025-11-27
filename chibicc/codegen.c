@@ -61,12 +61,23 @@ pri void gen_expr(node_ref_t node) {
   error("invalid expression");
 }
 
+pri void gen_stmt(node_mut_t node) {
+  if (node->kind == ND_EXPR_STMT) {
+    gen_expr(node->lhs);
+    return;
+  }
+
+  error("invalid statement");
+}
+
 pub void codegen(node_mut_t node) {
   printf("  .globl main\n");
   printf("main:\n");
 
-  gen_expr(node);
-  printf("  ret\n");
+  for (node_mut_t n = node; n; n = n->next) {
+    gen_stmt(n);
+    assert(depth == 0);
+  }
 
-  assert(depth == 0);
+  printf("  ret\n");
 }

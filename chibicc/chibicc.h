@@ -32,21 +32,23 @@ pub token_mut_t tokenize(char* p);
 ///
 
 typedef enum {
-  ND_ADD,  // +
-  ND_SUB,  // -
-  ND_MUL,  // *
-  ND_DIV,  // /
-  ND_NEG,  // unary -
-  ND_EQ,   // ==
-  ND_NE,   // !=
-  ND_LT,   // <
-  ND_LE,   // <=
-  ND_NUM,  // 数字
+  ND_ADD,        // +
+  ND_SUB,        // -
+  ND_MUL,        // *
+  ND_DIV,        // /
+  ND_NEG,        // unary -
+  ND_EQ,         // ==
+  ND_NE,         // !=
+  ND_LT,         // <
+  ND_LE,         // <=
+  ND_EXPR_STMT,  // 表达式语句
+  ND_NUM,        // 数字
 } node_kind_e;
 
 /// Ast 节点
 u_struct_def(node) {
   node_kind_e kind;  // 节点类型
+  node_mut_t next;   // 下一个节点
   node_mut_t lhs;    // 左子节点
   node_mut_t rhs;    // 右子节点
   int val;           // 如果 .kind == ND_NUM

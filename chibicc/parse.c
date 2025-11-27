@@ -1,6 +1,7 @@
 #include "chibicc.h"
 
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t equality(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t relational(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t add(token_mut_t* rest, token_mut_t tok);
@@ -22,6 +23,19 @@ pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr) {
 
 pri node_mut_t new_number(int val) {
   return new(node_t, .kind = ND_NUM, .val = val);
+}
+
+/// stmt = expr-stmt
+pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
+  return expr_stmt(rest, tok);
+}
+
+/// expr-stmt = expr ";"
+pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = new_unary(ND_EXPR_STMT, expr(&tok, tok));
+  *rest           = skip(tok, ";");
+
+  return node;
 }
 
 /// expr = equality
@@ -157,10 +171,12 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
 }
 
 pub node_mut_t parse(token_mut_t tok) {
-  node_mut_t node = expr(&tok, tok);
-  if (tok->kind != TK_EOF) {
-    error_tok(tok, "extra token");
+  node_t head    = {};
+  node_mut_t cur = &head;
+
+  while (tok->kind != TK_EOF) {
+    cur = cur->next = stmt(&tok, tok);
   }
 
-  return node;
+  return head.next;
 }
