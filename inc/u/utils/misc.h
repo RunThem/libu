@@ -43,12 +43,19 @@ extern "C" {
 
 #  define new(type, ...)                                                                           \
     ({                                                                                             \
-      type _ = u_talloc(type);                                                                     \
+      type* _ = u_talloc(type);                                                                    \
                                                                                                    \
-      *_ = (typeof(*(type){})){__VA_ARGS__};                                                       \
+      if (_) { *_ = (type) {__VA_ARGS__}; }                                                        \
                                                                                                    \
       _;                                                                                           \
     })
+
+#define u_struct_def(T, ...)                                                                       \
+  struct T;                                                                                        \
+  typedef typeof(struct T) T##_t;                                                                  \
+  typedef typeof(struct T*) T##_mut_t;                                                             \
+  typedef typeof(const struct T*) T##_ref_t;                                                       \
+  struct __VA_ARGS__ T
 
 #define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
       for (int i = n; i < u_va_at(0, __VA_ARGS__); i++)                                            \

@@ -69,8 +69,8 @@ extern bool  vec_filter_by(any_t, bool*, i64_t*, any_t, bool*);
       struct {                                                                                     \
         $vec_t meta;                                                                               \
         T val;                                                                                     \
-        const T * ref;                                                                             \
               T * mut;                                                                             \
+        const T * ref;                                                                             \
       } _[0]; /* Don't use this field. */                                                          \
     }*)
 

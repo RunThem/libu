@@ -45,7 +45,7 @@ extern any_t  $list_tail     (any_t);
 extern any_t  $list_prev     (any_t, any_t);
 extern any_t  $list_next     (any_t, any_t);
 extern void   $list_del      (any_t, any_t);
-extern any_t  $list_add      (any_t, any_t);
+extern any_t  $list_add      (any_t, any_t, any_t);
 extern any_t  $list_each     (any_t, bool);
 extern any_t  $list_reach    (any_t, bool);
 
@@ -59,8 +59,8 @@ extern any_t  $list_reach    (any_t, bool);
                                                                                                    \
       struct {                                                                                     \
         $list_t meta;                                                                              \
-        const T * ref;                                                                             \
               T * mut;                                                                             \
+        const T * ref;                                                                             \
       } _[0]; /* Don't use this field. */                                                          \
     }*)
 
@@ -171,11 +171,7 @@ extern any_t  $list_reach    (any_t, bool);
     do {                                                                                           \
       typecheck($list_t, self->_[0].meta, "mete type not's List<T>");                              \
                                                                                                    \
-      typeof_unqual(self->_[0].mut)* __mut__ = $list_add(self->ref, _uidxptr);                     \
-                                                                                                   \
-      assert(__mut__);                                                                             \
-                                                                                                   \
-      *__mut__ = _uptr;                                                                            \
+      typeof_unqual(self->_[0].mut)* __mut__ = $list_add(self->ref, _uidxptr, _uptr);              \
     } while (0)
 
 
