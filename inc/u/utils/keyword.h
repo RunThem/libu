@@ -37,8 +37,34 @@ extern "C" {
 
 #  define auto __auto_type
 
-#  define typeclassify(t) (__builtin_classify_type(t))
-#  define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#  define pub        /* public */
+#  define pri static /* private */
+
+#  if __has_builtin(__builtin_classify_type)
+#    define typeclassify(t) (__builtin_classify_type(t))
+#    define is_ptr(t)       (typeclassify(t) == 5)
+#  else
+#    error "!__has_builtin(__builtin_classify_type)"
+#  endif
+
+#  if __has_builtin(__builtin_types_compatible_p)
+#    define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+
+#    ifdef NDEBUG
+#      define typecheck(x, y, msg)
+#    else
+#      define typecheck(x, y, msg)                                                                 \
+        do {                                                                                       \
+          const int typecheck = __builtin_types_compatible_p(typeof(x), typeof(y));                \
+          _Static_assert(typecheck, msg);                                                          \
+                                                                                                   \
+          (void)typecheck;                                                                         \
+        } while (0)
+#    endif
+
+#  else
+#    error "!__has_builtin(__builtin_types_compatible_p)"
+#  endif
 
 #  ifdef __cplusplus
 } /* extern "C" */

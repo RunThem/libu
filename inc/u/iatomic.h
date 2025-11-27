@@ -31,31 +31,35 @@
 extern "C" {
 #  endif
 
+/* clang-format off */
+
 /***************************************************************************************************
  * Type
- ***************************************************************************************************/
+ **************************************************************************************************/
 typedef struct atomic_flag u_atomic_flag_t;
 
 /***************************************************************************************************
  * iApi
- ***************************************************************************************************/
-/* clang-format off */
+ **************************************************************************************************/
 #define u_once_call_def(fun) once_flag _##fun##__once_call_flag = ONCE_FLAG_INIT;
+
 
 #define u_once_call(fun)                                                                           \
   do {                                                                                             \
     call_once(&_##fun##__once_call_flag, fun);                                                     \
   } while (0)
 
+
 #define u_atomic_init(obj, v)                                                                      \
   do {                                                                                             \
     atomic_init(obj, v);                                                                           \
   } while (0)
 
+
 #define u_atomic_put(obj, v, ...)                                                                  \
   do {                                                                                             \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_store_explicit(obj, v, va_at(0, __VA_ARGS__));                                        \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_store_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                      \
     ) (                                                                                            \
       atomic_store(obj, v);                                                                        \
     )                                                                                              \
@@ -64,99 +68,109 @@ typedef struct atomic_flag u_atomic_flag_t;
 
 #define u_atomic_pop(obj, ...)                                                                     \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_load_explicit(obj, va_at(0, __VA_ARGS__));                                            \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_load_explicit(obj, u_va_at(0, __VA_ARGS__));                                          \
     ) (                                                                                            \
       atomic_load(obj);                                                                            \
     )                                                                                              \
   })
 
+
 #define u_atomic_swap(obj, v, ...)                                                                 \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_exchange_explicit(obj, v, va_at(0, __VA_ARGS__));                                     \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_exchange_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                   \
     ) (                                                                                            \
       atomic_exchange(obj, v);                                                                     \
     )                                                                                              \
   })
 
+
 #define u_atomic_cswap(obj, c, v, ...)                                                             \
   ({                                                                                               \
     typeof_unqual(*(obj)) _ = c;                                                                   \
                                                                                                    \
-    va_elseif(va_size_is(2, __VA_ARGS__)) (                                                        \
+    u_va_elseif(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
       atomic_compare_exchange_strong_explicit(obj,                                                 \
                                               &_,                                                  \
                                               v,                                                   \
-                                              va_at(0, __VA_ARGS__),                               \
-                                              va_at(1, __VA_ARGS__));                              \
+                                              u_va_at(0, __VA_ARGS__),                             \
+                                              u_va_at(1, __VA_ARGS__));                            \
     ) (                                                                                            \
       atomic_compare_exchange_strong(obj, &_, v);                                                  \
     )                                                                                              \
   })
 
+
 #define u_atomic_add(obj, v, ...)                                                                  \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_fetch_add_explicit(obj, v, va_at(0, __VA_ARGS__));                                    \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_fetch_add_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                  \
     ) (                                                                                            \
       atomic_fetch_add(obj, v);                                                                    \
     )                                                                                              \
   })
 
+
 #define u_atomic_sub(obj, v, ...)                                                                  \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_fetch_sub_explicit(obj, v, va_at(0, __VA_ARGS__));                                    \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_fetch_sub_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                  \
     ) (                                                                                            \
       atomic_fetch_sub(obj, v);                                                                    \
     )                                                                                              \
   })
 
+
 #define u_atomic_and(obj, v, ...)                                                                  \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_fetch_and_explicit(obj, v, va_at(0, __VA_ARGS__));                                    \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_fetch_and_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                  \
     ) (                                                                                            \
       atomic_fetch_and(obj, v);                                                                    \
     )                                                                                              \
   })
 
+
 #define u_atomic_or(obj, v, ...)                                                                   \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_fetch_or_explicit(obj, v, va_at(0, __VA_ARGS__));                                     \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_fetch_or_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                   \
     ) (                                                                                            \
       atomic_fetch_or(obj, v);                                                                     \
     )                                                                                              \
   })
 
+
 #define u_atomic_xor(obj, v, ...)                                                                  \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_fetch_xor_explicit(obj, v, va_at(0, __VA_ARGS__));                                    \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_fetch_xor_explicit(obj, v, u_va_at(0, __VA_ARGS__));                                  \
     ) (                                                                                            \
       atomic_fetch_xor(obj, v);                                                                    \
     )                                                                                              \
   })
 
+
 #define u_atomic_flag_true(obj, ...)                                                               \
   ({                                                                                               \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_flag_test_and_set_explicit(obj, va_at(0, __VA_ARGS__));                               \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_flag_test_and_set_explicit(obj, u_va_at(0, __VA_ARGS__));                             \
     ) (                                                                                            \
       atomic_flag_test_and_set(obj);                                                               \
     )                                                                                              \
   })
 
+
 #define u_atomic_flag_false(obj, ...)                                                              \
   do {                                                                                             \
-    va_elseif(va_size_is(1, __VA_ARGS__)) (                                                        \
-      atomic_flag_clear_explicit(obj, va_at(0, __VA_ARGS__));                                      \
+    u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                     \
+      atomic_flag_clear_explicit(obj, u_va_at(0, __VA_ARGS__));                                    \
     ) (                                                                                            \
       atomic_flag_clear(obj);                                                                      \
     )                                                                                              \
   } while (0)
+
 /* clang-format on */
 
 #  ifdef __cplusplus

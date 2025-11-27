@@ -20,76 +20,78 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
+ * doc:
+ *    [](https://coolshell.cn/articles/8239.html)
+ *    [](https://github.com/supermartian/lockfree-queue)
+ *    [](https://github.com/golang-design/lockfree/blob/master/queue.go)
+ *
  * */
 
+#pragma once
+
 #ifndef U_ILFQ_H__
-#define U_ILFQ_H__
+#  define U_ILFQ_H__
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 extern "C" {
-#endif
+#  endif
 
-/***************************************************************************************************
- * Type
- **************************************************************************************************/
-typedef struct {
-}* u_lfq_t;
+/* clang-format off */
+
 
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern u_lfq_t lfq_new();
+extern any_t       $lfq_new     ();
+extern void        $lfq_cleanup (any_t);
+extern int         $lfq_len     (any_t);
+extern bool        $lfq_put     (any_t, any_t);
+extern any_t       $lfq_pop     (any_t);
 
-extern void lfq_cleanup(u_lfq_t);
-
-extern size_t lfq_len(u_lfq_t);
-
-extern bool lfq_put(u_lfq_t, any_t);
-
-extern void* lfq_pop(u_lfq_t);
+/***************************************************************************************************
+ * iType
+ **************************************************************************************************/
+#define u_lfq_t(T) typeof(T*)
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#define u_lfq_new()                                                                                \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_new();                                                                                     \
-  })
+#  define u_lfq_new()                                                                              \
+    ({                                                                                             \
+      $lfq_new();                                                                                  \
+    })
 
-#define u_lfq_len(u)                                                                               \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_len(u);                                                                                    \
-  })
+#  define u_lfq_len(self)                                                                          \
+    ({                                                                                             \
+      $lfq_len(self);                                                                              \
+    })
 
-#define u_lfq_is_empty(u)                                                                          \
-  ({                                                                                               \
-    ;                                                                                              \
-    0 == lfq_len(u);                                                                               \
-  })
+#  define u_lfq_is_empty(self)                                                                     \
+    ({                                                                                             \
+      0 == $lfq_len(self);                                                                         \
+    })
 
-#define u_lfq_cleanup(u)                                                                           \
-  do {                                                                                             \
-    lfq_cleanup(u);                                                                                \
+#  define u_lfq_cleanup(self)                                                                      \
+    do {                                                                                           \
+      $lfq_cleanup(self);                                                                          \
                                                                                                    \
-    u = nullptr;                                                                                   \
-  } while (0)
+      self = nullptr;                                                                              \
+    } while (0)
 
-#define u_lfq_pop(u)                                                                               \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_pop(u);                                                                                    \
-  })
+#  define u_lfq_pop(self)                                                                          \
+    ({                                                                                             \
+      (typeof(self)) $lfq_pop(self);                                                               \
+    })
 
-#define u_lfq_put(u, obj)                                                                          \
-  ({                                                                                               \
-    ;                                                                                              \
-    lfq_put(u, obj);                                                                               \
-  })
+#  define u_lfq_put(self, obj)                                                                     \
+    ({                                                                                             \
+      $lfq_put(self, obj);                                                                         \
+    })
 
-#ifdef __cplusplus
+/* clang-format on */
+
+#  ifdef __cplusplus
 } /* extern "C" */
-#endif
+#  endif
 
 #endif /* !U_ILFQ_H__ */

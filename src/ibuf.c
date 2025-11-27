@@ -21,96 +21,129 @@
  * SOFTWARE.
  *
  * */
+#if 0
 
-#include <u/u.h>
+#  include <u/u.h>
+
+/***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+typedef struct {
+  bool is_alloc;
+  size_t cap;
+
+  u8_t* rawbuf;
+  u8_t* begin;
+  u8_t* end;
+} buf_t, *buf_ref_t;
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-void buf_init(u_buf_t* self, u8_t* buf, size_t cap) {
-  u_nchk_if(self == nullptr);
+pub u_buf_ref_t $buf_new(u8_t* buf, size_t cap) {
+  buf_ref_t self = nullptr;
+
+  self = u_talloc(buf_t);
+  u_end_if(self);
 
   if (buf != nullptr) {
-    self->__rawbuf = buf;
+    self->rawbuf = buf;
   } else {
-    self->__rawbuf = u_zalloc(cap);
-    u_nil_if(self->__rawbuf);
+    self->is_alloc = true;
 
-    self->alloc_flag = true;
+    self->rawbuf = u_zalloc(cap);
+    u_end_if(self->rawbuf);
   }
 
-  self->len = 0;
-  self->cap = cap;
-  self->buf = self->__rawbuf;
-err:
+  self->begin = self->rawbuf;
+  self->end   = self->rawbuf;
+  self->cap   = cap;
+
+  return (u_buf_ref_t)self;
+
+end:
+  u_free_if(self);
+
+  return nullptr;
 }
 
-void buf_clear(u_buf_t* self) {
-  u_nchk_if(self == nullptr);
+pub void $buf_clear(u_buf_ref_t _self) {
+  buf_ref_t self = (buf_ref_t)_self;
 
-  self->len = 0;
-  self->buf = self->__rawbuf;
+  u_chk_if(self);
+
+  self->begin = self->rawbuf;
+  self->end   = self->rawbuf;
 }
 
-void buf_cleanup(u_buf_t* self) {
-  u_nchk_if(self == nullptr);
+pub void $buf_cleanup(u_buf_ref_t _self) {
+  buf_ref_t self = (buf_ref_t)_self;
 
-  if (self->alloc_flag) {
-    u_free_if(self->__rawbuf);
+  u_chk_if(self);
+
+  if (self->is_alloc) {
+    u_free(self->rawbuf);
   }
+
+  u_free(self);
 }
 
-size_t buf_len(u_buf_t* self) {
-  u_chk_if(self == nullptr, 0);
+pub size_t $buf_len(u_buf_ref_t _self) {
+  buf_ref_t self = (buf_ref_t)_self;
 
-  return self->len;
+  u_chk_if(self, -1);
+
+  return self->end - self->begin;
 }
 
-void buf_skip(u_buf_t* self, size_t len) {
-  u_nchk_if(self == nullptr);
-  u_nchk_if(len > self->len);
+pub void $buf_pop(u_buf_ref_t _self, any_t buf, size_t len) {
+  buf_ref_t self = (buf_ref_t)_self;
 
-  self->buf += len;
+  u_chk_if(self);
+  u_chk_if(buf);
+  u_chk_if(len > self->end - self->begin);
+
+  memcpy(buf, self->begin, len);
+  self->begin += len;
 }
 
-void buf_pop(u_buf_t* self, any_t buf, size_t len) {
-  u_nchk_if(self == nullptr);
-  u_nchk_if(buf == nullptr);
-  u_nchk_if(len > self->len);
+pub void $buf_put(u_buf_ref_t _self, any_t buf, size_t len) {
+  size_t diff    = 0;
+  size_t size    = 0;
+  buf_ref_t self = (buf_ref_t)_self;
 
-  memcpy(buf, self->buf, len);
+  u_chk_if(self);
 
-  self->len -= len;
-  self->buf += len;
-}
+  u_chk_if(self);
+  u_chk_if(buf);
 
-void buf_put(u_buf_t* self, any_t buf, size_t len) {
-  size_t diff = 0;
-
-  u_nchk_if(self == nullptr);
-  u_nchk_if(buf == nullptr);
-
-  diff = self->buf - self->__rawbuf;
+  diff = self->begin - self->rawbuf;
+  size = self->end - self->begin;
 
   /* realloc */
-  if (self->cap - (diff + self->len) < len) {
-    if (self->cap - self->len >= len) {
-      memmove(self->__rawbuf, self->buf, self->len);
-      self->buf = self->__rawbuf;
+  if (self->cap - (diff + size) < len) {
+    if (self->cap - size >= len) {
+      memmove(self->rawbuf, self->begin, size);
+      self->begin = self->rawbuf;
+      self->end   = self->rawbuf + size;
     } else {
-      u_err_if(!self->alloc_flag);
+      u_end_if(!self->is_alloc);
 
-      self->__rawbuf = u_realloc(self->__rawbuf, self->cap + len);
-      u_nil_if(self->__rawbuf);
+      self->rawbuf = u_realloc(self->rawbuf, self->cap + len);
+      u_end_if(self->rawbuf);
 
       self->cap += len;
-      self->buf = self->__rawbuf + diff;
+      self->begin = self->rawbuf + diff;
+      self->end   = self->begin + size;
     }
   }
 
-  memcpy(self->buf + self->len, buf, len);
+  memcpy(self->end, buf, len);
 
-  self->len += len;
+  self->end += len;
 
-err:
+  return;
+
+end:
 }
+#endif

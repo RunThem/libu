@@ -31,6 +31,8 @@
 extern "C" {
 #  endif
 
+/* clang-format off */
+
 /***************************************************************************************************
  * Misc macro
  **************************************************************************************************/
@@ -39,13 +41,43 @@ extern "C" {
 #  define me(type, ...) ((type){__VA_ARGS__})
 #  define bit(byte, n)  (((byte) >> (n)) & 1)
 
-/* clang-format off */
-#define u_each(i, n, ...) va_elseif(va_size_is(1, __VA_ARGS__)) (                                  \
-      for (size_t i = n; i < va_at(0, __VA_ARGS__); i++)                                           \
+#  define new(type, ...)                                                                           \
+    ({                                                                                             \
+      type* _ = u_talloc(type);                                                                    \
+                                                                                                   \
+      if (_) { *_ = (type) {__VA_ARGS__}; }                                                        \
+                                                                                                   \
+      _;                                                                                           \
+    })
+
+#define u_struct_def(T, ...)                                                                       \
+  struct T;                                                                                        \
+  typedef typeof(struct T) T##_t;                                                                  \
+  typedef typeof(struct T*) T##_mut_t;                                                             \
+  typedef typeof(const struct T*) T##_ref_t;                                                       \
+  struct __VA_ARGS__ T
+
+#define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
+      for (int i = n; i < u_va_at(0, __VA_ARGS__); i++)                                            \
     )(                                                                                             \
-      for (size_t i = 0; i < n; i++)                                                               \
+      for (int i = 0; i < n; i++)                                                                  \
     )
-/* clang-format on */
+
+#define u_align_of_2pow(n)                                                                         \
+  ({                                                                                               \
+    u64_t __n = n;                                                                                 \
+                                                                                                   \
+    __n--;                                                                                         \
+    __n |= __n >> 1;                                                                               \
+    __n |= __n >> 2;                                                                               \
+    __n |= __n >> 4;                                                                               \
+    __n |= __n >> 8;                                                                               \
+    __n |= __n >> 16;                                                                              \
+    __n |= __n >> 32;                                                                              \
+                                                                                                   \
+    __n + 1;                                                                                       \
+  })
+
 
 #  define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
@@ -61,9 +93,12 @@ extern "C" {
 #  define __must_be_array(a)     __build_bug_on_zero(__same_type((a), &(a)[0]))
 #  define u_arr_len(arr)         (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-#  define u_arr_for(arr, i, it)                                                                    \
+#  define u_arr_each(arr, i, it)                                                                   \
     for (size_t i = 0; i < u_arr_len(arr); i++)                                                    \
       for (auto it = &arr[i]; it; it = nullptr)
+
+extern bool $benchmark_entry(const char*, size_t);
+#  define u_bench(msg, ...) while ($benchmark_entry(msg, u_va_0th(1, __VA_ARGS__)))
 
 /***************************************************************************************************
  * Try catch
@@ -86,26 +121,24 @@ typedef struct {
 
 extern thread_local __err__t __err__;
 
-/* clang-format off */
 #define try      for (bzero(&__err__, sizeof(__err__)); !setjmp(__err__.label);)
 #define catch(e) for (auto e = __err__; e.is_err; e.is_err = false)
-#define panic(_expr, _id, args...)                                                               \
-  do {                                                                                           \
-    __err__.is_err = true;                                                                       \
-    __err__.file   = __file__;                                                                   \
-    __err__.func   = __func__;                                                                   \
-    __err__.line   = __line__;                                                                   \
-    __err__.expr   = #_expr;                                                                     \
-    __err__.id     = _id;                                                                        \
-    __err__.error  = errno;                                                                      \
-                                                                                                 \
-    va_if(va_has(args)) (                                                                        \
-      snprintf(__err__.msg, U_ERR_MSG_SIZE, args);                                               \
-    )                                                                                            \
-                                                                                                 \
-    longjmp(__err__.label, 1);                                                                   \
+#define panic(_expr, _id, ...)                                                                     \
+  do {                                                                                             \
+    __err__.is_err = true;                                                                         \
+    __err__.file   = __file__;                                                                     \
+    __err__.func   = __func__;                                                                     \
+    __err__.line   = __line__;                                                                     \
+    __err__.expr   = #_expr;                                                                       \
+    __err__.id     = _id;                                                                          \
+    __err__.error  = errno;                                                                        \
+                                                                                                   \
+    u_va_if(u_va_has(__VA_ARGS__)) (                                                               \
+      snprintf(__err__.msg, U_ERR_MSG_SIZE, __VA_ARGS__);                                          \
+    )                                                                                              \
+                                                                                                   \
+    longjmp(__err__.label, 1);                                                                     \
   } while (0)
-/* clang-format on */
 
 /***************************************************************************************************
  * Swap
@@ -141,14 +174,13 @@ extern thread_local __err__t __err__;
       __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                               \
     })
 
-/* clang-format off */
 /*
  *
  * '==' => true
  * '!=' => false
  * */
 #define fn_eq(type, ...)                                                                           \
-  va_elseif(va_has(__VA_ARGS__)) (                                                                 \
+  u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
     fn_eq_##type(__VA_ARGS__)                                                                      \
   )(                                                                                               \
     fn_eq_##type                                                                                   \
@@ -157,14 +189,14 @@ extern thread_local __err__t __err__;
 /*
  * '>'  => 1
  * '==' => 0
- * '<'  => -1*/
+ * '<'  => -1
+ * */
 #define fn_cmp(type, ...)                                                                          \
-  va_elseif(va_has(__VA_ARGS__)) (                                                                 \
+  u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
     fn_cmp_##type(__VA_ARGS__)                                                                     \
   )(                                                                                               \
     fn_cmp_##type                                                                                  \
   )
-/* clang-format on */
 
 #  define fn_compe_dec(type)                                                                       \
     extern bool fn_eq_##type(cany_t, cany_t);                                                      \
@@ -182,10 +214,11 @@ extern thread_local __err__t __err__;
     }
 
 fn_compe_dec(char);
+fn_compe_dec(byte_t);
+
 fn_compe_dec(int);
 fn_compe_dec(uint);
 
-fn_compe_dec(byte_t);
 fn_compe_dec(i8_t);
 fn_compe_dec(u8_t);
 fn_compe_dec(i16_t);
@@ -202,6 +235,18 @@ fn_compe_dec(ssize_t);
 fn_compe_dec(i128_t);
 fn_compe_dec(u128_t);
 #  endif
+
+extern u_hash_t u_hash_i8(const u8_t*, size_t);
+extern u_hash_t u_hash_i16(const u8_t*, size_t);
+extern u_hash_t u_hash_i32(const u8_t*, size_t);
+extern u_hash_t u_hash_i64(const u8_t*, size_t);
+
+extern u_hash_t u_hash_u8(const u8_t*, size_t);
+extern u_hash_t u_hash_u16(const u8_t*, size_t);
+extern u_hash_t u_hash_u32(const u8_t*, size_t);
+extern u_hash_t u_hash_u64(const u8_t*, size_t);
+
+/* clang-format on */
 
 #  ifdef __cplusplus
 } /* extern "C" */

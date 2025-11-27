@@ -25,224 +25,226 @@
 #include <u/u.h>
 
 /***************************************************************************************************
- * Type
- **************************************************************************************************/
-typedef struct vec_t vec_t;
-struct vec_t {
-  u8_t flags[4];
-  size_t itsize;
-  size_t len;
-  size_t cap;
-  any_t items;
-};
-
-/***************************************************************************************************
  * Macro
  **************************************************************************************************/
 #undef at
 #define at(idx) (self->items + self->itsize * (idx))
 
 /***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+u_struct_def(vec, [[gnu::packed]]) {
+  typeof_unqual(*(u_vec_t(vec_mut_t)){}) m;
+
+  i32_t itsize;
+  i32_t idx; /* iter */
+  any_t items;
+};
+
+/***************************************************************************************************
+ * Let
+ **************************************************************************************************/
+thread_local u_cmp_fn th_cmp_fn     = {};
+thread_local u_order_e th_cmp_order = {};
+
+/***************************************************************************************************
  * Function
  **************************************************************************************************/
-static ret_t vec_resize(vec_t* self) {
-  size_t cap  = 0;
-  any_t items = nullptr;
+// pri inline int vec_cmp_fn(cany_t a, cany_t b) {
+//   int res = th_cmp_fn(a, b);
+//
+//   return th_cmp_order == U_ORDER_ASCEND ? res : -res;
+// }
 
-  cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
-
-  items = u_realloc(self->items, self->itsize * cap);
-  u_nil_if(items);
-
-  self->items = items;
-  self->cap   = cap;
-
-  return 0;
-
-err:
-  return -1;
-}
-
-any_t vec_new(size_t itsize) {
-  vec_t* self = nullptr;
-
-  u_chk_if(itsize == 0, nullptr);
+pub any_t $vec_new(i32_t itsize, i32_t cap) {
+  vec_mut_t self = nullptr;
 
   self = u_talloc(vec_t);
-  u_nil_if(self);
+  u_end_if(self);
 
-  self->items = u_calloc(16, itsize);
-  u_nil_if(self->items);
+  self->items = u_calloc(cap, itsize);
+  u_end_if(self->items);
 
+  self->idx    = 0;
   self->itsize = itsize;
-  self->cap    = 16;
+  self->m.cap  = cap;
+  self->m.len  = 0;
+  self->m.ref  = any(self);
 
   return self;
 
-err:
+end:
   u_free_if(self);
 
   return nullptr;
 }
 
-void vec_clear(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+pub void $vec_clear(any_t _self) {
+  vec_mut_t self = (vec_mut_t)_self;
 
-  self->len = 0;
+  u_chk_if(self);
+
+  self->m.len = 0;
 }
 
-void vec_cleanup(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+pub void $vec_cleanup(any_t _self) {
+  vec_mut_t self = (vec_mut_t)_self;
+
+  u_chk_if(self);
 
   u_free_if(self->items);
   u_free_if(self);
 }
 
-bool vec_exist(any_t _self, size_t idx) {
-  vec_t* self = (vec_t*)_self;
+pub bool $vec_resize(any_t _self, i32_t cap) {
+  vec_mut_t self = (vec_mut_t)_self;
+  any_t items    = nullptr;
 
-  return self->len > idx;
+  u_chk_if(self, -1);
+
+  items = u_realloc(self->items, self->itsize * cap);
+  u_end_if(items);
+
+  self->items = items;
+  self->m.cap = cap;
+
+  return 0;
+
+end:
+  return -1;
 }
 
-size_t vec_len(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+pub any_t $vec_at(any_t _self, i32_t idx) {
+  vec_mut_t self = (vec_mut_t)_self;
 
-  return self->len;
-}
-
-size_t vec_cap(any_t _self) {
-  vec_t* self = (vec_t*)_self;
-
-  return self->cap;
-}
-
-any_t vec_at(any_t _self, ssize_t idx) {
-  vec_t* self = (vec_t*)_self;
-
-  u_chk_if(self == nullptr, nullptr);
-  u_chk_if(idx > self->len && idx < -self->len, nullptr, "idx(%ld), len(%zu)", idx, self->len);
-
-  idx += (idx < 0) ? (ssize_t)self->len : 0;
+  u_chk_if(self, nullptr);
 
   return at(idx);
 }
 
-/*
- * len = 7
- *
- * idx = (idx < 0) ? idx + len : idx
- * {  0,  1,  2,  3,  4,  5,  6 }
- * { -7, -6, -5, -4, -3, -2  -1 }
- * */
-void vec_pop(any_t _self, ssize_t idx, any_t item) {
-  vec_t* self = (vec_t*)_self;
+pub void $vec_del(any_t _self, i32_t idx) {
+  vec_mut_t self = (vec_mut_t)_self;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(idx > self->len && idx < -self->len, "idx(%ld), len(%zu)", idx, self->len);
+  u_chk_if(self);
 
-  idx += (idx < 0) ? (ssize_t)self->len : 0;
-  memcpy(item, at(idx), self->itsize);
-  if (idx != self->len - 1) {
-    memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
+  if (idx != self->m.len - 1) {
+    memmove(at(idx), at(idx + 1), (self->m.len - idx - 1) * self->itsize);
   }
 
-  self->len--;
-
-  bzero(at(self->len), self->itsize);
+  self->m.len--;
 }
 
-/*
- * len = 7
- *
- * idx = (0 < idx) ? idx + 1 + len : idx
- *
- * {  0,  1,  2,  3,  4,  5,  6 }  7
- * { -8, -7, -6, -5, -4, -3, -2 } -1
- * */
-void vec_put(any_t _self, ssize_t idx, any_t item) {
-  vec_t* self = (vec_t*)_self;
-  ret_t code  = 0;
+pub any_t $vec_add(any_t _self, i32_t idx) {
+  vec_mut_t self = (vec_mut_t)_self;
+  i32_t cap      = 0;
+  int result     = 0;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(idx > (ssize_t)self->len || idx < -((ssize_t)self->len + 1),
-            "idx(%ld), len(%zu)",
-            idx,
-            self->len);
+  u_chk_if(self, nullptr);
 
-  idx += (idx < 0) ? (ssize_t)self->len + 1 : 0;
-  if (self->len == self->cap) {
-    code = vec_resize(self);
-    u_err_if(code != 0, "resize failed.");
+  if (self->m.len == self->m.cap) {
+    result = $vec_resize(_self, (i32_t)(self->m.cap * 1.5));
+    u_end_if(result != 0);
   }
 
-  if (idx != self->len) {
-    memmove(at(idx + 1), at(idx), (self->len - idx) * self->itsize);
+  if (idx != self->m.len) {
+    memmove(at(idx + 1), at(idx), (self->m.len - idx) * self->itsize);
   }
 
-  memcpy(at(idx), item, self->itsize);
+  self->m.len++;
 
-  self->len++;
+  return at(idx);
 
-err:
+end:
+  return nullptr;
 }
 
-void vec_sort(any_t _self, u_cmp_fn cmp_fn) {
-  vec_t* self = (vec_t*)_self;
+pub any_t $vec_each(any_t _self, bool init) {
+  vec_mut_t self = (vec_mut_t)_self;
 
-  u_nchk_if(self == nullptr);
-  u_nchk_if(cmp_fn == nullptr);
-  u_nchk_if(self->len < 2);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
-  qsort(self->items, self->len, self->itsize, cmp_fn);
-}
-
-bool vec_for_init(any_t _self, bool flag) {
-  vec_t* self = (vec_t*)_self;
-
-  u_chk_if(self == nullptr, false);
-
-  if (self->flags[0] == 0) {
-    self->flags[0] = 1;
-  } else if (self->flags[0] == 2) {
-    self->flags[0] = 0;
+  if (!init) {
+    return (self->idx == self->m.len) ? nullptr : at(self->idx++);
   }
 
-  self->flags[1] = flag;
-  self->flags[2] = true;
-  self->flags[3] = false;
+  self->idx = 0;
 
-  return self->flags[0];
+  return nullptr;
 }
 
-void vec_for_end(any_t _self) {
-  vec_t* self = (vec_t*)_self;
+pub any_t $vec_reach(any_t _self, bool init) {
+  vec_mut_t self = (vec_mut_t)_self;
 
-  u_nchk_if(self == nullptr);
+  u_chk_if(self, nullptr);
+  u_chk_if(self->m.len == 0, nullptr);
 
-  self->flags[0] = 2;
+  if (!init) {
+    return (self->idx == -1) ? nullptr : at(self->idx--);
+  }
+
+  self->idx = self->m.len - 1;
+
+  return nullptr;
 }
 
-bool vec_for(any_t _self, ssize_t* idx, any_t item) {
-  vec_t* self = (vec_t*)_self;
+// pub void vec_sort(any_t _self, int (^cmp_fn)(void*, void*), u_order_e order) {
+//   vec_mut_t self = (vec_mut_t)_self;
+//
+//   u_chk_if(self);
+//   u_chk_if(cmp_fn);
+//   u_chk_if(self->len < 2);
+//
+//   // th_cmp_fn    = cmp_fn;
+//   // th_cmp_order = order;
+//   qsort(self->items, self->len, self->itsize, cmp_fn);
+// }
 
-  u_chk_if(self == nullptr, false);
-  u_chk_if(self->len == 0, false);
-  u_chk_if(self->flags[3], false);
+#if 0
 
-  /* 初始化 */
-  if (self->flags[2]) {
-    *idx           = self->flags[1] ? 0 : (ssize_t)self->len - 1;
-    self->flags[2] = !self->flags[2];
-  } else { /* 迭代 */
-    *idx += self->flags[1] ? 1 : -1;
+pub void vec_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
+  vec_mut_t self = (vec_mut_t)_self;
 
-    /* 判断是否继续迭代 */
-    if (*idx == self->len - 1 || *idx == 0) {
-      self->flags[3] = true;
+  u_chk_if(self);
+  u_chk_if(cmp_fn);
+  u_chk_if(self->len < 2);
+
+  th_cmp_fn    = cmp_fn;
+  th_cmp_order = order;
+  qsort(self->items, self->len, self->itsize, vec_cmp_fn);
+}
+
+pub bool vec_is_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
+  vec_mut_t self = (vec_mut_t)_self;
+
+  u_chk_if(self, false);
+  u_chk_if(cmp_fn, false);
+
+  for (int i = 1; i < self->len; i++) {
+    if (order == cmp_fn(at(i - 1), at(i))) {
+      return false;
     }
   }
 
-  memcpy(item, at(*idx), self->itsize);
-
   return true;
 }
+
+
+pub i64_t vec_pole(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
+  vec_mut_t self = (vec_mut_t)_self;
+  int result     = 0;
+
+  u_chk_if(self, -1);
+  u_chk_if(cmp_fn, -1);
+
+  result = 0;
+  for (int i = 1; i < self->len; i++) {
+    if (cmp_fn(at(result), at(i)) == order) {
+      result = i;
+    }
+  }
+
+  return result;
+}
+
+#endif

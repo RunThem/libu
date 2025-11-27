@@ -12,7 +12,7 @@
 
 **libu** is a small, usability-oriented generic container library for C that provides **vectors**, **doubly linked lists**, **unordered maps**, and **avl tree**.
 
-It requires C23, compiler support for `typeof`.
+It requires C23, compiler support for `typeof` and `__VA_OPT__`.
  
 ## Project Requirements
 

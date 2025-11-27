@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ * Copyright (c) 2024 RunThem <iccy.fun@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,64 +32,175 @@ extern "C" {
 #  endif
 
 /***************************************************************************************************
+ * Type
+ **************************************************************************************************/
+typedef struct [[gnu::packed]] {
+  const int len;
+  const char* ptr;
+}* u_str_t;
+
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
+#  define str_type(s)                                                                              \
+    (_Generic(s, char: 1, int: 1, char*: 2, const char*: 2, u_str_t: 3, default: 0))
+
+#  define u_string_t [[gnu::cleanup(str_gc_cleanup)]] u_str_t
+
+/***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern u_str_t str_new_char(char);
-extern u_str_t str_new_cstr(u_cstr_t);
-extern u_str_t str_new_str(u_str_t);
+/* clang-format off */
+// extern u_str_t str_new();
+extern u_str_t str_new         (any_t, int, int);
+extern void    str_clear       (u_str_t);
+extern void    str_cleanup     (u_str_t);
+extern void    str_gc_cleanup  (u_str_t*);
+extern void    str_slen        (u_str_t, int);
 
-extern size_t str_len(u_str_t*);
+extern void    str_2lower      (u_str_t);
+extern void    str_2upper      (u_str_t);
 
-extern void str_put_char(u_str_t*, char);
-extern void str_put_cstr(u_str_t*, u_cstr_t);
-extern void str_put_str(u_str_t*, u_str_t);
+extern void    str_ltrim       (u_str_t);
+extern void    str_rtrim       (u_str_t);
+extern void    str_trim        (u_str_t);
 
-extern void str_ins_char(u_str_t*, size_t, char);
-extern void str_ins_cstr(u_str_t*, size_t, u_cstr_t);
-extern void str_ins_str(u_str_t*, size_t, u_str_t);
+extern void    str_ins         (u_str_t, int, any_t, int);
+extern int     str_cmp         (u_str_t, any_t, int);
+extern bool    str_is_prefix   (u_str_t, any_t, int);
+extern bool    str_is_suffix   (u_str_t, any_t, int);
+extern int     str_find        (u_str_t, any_t, int);
+
+extern u_str_t str_sub         (u_str_t, int, int);
+/* clang-format on */
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#  define u_str_new(s)                                                                             \
+/* clang-format off */
+#  define u_str_t(...)                                                                             \
     ({                                                                                             \
-      auto _fn = _Generic(s,                                                                       \
-          char: str_new_char,                                                                      \
-          int: str_new_char,                                                                       \
-          u_cstr_t: str_new_cstr,                                                                  \
-          u_str_t: str_new_str);                                                                   \
+      u_str_t self = nullptr;                                                                      \
+     int __len = 0;                                                                                \
                                                                                                    \
-      _fn(s);                                                                                      \
-    })
-
-#  define u_str_len(s)                                                                             \
-    ({                                                                                             \
-      auto _fn = _Generic(s, u_cstr_t: strlen, u_str_t: str_len);                                  \
+      u_va_elseif(u_va_has(__VA_ARGS__)) (                                                         \
+        u_va_if(u_va_cnt_is(2, __VA_ARGS__)) (                                                     \
+          __len = u_va_at(1, __VA_ARGS__);                                                         \
+        )                                                                                          \
                                                                                                    \
-      _fn(&s);                                                                                     \
+        self = str_new(                                                                            \
+                       (any_t)(uintptr_t)u_va_at(0, __VA_ARGS__),                                  \
+                       str_type(u_va_at(0, __VA_ARGS__)),                                          \
+                       __len);                                                                     \
+      ) (                                                                                          \
+        self = str_new(nullptr, 0, 0);                                                             \
+      )                                                                                            \
+                                                                                                   \
+      self;                                                                                        \
     })
+/* clang-format on */
 
-#  define u_str_put(s, _s)                                                                         \
+#  define u_str_clear(self)                                                                        \
     do {                                                                                           \
-      auto _fn = _Generic(_s,                                                                      \
-          char: str_put_char,                                                                      \
-          int: str_put_char,                                                                       \
-          u_cstr_t: str_put_cstr,                                                                  \
-          u_str_t: str_put_str);                                                                   \
-                                                                                                   \
-      _fn(&s, _s);                                                                                 \
+      str_clear(self);                                                                             \
     } while (0)
 
-#  define u_str_ins(s, i, _s)                                                                      \
+#  define u_str_cleanup(self)                                                                      \
     do {                                                                                           \
-      auto _fn = _Generic(_s,                                                                      \
-          char: str_ins_char,                                                                      \
-          int: str_ins_char,                                                                       \
-          u_cstr_t: str_ins_cstr,                                                                  \
-          u_str_t: str_ins_str);                                                                   \
+      str_cleanup(self);                                                                           \
                                                                                                    \
-      _fn(&s, i, _s);                                                                              \
+      self = nullptr;                                                                              \
     } while (0)
+
+#  define u_str_slen(self, len)                                                                    \
+    do {                                                                                           \
+      str_slen(self, len);                                                                         \
+    } while (0)
+
+#  define u_str_2lower(self)                                                                       \
+    do {                                                                                           \
+      str_2lower(self);                                                                            \
+    } while (0)
+#  define u_str_2upper(self)                                                                       \
+    do {                                                                                           \
+      str_2upper(self);                                                                            \
+    } while (0)
+
+#  define u_str_ltrim(self)                                                                        \
+    do {                                                                                           \
+      str_ltrim(self);                                                                             \
+    } while (0)
+
+#  define u_str_rtrim(self)                                                                        \
+    do {                                                                                           \
+      str_rtrim(self);                                                                             \
+    } while (0)
+
+#  define u_str_trim(self)                                                                         \
+    do {                                                                                           \
+      str_trim(self);                                                                              \
+    } while (0)
+
+#  define u_str_cmp(self, str)                                                                     \
+    ({                                                                                             \
+      ;                                                                                            \
+                                                                                                   \
+      str_cmp(self, (any_t)(uintptr_t)str, str_type(str));                                         \
+    })
+
+#  define u_str_prefix(self, str)                                                                  \
+    ({                                                                                             \
+      ;                                                                                            \
+                                                                                                   \
+      str_is_prefix(self, (any_t)(uintptr_t)str, str_type(str));                                   \
+    })
+
+#  define u_str_suffix(self, str)                                                                  \
+    ({                                                                                             \
+      ;                                                                                            \
+                                                                                                   \
+      str_is_suffix(self, (any_t)(uintptr_t)str, str_type(str));                                   \
+    })
+
+#  define u_str_find(self, str)                                                                    \
+    ({                                                                                             \
+      ;                                                                                            \
+                                                                                                   \
+      str_find(self, (any_t)(uintptr_t)str, str_type(str));                                        \
+    })
+
+/* clang-format off */
+#  define u_str_ins(self, idx, ...)                                                                \
+    do {                                                                                           \
+      u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
+        str_ins(self, idx, (any_t)(uintptr_t)__VA_ARGS__, str_type(__VA_ARGS__));                  \
+      ) (                                                                                          \
+        byte_t __buff[4096] = {0};                                                                 \
+        snprintf(__buff, sizeof(__buff), __VA_ARGS__);                                             \
+                                                                                                   \
+        str_ins(self, idx, __buff, 2);                                                             \
+      )                                                                                            \
+    } while (0)
+
+#  define u_str_cat(self, ...)                                                                     \
+    do {                                                                                           \
+      u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                                                   \
+        str_ins(self, self->len, (any_t)(uintptr_t)__VA_ARGS__, str_type(__VA_ARGS__));            \
+      ) (                                                                                          \
+        byte_t __buff[4096] = {0};                                                                 \
+        snprintf(__buff, sizeof(__buff), __VA_ARGS__);                                             \
+                                                                                                   \
+        str_ins(self, self->len, __buff, 2);                                                       \
+      )                                                                                            \
+    } while (0)
+/* clang-format on */
+
+#  define u_str_sub(self, s, ...)                                                                  \
+    ({                                                                                             \
+      ;                                                                                            \
+                                                                                                   \
+      str_sub(self, s, u_va_0th((self)->len, __VA_ARGS__));                                        \
+    })
 
 #  ifdef __cplusplus
 } /* extern "C" */

@@ -2,13 +2,19 @@
 set_project('libu')
 
 --- Project version
-set_version('1.0.0')
+set_version('4.0.0')
 
 --- xmake configure
 set_xmakever('2.6.1')
 
 --- Build mode
-add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.release')
+add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.check', 'mode.release')
+
+--- Project file
+add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
+
+--- Custom rules
+includes('rules/*.lua')
 
 --- Language standard
 set_languages('clatest', 'cxxlatest')
@@ -31,24 +37,14 @@ add_cflags(
 --- Use reserved identifier
 add_cflags('-Wno-reserved-macro-identifier', '-Wno-reserved-identifier')
 
---- Disable VLA extensons
+--- Disable VLA extensions
 add_cflags('-Werror=vla')
+
+--- Blocks
+add_cflags('-fblocks')
 
 --- Repositories
 add_repositories('RunThem https://github.com/RunThem/My-xmake-repo')
-
---- Task(lsp) generate the project file
-task('lsp', function()
-  set_menu({
-    usage = 'xmake lsp',
-    description = 'Generate the project file.',
-  })
-
-  on_run(function()
-    os.exec('xmake project -k cmake build')
-    os.exec('xmake project -k compile_commands build')
-  end)
-end)
 
 --- Mimalloc option
 option('mimalloc', function()
@@ -62,14 +58,25 @@ if has_config('mimalloc') then
   add_defines('USE_MIMALLOC')
 end
 
+--- Debug option
+option('debug', function()
+  set_default(false)
+  set_category('option')
+  set_description('Use debug info')
+end)
+
+if has_config('debug') then
+  add_defines('LIBU_DEBUG')
+end
+
 --- Project common header file path
 add_includedirs('$(projectdir)/inc')
 
 --- libu target
 target('u', function()
   set_kind('static')
-  add_files('$(projectdir)/src/**.c|istr.c')
-  add_headerfiles('$(projectdir)/inc/(**.h)|istr.h')
+  add_files('$(projectdir)/src/**.c')
+  add_headerfiles('$(projectdir)/inc/(**.h)')
 
   if has_config('mimalloc') then
     add_packages('mimalloc', { public = true })

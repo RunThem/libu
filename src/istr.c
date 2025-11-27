@@ -1,6 +1,6 @@
 /* MIT License
  *
- * Copyright (c) 2023 RunThem <iccy.fun@outlook.com>
+ * Copyright (c) 2024 RunThem <iccy.fun@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,280 +22,397 @@
  *
  * */
 
-#include <u/istr.h>
-#include <u/utils/alloc.h>
-#include <u/utils/debug.h>
-#include <u/utils/misc.h>
-#include <u/utils/va.h>
+#if 0
+
+#include <u/u.h>
+
+/***************************************************************************************************
+ * Macro
+ **************************************************************************************************/
+#define U_STR_BUFF_SIZE 47
 
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-typedef struct str_t str_t;
-struct str_t {
-  size_t len;
-  size_t cap;
-  char buf[];
-};
+typedef struct [[gnu::packed]] {
+  /* SSO */
+  byte_t buff[U_STR_BUFF_SIZE + 1];
+  int cap;
+  int len;
+  byte_t* ptr; /* { ... } \0 */
+} str_t, *str_ref_t;
+
+/***************************************************************************************************
+ * Let
+ **************************************************************************************************/
+thread_local byte_t chars[2] = {0, '\0'};
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static str_t* str_resize(str_t* self) {
-  size_t cap = 0;
-  str_t* new = nullptr;
+pri inline ret_t str_resize(str_ref_t self, int len) {
+  byte_t* buff = nullptr;
 
-  cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
+  self->cap = u_align_of_2pow(len + self->len);
 
-  new = u_realloc(self, sizeof(str_t) + cap);
-  u_nil_if(new);
+  if (self->ptr == self->buff) {
+    buff = u_zalloc(self->cap + 1);
+    memcpy(buff, self->ptr, self->len);
+  } else {
+    buff = u_realloc(self->ptr, self->cap + 1);
+    u_end_if(buff);
+  }
 
-  new->cap = cap;
+  self->ptr            = buff;
+  self->ptr[self->len] = '\0';
 
-  return new;
+  return 0;
 
-err:
-  return self;
+end:
+  return -1;
 }
 
-u_str_t str_new_char(char ch) {
-  str_t* self = nullptr;
+pri void inline str_parse(byte_t** ptr, int* len, any_t str, int type) {
+  u_die_if(type == 0);
 
-  self = u_zalloc(sizeof(str_t) + 16);
-  u_nil_if(self);
+  if (type == 1) {
+    chars[0] = (char)(uintptr_t)str;
+    *ptr     = chars;
+    *len     = 1;
+  } else if (type == 2) {
+    *ptr = str;
+    *len = (int)strlen(str);
+  } else if (type == 3) {
+    *ptr = (byte_t*)((u_str_t)str)->ptr;
+    *len = ((u_str_t)str)->len;
+  }
+}
 
-  self->buf[0] = ch;
-  self->len    = 1;
-  self->cap    = 16;
+pub u_str_t str_new(any_t str, int type, int _len) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  self->buf[self->len] = '\0';
+  self = u_talloc(str_t);
+  u_end_if(self);
 
-  return (u_str_t)self->buf;
+  self->ptr = self->buff;
+  self->cap = U_STR_BUFF_SIZE;
 
-err:
-  u_free_if(self);
+  if (str != nullptr) {
+    str_parse(&ptr, &len, str, type);
+    if (_len != 0) {
+      len = _len;
+    }
 
+    if (len > U_STR_BUFF_SIZE) {
+      self->cap = u_align_of_2pow(len);
+      self->ptr = u_zalloc(self->cap + 1);
+    }
+
+    memcpy(&self->ptr[0], ptr, len);
+  }
+
+  self->len            = len;
+  self->ptr[self->len] = '\0';
+
+  return (u_str_t)(&self->len);
+
+end:
   return nullptr;
 }
 
-u_str_t str_new_cstr(u_cstr_t cstr) {
-  str_t* self = nullptr;
-  size_t len  = 0;
+pub void str_clear(u_str_t _self) {
+  str_ref_t self = nullptr;
 
-  if (cstr != nullptr) {
-    len = strlen(cstr);
-  }
+  u_chk_if(_self);
 
-  self = u_zalloc(sizeof(str_t) + (len == 0 ? 16 : len * 2));
-  u_nil_if(self);
+  self = u_container_of(_self, str_t, len);
 
-  if (len != 0) {
-    strncpy(self->buf, cstr, len);
-  }
-
-  self->len      = len;
-  self->cap      = len == 0 ? 16 : len * 2;
-  self->buf[len] = '\0';
-
-  return (u_str_t)self->buf;
-
-err:
-  u_free_if(self);
-
-  return nullptr;
+  self->len            = 0;
+  self->ptr[self->len] = '\0';
 }
 
-u_str_t str_new_str(u_str_t _str) {
-  str_t* self = nullptr;
-  str_t* str  = container_of(_str, str_t, buf);
-  size_t len  = 0;
+pub void str_cleanup(u_str_t _self) {
+  str_ref_t self = nullptr;
 
-  if (_str != nullptr) {
-    len = str->len;
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+  if (self->ptr != self->buff) {
+    u_free(self->ptr);
   }
 
-  self = u_zalloc(sizeof(str_t) + (len == 0 ? 16 : len * 2));
-  u_nil_if(self);
-
-  if (len != 0) {
-    strncpy(self->buf, str->buf, len);
-  }
-
-  self->len      = len;
-  self->cap      = len == 0 ? 16 : len * 2;
-  self->buf[len] = '\0';
-
-  return (u_str_t)self->buf;
-
-err:
-  u_free_if(self);
-
-  return nullptr;
+  u_free(self);
 }
 
-size_t str_len(u_str_t* _self) {
-  str_t* self = nullptr;
+pub void str_gc_cleanup(u_str_t* _self) {
+  str_ref_t self = nullptr;
 
-  u_chk_if(_self == nullptr, 0);
-  u_chk_if(*_self == nullptr, 0);
+  u_chk_if(_self);
+  u_chk_if(*_self);
 
-  self = container_of(*_self, str_t, buf);
-
-  return self->len;
-}
-
-void str_put_char(u_str_t* _self, char ch) {
-  str_t* self = nullptr;
-
-  u_nchk_if(_self == nullptr);
-  u_nchk_if(*_self == nullptr);
-
-  self = container_of(*_self, str_t, buf);
-
-  if (self->len + sizeof(char) > self->cap) {
-    self = str_resize(self);
-    u_err_if(self == nullptr);
-
-    *_self = (u_str_t)self->buf;
+  self = u_container_of(*_self, str_t, len);
+  if (self->ptr != self->buff) {
+    u_free(self->ptr);
   }
 
-  self->buf[self->len]   = ch;
-  self->buf[++self->len] = '\0';
-
-err:
+  u_free(self);
 }
 
-void str_put_cstr(u_str_t* _self, u_cstr_t cstr) {
-  str_t* self = nullptr;
-  size_t len  = strlen(cstr);
+pub void str_slen(u_str_t _self, int len) {
+  str_ref_t self = nullptr;
 
-  u_nchk_if(_self == nullptr);
-  u_nchk_if(*_self == nullptr);
-  u_nchk_if(cstr == nullptr);
+  u_chk_if(_self);
+  u_chk_if(len > _self->len);
 
-  self = container_of(*_self, str_t, buf);
+  self = u_container_of(_self, str_t, len);
 
-  if (self->len + len > self->cap) {
-    self = str_resize(self);
-    u_err_if(self == nullptr);
+  self->len            = len;
+  self->ptr[self->len] = '\0';
+}
 
-    *_self = (u_str_t)self->buf;
+pub void str_2lower(u_str_t _self) {
+  str_ref_t self = nullptr;
+
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+
+  for (int i = 0; i < self->len; i++) {
+    self->ptr[i] = (byte_t)tolower(self->ptr[i]);
+  }
+}
+
+pub void str_2upper(u_str_t _self) {
+  str_ref_t self = nullptr;
+
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+
+  for (int i = 0; i < self->len; i++) {
+    self->ptr[i] = (byte_t)toupper(self->ptr[i]);
+  }
+}
+
+pub void str_ltrim(u_str_t _self) {
+  str_ref_t self = nullptr;
+  int i          = 0;
+
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+
+  while (i < self->len && isspace(self->ptr[i])) {
+    i++;
   }
 
-  strncpy(self->buf + self->len, cstr, len);
+  if (i != 0) {
+    memmove(&self->ptr[0], &self->ptr[i], self->len - i);
+  }
+
+  self->len -= i;
+  self->ptr[self->len] = '\0';
+}
+
+pub void str_rtrim(u_str_t _self) {
+  str_ref_t self = nullptr;
+  int i          = 0;
+
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+
+  i = self->len - 1;
+  while (i >= 0 && isspace(self->ptr[i])) {
+    i--;
+  }
+
+  self->len            = i + 1;
+  self->ptr[self->len] = '\0';
+}
+
+pub void str_trim(u_str_t _self) {
+  str_ref_t self = nullptr;
+  int l          = 0;
+  int r          = 0;
+
+  u_chk_if(_self);
+
+  self = u_container_of(_self, str_t, len);
+
+  for (l = 0; l < self->len && isspace(self->ptr[l]); l++) {
+  }
+
+  u_end_if(l == self->len);
+
+  for (r = self->len - 1; r >= 0 && isspace(self->ptr[r]); r--) {
+  }
+
+  if (l != 0) {
+    memmove(&self->ptr[0], &self->ptr[l], r - l + 1);
+  }
+
+  self->len            = r - l + 1;
+  self->ptr[self->len] = '\0';
+
+  return;
+
+end:
+  self->len            = 0;
+  self->ptr[self->len] = '\0';
+}
+
+pub void str_ins(u_str_t _self, int idx, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
+  int ret        = 0;
+
+  u_chk_if(_self);
+  u_chk_if(idx > _self->len);
+  u_chk_if(str);
+
+  str_parse(&ptr, &len, str, type);
+
+  self = u_container_of(_self, str_t, len);
+
+  /* resize */
+  if (len > self->cap - self->len) {
+    ret = str_resize(self, len);
+    u_end_if(ret != 0);
+  }
+
+  if (idx != self->len) {
+    memmove(&self->ptr[idx + len], &self->ptr[idx], self->len - idx);
+  }
+
+  memcpy(&self->ptr[idx], ptr, len);
 
   self->len += len;
-  self->buf[self->len] = '\0';
+  self->ptr[self->len] = '\0';
 
-err:
+  return;
+
+end:
 }
 
-void str_put_str(u_str_t* _self, u_str_t _str) {
-  str_t* self = nullptr;
-  str_t* str  = nullptr;
+pub int str_cmp(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  u_nchk_if(_self == nullptr);
-  u_nchk_if(*_self == nullptr);
-  u_nchk_if(_str == nullptr);
+  u_chk_if(_self, -2);
+  u_chk_if(str, -2);
 
-  self = container_of(*_self, str_t, buf);
-  str  = container_of(_str, str_t, buf);
+  str_parse(&ptr, &len, str, type);
 
-  if (self->len + str->len > self->cap) {
-    self = str_resize(self);
-    u_err_if(self == nullptr);
+  self = u_container_of(_self, str_t, len);
 
-    *_self = (u_str_t)self->buf;
+  if (self->len == len) {
+    return strncmp(self->ptr, ptr, len);
   }
 
-  strncpy(self->buf + self->len, str->buf, str->len);
-
-  self->len += str->len;
-  self->buf[self->len] = '\0';
-
-err:
+  return self->len > len ? 1 : -1;
 }
 
-void str_ins_char(u_str_t* _self, size_t idx, char ch) {
-  str_t* self = nullptr;
+pub bool str_is_prefix(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  u_nchk_if(_self == nullptr);
-  u_nchk_if(*_self == nullptr);
+  u_chk_if(_self, 0);
+  u_chk_if(str, 0);
 
-  self = container_of(*_self, str_t, buf);
+  str_parse(&ptr, &len, str, type);
+  u_end_if(len == 0 && len > self->len);
 
-  if (self->len + sizeof(char) > self->cap) {
-    self = str_resize(self);
-    u_err_if(self == nullptr);
+  self = u_container_of(_self, str_t, len);
 
-    *_self = (u_str_t)self->buf;
-  }
+  return memcmp(&self->ptr[0], ptr, len) == 0;
 
-  if (idx != self->len) {
-    memmove(self->buf + idx + sizeof(char), self->buf + idx, self->len - idx);
-  }
-
-  self->buf[idx]         = ch;
-  self->buf[++self->len] = '\0';
-
-err:
+end:
+  return false;
 }
 
-void str_ins_cstr(u_str_t* _self, size_t idx, u_cstr_t cstr) {
-  str_t* self = nullptr;
-  size_t len  = strlen(cstr);
+pub bool str_is_suffix(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  u_nchk_if(_self == nullptr);
-  u_nchk_if(*_self == nullptr);
-  u_nchk_if(cstr == nullptr);
+  u_chk_if(_self, 0);
+  u_chk_if(str, 0);
 
-  self = container_of(*_self, str_t, buf);
+  str_parse(&ptr, &len, str, type);
+  u_end_if(len == 0 && len > self->len);
 
-  if (self->len + len > self->cap) {
-    self = str_resize(self);
-    u_err_if(self == nullptr);
+  self = u_container_of(_self, str_t, len);
 
-    *_self = (u_str_t)self->buf;
-  }
+  return memcmp(&self->ptr[self->len - len], ptr, len) == 0;
 
-  if (idx != self->len) {
-    memmove(self->buf + idx + len, self->buf + idx, self->len - idx);
-  }
-
-  strncpy(self->buf + idx, cstr, len);
-
-  self->len += len;
-  self->buf[self->len] = '\0';
-
-err:
+end:
+  return false;
 }
 
-void str_ins_str(u_str_t* _self, size_t idx, u_str_t _str) {
-  str_t* self = nullptr;
-  str_t* str  = nullptr;
+pub int str_find(u_str_t _self, any_t str, int type) {
+  str_ref_t self = nullptr;
+  byte_t* idx    = nullptr;
+  byte_t* ptr    = nullptr;
+  int len        = 0;
 
-  u_nchk_if(_self == nullptr);
-  u_nchk_if(*_self == nullptr);
-  u_nchk_if(_str == nullptr);
+  u_chk_if(_self, -1);
+  u_chk_if(str, -1);
 
-  self = container_of(*_self, str_t, buf);
-  str  = container_of(_str, str_t, buf);
+  str_parse(&ptr, &len, str, type);
+  u_end_if(len == 0 && len > self->len);
 
-  if (self->len + str->len > self->cap) {
-    self = str_resize(self);
-    u_err_if(self == nullptr);
+  self = u_container_of(_self, str_t, len);
 
-    *_self = (u_str_t)self->buf;
-  }
+  idx = strstr(self->ptr, ptr);
+  u_end_if(idx);
 
-  if (idx != self->len) {
-    memmove(self->buf + idx + str->len, self->buf + idx, self->len - idx);
-  }
+  return (int)(idx - self->ptr);
 
-  strncpy(self->buf + idx, str->buf, str->len);
-
-  self->len += str->len;
-  self->buf[self->len] = '\0';
-
-err:
+end:
+  return -1;
 }
+
+pub u_str_t str_sub(u_str_t _self, int s, int e) {
+  str_ref_t new = nullptr;
+  int len       = 0;
+
+  /*
+   * h e l l o
+   * 0 1 2 3 4
+   *
+   * <1, 3> = el
+   * */
+  u_chk_if(_self, nullptr);
+  u_chk_if(e > _self->len, nullptr);
+  u_chk_if(e < s, nullptr);
+
+  new = u_talloc(str_t);
+  u_end_if(new);
+
+  new->len = e - s;
+
+  if (new->len > U_STR_BUFF_SIZE) {
+    new->cap = u_align_of_2pow(new->len);
+    new->ptr = u_zalloc(new->cap + 1);
+  } else {
+    new->cap = U_STR_BUFF_SIZE;
+    new->ptr = new->buff;
+  }
+
+  memcpy(new->ptr, &_self->ptr[s], new->len);
+
+  return (u_str_t)(&new->len);
+
+end:
+  u_free_if(new);
+
+  return nullptr;
+}
+
+#endif

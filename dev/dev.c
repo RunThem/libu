@@ -1,48 +1,17 @@
-// #define NDEBUG
-
-#define u_vec_defs  u_defs(vec, bool, int, u_vec_t(int))
-#define u_set_defs  u_defs(set, item)
-#define u_map_defs  u_defs(map, (int, bool), (int, char))
-#define u_tree_defs u_defs(tree, (int, bool), (int, char), (int, u_zero_size_type_t))
-#define u_list_defs u_defs(list, bool, int)
-
+#include <Block.h>
+#include <arpa/inet.h>
+#include <tbox/tbox.h>
 #include <u/u.h>
 
-/* system libs */
-
-#include <limits.h>
-#include <threads.h>
-
-#if 0
-#  include <arpa/inet.h>
-#  include <dirent.h>
-#  include <fcntl.h>
-#  include <net/ethernet.h>
-#  include <net/if.h>
-#  include <netinet/if_ether.h>
-#  include <netinet/in.h>
-#  include <netinet/ip.h>
-#  include <netinet/ip_icmp.h>
-#  include <netpacket/packet.h>
-#  include <regex.h>
-#  include <sys/ioctl.h>
-#  include <sys/resource.h>
-#  include <sys/socket.h>
-#  include <sys/time.h>
-#  include <sys/wait.h>
-#  include <threads.h>
-#  include <ucontext.h>
-#  include <unistd.h>
-#endif
-
-#if 0
-
-ret_t code = 0;
+/*
+ * #[[flag]]
+ *
+ * */
 
 /*
  * namespace
  *
- * ua:
+ * ua: arr
  * uv: vec
  * um: map
  * ut: avl
@@ -54,104 +23,145 @@ ret_t code = 0;
  * un: net
  * */
 
-/* 全新版本的字符串原始实现 */
-typedef char* u_string_t[2]; /* {raw string pointer, string data pointer} */
+/*
+ * network
+ *
+ * tcp4://0.0.0.0:8080
+ * udp4://0.0.0.0:8080
+ * tcp6://[::1]:8080
+ * udp6://[::1]:8080
+ * tcpu:///mnt/tcp.sock
+ * udpu:///mnt/tcp.sock
+ * */
 
-typedef struct {
-  int id;
-  int cost;
-} side;
+#define lambda(...) ^(__VA_ARGS__)
 
-typedef struct {
-  int id;
-  side sub[4];
-} node;
-
-typedef struct {
-  int id;
-  bool isuse;
-  int cost;
-  int prev;
-} item;
-
-node graph[] = {
-    {0, {{1, 4}, {7, 8}, {-1, 0}, {-1, 0}} },
-    {1, {{0, 4}, {7, 11}, {2, 8}, {-1, 0}} },
-    {2, {{1, 8}, {8, 2}, {5, 4}, {3, 7}}   },
-    {3, {{2, 7}, {5, 14}, {4, 9}, {-1, 0}} },
-    {4, {{3, 9}, {5, 10}, {-1, 0}, {-1, 0}}},
-    {5, {{6, 2}, {2, 4}, {3, 14}, {4, 10}} },
-    {6, {{7, 1}, {8, 6}, {5, 2}, {-1, 0}}  },
-    {7, {{0, 8}, {1, 11}, {8, 7}, {6, 1}}  },
-    {8, {{7, 7}, {6, 6}, {2, 2}, {-1, 0}}  },
+u_struct_def(ApiArgs) {
+  int a;
+  int b;
+  int c;
 };
 
-item table[] = {
-    {0, false, 0,       -1},
-    {1, false, INT_MAX, -1},
-    {2, false, INT_MAX, -1},
-    {3, false, INT_MAX, -1},
-    {4, false, INT_MAX, -1},
-    {5, false, INT_MAX, -1},
-    {6, false, INT_MAX, -1},
-    {7, false, INT_MAX, -1},
-    {8, false, INT_MAX, -1},
+/*
+ * json = string : (null | true | false| string | number | array | object)
+ **/
+
+typedef struct json_t json_t, *json_ref_t;
+struct json_t {
+  u64_t type: 4;  /* {0: null, 1: true, 2: false, 3: string, 4: array, 5: object} */
+  u64_t klen: 30; /* key len */
+
+  /*
+   * If type == 3, len is the string length.
+   * If type == 4, len is the number of elements in the array.
+   * If type == 5, len is the number of elements in the object.
+   * */
+  u64_t vlen: 30;
+
+  char* key;
+
+  union {
+    char* s;
+    f64_t n;
+    u_vec_t(json_ref_t) a;
+    u_vec_t(json_ref_t) o;
+  };
 };
 
-void spf() {
-  int idx  = 0;
-  int cost = 0;
-  u_arr_for (table, i, _) {
-    // 找到最优节点, 未被使用的节点中开销最小
-    cost = INT_MAX;
-    u_arr_for (table, i, it) {
-      if (!it->isuse && it->cost < cost) {
-        idx  = it->id;
-        cost = it->cost;
-      }
-    }
+#define json_n(_key)                                                                               \
+  char auto json = new(json_ref_t, .type = 0, .key = _key, .klen = strlen(_key));                  \
+                                                                                                   \
+  json;                                                                                            \
+  })
 
-    // 标记该节点已被使用
-    table[idx].isuse = true;
+#define json_t(_key)                                                                               \
+  ({                                                                                               \
+    auto json = new(json_ref_t, .type = 1, .key = _key, .klen = strlen(_key));                     \
+                                                                                                   \
+    json;                                                                                          \
+  })
 
-    // 更新所有子节点
-    u_arr_for (graph[idx].sub, i, it) {
-      if (table[it->id].isuse) {
-        continue;
-      }
+#define json_f(_key)                                                                               \
+  ({                                                                                               \
+    auto json = new(json_ref_t, .type = 2, .key = _key, .klen = strlen(_key));                     \
+                                                                                                   \
+    json;                                                                                          \
+  })
 
-      if (cost + it->cost < table[it->id].cost) {
-        table[it->id].cost = cost + it->cost;
-        table[it->id].prev = idx;
-      }
-    }
-  }
+#define json_s(_key, _str, ...)                                                                    \
+  ({                                                                                               \
+    auto json = new(json_ref_t, .type = 3, .key = _key, .klen = strlen(_key), );                   \
+                                                                                                   \
+    json->s    = _str;                                                                             \
+    json->vlen = strlen(_str);                                                                     \
+                                                                                                   \
+    json;                                                                                          \
+  })
 
-  u_arr_for (table, i, it) {
-    printf("id %d, cost %d, prev %d\n", it->id, it->cost, it->prev);
-  }
-}
-#endif
+#define json_a(_key, ...)                                                                          \
+  ({                                                                                               \
+    auto json = new(json_ref_t, .type = 4, .key = _key, .klen = strlen(_key), );                   \
+                                                                                                   \
+    json->a    = u_vec_new(json_ref_t);                                                            \
+    json->vlen = 0;                                                                                \
+                                                                                                   \
+    json;                                                                                          \
+  })
 
-typedef struct {
-  u_cstr_t ptr;
-} _u_str_t;
-
-void set(any_t _self) {
-  ((any_t*)_self)[0] = nullptr;
-}
+#define json_o(_key, ...)                                                                          \
+  ({                                                                                               \
+    auto json = new(json_ref_t, .type = 5, .key = _key, .klen = strlen(_key), );                   \
+                                                                                                   \
+    json->o    = u_vec_new(json_ref_t);                                                            \
+    json->vlen = 0;                                                                                \
+                                                                                                   \
+    json;                                                                                          \
+  })
 
 int main(int argc, const u_cstr_t argv[]) {
-  u_log_init();
+  tb_init(nullptr, nullptr);
 
-  u_inf("%lu", sizeof(enum {T, F}));
+#if 0
+  auto f = ^(int a) {
+    return a * 2;
+  };
 
-  u_each (i, 16) {
-    u_inf("%zx_ is %zu", i, i * 16);
+  auto l = lambda(int a) {
+    return a + 3;
+  };
+
+  tb_trace_i("%d", f(32));
+
+  auto fn = lambda(int* a, int* b) {
+    return *a - *b;
+  };
+
+#  define labmbda_cmp(type) ^int(type * x, type * y)
+
+  auto k = labmbda_cmp(int) {
+    return *x - *y;
+  };
+
+  auto m = Block_copy(f);
+
+  u_inf("blocks is %d", __has_extension(blocks));
+
+#endif
+
+  u_tree_t(int, int) t = u_tree_new(t, fn_cmp(int));
+
+  u_each (i, 1000) {
+    u_tree_insert(t, i, i);
   }
+
+  tb_trace_i("t.len is %d", t->len);
+
+  u_tree_cleanup(t);
+
+  tb_exit();
 
   return EXIT_SUCCESS;
 
-err:
+end:
   return EXIT_FAILURE;
 }

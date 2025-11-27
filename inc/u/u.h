@@ -31,8 +31,6 @@
 extern "C" {
 #  endif
 
-#  define u_defs(type, ...) va_map(_u_##type##_defs, __VA_ARGS__)
-
 #  if defined(__clang__) && __clang_major__ < 16
 #    error "Please use the Clang.v16 or later toolchain."
 #  endif
@@ -41,8 +39,10 @@ extern "C" {
 #    error "Please use the GCC.v13 or later toolchain."
 #  endif
 
+#  include <assert.h>
 #  include <ctype.h>
 #  include <errno.h>
+#  include <fcntl.h>
 #  include <setjmp.h>
 #  include <stdalign.h>
 #  include <stdarg.h>
@@ -55,8 +55,8 @@ extern "C" {
 #  include <string.h>
 #  include <strings.h>
 #  include <sys/types.h>
-#  include <threads.h>
 #  include <time.h>
+#  include <unistd.h>
 
 /* clang-format off */
 #  include "utils/va.h"
@@ -66,19 +66,20 @@ extern "C" {
 #  include "utils/misc.h"
 #  include "utils/debug.h"
 #  include "utils/print.h"
-#  include "iatomic.h"
-#  include "iavl.h"
-#  include "ibuf.h"
-#  include "ilock.h"
-#  include "ilog.h"
-#  include "ilst.h"
-#  include "imap.h"
-#  include "iset.h"
-#  include "ivec.h"
-#  include "ilfq.h"
-/* clang-format on */
 
-/* #include "istr.h" */
+#  include "iatomic.h"
+#  include "ilock.h"
+
+#  include "ibuf.h"
+#  include "istr.h"
+#  include "ilfq.h"
+
+#  include "ivec.h"
+#  include "idict.h"
+#  include "ilist.h"
+#  include "itree.h"
+#  include "iheap.h"
+/* clang-format on */
 
 #  ifdef __cplusplus
 } /* extern "C" */
