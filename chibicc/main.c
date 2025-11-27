@@ -83,7 +83,21 @@ pri int get_number(token_ref_t tok) {
 
 /// 创建 Token 实例
 pri token_mut_t new_token(token_kind_e kind, char* start, char* end) {
-  return new (token_t, .kind = kind, .loc = start, .len = end - start);
+  return new(token_t, .kind = kind, .loc = start, .len = end - start);
+}
+
+pri bool startswitch(char* p, char* q) {
+  return strncmp(p, q, strlen(q)) == 0;
+}
+
+/// 从 `p` 读取一个标点符号并返回其长度
+pri int read_punct(char* p) {
+  if (startswitch(p, "==") || startswitch(p, "!=") || startswitch(p, "<=") ||
+      startswitch(p, ">=")) {
+    return 2;
+  }
+
+  return ispunct(*p) ? 1 : 0;
 }
 
 /// 对 `current_input` 进行分词并返回新的 Token
@@ -106,9 +120,10 @@ pri token_mut_t tokenize() {
       continue;
     }
 
-    if (ispunct(*p)) {
-      cur = cur->next = new_token(TK_PUNCT, p, p + 1);
-      p++;
+    int punct_len = read_punct(p);
+    if (punct_len) {
+      cur = cur->next = new_token(TK_PUNCT, p, p + punct_len);
+      p += cur->len;
       continue;
     }
 
@@ -130,6 +145,10 @@ typedef enum {
   ND_MUL,  // *
   ND_DIV,  // /
   ND_NEG,  // unary -
+  ND_EQ,   // ==
+  ND_NE,   // !=
+  ND_LT,   // <
+  ND_LE,   // <=
   ND_NUM,  // 数字
 } node_kind_e;
 
@@ -142,28 +161,88 @@ u_struct_def(node) {
 };
 
 pri node_mut_t new_node(node_kind_e kind) {
-  return new (node_t, .kind = kind);
+  return new(node_t, .kind = kind);
 }
 
 pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs) {
-  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
+  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
 }
 
 pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr) {
-  return new (node_t, .kind = kind, .lhs = expr);
+  return new(node_t, .kind = kind, .lhs = expr);
 }
 
 pri node_mut_t new_number(int val) {
-  return new (node_t, .kind = ND_NUM, .val = val);
+  return new(node_t, .kind = ND_NUM, .val = val);
 }
 
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t equality(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t relational(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t add(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t mul(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t unary(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok);
 
-/// expr = mul ("+" mul | "-" mul)*
+/// expr = equality
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok) {
+  return equality(rest, tok);
+}
+
+/// equality = relational ("==" relational | "!=" relational)*
+pri node_mut_t equality(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = relational(&tok, tok);
+
+  for (;;) {
+    if (equal(tok, "==")) {
+      node = new_binary(ND_EQ, node, relational(&tok, tok->next));
+      continue;
+    }
+
+    if (equal(tok, "!=")) {
+      node = new_binary(ND_NE, node, relational(&tok, tok->next));
+      continue;
+    }
+
+    *rest = tok;
+
+    return node;
+  }
+}
+
+/// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+pri node_mut_t relational(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = add(&tok, tok);
+
+  for (;;) {
+    if (equal(tok, "<")) {
+      node = new_binary(ND_LT, node, add(&tok, tok->next));
+      continue;
+    }
+
+    if (equal(tok, "<=")) {
+      node = new_binary(ND_LE, node, add(&tok, tok->next));
+      continue;
+    }
+
+    if (equal(tok, ">")) {
+      node = new_binary(ND_LT, add(&tok, tok->next), node);
+      continue;
+    }
+
+    if (equal(tok, ">=")) {
+      node = new_binary(ND_LE, add(&tok, tok->next), node);
+      continue;
+    }
+
+    *rest = tok;
+
+    return node;
+  }
+}
+
+/// add = mul ("+" mul | "-" mul)*
+pri node_mut_t add(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = mul(&tok, tok);
 
   for (;;) {
@@ -276,6 +355,24 @@ pri void gen_expr(node_ref_t node) {
     case ND_DIV:
       printf("  cqo\n");
       printf("  idiv %%rdi\n");
+      return;
+    case ND_EQ:
+    case ND_NE:
+    case ND_LT:
+    case ND_LE:
+      printf("  cmp %%rdi, %%rax\n");
+
+      if (node->kind == ND_EQ) {
+        printf("  sete %%al\n");
+      } else if (node->kind == ND_NE) {
+        printf("  setne %%al\n");
+      } else if (node->kind == ND_LT) {
+        printf("  setl %%al\n");
+      } else if (node->kind == ND_LE) {
+        printf("  setle %%al\n");
+      }
+
+      printf("  movzb %%al, %%rax\n");
       return;
 
     default: break;
