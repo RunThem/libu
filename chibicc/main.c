@@ -1,5 +1,9 @@
 #include <u/u.h>
 
+///
+/// Tokenizer
+///
+
 typedef enum {
   TK_PUNCT,  // 符号
   TK_NUM,    // 数字
@@ -102,7 +106,7 @@ pri token_mut_t tokenize() {
       continue;
     }
 
-    if (*p == '+' || *p == '-') {
+    if (ispunct(*p)) {
       cur = cur->next = new_token(TK_PUNCT, p, p + 1);
       p++;
       continue;
@@ -116,33 +120,163 @@ pri token_mut_t tokenize() {
   return head.next;
 }
 
+///
+/// Parser
+///
+
+typedef enum {
+  ND_ADD,  // +
+  ND_SUB,  // -
+  ND_MUL,  // *
+  ND_DIV,  // /
+  ND_NUM,  // 数字
+} node_kind_e;
+
+/// Ast 节点
+u_struct_def(node) {
+  node_kind_e kind;  // 节点类型
+  node_mut_t lhs;    // 左子节点
+  node_mut_t rhs;    // 右子节点
+  int val;           // 如果 .kind == ND_NUM
+};
+
+pri node_mut_t new_node(node_kind_e kind) {
+  return new (node_t, .kind = kind);
+}
+
+pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs) {
+  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
+}
+
+pri node_mut_t new_number(int val) {
+  return new (node_t, .kind = ND_NUM, .val = val);
+}
+
+pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t mul(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t primary(token_mut_t* rest, token_mut_t tok);
+
+/// expr = mul ("+" mul | "-" mul)*
+pri node_mut_t expr(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = mul(&tok, tok);
+
+  for (;;) {
+    if (equal(tok, "+")) {
+      node = new_binary(ND_ADD, node, mul(&tok, tok->next));
+      continue;
+    }
+
+    if (equal(tok, "-")) {
+      node = new_binary(ND_SUB, node, mul(&tok, tok->next));
+      continue;
+    }
+
+    *rest = tok;
+
+    return node;
+  }
+}
+
+/// mul = primary ("*" primary | "/" primary)*
+pri node_mut_t mul(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = primary(&tok, tok);
+
+  for (;;) {
+    if (equal(tok, "*")) {
+      node = new_binary(ND_MUL, node, primary(&tok, tok->next));
+      continue;
+    }
+
+    if (equal(tok, "/")) {
+      node = new_binary(ND_DIV, node, primary(&tok, tok->next));
+      continue;
+    }
+
+    *rest = tok;
+
+    return node;
+  }
+}
+
+/// primary = "(" expr ")" | num
+pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
+  if (equal(tok, "(")) {
+    node_mut_t node = expr(&tok, tok->next);
+    *rest           = skip(tok, ")");
+    return node;
+  }
+
+  if (tok->kind == TK_NUM) {
+    node_mut_t node = new_number(tok->val);
+    *rest           = tok->next;
+    return node;
+  }
+
+  error_tok(tok, "expected an expression");
+
+  return nullptr;
+}
+
+///
+/// Code generator
+///
+
+pri int depth;
+
+pri void push() {
+  printf("  push %%rax\n");
+  depth++;
+}
+
+pri void pop(char* arg) {
+  printf("  pop %s\n", arg);
+  depth--;
+}
+
+pri void gen_expr(node_ref_t node) {
+  if (node->kind == ND_NUM) {
+    printf("  mov $%d, %%rax\n", node->val);
+    return;
+  }
+
+  gen_expr(node->rhs);
+  push();
+  gen_expr(node->lhs);
+  pop("%rdi");
+
+  switch (node->kind) {
+    case ND_ADD: printf("  add %%rdi, %%rax\n"); return;
+    case ND_SUB: printf("  sub %%rdi, %%rax\n"); return;
+    case ND_MUL: printf("  imul %%rdi, %%rax\n"); return;
+    case ND_DIV:
+      printf("  cqo\n");
+      printf("  idiv %%rdi\n");
+      return;
+
+    default: break;
+  }
+
+  error("invalid expression");
+}
+
 int main(int argc, const char* argv[]) {
   u_chk_if(argc != 2, 1, "%s: invalid number of arguments\n", argv[0]);
 
   current_input   = (char*)argv[1];
-  token_ref_t tok = tokenize();
+  token_mut_t tok = tokenize();
+  node_ref_t node = expr(&tok, tok);
+
+  if (tok->kind != TK_EOF) {
+    error_tok(tok, "extra token");
+  }
 
   printf("  .globl main\n");
   printf("main:\n");
 
-  /// 第一个 Token 必须是数字
-  printf("  mov $%d, %%rax\n", get_number(tok));
-  tok = tok->next;
-
-  while (tok->kind != TK_EOF) {
-    if (equal(tok, "+")) {
-      printf("  add $%d, %%rax\n", get_number(tok->next));
-      tok = tok->next->next;
-      continue;
-    }
-
-    tok = skip(tok, "-");
-    printf("  sub $%d, %%rax\n", get_number(tok));
-
-    tok = tok->next;
-  }
-
+  gen_expr(node);
   printf("  ret\n");
+
+  assert(depth == 0);
 
   return 0;
 }
