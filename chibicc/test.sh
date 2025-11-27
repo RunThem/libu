@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
+# set -x
+
 assert() {
   expected="$1"
   input="$2"
 
-  ./chibicc "$input" >tmp.s || exit
+  ./chibicc "$input" > tmp.s || exit
   gcc -Wl,-w -Wa,--noexecstack -static -o tmp tmp.s
   ./tmp
   actual="$?"
@@ -20,5 +22,6 @@ assert() {
 assert 0 0
 assert 42 42
 assert 21 '5+20-4'
+assert 41 ' 12 + 34 - 5 '
 
 echo OK

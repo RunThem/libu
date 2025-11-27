@@ -83,4 +83,4 @@ target('u', function()
   end
 end)
 
-includes('dev', 'tst', 'chibicc')
+includes('dev', 'tests', 'chibicc')

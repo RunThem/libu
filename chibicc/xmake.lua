@@ -7,7 +7,7 @@ target('chibicc', function()
   add_deps('u')
 
   after_build(function(T)
-    local bin = vformat('$(projectdir)/$(buildir)/$(plat)/$(arch)/$(mode)/%s', T:filename())
+    local bin = vformat('$(projectdir)/$(builddir)/$(plat)/$(arch)/$(mode)/%s', T:filename())
     os.cp(bin, '$(projectdir)/chibicc')
   end)
 end)
