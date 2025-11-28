@@ -64,7 +64,7 @@ pri int get_number(token_ref_t tok) {
 
 /// 创建 Token 实例
 pri token_mut_t new_token(token_kind_e kind, char* start, char* end) {
-  return new(token_t, .kind = kind, .loc = start, .len = end - start);
+  return new (token_t, .kind = kind, .loc = start, .len = end - start);
 }
 
 pri bool startswitch(char* p, char* q) {
@@ -98,6 +98,12 @@ pub token_mut_t tokenize(char* p) {
       char* q         = p;
       cur->val        = (int)strtoul(p, &p, 10);
       cur->len        = (int)(p - q);
+      continue;
+    }
+
+    if ('a' <= *p && *p <= 'z') {
+      cur = cur->next = new_token(TK_IDENT, p, p + 1);
+      p++;
       continue;
     }
 

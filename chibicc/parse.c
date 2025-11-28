@@ -2,6 +2,7 @@
 
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t assign(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t equality(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t relational(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t add(token_mut_t* rest, token_mut_t tok);
@@ -10,19 +11,23 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok);
 
 pri node_mut_t new_node(node_kind_e kind) {
-  return new(node_t, .kind = kind);
+  return new (node_t, .kind = kind);
 }
 
 pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs) {
-  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
+  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
 }
 
 pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr) {
-  return new(node_t, .kind = kind, .lhs = expr);
+  return new (node_t, .kind = kind, .lhs = expr);
 }
 
 pri node_mut_t new_number(int val) {
-  return new(node_t, .kind = ND_NUM, .val = val);
+  return new (node_t, .kind = ND_NUM, .val = val);
+}
+
+pri node_mut_t new_var(char name) {
+  return new (node_t, .kind = ND_VAR, .name = name);
 }
 
 /// stmt = expr-stmt
@@ -38,9 +43,22 @@ pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok) {
   return node;
 }
 
-/// expr = equality
+/// expr = assign
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok) {
-  return equality(rest, tok);
+  return assign(rest, tok);
+}
+
+/// assign = equality ("=" assign)?
+pri node_mut_t assign(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = equality(&tok, tok);
+
+  if (equal(tok, "=")) {
+    node = new_binary(ND_ASSIGN, node, assign(&tok, tok->next));
+  }
+
+  *rest = tok;
+
+  return node;
 }
 
 /// equality = relational ("==" relational | "!=" relational)*
@@ -151,11 +169,17 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
   return primary(rest, tok);
 }
 
-/// primary = "(" expr ")" | num
+/// primary = "(" expr ")" | ident | num
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "(")) {
     node_mut_t node = expr(&tok, tok->next);
     *rest           = skip(tok, ")");
+    return node;
+  }
+
+  if (tok->kind == TK_IDENT) {
+    node_mut_t node = new_var(*tok->loc);
+    *rest           = tok->next;
     return node;
   }
 

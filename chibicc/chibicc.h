@@ -5,6 +5,7 @@
 ///
 
 typedef enum {
+  TK_IDENT,  // 标识符
   TK_PUNCT,  // 符号
   TK_NUM,    // 数字
   TK_EOF,    // 文件结束符标志
@@ -41,7 +42,9 @@ typedef enum {
   ND_NE,         // !=
   ND_LT,         // <
   ND_LE,         // <=
+  ND_ASSIGN,     // =
   ND_EXPR_STMT,  // 表达式语句
+  ND_VAR,        // 变量
   ND_NUM,        // 数字
 } node_kind_e;
 
@@ -51,6 +54,7 @@ u_struct_def(node) {
   node_mut_t next;   // 下一个节点
   node_mut_t lhs;    // 左子节点
   node_mut_t rhs;    // 右子节点
+  char name;         // 如果 .kind == ND_VAR
   int val;           // 如果 .kind == ND_NUM
 };
 

@@ -12,12 +12,35 @@ pri void pop(char* arg) {
   depth--;
 }
 
+/// 计算给定节点的绝对地址, 如果给定的节点不在内存中, 则会产生错误
+pri void gen_addr(node_ref_t node) {
+  if (node->kind == ND_VAR) {
+    int offset = (node->name - 'a' + 1) * 8;
+    printf("  lea %d(%%rbp), %%rax\n", -offset);
+    return;
+  }
+
+  error("not an lvalue");
+}
+
+/// 为给定节点生成代码
 pri void gen_expr(node_ref_t node) {
   switch (node->kind) {
     case ND_NUM: printf("  mov $%d, %%rax\n", node->val); return;
     case ND_NEG:
       gen_expr(node->lhs);
       printf("  neg %%rax\n");
+      return;
+    case ND_VAR:
+      gen_addr(node);
+      printf("  mov (%%rax), %%rax\n");
+      return;
+    case ND_ASSIGN:
+      gen_addr(node->lhs);
+      push();
+      gen_expr(node->rhs);
+      pop("%rdi");
+      printf("  mov %%rax, (%%rdi)\n");
       return;
 
     default: break;
@@ -74,10 +97,17 @@ pub void codegen(node_mut_t node) {
   printf("  .globl main\n");
   printf("main:\n");
 
+  // 开始段
+  printf("  push %%rbp\n");
+  printf("  mov %%rsp, %%rbp\n");
+  printf("  sub $208, %%rsp\n");
+
   for (node_mut_t n = node; n; n = n->next) {
     gen_stmt(n);
     assert(depth == 0);
   }
 
+  printf("  mov %%rbp, %%rsp\n");
+  printf("  pop %%rbp\n");
   printf("  ret\n");
 }
