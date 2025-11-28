@@ -71,6 +71,16 @@ pri bool startswitch(char* p, char* q) {
   return strncmp(p, q, strlen(q)) == 0;
 }
 
+/// 如果 `c` 作为标识符的第一个字符有效, 则返回true
+pri bool is_ident1(char c) {
+  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_';
+}
+
+/// 如果 `c` 作为标识符的非第一个字符有效, 则返回true
+pri bool is_ident2(char c) {
+  return is_ident1(c) || ('0' <= c && c <= '9');
+}
+
 /// 从 `p` 读取一个标点符号并返回其长度
 pri int read_punct(char* p) {
   if (startswitch(p, "==") || startswitch(p, "!=") || startswitch(p, "<=") ||
@@ -101,9 +111,12 @@ pub token_mut_t tokenize(char* p) {
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z') {
-      cur = cur->next = new_token(TK_IDENT, p, p + 1);
-      p++;
+    if (is_ident1(*p)) {
+      char* start = p;
+      do {
+        p++;
+      } while (is_ident2(*p));
+      cur = cur->next = new_token(TK_IDENT, start, p);
       continue;
     }
 

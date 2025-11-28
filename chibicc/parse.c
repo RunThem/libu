@@ -1,5 +1,8 @@
 #include "chibicc.h"
 
+/// 解析过程中创建的所有局部变量实例都是追加到这个列表中.
+obj_mut_t locals;
+
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t assign(token_mut_t* rest, token_mut_t tok);
@@ -9,6 +12,17 @@ pri node_mut_t add(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t mul(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t unary(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok);
+
+/// 按名称查找局部变量
+pri obj_mut_t find_var(token_ref_t tok) {
+  for (obj_mut_t var = locals; var; var = var->next) {
+    if (strlen(var->name) == tok->len && !strncmp(tok->loc, var->name, tok->len)) {
+      return var;
+    }
+  }
+
+  return nullptr;
+}
 
 pri node_mut_t new_node(node_kind_e kind) {
   return new (node_t, .kind = kind);
@@ -26,8 +40,15 @@ pri node_mut_t new_number(int val) {
   return new (node_t, .kind = ND_NUM, .val = val);
 }
 
-pri node_mut_t new_var(char name) {
-  return new (node_t, .kind = ND_VAR, .name = name);
+pri node_mut_t new_var(obj_mut_t var) {
+  return new (node_t, .kind = ND_VAR, .var = var);
+}
+
+pri obj_mut_t new_lvar(char* name) {
+  obj_mut_t var = new (obj_t, .name = name, .next = locals);
+  locals        = var;
+
+  return var;
 }
 
 /// stmt = expr-stmt
@@ -178,9 +199,13 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   }
 
   if (tok->kind == TK_IDENT) {
-    node_mut_t node = new_var(*tok->loc);
-    *rest           = tok->next;
-    return node;
+    obj_mut_t var = find_var(tok);
+    if (!var) {
+      var = new_lvar(strndup(tok->loc, tok->len));
+    }
+    *rest = tok->next;
+
+    return new_var(var);
   }
 
   if (tok->kind == TK_NUM) {
@@ -194,7 +219,7 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   return nullptr;
 }
 
-pub node_mut_t parse(token_mut_t tok) {
+pub function_mut_t parse(token_mut_t tok) {
   node_t head    = {};
   node_mut_t cur = &head;
 
@@ -202,5 +227,5 @@ pub node_mut_t parse(token_mut_t tok) {
     cur = cur->next = stmt(&tok, tok);
   }
 
-  return head.next;
+  return new (function_t, .body = head.next, .locals = locals);
 }

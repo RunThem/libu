@@ -15,8 +15,7 @@ pri void pop(char* arg) {
 /// 计算给定节点的绝对地址, 如果给定的节点不在内存中, 则会产生错误
 pri void gen_addr(node_ref_t node) {
   if (node->kind == ND_VAR) {
-    int offset = (node->name - 'a' + 1) * 8;
-    printf("  lea %d(%%rbp), %%rax\n", -offset);
+    printf("  lea %d(%%rbp), %%rax\n", node->var->offset);
     return;
   }
 
@@ -93,16 +92,29 @@ pri void gen_stmt(node_mut_t node) {
   error("invalid statement");
 }
 
-pub void codegen(node_mut_t node) {
+pri void assign_lvar_offsets(function_mut_t prog) {
+  int offset = 0;
+
+  for (obj_mut_t var = prog->locals; var; var = var->next) {
+    offset += 8;
+    var->offset = -offset;
+  }
+
+  prog->stack_size = u_align_of(offset, 16);
+}
+
+pub void codegen(function_mut_t prog) {
+  assign_lvar_offsets(prog);
+
   printf("  .globl main\n");
   printf("main:\n");
 
   // 开始段
   printf("  push %%rbp\n");
   printf("  mov %%rsp, %%rbp\n");
-  printf("  sub $208, %%rsp\n");
+  printf("  sub $%d, %%rsp\n", prog->stack_size);
 
-  for (node_mut_t n = node; n; n = n->next) {
+  for (node_mut_t n = prog->body; n; n = n->next) {
     gen_stmt(n);
     assert(depth == 0);
   }

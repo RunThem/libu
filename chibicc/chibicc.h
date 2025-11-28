@@ -1,5 +1,7 @@
 #include <u/u.h>
 
+typedef struct node* node_mut_t;
+
 ///
 /// Tokenizer
 ///
@@ -32,6 +34,19 @@ pub token_mut_t tokenize(char* p);
 /// Parser
 ///
 
+/// 局部变量
+u_struct_def(obj) {
+  obj_mut_t next;
+  char* name;  // 变量名
+  int offset;  // 栈偏移量
+};
+
+u_struct_def(function) {
+  node_mut_t body;
+  obj_mut_t locals;
+  int stack_size;
+};
+
 typedef enum {
   ND_ADD,        // +
   ND_SUB,        // -
@@ -54,14 +69,20 @@ u_struct_def(node) {
   node_mut_t next;   // 下一个节点
   node_mut_t lhs;    // 左子节点
   node_mut_t rhs;    // 右子节点
-  char name;         // 如果 .kind == ND_VAR
+  obj_mut_t var;     // 如果 .kind == ND_VAR
   int val;           // 如果 .kind == ND_NUM
 };
 
-pub node_mut_t parse(token_mut_t tok);
+pub function_mut_t parse(token_mut_t tok);
 
 ///
 /// Code generator
 ///
 
-pub void codegen(node_mut_t node);
+pub void codegen(function_mut_t prog);
+
+///
+/// Dump
+///
+
+pub void dump(function_ref_t prog);
