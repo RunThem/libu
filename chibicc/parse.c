@@ -268,7 +268,7 @@ pri node_mut_t mul(token_mut_t* rest, token_mut_t tok) {
   }
 }
 
-/// unary = ("+" | "-") unary
+/// unary = ("+" | "-" | "*" | "&") unary
 ///       | primary
 pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "+")) {
@@ -277,6 +277,14 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
 
   if (equal(tok, "-")) {
     return new_unary(ND_NEG, unary(rest, tok->next), tok);
+  }
+
+  if (equal(tok, "&")) {
+    return new_unary(ND_ADDR, unary(rest, tok->next), tok);
+  }
+
+  if (equal(tok, "*")) {
+    return new_unary(ND_DEREF, unary(rest, tok->next), tok);
   }
 
   return primary(rest, tok);

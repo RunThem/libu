@@ -2,6 +2,8 @@
 
 pri int depth;
 
+pri void gen_expr(node_ref_t node);
+
 pri int count() {
   pri int i = 1;
   return i++;
@@ -19,9 +21,11 @@ pri void pop(char* arg) {
 
 /// 计算给定节点的绝对地址, 如果给定的节点不在内存中, 则会产生错误
 pri void gen_addr(node_ref_t node) {
-  if (node->kind == ND_VAR) {
-    printf("  lea %d(%%rbp), %%rax\n", node->var->offset);
-    return;
+  switch (node->kind) {
+    case ND_VAR: printf("  lea %d(%%rbp), %%rax\n", node->var->offset); return;
+    case ND_DEREF: gen_expr(node->lhs); return;
+
+    default: break;
   }
 
   error_tok(node->tok, "not an lvalue");
@@ -39,6 +43,11 @@ pri void gen_expr(node_ref_t node) {
       gen_addr(node);
       printf("  mov (%%rax), %%rax\n");
       return;
+    case ND_DEREF:
+      gen_expr(node->lhs);
+      printf("  mov (%%rax, %%rax");
+      return;
+    case ND_ADDR: gen_addr(node->lhs); return;
     case ND_ASSIGN:
       gen_addr(node->lhs);
       push();

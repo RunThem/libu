@@ -59,6 +59,8 @@ typedef enum {
   ND_LT,         // <
   ND_LE,         // <=
   ND_ASSIGN,     // =
+  ND_ADDR,       // unary &
+  ND_DEREF,      // unary *
   ND_RETURN,     // return
   ND_IF,         // if
   ND_FOR,        // for, while
@@ -72,7 +74,7 @@ typedef enum {
 u_struct_def(node) {
   node_kind_e kind;  // 节点类型
   node_mut_t next;   // 下一个节点
-  token_mut_t tok; // Representative token
+  token_mut_t tok;   // 代表 Token
 
   node_mut_t lhs;  // 左子节点
   node_mut_t rhs;  // 右子节点
