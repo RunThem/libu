@@ -4,6 +4,7 @@
 obj_mut_t locals;
 
 pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t assign(token_mut_t* rest, token_mut_t tok);
@@ -126,6 +127,7 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
 
   while (!equal(tok, "}")) {
     cur = cur->next = stmt(&tok, tok);
+    add_type(cur);
   }
 
   node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
@@ -222,6 +224,58 @@ pri node_mut_t relational(token_mut_t* rest, token_mut_t tok) {
   }
 }
 
+pri node_mut_t new_add(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
+  add_type(lhs);
+  add_type(rhs);
+
+  // 数字 + 数字
+  if (is_integer(lhs->ty) && is_integer(rhs->ty)) {
+    return new_binary(ND_ADD, lhs, rhs, tok);
+  }
+
+  if (lhs->ty->base && rhs->ty->base) {
+    error_tok(tok, "invalid operands");
+  }
+
+  // 调整 `num + ptr` 为 `ptr + num`
+  if (!lhs->ty->base && rhs->ty->base) {
+    swab(lhs, rhs);
+  }
+
+  // 指针 + 数字
+  rhs = new_binary(ND_MUL, rhs, new_number(8, tok), tok);
+
+  return new_binary(ND_ADD, lhs, rhs, tok);
+}
+
+pri node_mut_t new_sub(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
+  add_type(lhs);
+  add_type(rhs);
+
+  // 数字 - 数字
+  if (is_integer(lhs->ty) && is_integer(rhs->ty)) {
+    return new_binary(ND_SUB, lhs, rhs, tok);
+  }
+
+  // ptr - num
+  if (lhs->ty->base && is_integer(rhs->ty)) {
+    rhs = new_binary(ND_MUL, rhs, new_number(8, tok), tok);
+    add_type(rhs);
+    node_mut_t node = new_binary(ND_SUB, lhs, rhs, tok);
+    node->ty        = lhs->ty;
+    return node;
+  }
+
+  // ptr - ptr
+  if (lhs->ty->base && rhs->ty->base) {
+    node_mut_t node = new_binary(ND_SUB, lhs, rhs, tok);
+    node->ty        = ty_int;
+    return new_binary(ND_DIV, node, new_number(8, tok), tok);
+  }
+
+  error_tok(tok, "invalid operands");
+}
+
 /// add = mul ("+" mul | "-" mul)*
 pri node_mut_t add(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = mul(&tok, tok);
@@ -230,12 +284,12 @@ pri node_mut_t add(token_mut_t* rest, token_mut_t tok) {
     token_mut_t start = tok;
 
     if (equal(tok, "+")) {
-      node = new_binary(ND_ADD, node, mul(&tok, tok->next), start);
+      node = new_add(ND_ADD, node, mul(&tok, tok->next), start);
       continue;
     }
 
     if (equal(tok, "-")) {
-      node = new_binary(ND_SUB, node, mul(&tok, tok->next), start);
+      node = new_sub(ND_SUB, node, mul(&tok, tok->next), start);
       continue;
     }
 

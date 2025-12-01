@@ -1,5 +1,6 @@
 #include <u/u.h>
 
+typedef struct type* type_mut_t;
 typedef struct node* node_mut_t;
 
 ///
@@ -74,6 +75,7 @@ typedef enum {
 u_struct_def(node) {
   node_kind_e kind;  // 节点类型
   node_mut_t next;   // 下一个节点
+  type_mut_t ty;     // 类型, 如 int 或 int*
   token_mut_t tok;   // 代表 Token
 
   node_mut_t lhs;  // 左子节点
@@ -94,6 +96,25 @@ u_struct_def(node) {
 };
 
 pub function_mut_t parse(token_mut_t tok);
+
+///
+/// Type checker
+///
+
+typedef enum {
+  TY_INT,
+  TY_PTR,
+} type_kind_e;
+
+u_struct_def(type) {
+  type_kind_e kind;
+  type_mut_t base;
+};
+
+pub type_mut_t ty_int;
+
+pub bool is_integer(type_mut_t ty);
+pub void add_type(node_mut_t node);
 
 ///
 /// Code generator
