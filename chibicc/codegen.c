@@ -105,7 +105,10 @@ pri void gen_stmt(node_mut_t node) {
       return;
     case ND_FOR: {
       int c = count();
-      gen_stmt(node->init);
+      if (node->init) {
+        gen_stmt(node->init);
+      }
+
       printf(".L.begin.%d:\n", c);
       if (node->cond) {
         gen_expr(node->cond);

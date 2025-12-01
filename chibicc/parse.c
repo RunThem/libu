@@ -26,27 +26,27 @@ pri obj_mut_t find_var(token_ref_t tok) {
 }
 
 pri node_mut_t new_node(node_kind_e kind) {
-  return new (node_t, .kind = kind);
+  return new(node_t, .kind = kind);
 }
 
 pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs) {
-  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
+  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
 }
 
 pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr) {
-  return new (node_t, .kind = kind, .lhs = expr);
+  return new(node_t, .kind = kind, .lhs = expr);
 }
 
 pri node_mut_t new_number(int val) {
-  return new (node_t, .kind = ND_NUM, .val = val);
+  return new(node_t, .kind = ND_NUM, .val = val);
 }
 
 pri node_mut_t new_var(obj_mut_t var) {
-  return new (node_t, .kind = ND_VAR, .var = var);
+  return new(node_t, .kind = ND_VAR, .var = var);
 }
 
 pri obj_mut_t new_lvar(char* name) {
-  obj_mut_t var = new (obj_t, .name = name, .next = locals);
+  obj_mut_t var = new(obj_t, .name = name, .next = locals);
   locals        = var;
 
   return var;
@@ -55,6 +55,7 @@ pri obj_mut_t new_lvar(char* name) {
 /// stmt = "return" expr ";"
 ///      | "if" "(" expr ")" stmt ("else" stmt)?
 ///      | "for" "(" expr-stmt expr? ";" expr? ")" stmt
+///      | "while" "(" expr ")" stmt
 ///      | "{" compound-stmt
 ///      | expr-stmt
 pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
@@ -100,6 +101,16 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
     return node;
   }
 
+  if (equal(tok, "while")) {
+    node_mut_t node = new_node(ND_FOR);
+    tok             = skip(tok->next, "(");
+    node->cond      = expr(&tok, tok);
+    tok             = skip(tok, ")");
+    node->then      = stmt(rest, tok);
+
+    return node;
+  }
+
   if (equal(tok, "{")) {
     return compound_stmt(rest, tok->next);
   }
@@ -116,7 +127,7 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
     cur = cur->next = stmt(&tok, tok);
   }
 
-  node_mut_t node = new (node_t, .kind = ND_BLOCK, .body = head.next);
+  node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next);
   *rest           = tok->next;
 
   return node;
@@ -293,5 +304,5 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
 pub function_mut_t parse(token_mut_t tok) {
   tok = skip(tok, "{");
 
-  return new (function_t, .body = compound_stmt(&tok, tok), .locals = locals);
+  return new(function_t, .body = compound_stmt(&tok, tok), .locals = locals);
 }
