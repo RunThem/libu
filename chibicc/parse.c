@@ -4,8 +4,8 @@
 obj_mut_t locals;
 
 pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t assign(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t equality(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t relational(token_mut_t* rest, token_mut_t tok);
@@ -25,24 +25,24 @@ pri obj_mut_t find_var(token_ref_t tok) {
   return nullptr;
 }
 
-pri node_mut_t new_node(node_kind_e kind) {
-  return new(node_t, .kind = kind);
+pri node_mut_t new_node(node_kind_e kind, token_mut_t tok) {
+  return new(node_t, .kind = kind, .tok = tok);
 }
 
-pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs) {
-  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs);
+pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
+  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
-pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr) {
-  return new(node_t, .kind = kind, .lhs = expr);
+pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr, token_mut_t tok) {
+  return new(node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
-pri node_mut_t new_number(int val) {
-  return new(node_t, .kind = ND_NUM, .val = val);
+pri node_mut_t new_number(int val, token_mut_t tok) {
+  return new(node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
-pri node_mut_t new_var(obj_mut_t var) {
-  return new(node_t, .kind = ND_VAR, .var = var);
+pri node_mut_t new_var(obj_mut_t var, token_mut_t tok) {
+  return new(node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
 pri obj_mut_t new_lvar(char* name) {
@@ -60,13 +60,14 @@ pri obj_mut_t new_lvar(char* name) {
 ///      | expr-stmt
 pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "return")) {
-    node_mut_t node = new_unary(ND_RETURN, expr(&tok, tok->next));
+    node_mut_t node = new_node(ND_RETURN, tok);
+    node->lhs       = expr(&tok, tok->next);
     *rest           = skip(tok, ";");
     return node;
   }
 
   if (equal(tok, "for")) {
-    node_mut_t node = new_node(ND_FOR);
+    node_mut_t node = new_node(ND_FOR, tok);
     tok             = skip(tok->next, "(");
 
     node->init = expr_stmt(&tok, tok);
@@ -88,7 +89,7 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   }
 
   if (equal(tok, "if")) {
-    node_mut_t node = new_node(ND_IF);
+    node_mut_t node = new_node(ND_IF, tok);
     tok             = skip(tok->next, "(");
     node->cond      = expr(&tok, tok);
     tok             = skip(tok, ")");
@@ -102,7 +103,7 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   }
 
   if (equal(tok, "while")) {
-    node_mut_t node = new_node(ND_FOR);
+    node_mut_t node = new_node(ND_FOR, tok);
     tok             = skip(tok->next, "(");
     node->cond      = expr(&tok, tok);
     tok             = skip(tok, ")");
@@ -127,7 +128,7 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
     cur = cur->next = stmt(&tok, tok);
   }
 
-  node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next);
+  node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
   *rest           = tok->next;
 
   return node;
@@ -137,10 +138,11 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, ";")) {
     *rest = tok->next;
-    return new_node(ND_BLOCK);
+    return new_node(ND_BLOCK, tok);
   }
 
-  node_mut_t node = new_unary(ND_EXPR_STMT, expr(&tok, tok));
+  node_mut_t node = new_node(ND_EXPR_STMT, tok);
+  node->lhs       = expr(&tok, tok);
   *rest           = skip(tok, ";");
 
   return node;
@@ -156,7 +158,7 @@ pri node_mut_t assign(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = equality(&tok, tok);
 
   if (equal(tok, "=")) {
-    node = new_binary(ND_ASSIGN, node, assign(&tok, tok->next));
+    return new_binary(ND_ASSIGN, node, assign(rest, tok->next), tok);
   }
 
   *rest = tok;
@@ -169,13 +171,15 @@ pri node_mut_t equality(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = relational(&tok, tok);
 
   for (;;) {
+    token_mut_t start = tok;
+
     if (equal(tok, "==")) {
-      node = new_binary(ND_EQ, node, relational(&tok, tok->next));
+      node = new_binary(ND_EQ, node, relational(&tok, tok->next), start);
       continue;
     }
 
     if (equal(tok, "!=")) {
-      node = new_binary(ND_NE, node, relational(&tok, tok->next));
+      node = new_binary(ND_NE, node, relational(&tok, tok->next), start);
       continue;
     }
 
@@ -190,23 +194,25 @@ pri node_mut_t relational(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = add(&tok, tok);
 
   for (;;) {
+    token_mut_t start = tok;
+
     if (equal(tok, "<")) {
-      node = new_binary(ND_LT, node, add(&tok, tok->next));
+      node = new_binary(ND_LT, node, add(&tok, tok->next), start);
       continue;
     }
 
     if (equal(tok, "<=")) {
-      node = new_binary(ND_LE, node, add(&tok, tok->next));
+      node = new_binary(ND_LE, node, add(&tok, tok->next), start);
       continue;
     }
 
     if (equal(tok, ">")) {
-      node = new_binary(ND_LT, add(&tok, tok->next), node);
+      node = new_binary(ND_LT, add(&tok, tok->next), node, start);
       continue;
     }
 
     if (equal(tok, ">=")) {
-      node = new_binary(ND_LE, add(&tok, tok->next), node);
+      node = new_binary(ND_LE, add(&tok, tok->next), node, start);
       continue;
     }
 
@@ -221,13 +227,15 @@ pri node_mut_t add(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = mul(&tok, tok);
 
   for (;;) {
+    token_mut_t start = tok;
+
     if (equal(tok, "+")) {
-      node = new_binary(ND_ADD, node, mul(&tok, tok->next));
+      node = new_binary(ND_ADD, node, mul(&tok, tok->next), start);
       continue;
     }
 
     if (equal(tok, "-")) {
-      node = new_binary(ND_SUB, node, mul(&tok, tok->next));
+      node = new_binary(ND_SUB, node, mul(&tok, tok->next), start);
       continue;
     }
 
@@ -242,13 +250,15 @@ pri node_mut_t mul(token_mut_t* rest, token_mut_t tok) {
   node_mut_t node = unary(&tok, tok);
 
   for (;;) {
+    token_mut_t start = tok;
+
     if (equal(tok, "*")) {
-      node = new_binary(ND_MUL, node, unary(&tok, tok->next));
+      node = new_binary(ND_MUL, node, unary(&tok, tok->next), start);
       continue;
     }
 
     if (equal(tok, "/")) {
-      node = new_binary(ND_DIV, node, unary(&tok, tok->next));
+      node = new_binary(ND_DIV, node, unary(&tok, tok->next), start);
       continue;
     }
 
@@ -266,7 +276,7 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
   }
 
   if (equal(tok, "-")) {
-    return new_unary(ND_NEG, unary(rest, tok->next));
+    return new_unary(ND_NEG, unary(rest, tok->next), tok);
   }
 
   return primary(rest, tok);
@@ -287,11 +297,11 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
     }
     *rest = tok->next;
 
-    return new_var(var);
+    return new_var(var, tok);
   }
 
   if (tok->kind == TK_NUM) {
-    node_mut_t node = new_number(tok->val);
+    node_mut_t node = new_number(tok->val, tok);
     *rest           = tok->next;
     return node;
   }

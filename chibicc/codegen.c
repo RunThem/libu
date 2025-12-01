@@ -24,7 +24,7 @@ pri void gen_addr(node_ref_t node) {
     return;
   }
 
-  error("not an lvalue");
+  error_tok(node->tok, "not an lvalue");
 }
 
 /// 为给定节点生成代码
@@ -85,7 +85,7 @@ pri void gen_expr(node_ref_t node) {
     default: break;
   }
 
-  error("invalid expression");
+  error_tok(node->tok, "invalid expression");
 }
 
 pri void gen_stmt(node_mut_t node) {
@@ -137,7 +137,7 @@ pri void gen_stmt(node_mut_t node) {
     default: break;
   }
 
-  error("invalid statement");
+  error_tok(node->tok, "invalid statement");
 }
 
 pri void assign_lvar_offsets(function_mut_t prog) {

@@ -72,6 +72,7 @@ typedef enum {
 u_struct_def(node) {
   node_kind_e kind;  // 节点类型
   node_mut_t next;   // 下一个节点
+  token_mut_t tok; // Representative token
 
   node_mut_t lhs;  // 左子节点
   node_mut_t rhs;  // 右子节点
