@@ -91,9 +91,21 @@ pri int read_punct(char* p) {
   return ispunct(*p) ? 1 : 0;
 }
 
+pri bool is_keyword(token_mut_t tok) {
+  pri char* kw[] = {"return", "if", "else"};
+
+  u_arr_each (kw, i, it) {
+    if (equal(tok, *it)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 pri void convert_keywords(token_mut_t tok) {
   for (token_mut_t t = tok; tok->kind != TK_EOF; t = t->next) {
-    if (equal(t, "return")) {
+    if (is_keyword(tok)) {
       t->kind = TK_KEYWORD;
     }
   }

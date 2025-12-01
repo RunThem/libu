@@ -2,6 +2,11 @@
 
 pri int depth;
 
+pri int count() {
+  pri int i = 1;
+  return i++;
+}
+
 pri void push() {
   printf("  push %%rax\n");
   depth++;
@@ -85,6 +90,19 @@ pri void gen_expr(node_ref_t node) {
 
 pri void gen_stmt(node_mut_t node) {
   switch (node->kind) {
+    case ND_IF:
+      int c = count();
+      gen_expr(node->cond);
+      printf("  cmp $0, %%rax\n");
+      printf("  je .L.else.%d\n", c);
+      gen_stmt(node->then);
+      printf("  jmp .L.end.%d\n", c);
+      printf(".L.else.%d:\n", c);
+      if (node->els) {
+        gen_stmt(node->els);
+      }
+      printf(".L.end.%d:\n", c);
+      return;
     case ND_BLOCK:
       for (node_mut_t n = node->body; n; n = n->next) {
         gen_stmt(n);
