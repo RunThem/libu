@@ -54,12 +54,35 @@ pri obj_mut_t new_lvar(char* name) {
 
 /// stmt = "return" expr ";"
 ///      | "if" "(" expr ")" stmt ("else" stmt)?
+///      | "for" "(" expr-stmt expr? ";" expr? ")" stmt
 ///      | "{" compound-stmt
 ///      | expr-stmt
 pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "return")) {
     node_mut_t node = new_unary(ND_RETURN, expr(&tok, tok->next));
     *rest           = skip(tok, ";");
+    return node;
+  }
+
+  if (equal(tok, "for")) {
+    node_mut_t node = new_node(ND_FOR);
+    tok             = skip(tok->next, "(");
+
+    node->init = expr_stmt(&tok, tok);
+
+    if (!equal(tok, ";")) {
+      node->cond = expr(&tok, tok);
+    }
+
+    tok = skip(tok, ";");
+
+    if (!equal(tok, ")")) {
+      node->inc = expr(&tok, tok);
+    }
+    tok = skip(tok, ")");
+
+    node->then = stmt(rest, tok);
+
     return node;
   }
 

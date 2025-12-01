@@ -92,7 +92,7 @@ pri int read_punct(char* p) {
 }
 
 pri bool is_keyword(token_mut_t tok) {
-  pri char* kw[] = {"return", "if", "else"};
+  pri char* kw[] = {"return", "if", "else", "for"};
 
   u_arr_each (kw, i, it) {
     if (equal(tok, *it)) {
