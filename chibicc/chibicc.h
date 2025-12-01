@@ -60,6 +60,7 @@ typedef enum {
   ND_LE,         // <=
   ND_ASSIGN,     // =
   ND_RETURN,     // return
+  ND_BLOCK,      // { ... }
   ND_EXPR_STMT,  // 表达式语句
   ND_VAR,        // 变量
   ND_NUM,        // 数字
@@ -71,8 +72,12 @@ u_struct_def(node) {
   node_mut_t next;   // 下一个节点
   node_mut_t lhs;    // 左子节点
   node_mut_t rhs;    // 右子节点
-  obj_mut_t var;     // 如果 .kind == ND_VAR
-  int val;           // 如果 .kind == ND_NUM
+
+  // 块
+  node_mut_t body;
+
+  obj_mut_t var;  // 如果 .kind == ND_VAR
+  int val;        // 如果 .kind == ND_NUM
 };
 
 pub function_mut_t parse(token_mut_t tok);

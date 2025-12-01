@@ -85,6 +85,11 @@ pri void gen_expr(node_ref_t node) {
 
 pri void gen_stmt(node_mut_t node) {
   switch (node->kind) {
+    case ND_BLOCK:
+      for (node_mut_t n = node->body; n; n = n->next) {
+        gen_stmt(n);
+      }
+      return;
     case ND_RETURN:
       gen_expr(node->lhs);
       printf("  jmp .L.return\n");
@@ -119,10 +124,8 @@ pub void codegen(function_mut_t prog) {
   printf("  mov %%rsp, %%rbp\n");
   printf("  sub $%d, %%rsp\n", prog->stack_size);
 
-  for (node_mut_t n = prog->body; n; n = n->next) {
-    gen_stmt(n);
-    assert(depth == 0);
-  }
+  gen_stmt(prog->body);
+  assert(depth == 0);
 
   printf(".L.return:\n");
   printf("  mov %%rbp, %%rsp\n");

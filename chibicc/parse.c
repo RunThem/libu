@@ -3,6 +3,7 @@
 /// 解析过程中创建的所有局部变量实例都是追加到这个列表中.
 obj_mut_t locals;
 
+pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t assign(token_mut_t* rest, token_mut_t tok);
@@ -52,6 +53,7 @@ pri obj_mut_t new_lvar(char* name) {
 }
 
 /// stmt = "return" expr ";"
+///      | "{" compound-stmt
 ///      | expr-stmt
 pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "return")) {
@@ -60,7 +62,26 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
     return node;
   }
 
+  if (equal(tok, "{")) {
+    return compound_stmt(rest, tok->next);
+  }
+
   return expr_stmt(rest, tok);
+}
+
+/// compoound-stmt = stmt* "}"
+pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
+  node_t head    = {};
+  node_mut_t cur = &head;
+
+  while (!equal(tok, "}")) {
+    cur = cur->next = stmt(&tok, tok);
+  }
+
+  node_mut_t node = new (node_t, .kind = ND_BLOCK, .body = head.next);
+  *rest           = tok->next;
+
+  return node;
 }
 
 /// expr-stmt = expr ";"
@@ -227,12 +248,7 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
 }
 
 pub function_mut_t parse(token_mut_t tok) {
-  node_t head    = {};
-  node_mut_t cur = &head;
+  tok = skip(tok, "{");
 
-  while (tok->kind != TK_EOF) {
-    cur = cur->next = stmt(&tok, tok);
-  }
-
-  return new (function_t, .body = head.next, .locals = locals);
+  return new (function_t, .body = compound_stmt(&tok, tok), .locals = locals);
 }
