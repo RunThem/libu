@@ -7,7 +7,7 @@ for _, file in ipairs(os.files('**.c')) do
     add_files(file)
     set_rundir('$(projectdir)')
 
-    add_cflags('-include $(projectdir)/tests/pub.h')
+    add_cflags('-include $(projectdir)/tests/pub.h', { force = true })
 
     add_deps('u')
 
