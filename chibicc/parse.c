@@ -84,8 +84,13 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
   return node;
 }
 
-/// expr-stmt = expr ";"
+/// expr-stmt = expr? ";"
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok) {
+  if (equal(tok, ";")) {
+    *rest = tok->next;
+    return new_node(ND_BLOCK);
+  }
+
   node_mut_t node = new_unary(ND_EXPR_STMT, expr(&tok, tok));
   *rest           = skip(tok, ";");
 
