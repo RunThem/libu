@@ -84,9 +84,14 @@ pri void gen_expr(node_ref_t node) {
 }
 
 pri void gen_stmt(node_mut_t node) {
-  if (node->kind == ND_EXPR_STMT) {
-    gen_expr(node->lhs);
-    return;
+  switch (node->kind) {
+    case ND_RETURN:
+      gen_expr(node->lhs);
+      printf("  jmp .L.return\n");
+      return;
+    case ND_EXPR_STMT: gen_expr(node->lhs); return;
+
+    default: break;
   }
 
   error("invalid statement");
@@ -119,6 +124,7 @@ pub void codegen(function_mut_t prog) {
     assert(depth == 0);
   }
 
+  printf(".L.return:\n");
   printf("  mov %%rbp, %%rsp\n");
   printf("  pop %%rbp\n");
   printf("  ret\n");

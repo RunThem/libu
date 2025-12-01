@@ -91,7 +91,15 @@ pri int read_punct(char* p) {
   return ispunct(*p) ? 1 : 0;
 }
 
-/// 对 `current_input` 进行分词并返回新的 Token
+pri void convert_keywords(token_mut_t tok) {
+  for (token_mut_t t = tok; tok->kind != TK_EOF; t = t->next) {
+    if (equal(t, "return")) {
+      t->kind = TK_KEYWORD;
+    }
+  }
+}
+
+/// 对给定字符串进行标记并返回新的 Token
 pub token_mut_t tokenize(char* p) {
   current_input   = p;
   token_t head    = {};
@@ -120,6 +128,7 @@ pub token_mut_t tokenize(char* p) {
       continue;
     }
 
+    // 标识符与关键词
     int punct_len = read_punct(p);
     if (punct_len) {
       cur = cur->next = new_token(TK_PUNCT, p, p + punct_len);
@@ -131,6 +140,7 @@ pub token_mut_t tokenize(char* p) {
   }
 
   cur = cur->next = new_token(TK_EOF, p, p);
+  convert_keywords(cur);
 
   return head.next;
 }

@@ -7,10 +7,11 @@ typedef struct node* node_mut_t;
 ///
 
 typedef enum {
-  TK_IDENT,  // 标识符
-  TK_PUNCT,  // 符号
-  TK_NUM,    // 数字
-  TK_EOF,    // 文件结束符标志
+  TK_IDENT,    // 标识符
+  TK_PUNCT,    // 符号
+  TK_KEYWORD,  // 关键字
+  TK_NUM,      // 数字
+  TK_EOF,      // 文件结束符标志
 } token_kind_e;
 
 u_struct_def(token) {
@@ -58,6 +59,7 @@ typedef enum {
   ND_LT,         // <
   ND_LE,         // <=
   ND_ASSIGN,     // =
+  ND_RETURN,     // return
   ND_EXPR_STMT,  // 表达式语句
   ND_VAR,        // 变量
   ND_NUM,        // 数字
