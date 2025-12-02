@@ -78,7 +78,6 @@ extern "C" {
     __n + 1;                                                                                       \
   })
 
-
 #  define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
 #  define u_container_of(ptr, type, member)                                                        \
@@ -86,16 +85,6 @@ extern "C" {
       const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                            \
       (type*)((char*)_container_of__mptr - offsetof(type, member));                                \
     })
-
-/* linux array size macro */
-#  define __same_type(a, b)      __builtin_types_compatible_p(typeof(a), typeof(b))
-#  define __build_bug_on_zero(e) (sizeof(struct { int : -!!(e); }))
-#  define __must_be_array(a)     __build_bug_on_zero(__same_type((a), &(a)[0]))
-#  define u_arr_len(arr)         (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
-
-#  define u_arr_each(arr, i, it)                                                                   \
-    for (size_t i = 0; i < u_arr_len(arr); i++)                                                    \
-      for (auto it = &arr[i]; it; it = nullptr)
 
 extern bool $benchmark_entry(const char*, size_t);
 #  define u_bench(msg, ...) while ($benchmark_entry(msg, u_va_0th(1, __VA_ARGS__)))
@@ -143,7 +132,7 @@ extern thread_local __err__t __err__;
 /***************************************************************************************************
  * Swap
  **************************************************************************************************/
-#  define swap(a, b)                                                                               \
+#  define u_swap(a, b)                                                                             \
     do {                                                                                           \
       auto _swap__tmp = a;                                                                         \
                                                                                                    \
@@ -154,7 +143,7 @@ extern thread_local __err__t __err__;
 /***************************************************************************************************
  * Compe
  **************************************************************************************************/
-#  define min(x, y)                                                                                \
+#  define u_min(x, y)                                                                              \
     ({                                                                                             \
       auto __min_x__ = (x);                                                                        \
       auto __min_y__ = (y);                                                                        \
@@ -164,7 +153,7 @@ extern thread_local __err__t __err__;
       __min_x__ < __min_y__ ? __min_x__ : __min_y__;                                               \
     })
 
-#  define max(x, y)                                                                                \
+#  define u_max(x, y)                                                                              \
     ({                                                                                             \
       auto __max_x__ = (x);                                                                        \
       auto __max_y__ = (y);                                                                        \

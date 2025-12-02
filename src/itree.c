@@ -42,7 +42,7 @@
 #undef height
 #define height(node)                                                                               \
   do {                                                                                             \
-    (node)->height = max(lh(node), rh(node)) + 1;                                                  \
+    (node)->height = u_max(lh(node), rh(node)) + 1;                                                \
   } while (0)
 
 /***************************************************************************************************
@@ -255,7 +255,7 @@ pri void tree_pop_rebalance(tree_mut_t self, tnode_mut_t node) {
   while (node) {
     lh     = lh(node);
     rh     = rh(node);
-    height = max(lh, rh) + 1;
+    height = u_max(lh, rh) + 1;
     diff   = lh - rh;
 
     if (node->height != height) {
@@ -283,7 +283,7 @@ pri void tree_put_rebalance(tree_mut_t self, tnode_mut_t node) {
   for (node = node->parent; node; node = node->parent) {
     lh     = lh(node);
     rh     = rh(node);
-    height = max(lh, rh) + 1;
+    height = u_max(lh, rh) + 1;
     diff   = lh - rh;
 
     u_brk_if(node->height == height);
