@@ -191,6 +191,7 @@ pub void codegen(function_mut_t prog) {
   for (function_mut_t fn = prog; fn; fn = fn->next) {
     printf("  .globl %s\n", fn->name);
     printf("%s:\n", fn->name);
+    current_fn = fn;
 
     // Prologue
     printf("  push %%rbp\n");
