@@ -55,6 +55,10 @@ pri void gen_expr(node_ref_t node) {
       pop("%rdi");
       printf("  mov %%rax, (%%rdi)\n");
       return;
+    case ND_FUNCALL:
+      printf("  mov $0, %%rax\n");
+      printf("  call %s\n", node->funcname);
+      return;
 
     default: break;
   }

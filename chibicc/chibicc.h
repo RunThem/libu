@@ -68,6 +68,7 @@ typedef enum {
   ND_IF,         // if
   ND_FOR,        // for, while
   ND_BLOCK,      // { ... }
+  ND_FUNCALL,    // 函数调用
   ND_EXPR_STMT,  // 表达式语句
   ND_VAR,        // 变量
   ND_NUM,        // 数字
@@ -92,6 +93,9 @@ u_struct_def(node) {
 
   // 块
   node_mut_t body;
+
+  // 函数名
+  char* funcname;
 
   obj_mut_t var;  // 如果 .kind == ND_VAR
   int val;        // 如果 .kind == ND_NUM

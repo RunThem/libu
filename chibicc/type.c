@@ -7,7 +7,7 @@ pub bool is_integer(type_mut_t ty) {
 }
 
 pub type_mut_t pointer_to(type_mut_t base) {
-  return new (type_t, .kind = TY_PTR, .base = base);
+  return new(type_t, .kind = TY_PTR, .base = base);
 }
 
 pub void add_type(node_mut_t node) {
@@ -39,7 +39,8 @@ pub void add_type(node_mut_t node) {
     case ND_NE:
     case ND_LT:
     case ND_LE:
-    case ND_NUM: node->ty = ty_int; return;
+    case ND_NUM:
+    case ND_FUNCALL: node->ty = ty_int; return;
 
     case ND_VAR: node->ty = node->var->ty; return;
 
