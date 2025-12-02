@@ -415,8 +415,32 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
   return primary(rest, tok);
 }
 
-/// primary = "(" expr ")" | ident args? | num
-/// args    = "(" ")"
+/// funcall = ident "(" (assign "," assign)*)? ")"
+pri node_mut_t funcall(token_mut_t* rest, token_mut_t tok) {
+  token_mut_t start = tok;
+  tok               = tok->next->next;
+
+  node_t head    = {};
+  node_mut_t cur = &head;
+
+  while (!equal(tok, ")")) {
+    if (cur != &head) {
+      tok = skip(tok, ",");
+    }
+
+    cur = cur->next = assign(&tok, tok);
+  }
+
+  *rest = skip(tok, ")");
+
+  node_mut_t node = new_node(ND_FUNCALL, start);
+  node->funcname  = strndup(start->loc, start->len);
+  node->args      = head.next;
+
+  return node;
+}
+
+/// primary = "(" expr ")" | ident func-args? | num
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "(")) {
     node_mut_t node = expr(&tok, tok->next);
@@ -427,10 +451,7 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   if (tok->kind == TK_IDENT) {
     // 函数调用
     if (equal(tok->next, "(")) {
-      node_mut_t node = new_node(ND_FUNCALL, tok);
-      node->funcname  = strndup(tok->loc, tok->len);
-      *rest           = skip(tok->next->next, ")");
-      return node;
+      return funcall(rest, tok);
     }
 
     // 变量

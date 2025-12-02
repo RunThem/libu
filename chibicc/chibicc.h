@@ -96,6 +96,7 @@ u_struct_def(node) {
 
   // 函数名
   char* funcname;
+  node_mut_t args;
 
   obj_mut_t var;  // 如果 .kind == ND_VAR
   int val;        // 如果 .kind == ND_NUM

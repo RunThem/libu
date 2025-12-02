@@ -2,6 +2,8 @@
 
 pri int depth;
 
+pri char* argreg[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+
 pri void gen_expr(node_ref_t node);
 
 pri int count() {
@@ -56,6 +58,17 @@ pri void gen_expr(node_ref_t node) {
       printf("  mov %%rax, (%%rdi)\n");
       return;
     case ND_FUNCALL:
+      int nargs = 0;
+      for (node_mut_t arg = node->args; arg; arg = arg->next) {
+        gen_expr(arg);
+        push();
+        nargs++;
+      }
+
+      for (int i = nargs - 1; i >= 0; i--) {
+        pop(argreg[i]);
+      }
+
       printf("  mov $0, %%rax\n");
       printf("  call %s\n", node->funcname);
       return;
