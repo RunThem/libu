@@ -48,6 +48,8 @@ u_struct_def(obj) {
 u_struct_def(function) {
   function_mut_t next;
   char* name;
+  obj_mut_t params;
+
   node_mut_t body;
   obj_mut_t locals;
   int stack_size;
@@ -127,11 +129,14 @@ u_struct_def(type) {
 
   // 函数类型
   type_mut_t return_ty;
+  type_mut_t params;
+  type_mut_t next;
 };
 
 extern pub type_mut_t ty_int;
 
 pub bool is_integer(type_mut_t ty);
+type_mut_t copy_type(type_mut_t ty);
 pub type_mut_t pointer_to(type_mut_t base);
 pub type_mut_t func_type(type_mut_t return_ty);
 pub void add_type(node_mut_t node);

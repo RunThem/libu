@@ -198,6 +198,11 @@ pub void codegen(function_mut_t prog) {
     printf("  mov %%rsp, %%rbp\n");
     printf("  sub $%d, %%rsp\n", fn->stack_size);
 
+    int i = 0;
+    for (obj_mut_t var = fn->params; var; var = var->next) {
+      printf("  mov %s, %d(%%rbp)\n", argreg[i++], var->offset);
+    }
+
     // Emit code
     gen_stmt(fn->body);
     assert(depth == 0);

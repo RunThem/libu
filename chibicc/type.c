@@ -6,12 +6,18 @@ pub bool is_integer(type_mut_t ty) {
   return ty->kind == TY_INT;
 }
 
+pub type_mut_t copy_type(type_mut_t ty) {
+  type_mut_t ret = u_talloc(type_t);
+  *ret           = *ty;
+  return ret;
+}
+
 pub type_mut_t pointer_to(type_mut_t base) {
-  return new(type_t, .kind = TY_PTR, .base = base);
+  return new (type_t, .kind = TY_PTR, .base = base);
 }
 
 pub type_mut_t func_type(type_mut_t return_ty) {
-  return new(type_t, .kind = TY_FUNC, .return_ty = return_ty);
+  return new (type_t, .kind = TY_FUNC, .return_ty = return_ty);
 }
 
 pub void add_type(node_mut_t node) {
@@ -28,6 +34,10 @@ pub void add_type(node_mut_t node) {
   add_type(node->inc);
 
   for (node_mut_t n = node->body; n; n = n->next) {
+    add_type(n);
+  }
+
+  for (node_mut_t n = node->args; n; n = n->next) {
     add_type(n);
   }
 

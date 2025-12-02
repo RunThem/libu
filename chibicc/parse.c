@@ -30,27 +30,27 @@ pri obj_mut_t find_var(token_ref_t tok) {
 }
 
 pri node_mut_t new_node(node_kind_e kind, token_mut_t tok) {
-  return new(node_t, .kind = kind, .tok = tok);
+  return new (node_t, .kind = kind, .tok = tok);
 }
 
 pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
-  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
+  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
 pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr, token_mut_t tok) {
-  return new(node_t, .kind = kind, .lhs = expr, .tok = tok);
+  return new (node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
 pri node_mut_t new_number(int val, token_mut_t tok) {
-  return new(node_t, .kind = ND_NUM, .val = val, .tok = tok);
+  return new (node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
 pri node_mut_t new_var(obj_mut_t var, token_mut_t tok) {
-  return new(node_t, .kind = ND_VAR, .var = var, .tok = tok);
+  return new (node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
 pri obj_mut_t new_lvar(char* name, type_mut_t ty) {
-  obj_mut_t var = new(obj_t, .name = name, .next = locals, .ty = ty);
+  obj_mut_t var = new (obj_t, .name = name, .next = locals, .ty = ty);
   locals        = var;
 
   return var;
@@ -70,11 +70,31 @@ pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok) {
   return ty_int;
 }
 
-/// type-suffix = ("(" func-params)?
+/// type-suffix = ("(" func-params? ")")?
+/// func-params = param ("," param)*
+/// param = declspec declarator
 pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
   if (equal(tok, "(")) {
-    *rest = skip(tok->next, ")");
-    return func_type(ty);
+    tok = tok->next;
+
+    type_t head    = {};
+    type_mut_t cur = &head;
+
+    while (!equal(tok, ")")) {
+      if (cur != &head) {
+        tok = skip(tok, ",");
+      }
+
+      type_mut_t basety = declspec(&tok, tok);
+      type_mut_t ty     = declarator(&tok, tok, basety);
+      cur = cur->next = copy_type(ty);
+    }
+
+    ty         = func_type(ty);
+    ty->params = head.next;
+    *rest      = tok->next;
+
+    return ty;
   }
 
   *rest = tok;
@@ -212,7 +232,7 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
     add_type(cur);
   }
 
-  node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
+  node_mut_t node = new (node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
   *rest           = tok->next;
 
   return node;
@@ -488,6 +508,13 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   return nullptr;
 }
 
+pri void create_param_lvars(type_mut_t param) {
+  if (param) {
+    create_param_lvars(param->next);
+    new_lvar(get_ident(param->name), param);
+  }
+}
+
 pri function_mut_t function(token_mut_t* rest, token_mut_t tok) {
   type_mut_t ty = declspec(&tok, tok);
   ty            = declarator(&tok, tok, ty);
@@ -496,6 +523,8 @@ pri function_mut_t function(token_mut_t* rest, token_mut_t tok) {
 
   function_mut_t fn = u_talloc(function_t);
   fn->name          = get_ident(ty->name);
+  create_param_lvars(ty->params);
+  fn->params = locals;
 
   tok        = skip(tok, "{");
   fn->body   = compound_stmt(rest, tok);
