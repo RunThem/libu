@@ -7,7 +7,7 @@ bool is_integer(type_mut_t ty) {
 }
 
 type_mut_t pointer_to(type_mut_t base) {
-  return new(type_t, .kind = TY_PTR, .base = base);
+  return new (type_t, .kind = TY_PTR, .base = base);
 }
 
 void add_type(node_mut_t node) {
@@ -25,33 +25,33 @@ void add_type(node_mut_t node) {
 
   for (node_mut_t n = node->body; n; n = n->next) {
     add_type(n);
+  }
 
-    switch (node->kind) {
-      case ND_ADD:
-      case ND_SUB:
-      case ND_MUL:
-      case ND_DIV:
-      case ND_NEG:
-      case ND_ASSIGN: node->ty = node->lhs->ty; return;
+  switch (node->kind) {
+    case ND_ADD:
+    case ND_SUB:
+    case ND_MUL:
+    case ND_DIV:
+    case ND_NEG:
+    case ND_ASSIGN: node->ty = node->lhs->ty; return;
 
-      case ND_EQ:
-      case ND_NE:
-      case ND_LT:
-      case ND_LE:
-      case ND_VAR:
-      case ND_NUM: node->ty = ty_int; return;
+    case ND_EQ:
+    case ND_NE:
+    case ND_LT:
+    case ND_LE:
+    case ND_VAR:
+    case ND_NUM: node->ty = ty_int; return;
 
-      case ND_ADDR: node->ty = pointer_to(node->lhs->ty); return;
+    case ND_ADDR: node->ty = pointer_to(node->lhs->ty); return;
 
-      case ND_DEREF:
-        if (node->lhs->ty->kind == TY_PTR) {
-          node->ty = node->lhs->ty->base;
-        } else {
-          node->ty = ty_int;
-        }
-        return;
+    case ND_DEREF:
+      if (node->lhs->ty->kind == TY_PTR) {
+        node->ty = node->lhs->ty->base;
+      } else {
+        node->ty = ty_int;
+      }
+      return;
 
-      default: break;
-    }
+    default: break;
   }
 }

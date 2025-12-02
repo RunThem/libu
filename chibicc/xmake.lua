@@ -19,7 +19,6 @@ task('tc', function()
   })
 
   on_run(function()
-    os.exec('xmake f -m debug --mimalloc=n')
     os.exec('xmake build -v chibicc')
     os.cd('$(projectdir)/chibicc')
     os.exec('./test.sh')

@@ -111,7 +111,7 @@ u_struct_def(type) {
   type_mut_t base;
 };
 
-pub type_mut_t ty_int;
+extern pub type_mut_t ty_int;
 
 pub bool is_integer(type_mut_t ty);
 pub void add_type(node_mut_t node);
