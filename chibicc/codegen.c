@@ -45,7 +45,7 @@ pri void gen_expr(node_ref_t node) {
       return;
     case ND_DEREF:
       gen_expr(node->lhs);
-      printf("  mov (%%rax, %%rax");
+      printf("  mov (%%rax), %%rax\n");
       return;
     case ND_ADDR: gen_addr(node->lhs); return;
     case ND_ASSIGN:
