@@ -62,6 +62,16 @@ pri int get_number(token_ref_t tok) {
   return tok->val;
 }
 
+pub bool consume(token_mut_t* rest, token_mut_t tok, char* str) {
+  if (equal(tok, str)) {
+    *rest = tok->next;
+    return true;
+  }
+
+  *rest = tok;
+  return false;
+}
+
 /// 创建 Token 实例
 pri token_mut_t new_token(token_kind_e kind, char* start, char* end) {
   return new (token_t, .kind = kind, .loc = start, .len = end - start);
@@ -92,7 +102,7 @@ pri int read_punct(char* p) {
 }
 
 pri bool is_keyword(token_mut_t tok) {
-  pri char* kw[] = {"return", "if", "else", "for", "while"};
+  pri char* kw[] = {"return", "if", "else", "for", "while", "int"};
 
   u_arr_each (kw, it) {
     if (equal(tok, it)) {

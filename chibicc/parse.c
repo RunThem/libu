@@ -3,6 +3,7 @@
 /// 解析过程中创建的所有局部变量实例都是追加到这个列表中.
 obj_mut_t locals;
 
+pri node_mut_t declaration(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
@@ -46,11 +47,74 @@ pri node_mut_t new_var(obj_mut_t var, token_mut_t tok) {
   return new (node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
-pri obj_mut_t new_lvar(char* name) {
-  obj_mut_t var = new (obj_t, .name = name, .next = locals);
+pri obj_mut_t new_lvar(char* name, type_mut_t ty) {
+  obj_mut_t var = new (obj_t, .name = name, .next = locals, .ty = ty);
   locals        = var;
 
   return var;
+}
+
+pri char* get_ident(token_mut_t tok) {
+  if (tok->kind != TK_IDENT) {
+    error_tok(tok, "expected an identifier");
+  }
+
+  return strndup(tok->loc, tok->len);
+}
+
+/// declspec = "int"
+pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok) {
+  *rest = skip(tok, "int");
+  return ty_int;
+}
+
+/// declarator = "*"* ident
+pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
+  while (consume(&tok, tok, "*")) {
+    ty = pointer_to(ty);
+  }
+
+  if (tok->kind != TK_IDENT) {
+    error_tok(tok, "expected a variable name");
+  }
+
+  ty->name = tok;
+  *rest    = tok->next;
+
+  return ty;
+}
+
+/// declaration = declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
+pri node_mut_t declaration(token_mut_t* rest, token_mut_t tok) {
+  type_mut_t basety = declspec(&tok, tok);
+
+  node_t head    = {};
+  node_mut_t cur = &head;
+  int i          = 0;
+
+  while (!equal(tok, ";")) {
+    if (i++ > 0) {
+      tok = skip(tok, ",");
+    }
+
+    type_mut_t ty = declarator(&tok, tok, basety);
+    obj_mut_t var = new_lvar(get_ident(ty->name), ty);
+
+    if (!equal(tok, "=")) {
+      continue;
+    }
+
+    node_mut_t lhs  = new_var(var, ty->name);
+    node_mut_t rhs  = assign(&tok, tok->next);
+    node_mut_t node = new_binary(ND_ASSIGN, lhs, rhs, tok);
+    cur = cur->next = new_unary(ND_EXPR_STMT, node, tok);
+  }
+
+  node_mut_t node = new_node(ND_BLOCK, tok);
+  node->body      = head.next;
+  *rest           = tok->next;
+
+  return node;
 }
 
 /// stmt = "return" expr ";"
@@ -120,13 +184,18 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   return expr_stmt(rest, tok);
 }
 
-/// compoound-stmt = stmt* "}"
+/// compoound-stmt = (declaration | stmt)* "}"
 pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
   node_t head    = {};
   node_mut_t cur = &head;
 
   while (!equal(tok, "}")) {
-    cur = cur->next = stmt(&tok, tok);
+    if (equal(tok, "int")) {
+      cur = cur->next = declaration(&tok, tok);
+    } else {
+      cur = cur->next = stmt(&tok, tok);
+    }
+
     add_type(cur);
   }
 
@@ -357,7 +426,7 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   if (tok->kind == TK_IDENT) {
     obj_mut_t var = find_var(tok);
     if (!var) {
-      var = new_lvar(strndup(tok->loc, tok->len));
+      error_tok(tok, "undefined variable");
     }
     *rest = tok->next;
 

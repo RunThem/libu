@@ -30,6 +30,7 @@ pub void error_at(char* loc, char* fmt, ...);
 pub void error_tok(token_ref_t tok, char* fmt, ...);
 pub bool equal(token_ref_t tok, char* op);
 pub token_mut_t skip(token_ref_t tok, char* s);
+pub bool consume(token_mut_t* rest, token_mut_t tok, char* str);
 pub token_mut_t tokenize(char* p);
 
 ///
@@ -39,8 +40,9 @@ pub token_mut_t tokenize(char* p);
 /// 局部变量
 u_struct_def(obj) {
   obj_mut_t next;
-  char* name;  // 变量名
-  int offset;  // 栈偏移量
+  char* name;     // 变量名
+  type_mut_t ty;  // 类型
+  int offset;     // 栈偏移量
 };
 
 u_struct_def(function) {
@@ -108,12 +110,18 @@ typedef enum {
 
 u_struct_def(type) {
   type_kind_e kind;
+
+  // 指针
   type_mut_t base;
+
+  // 声明
+  token_mut_t name;
 };
 
 extern pub type_mut_t ty_int;
 
 pub bool is_integer(type_mut_t ty);
+pub type_mut_t pointer_to(type_mut_t base);
 pub void add_type(node_mut_t node);
 
 ///

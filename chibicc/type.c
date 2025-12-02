@@ -1,16 +1,16 @@
 #include "chibicc.h"
 
-type_mut_t ty_int = &me(type_t, TY_INT);
+pub type_mut_t ty_int = &me(type_t, TY_INT);
 
-bool is_integer(type_mut_t ty) {
+pub bool is_integer(type_mut_t ty) {
   return ty->kind == TY_INT;
 }
 
-type_mut_t pointer_to(type_mut_t base) {
+pub type_mut_t pointer_to(type_mut_t base) {
   return new (type_t, .kind = TY_PTR, .base = base);
 }
 
-void add_type(node_mut_t node) {
+pub void add_type(node_mut_t node) {
   if (!node || node->ty) {
     return;
   }
@@ -39,17 +39,18 @@ void add_type(node_mut_t node) {
     case ND_NE:
     case ND_LT:
     case ND_LE:
-    case ND_VAR:
     case ND_NUM: node->ty = ty_int; return;
+
+    case ND_VAR: node->ty = node->var->ty; return;
 
     case ND_ADDR: node->ty = pointer_to(node->lhs->ty); return;
 
     case ND_DEREF:
-      if (node->lhs->ty->kind == TY_PTR) {
-        node->ty = node->lhs->ty->base;
-      } else {
-        node->ty = ty_int;
+      if (node->lhs->ty->kind != TY_PTR) {
+        error_tok(node->tok, "invalid pointer dereference");
       }
+
+      node->ty = node->lhs->ty->base;
       return;
 
     default: break;
