@@ -13,11 +13,15 @@ pub type_mut_t copy_type(type_mut_t ty) {
 }
 
 pub type_mut_t pointer_to(type_mut_t base) {
-  return new (type_t, .kind = TY_PTR, .base = base);
+  return new(type_t, .kind = TY_PTR, .size = 8, .base = base);
 }
 
 pub type_mut_t func_type(type_mut_t return_ty) {
-  return new (type_t, .kind = TY_FUNC, .return_ty = return_ty);
+  return new(type_t, .kind = TY_FUNC, .return_ty = return_ty);
+}
+
+pub type_mut_t array_of(type_mut_t base, int len) {
+  return new(type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
 }
 
 pub void add_type(node_mut_t node) {
@@ -46,8 +50,14 @@ pub void add_type(node_mut_t node) {
     case ND_SUB:
     case ND_MUL:
     case ND_DIV:
-    case ND_NEG:
-    case ND_ASSIGN: node->ty = node->lhs->ty; return;
+    case ND_NEG: node->ty = node->lhs->ty; return;
+    case ND_ASSIGN:
+      if (node->lhs->ty->kind == TY_ARRAY) {
+        error_tok(node->lhs->tok, "not an lvalue");
+      }
+
+      node->ty = node->lhs->ty;
+      return;
 
     case ND_EQ:
     case ND_NE:
@@ -58,10 +68,17 @@ pub void add_type(node_mut_t node) {
 
     case ND_VAR: node->ty = node->var->ty; return;
 
-    case ND_ADDR: node->ty = pointer_to(node->lhs->ty); return;
+    case ND_ADDR:
+      if (node->lhs->ty->kind == TY_ARRAY) {
+        node->ty = pointer_to(node->lhs->ty->base);
+      } else {
+        node->ty = pointer_to(node->lhs->ty);
+      }
+
+      return;
 
     case ND_DEREF:
-      if (node->lhs->ty->kind != TY_PTR) {
+      if (!node->lhs->ty->base) {
         error_tok(node->tok, "invalid pointer dereference");
       }
 

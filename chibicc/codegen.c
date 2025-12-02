@@ -35,6 +35,30 @@ pri void gen_addr(node_ref_t node) {
   error_tok(node->tok, "not an lvalue");
 }
 
+struct Api;
+typedef struct Api Api_t;
+typedef struct Api* ApiMut_t;
+typedef const struct Api* ApiRef_t;
+struct Api { };
+
+/// 从 %rax 所指向的位置加载一个值
+pri void load(type_mut_t ty) {
+  if (ty->kind == TY_ARRAY) {
+    // 如果是一个数组, 不要尝试将值加载到寄存器中, 因为通常我们无法将整个数组加载到寄存器中.
+    // 因此, 对数组求值的结果不是数组本身, 而是数组的地址.
+    // 这就是 C 语言中 '数组会自动转换为指向数组第一个元素的指针' 的情况.
+    return;
+  }
+
+  printf("  mov (%%rax), %%rax\n");
+}
+
+/// 将 %rax 寄存器中的值存储到栈顶所指向的地址中
+pri void store() {
+  pop("%rdi");
+  printf("  mov %%rax, (%%rdi)\n");
+}
+
 /// 为给定节点生成代码
 pri void gen_expr(node_ref_t node) {
   switch (node->kind) {
@@ -45,19 +69,18 @@ pri void gen_expr(node_ref_t node) {
       return;
     case ND_VAR:
       gen_addr(node);
-      printf("  mov (%%rax), %%rax\n");
+      load(node->ty);
       return;
     case ND_DEREF:
       gen_expr(node->lhs);
-      printf("  mov (%%rax), %%rax\n");
+      load(node->ty);
       return;
     case ND_ADDR: gen_addr(node->lhs); return;
     case ND_ASSIGN:
       gen_addr(node->lhs);
       push();
       gen_expr(node->rhs);
-      pop("%rdi");
-      printf("  mov %%rax, (%%rdi)\n");
+      store();
       return;
     case ND_FUNCALL: {
 
@@ -177,7 +200,7 @@ pri void assign_lvar_offsets(function_mut_t prog) {
     int offset = 0;
 
     for (obj_mut_t var = fn->locals; var; var = var->next) {
-      offset += 8;
+      offset += var->ty->size;
       var->offset = -offset;
     }
 

@@ -116,16 +116,24 @@ typedef enum {
   TY_INT,
   TY_PTR,
   TY_FUNC,
+  TY_ARRAY,
 } type_kind_e;
 
 u_struct_def(type) {
   type_kind_e kind;
+  int size;  // sizeof() 值
 
-  // 指针
+  // 指针类型或数组类型, 我们有意使用相同的成员来表示 C 语言中指针/数组的二元性.
+  // 在许多期望指针的上下文中, 我们检查此成员而非 .kind 成员来确定某个类型是否为指针.
+  // 这意味着在许多上下文中, 'T 类型的数组' 会自然地被当作 '指向 T 的指针' 来处理,
+  // 这符合 C 语言规范的要求.
   type_mut_t base;
 
   // 声明
   token_mut_t name;
+
+  // 数组
+  int array_len;
 
   // 函数类型
   type_mut_t return_ty;
@@ -139,6 +147,7 @@ pub bool is_integer(type_mut_t ty);
 type_mut_t copy_type(type_mut_t ty);
 pub type_mut_t pointer_to(type_mut_t base);
 pub type_mut_t func_type(type_mut_t return_ty);
+type_mut_t array_of(type_mut_t base, int size);
 pub void add_type(node_mut_t node);
 
 ///

@@ -30,27 +30,27 @@ pri obj_mut_t find_var(token_ref_t tok) {
 }
 
 pri node_mut_t new_node(node_kind_e kind, token_mut_t tok) {
-  return new (node_t, .kind = kind, .tok = tok);
+  return new(node_t, .kind = kind, .tok = tok);
 }
 
 pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
-  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
+  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
 pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr, token_mut_t tok) {
-  return new (node_t, .kind = kind, .lhs = expr, .tok = tok);
+  return new(node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
 pri node_mut_t new_number(int val, token_mut_t tok) {
-  return new (node_t, .kind = ND_NUM, .val = val, .tok = tok);
+  return new(node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
 pri node_mut_t new_var(obj_mut_t var, token_mut_t tok) {
-  return new (node_t, .kind = ND_VAR, .var = var, .tok = tok);
+  return new(node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
 pri obj_mut_t new_lvar(char* name, type_mut_t ty) {
-  obj_mut_t var = new (obj_t, .name = name, .next = locals, .ty = ty);
+  obj_mut_t var = new(obj_t, .name = name, .next = locals, .ty = ty);
   locals        = var;
 
   return var;
@@ -64,37 +64,55 @@ pri char* get_ident(token_mut_t tok) {
   return strndup(tok->loc, tok->len);
 }
 
+pri int get_number(token_mut_t tok) {
+  if (tok->kind != TK_NUM) {
+    error_tok(tok, "expected a number");
+  }
+
+  return tok->val;
+}
+
 /// declspec = "int"
 pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok) {
   *rest = skip(tok, "int");
   return ty_int;
 }
 
-/// type-suffix = ("(" func-params? ")")?
-/// func-params = param ("," param)*
-/// param = declspec declarator
-pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
-  if (equal(tok, "(")) {
-    tok = tok->next;
+/// func-params = (param ("," param)* ")
+/// param       = declspec declarator
+pri type_mut_t func_params(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
+  type_t head    = {};
+  type_mut_t cur = &head;
 
-    type_t head    = {};
-    type_mut_t cur = &head;
-
-    while (!equal(tok, ")")) {
-      if (cur != &head) {
-        tok = skip(tok, ",");
-      }
-
-      type_mut_t basety = declspec(&tok, tok);
-      type_mut_t ty     = declarator(&tok, tok, basety);
-      cur = cur->next = copy_type(ty);
+  while (!equal(tok, ")")) {
+    if (cur != &head) {
+      tok = skip(tok, ",");
     }
 
-    ty         = func_type(ty);
-    ty->params = head.next;
-    *rest      = tok->next;
+    type_mut_t basety = declspec(&tok, tok);
+    type_mut_t ty     = declarator(&tok, tok, basety);
+    cur = cur->next = copy_type(ty);
+  }
 
-    return ty;
+  ty         = func_type(ty);
+  ty->params = head.next;
+  *rest      = tok->next;
+
+  return ty;
+}
+
+/// type-suffix = ("(" func-params? ")")?
+///             | "[" num "]"
+///             | ε
+pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
+  if (equal(tok, "(")) {
+    return func_params(rest, tok->next, ty);
+  }
+
+  if (equal(tok, "[")) {
+    int sz = get_number(tok->next);
+    *rest  = skip(tok->next->next, "]");
+    return array_of(ty, sz);
   }
 
   *rest = tok;
@@ -232,7 +250,7 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
     add_type(cur);
   }
 
-  node_mut_t node = new (node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
+  node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
   *rest           = tok->next;
 
   return node;
@@ -345,7 +363,7 @@ pri node_mut_t new_add(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
   }
 
   // 指针 + 数字
-  rhs = new_binary(ND_MUL, rhs, new_number(8, tok), tok);
+  rhs = new_binary(ND_MUL, rhs, new_number(lhs->ty->base->size, tok), tok);
 
   return new_binary(ND_ADD, lhs, rhs, tok);
 }
@@ -361,7 +379,7 @@ pri node_mut_t new_sub(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
 
   // ptr - num
   if (lhs->ty->base && is_integer(rhs->ty)) {
-    rhs = new_binary(ND_MUL, rhs, new_number(8, tok), tok);
+    rhs = new_binary(ND_MUL, rhs, new_number(lhs->ty->base->size, tok), tok);
     add_type(rhs);
     node_mut_t node = new_binary(ND_SUB, lhs, rhs, tok);
     node->ty        = lhs->ty;
@@ -372,7 +390,7 @@ pri node_mut_t new_sub(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
   if (lhs->ty->base && rhs->ty->base) {
     node_mut_t node = new_binary(ND_SUB, lhs, rhs, tok);
     node->ty        = ty_int;
-    return new_binary(ND_DIV, node, new_number(8, tok), tok);
+    return new_binary(ND_DIV, node, new_number(lhs->ty->base->size, tok), tok);
   }
 
   error_tok(tok, "invalid operands");
