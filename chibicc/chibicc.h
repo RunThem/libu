@@ -46,6 +46,8 @@ u_struct_def(obj) {
 };
 
 u_struct_def(function) {
+  function_mut_t next;
+  char* name;
   node_mut_t body;
   obj_mut_t locals;
   int stack_size;
@@ -111,6 +113,7 @@ pub function_mut_t parse(token_mut_t tok);
 typedef enum {
   TY_INT,
   TY_PTR,
+  TY_FUNC,
 } type_kind_e;
 
 u_struct_def(type) {
@@ -121,12 +124,16 @@ u_struct_def(type) {
 
   // 声明
   token_mut_t name;
+
+  // 函数类型
+  type_mut_t return_ty;
 };
 
 extern pub type_mut_t ty_int;
 
 pub bool is_integer(type_mut_t ty);
 pub type_mut_t pointer_to(type_mut_t base);
+pub type_mut_t func_type(type_mut_t return_ty);
 pub void add_type(node_mut_t node);
 
 ///

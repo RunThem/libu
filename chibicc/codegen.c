@@ -4,6 +4,8 @@ pri int depth;
 
 pri char* argreg[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 
+pri function_mut_t current_fn = nullptr;
+
 pri void gen_expr(node_ref_t node);
 
 pri int count() {
@@ -57,7 +59,8 @@ pri void gen_expr(node_ref_t node) {
       pop("%rdi");
       printf("  mov %%rax, (%%rdi)\n");
       return;
-    case ND_FUNCALL:
+    case ND_FUNCALL: {
+
       int nargs = 0;
       for (node_mut_t arg = node->args; arg; arg = arg->next) {
         gen_expr(arg);
@@ -72,6 +75,7 @@ pri void gen_expr(node_ref_t node) {
       printf("  mov $0, %%rax\n");
       printf("  call %s\n", node->funcname);
       return;
+    }
 
     default: break;
   }
@@ -116,7 +120,8 @@ pri void gen_expr(node_ref_t node) {
 
 pri void gen_stmt(node_mut_t node) {
   switch (node->kind) {
-    case ND_IF:
+    case ND_IF: {
+
       int c = count();
       gen_expr(node->cond);
       printf("  cmp $0, %%rax\n");
@@ -129,6 +134,7 @@ pri void gen_stmt(node_mut_t node) {
       }
       printf(".L.end.%d:\n", c);
       return;
+    }
     case ND_FOR: {
       int c = count();
       if (node->init) {
@@ -156,7 +162,7 @@ pri void gen_stmt(node_mut_t node) {
       return;
     case ND_RETURN:
       gen_expr(node->lhs);
-      printf("  jmp .L.return\n");
+      printf("  jmp .L.return.%s\n", current_fn->name);
       return;
     case ND_EXPR_STMT: gen_expr(node->lhs); return;
 
@@ -167,32 +173,38 @@ pri void gen_stmt(node_mut_t node) {
 }
 
 pri void assign_lvar_offsets(function_mut_t prog) {
-  int offset = 0;
+  for (function_mut_t fn = prog; fn; fn = fn->next) {
+    int offset = 0;
 
-  for (obj_mut_t var = prog->locals; var; var = var->next) {
-    offset += 8;
-    var->offset = -offset;
+    for (obj_mut_t var = fn->locals; var; var = var->next) {
+      offset += 8;
+      var->offset = -offset;
+    }
+
+    fn->stack_size = u_align_of(offset, 16);
   }
-
-  prog->stack_size = u_align_of(offset, 16);
 }
 
 pub void codegen(function_mut_t prog) {
   assign_lvar_offsets(prog);
 
-  printf("  .globl main\n");
-  printf("main:\n");
+  for (function_mut_t fn = prog; fn; fn = fn->next) {
+    printf("  .globl %s\n", fn->name);
+    printf("%s:\n", fn->name);
 
-  // 开始段
-  printf("  push %%rbp\n");
-  printf("  mov %%rsp, %%rbp\n");
-  printf("  sub $%d, %%rsp\n", prog->stack_size);
+    // Prologue
+    printf("  push %%rbp\n");
+    printf("  mov %%rsp, %%rbp\n");
+    printf("  sub $%d, %%rsp\n", fn->stack_size);
 
-  gen_stmt(prog->body);
-  assert(depth == 0);
+    // Emit code
+    gen_stmt(fn->body);
+    assert(depth == 0);
 
-  printf(".L.return:\n");
-  printf("  mov %%rbp, %%rsp\n");
-  printf("  pop %%rbp\n");
-  printf("  ret\n");
+    // Epilogue
+    printf(".L.return.%s:\n", fn->name);
+    printf("  mov %%rbp, %%rsp\n");
+    printf("  pop %%rbp\n");
+    printf("  ret\n");
+  }
 }

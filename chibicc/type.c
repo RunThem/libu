@@ -10,6 +10,10 @@ pub type_mut_t pointer_to(type_mut_t base) {
   return new(type_t, .kind = TY_PTR, .base = base);
 }
 
+pub type_mut_t func_type(type_mut_t return_ty) {
+  return new(type_t, .kind = TY_FUNC, .return_ty = return_ty);
+}
+
 pub void add_type(node_mut_t node) {
   if (!node || node->ty) {
     return;

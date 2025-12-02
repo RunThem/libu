@@ -3,6 +3,8 @@
 /// 解析过程中创建的所有局部变量实例都是追加到这个列表中.
 obj_mut_t locals;
 
+pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok);
+pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty);
 pri node_mut_t declaration(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok);
@@ -68,7 +70,18 @@ pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok) {
   return ty_int;
 }
 
-/// declarator = "*"* ident
+/// type-suffix = ("(" func-params)?
+pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
+  if (equal(tok, "(")) {
+    *rest = skip(tok->next, ")");
+    return func_type(ty);
+  }
+
+  *rest = tok;
+  return ty;
+}
+
+/// declarator = "*"* ident type-suffix
 pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
   while (consume(&tok, tok, "*")) {
     ty = pointer_to(ty);
@@ -78,8 +91,8 @@ pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
     error_tok(tok, "expected a variable name");
   }
 
+  ty       = type_suffix(rest, tok->next, ty);
   ty->name = tok;
-  *rest    = tok->next;
 
   return ty;
 }
@@ -475,8 +488,30 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   return nullptr;
 }
 
-pub function_mut_t parse(token_mut_t tok) {
-  tok = skip(tok, "{");
+pri function_mut_t function(token_mut_t* rest, token_mut_t tok) {
+  type_mut_t ty = declspec(&tok, tok);
+  ty            = declarator(&tok, tok, ty);
 
-  return new(function_t, .body = compound_stmt(&tok, tok), .locals = locals);
+  locals = nullptr;
+
+  function_mut_t fn = u_talloc(function_t);
+  fn->name          = get_ident(ty->name);
+
+  tok        = skip(tok, "{");
+  fn->body   = compound_stmt(rest, tok);
+  fn->locals = locals;
+
+  return fn;
+}
+
+/// program = function-definition*
+pub function_mut_t parse(token_mut_t tok) {
+  function_t head    = {};
+  function_mut_t cur = &head;
+
+  while (tok->kind != TK_EOF) {
+    cur = cur->next = function(&tok, tok);
+  }
+
+  return head.next;
 }
