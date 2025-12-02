@@ -74,6 +74,7 @@ extern "C" {
 #  include "istr.h"
 #  include "ilfq.h"
 
+#  include "iarr.h"
 #  include "ivec.h"
 #  include "idict.h"
 #  include "ilist.h"
