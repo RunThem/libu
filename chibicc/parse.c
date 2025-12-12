@@ -510,12 +510,18 @@ pri node_mut_t funcall(token_mut_t* rest, token_mut_t tok) {
   return node;
 }
 
-/// primary = "(" expr ")" | ident func-args? | num
+/// primary = "(" expr ")" | "sizeof" unary | ident func-args? | num
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "(")) {
     node_mut_t node = expr(&tok, tok->next);
     *rest           = skip(tok, ")");
     return node;
+  }
+
+  if (equal(tok, "sizeof")) {
+    node_mut_t node = unary(rest, tok->next);
+    add_type(node);
+    return new_number(node->ty->size, tok);
   }
 
   if (tok->kind == TK_IDENT) {
