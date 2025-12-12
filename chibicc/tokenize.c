@@ -113,7 +113,22 @@ pri bool is_keyword(TokenMut_t tok) {
   return false;
 }
 
-pri int read_escaped_char(char* p) {
+pri int read_escaped_char(char** new_pos, char* p) {
+  if ('0' <= *p && *p <= '7') {
+    int c = *p++ - '0';
+    if ('0' <= *p && *p <= '7') {
+      c = (c << 3) + (*p++ - '0');
+      if ('0' <= *p && *p <= '7') {
+        c = (c << 3) + (*p++ - '0');
+      }
+    }
+
+    *new_pos = p;
+    return c;
+  }
+
+  *new_pos = p + 1;
+
   switch (*p) {
     case 'a': return '\a';
     case 'b': return '\b';
@@ -152,8 +167,7 @@ pri TokenMut_t read_string_literal(char* start) {
 
   for (char* p = start + 1; p < end;) {
     if (*p == '\\') {
-      buf[len++] = (char)read_escaped_char(p + 1);
-      p += 2;
+      buf[len++] = (char)read_escaped_char(&p, p + 1);
     } else {
       buf[len++] = *p++;
     }
