@@ -30,27 +30,27 @@ pri obj_mut_t find_var(token_ref_t tok) {
 }
 
 pri node_mut_t new_node(node_kind_e kind, token_mut_t tok) {
-  return new(node_t, .kind = kind, .tok = tok);
+  return new (node_t, .kind = kind, .tok = tok);
 }
 
 pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
-  return new(node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
+  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
 pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr, token_mut_t tok) {
-  return new(node_t, .kind = kind, .lhs = expr, .tok = tok);
+  return new (node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
 pri node_mut_t new_number(int val, token_mut_t tok) {
-  return new(node_t, .kind = ND_NUM, .val = val, .tok = tok);
+  return new (node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
 pri node_mut_t new_var(obj_mut_t var, token_mut_t tok) {
-  return new(node_t, .kind = ND_VAR, .var = var, .tok = tok);
+  return new (node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
 pri obj_mut_t new_lvar(char* name, type_mut_t ty) {
-  obj_mut_t var = new(obj_t, .name = name, .next = locals, .ty = ty);
+  obj_mut_t var = new (obj_t, .name = name, .next = locals, .ty = ty);
   locals        = var;
 
   return var;
@@ -102,7 +102,7 @@ pri type_mut_t func_params(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
 }
 
 /// type-suffix = ("(" func-params? ")")?
-///             | "[" num "]"
+///             | "[" num "]" type-suffix
 ///             | ε
 pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
   if (equal(tok, "(")) {
@@ -111,7 +111,8 @@ pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
 
   if (equal(tok, "[")) {
     int sz = get_number(tok->next);
-    *rest  = skip(tok->next->next, "]");
+    tok    = skip(tok->next->next, "]");
+    ty     = type_suffix(rest, tok, ty);
     return array_of(ty, sz);
   }
 
@@ -250,7 +251,7 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
     add_type(cur);
   }
 
-  node_mut_t node = new(node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
+  node_mut_t node = new (node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
   *rest           = tok->next;
 
   return node;
