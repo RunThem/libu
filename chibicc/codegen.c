@@ -26,7 +26,16 @@ pri void pop(char* arg) {
 /// 计算给定节点的绝对地址, 如果给定的节点不在内存中, 则会产生错误
 pri void gen_addr(NodeRef_t node) {
   switch (node->kind) {
-    case ND_VAR: printf("  lea %d(%%rbp), %%rax\n", node->var->offset); return;
+    case ND_VAR:
+      if (node->var->is_local) {
+        // 局部变量
+        printf("  lea %d(%%rbp), %%rax\n", node->var->offset);
+      } else {
+        // 全局变量
+        printf("  lea %s(%%rip), %%rax\n", node->var->name);
+      }
+      return;
+
     case ND_DEREF: gen_expr(node->lhs); return;
 
     default: break;
@@ -210,13 +219,23 @@ pri void assign_lvar_offsets(ObjMut_t prog) {
   }
 }
 
-pub void codegen(ObjMut_t prog) {
-  assign_lvar_offsets(prog);
+pri void emit_data(ObjMut_t prog) {
+  for (ObjMut_t var = prog; var; var = var->next) {
+    u_cnt_if(var->is_function);
 
+    printf("  .data\n");
+    printf("  .globl %s\n", var->name);
+    printf("%s:\n", var->name);
+    printf("  .zero %d\n", var->ty->size);
+  }
+}
+
+pri void emit_text(ObjMut_t prog) {
   for (ObjMut_t fn = prog; fn; fn = fn->next) {
     u_cnt_if(!fn->is_function);
 
     printf("  .globl %s\n", fn->name);
+    printf("  .text\n");
     printf("%s:\n", fn->name);
     current_fn = fn;
 
@@ -240,4 +259,10 @@ pub void codegen(ObjMut_t prog) {
     printf("  pop %%rbp\n");
     printf("  ret\n");
   }
+}
+
+pub void codegen(ObjMut_t prog) {
+  assign_lvar_offsets(prog);
+  emit_data(prog);
+  emit_text(prog);
 }

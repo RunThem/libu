@@ -28,6 +28,12 @@ pri ObjMut_t find_var(TokenRef_t tok) {
     }
   }
 
+  for (ObjMut_t var = globals; var; var = var->next) {
+    if (strlen(var->name) == tok->len && !strncmp(tok->loc, var->name, tok->len)) {
+      return var;
+    }
+  }
+
   return nullptr;
 }
 
@@ -587,13 +593,48 @@ pri TokenMut_t function(TokenMut_t tok, TypeMut_t basety) {
   return tok;
 }
 
+pri TokenMut_t global_variable(TokenMut_t tok, TypeMut_t basety) {
+  bool first = true;
+
+  while (!consume(&tok, tok, ";")) {
+    if (!first) {
+      tok = skip(tok, ",");
+    }
+
+    first        = false;
+    TypeMut_t ty = declarator(&tok, tok, basety);
+    new_gvar(get_ident(ty->name), ty);
+  }
+
+  return tok;
+}
+
+pri bool is_function(TokenMut_t tok) {
+  if (equal(tok, ";")) {
+    return false;
+  }
+
+  Type_t dummy = {};
+  TypeMut_t ty = declarator(&tok, tok, &dummy);
+
+  return ty->kind == TY_FUNC;
+}
+
 /// program = function-definition*
 pub ObjMut_t parse(TokenMut_t tok) {
   globals = nullptr;
 
   while (tok->kind != TK_EOF) {
     TypeMut_t basety = declspec(&tok, tok);
-    tok              = function(tok, basety);
+
+    // 函数
+    if (is_function(tok)) {
+      tok = function(tok, basety);
+      continue;
+    }
+
+    // 全局变量
+    tok = global_variable(tok, basety);
   }
 
   return globals;
