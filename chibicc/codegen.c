@@ -2,7 +2,8 @@
 
 pri int depth;
 
-pri char* argreg[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+pri char* argreg8[]  = {"%dil", "%sil", "%dl", "%cl", "%r8b", "%r9b"};
+pri char* argreg64[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 
 pri ObjMut_t current_fn = nullptr;
 
@@ -59,13 +60,22 @@ pri void load(TypeMut_t ty) {
     return;
   }
 
-  printf("  mov (%%rax), %%rax\n");
+  if (ty->size == 1) {
+    printf("  movsbq (%%rax), %%rax\n");
+  } else {
+    printf("  mov (%%rax), %%rax\n");
+  }
 }
 
 /// 将 %rax 寄存器中的值存储到栈顶所指向的地址中
-pri void store() {
+pri void store(TypeMut_t ty) {
   pop("%rdi");
-  printf("  mov %%rax, (%%rdi)\n");
+
+  if (ty->size == 1) {
+    printf("  mov %%al, (%%rdi)\n");
+  } else {
+    printf("  mov %%rax, (%%rdi)\n");
+  }
 }
 
 /// 为给定节点生成代码
@@ -89,7 +99,7 @@ pri void gen_expr(NodeRef_t node) {
       gen_addr(node->lhs);
       push();
       gen_expr(node->rhs);
-      store();
+      store(node->ty);
       return;
     case ND_FUNCALL: {
 
@@ -101,7 +111,7 @@ pri void gen_expr(NodeRef_t node) {
       }
 
       for (int i = nargs - 1; i >= 0; i--) {
-        pop(argreg[i]);
+        pop(argreg64[i]);
       }
 
       printf("  mov $0, %%rax\n");
@@ -246,7 +256,11 @@ pri void emit_text(ObjMut_t prog) {
 
     int i = 0;
     for (ObjMut_t var = fn->params; var; var = var->next) {
-      printf("  mov %s, %d(%%rbp)\n", argreg[i++], var->offset);
+      if (var->ty->size == 1) {
+        printf("  mov %s, %d(%%rbp)\n", argreg8[i++], var->offset);
+      } else {
+        printf("  mov %s, %d(%%rbp)\n", argreg64[i++], var->offset);
+      }
     }
 
     // Emit code

@@ -74,7 +74,7 @@ pub bool consume(TokenMut_t* rest, TokenMut_t tok, char* str) {
 
 /// 创建 Token 实例
 pri TokenMut_t new_token(TokenKind_e kind, char* start, char* end) {
-  return new (Token_t, .kind = kind, .loc = start, .len = end - start);
+  return new(Token_t, .kind = kind, .loc = start, .len = end - start);
 }
 
 pri bool startswitch(char* p, char* q) {
@@ -102,7 +102,7 @@ pri int read_punct(char* p) {
 }
 
 pri bool is_keyword(TokenMut_t tok) {
-  pri char* kw[] = {"return", "if", "else", "for", "while", "int", "sizeof"};
+  pri char* kw[] = {"return", "if", "else", "for", "while", "int", "sizeof", "char"};
 
   u_arr_each (kw, it) {
     if (equal(tok, it)) {

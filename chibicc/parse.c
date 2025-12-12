@@ -38,38 +38,38 @@ pri ObjMut_t find_var(TokenRef_t tok) {
 }
 
 pri NodeMut_t new_node(NodeKind_e kind, TokenMut_t tok) {
-  return new (Node_t, .kind = kind, .tok = tok);
+  return new(Node_t, .kind = kind, .tok = tok);
 }
 
 pri NodeMut_t new_binary(NodeKind_e kind, NodeMut_t lhs, NodeMut_t rhs, TokenMut_t tok) {
-  return new (Node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
+  return new(Node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
 pri NodeMut_t new_unary(NodeKind_e kind, NodeMut_t expr, TokenMut_t tok) {
-  return new (Node_t, .kind = kind, .lhs = expr, .tok = tok);
+  return new(Node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
 pri NodeMut_t new_number(int val, TokenMut_t tok) {
-  return new (Node_t, .kind = ND_NUM, .val = val, .tok = tok);
+  return new(Node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
 pri NodeMut_t new_var_node(ObjMut_t var, TokenMut_t tok) {
-  return new (Node_t, .kind = ND_VAR, .var = var, .tok = tok);
+  return new(Node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
 pri ObjMut_t new_var(char* name, TypeMut_t ty) {
-  return new (Obj_t, .name = name, .ty = ty);
+  return new(Obj_t, .name = name, .ty = ty);
 }
 
 pri ObjMut_t new_lvar(char* name, TypeMut_t ty) {
-  ObjMut_t var = new (Obj_t, .name = name, .is_local = true, .next = locals, .ty = ty);
+  ObjMut_t var = new(Obj_t, .name = name, .is_local = true, .next = locals, .ty = ty);
   locals       = var;
 
   return var;
 }
 
 pri ObjMut_t new_gvar(char* name, TypeMut_t ty) {
-  ObjMut_t var = new (Obj_t, .name = name, .next = globals, .ty = ty);
+  ObjMut_t var = new(Obj_t, .name = name, .next = globals, .ty = ty);
   globals      = var;
 
   return var;
@@ -91,8 +91,13 @@ pri int get_number(TokenMut_t tok) {
   return tok->val;
 }
 
-/// declspec = "int"
+/// declspec = "char" | "int"
 pri TypeMut_t declspec(TokenMut_t* rest, TokenMut_t tok) {
+  if (equal(tok, "char")) {
+    *rest = tok->next;
+    return ty_char;
+  }
+
   *rest = skip(tok, "int");
   return ty_int;
 }
@@ -188,6 +193,11 @@ pri NodeMut_t declaration(TokenMut_t* rest, TokenMut_t tok) {
   return node;
 }
 
+// 如果是给定的类型则返回真
+pri bool is_typename(TokenMut_t tok) {
+  return equal(tok, "char") || equal(tok, "int");
+}
+
 /// stmt = "return" expr ";"
 ///      | "if" "(" expr ")" stmt ("else" stmt)?
 ///      | "for" "(" expr-stmt expr? ";" expr? ")" stmt
@@ -261,7 +271,7 @@ pri NodeMut_t compound_stmt(TokenMut_t* rest, TokenMut_t tok) {
   NodeMut_t cur = &head;
 
   while (!equal(tok, "}")) {
-    if (equal(tok, "int")) {
+    if (is_typename(tok)) {
       cur = cur->next = declaration(&tok, tok);
     } else {
       cur = cur->next = stmt(&tok, tok);
@@ -270,7 +280,7 @@ pri NodeMut_t compound_stmt(TokenMut_t* rest, TokenMut_t tok) {
     add_type(cur);
   }
 
-  NodeMut_t node = new (Node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
+  NodeMut_t node = new(Node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
   *rest          = tok->next;
 
   return node;

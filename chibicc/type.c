@@ -1,9 +1,10 @@
 #include "chibicc.h"
 
-pub TypeMut_t ty_int = &me(Type_t, TY_INT, 8);
+pub TypeMut_t ty_int  = &me(Type_t, TY_INT, 8);
+pub TypeMut_t ty_char = &me(Type_t, TY_CHAR, 1);
 
 pub bool is_integer(TypeMut_t ty) {
-  return ty->kind == TY_INT;
+  return ty->kind == TY_CHAR || ty->kind == TY_INT;
 }
 
 pub TypeMut_t copy_type(TypeMut_t ty) {
@@ -13,15 +14,15 @@ pub TypeMut_t copy_type(TypeMut_t ty) {
 }
 
 pub TypeMut_t pointer_to(TypeMut_t base) {
-  return new (Type_t, .kind = TY_PTR, .size = 8, .base = base);
+  return new(Type_t, .kind = TY_PTR, .size = 8, .base = base);
 }
 
 pub TypeMut_t func_type(TypeMut_t return_ty) {
-  return new (Type_t, .kind = TY_FUNC, .return_ty = return_ty);
+  return new(Type_t, .kind = TY_FUNC, .return_ty = return_ty);
 }
 
 pub TypeMut_t array_of(TypeMut_t base, int len) {
-  return new (Type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
+  return new(Type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
 }
 
 pub void add_type(NodeMut_t node) {

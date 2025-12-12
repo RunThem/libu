@@ -123,6 +123,7 @@ pub ObjMut_t parse(TokenMut_t tok);
 ///
 
 typedef enum {
+  TY_CHAR,
   TY_INT,
   TY_PTR,
   TY_FUNC,
@@ -151,6 +152,7 @@ u_struct_def(Type) {
   TypeMut_t next;
 };
 
+extern pub TypeMut_t ty_char;
 extern pub TypeMut_t ty_int;
 
 pub bool is_integer(TypeMut_t ty);
