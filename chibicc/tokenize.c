@@ -113,18 +113,55 @@ pri bool is_keyword(TokenMut_t tok) {
   return false;
 }
 
-pri TokenMut_t read_string_literal(char* start) {
-  char* p = start + 1;
+pri int read_escaped_char(char* p) {
+  switch (*p) {
+    case 'a': return '\a';
+    case 'b': return '\b';
+    case 't': return '\t';
+    case 'n': return '\n';
+    case 'v': return '\v';
+    case 'f': return '\f';
+    case 'r': return '\r';
+    case 'e': return 27;
+
+    default: *p;
+  }
+}
+
+// 寻找反双引号
+pri char* string_literal_end(char* p) {
+  char* start = p;
 
   for (; *p != '"'; p++) {
     if (*p == '\n' || *p == '\0') {
       error_at(start, "unclosed string literal");
     }
+
+    if (*p == '\\') {
+      p++;
+    }
   }
 
-  TokenMut_t tok = new_token(TK_STR, start, p + 1);
-  tok->ty        = array_of(ty_char, p - start);
-  tok->str       = strndup(start + 1, p - start - 1);
+  return p;
+}
+
+pri TokenMut_t read_string_literal(char* start) {
+  char* end = string_literal_end(start + 1);
+  char* buf = u_zalloc(end - start);
+  int len   = 0;
+
+  for (char* p = start + 1; p < end;) {
+    if (*p == '\\') {
+      buf[len++] = (char)read_escaped_char(p + 1);
+      p += 2;
+    } else {
+      buf[len++] = *p++;
+    }
+  }
+
+  TokenMut_t tok = new_token(TK_STR, start, end + 1);
+  tok->ty        = array_of(ty_char, len + 1);
+  tok->str       = buf;
   return tok;
 }
 
