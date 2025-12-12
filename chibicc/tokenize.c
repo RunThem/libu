@@ -124,7 +124,7 @@ pri int read_escaped_char(char* p) {
     case 'r': return '\r';
     case 'e': return 27;
 
-    default: *p;
+    default: return *p;
   }
 }
 
