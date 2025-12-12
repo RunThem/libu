@@ -12,6 +12,12 @@ u_struct_def(Type);
 u_struct_def(Node);
 
 ///
+/// String
+///
+
+pub char* format(char* fmt, ...);
+
+///
 /// Tokenizer
 ///
 

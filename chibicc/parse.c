@@ -78,10 +78,7 @@ pri ObjMut_t new_gvar(char* name, TypeMut_t ty) {
 pri char* new_unique_name() {
   pri int id = 0;
 
-  char* buf = u_zalloc(20);
-  sprintf(buf, ".L..%d", id++);
-
-  return buf;
+  return format(".L..%d", id++);
 }
 
 pri ObjMut_t new_anon_gvar(TypeMut_t ty) {
