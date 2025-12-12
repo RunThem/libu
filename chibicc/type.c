@@ -1,6 +1,6 @@
 #include "chibicc.h"
 
-pub type_mut_t ty_int = &me(type_t, TY_INT);
+pub type_mut_t ty_int = &me(type_t, TY_INT, 8);
 
 pub bool is_integer(type_mut_t ty) {
   return ty->kind == TY_INT;
