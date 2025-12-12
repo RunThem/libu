@@ -32,7 +32,7 @@ pub void error_at(char* loc, char* fmt, ...) {
   verror_at(loc, fmt, ap);
 }
 
-pub void error_tok(token_ref_t tok, char* fmt, ...) {
+pub void error_tok(TokenRef_t tok, char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
 
@@ -40,12 +40,12 @@ pub void error_tok(token_ref_t tok, char* fmt, ...) {
 }
 
 /// 如果 op 与当前 Token 匹配, 则消耗该 Token
-pub bool equal(token_ref_t tok, char* op) {
+pub bool equal(TokenRef_t tok, char* op) {
   return memcmp(tok->loc, op, tok->len) == 0 && op[tok->len] == '\0';
 }
 
 /// 确保当前 Token 与 s 匹配
-pub token_mut_t skip(token_ref_t tok, char* s) {
+pub TokenMut_t skip(TokenRef_t tok, char* s) {
   if (!equal(tok, s)) {
     error_tok(tok, "expected '%s'", s);
   }
@@ -54,7 +54,7 @@ pub token_mut_t skip(token_ref_t tok, char* s) {
 }
 
 /// 确保当前 Token 类型为 TK_NUM
-pri int get_number(token_ref_t tok) {
+pri int get_number(TokenRef_t tok) {
   if (tok->kind != TK_NUM) {
     error_tok(tok, "expected a number");
   }
@@ -62,7 +62,7 @@ pri int get_number(token_ref_t tok) {
   return tok->val;
 }
 
-pub bool consume(token_mut_t* rest, token_mut_t tok, char* str) {
+pub bool consume(TokenMut_t* rest, TokenMut_t tok, char* str) {
   if (equal(tok, str)) {
     *rest = tok->next;
     return true;
@@ -73,8 +73,8 @@ pub bool consume(token_mut_t* rest, token_mut_t tok, char* str) {
 }
 
 /// 创建 Token 实例
-pri token_mut_t new_token(token_kind_e kind, char* start, char* end) {
-  return new (token_t, .kind = kind, .loc = start, .len = end - start);
+pri TokenMut_t new_token(TokenKind_e kind, char* start, char* end) {
+  return new (Token_t, .kind = kind, .loc = start, .len = end - start);
 }
 
 pri bool startswitch(char* p, char* q) {
@@ -101,7 +101,7 @@ pri int read_punct(char* p) {
   return ispunct(*p) ? 1 : 0;
 }
 
-pri bool is_keyword(token_mut_t tok) {
+pri bool is_keyword(TokenMut_t tok) {
   pri char* kw[] = {"return", "if", "else", "for", "while", "int", "sizeof"};
 
   u_arr_each (kw, it) {
@@ -113,8 +113,8 @@ pri bool is_keyword(token_mut_t tok) {
   return false;
 }
 
-pri void convert_keywords(token_mut_t tok) {
-  for (token_mut_t t = tok; tok->kind != TK_EOF; t = t->next) {
+pri void convert_keywords(TokenMut_t tok) {
+  for (TokenMut_t t = tok; tok->kind != TK_EOF; t = t->next) {
     if (is_keyword(tok)) {
       t->kind = TK_KEYWORD;
     }
@@ -122,10 +122,10 @@ pri void convert_keywords(token_mut_t tok) {
 }
 
 /// 对给定字符串进行标记并返回新的 Token
-pub token_mut_t tokenize(char* p) {
-  current_input   = p;
-  token_t head    = {};
-  token_mut_t cur = &head;
+pub TokenMut_t tokenize(char* p) {
+  current_input  = p;
+  Token_t head   = {};
+  TokenMut_t cur = &head;
 
   while (*p) {
     if (isspace(*p)) {

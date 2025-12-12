@@ -1,27 +1,28 @@
 #include "chibicc.h"
 
 /// 解析过程中创建的所有局部变量实例都是追加到这个列表中.
-obj_mut_t locals;
+pri ObjMut_t locals;
+pri ObjMut_t globals;
 
-pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok);
-pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty);
-pri node_mut_t declaration(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t expr(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t assign(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t equality(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t relational(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t add(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t mul(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t postfix(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t unary(token_mut_t* rest, token_mut_t tok);
-pri node_mut_t primary(token_mut_t* rest, token_mut_t tok);
+pri TypeMut_t declspec(TokenMut_t* rest, TokenMut_t tok);
+pri TypeMut_t declarator(TokenMut_t* rest, TokenMut_t tok, TypeMut_t ty);
+pri NodeMut_t declaration(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t compound_stmt(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t stmt(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t expr_stmt(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t expr(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t assign(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t equality(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t relational(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t add(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t mul(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t postfix(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t unary(TokenMut_t* rest, TokenMut_t tok);
+pri NodeMut_t primary(TokenMut_t* rest, TokenMut_t tok);
 
 /// 按名称查找局部变量
-pri obj_mut_t find_var(token_ref_t tok) {
-  for (obj_mut_t var = locals; var; var = var->next) {
+pri ObjMut_t find_var(TokenRef_t tok) {
+  for (ObjMut_t var = locals; var; var = var->next) {
     if (strlen(var->name) == tok->len && !strncmp(tok->loc, var->name, tok->len)) {
       return var;
     }
@@ -30,34 +31,45 @@ pri obj_mut_t find_var(token_ref_t tok) {
   return nullptr;
 }
 
-pri node_mut_t new_node(node_kind_e kind, token_mut_t tok) {
-  return new (node_t, .kind = kind, .tok = tok);
+pri NodeMut_t new_node(NodeKind_e kind, TokenMut_t tok) {
+  return new (Node_t, .kind = kind, .tok = tok);
 }
 
-pri node_mut_t new_binary(node_kind_e kind, node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
-  return new (node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
+pri NodeMut_t new_binary(NodeKind_e kind, NodeMut_t lhs, NodeMut_t rhs, TokenMut_t tok) {
+  return new (Node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
-pri node_mut_t new_unary(node_kind_e kind, node_mut_t expr, token_mut_t tok) {
-  return new (node_t, .kind = kind, .lhs = expr, .tok = tok);
+pri NodeMut_t new_unary(NodeKind_e kind, NodeMut_t expr, TokenMut_t tok) {
+  return new (Node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
-pri node_mut_t new_number(int val, token_mut_t tok) {
-  return new (node_t, .kind = ND_NUM, .val = val, .tok = tok);
+pri NodeMut_t new_number(int val, TokenMut_t tok) {
+  return new (Node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
-pri node_mut_t new_var(obj_mut_t var, token_mut_t tok) {
-  return new (node_t, .kind = ND_VAR, .var = var, .tok = tok);
+pri NodeMut_t new_var_node(ObjMut_t var, TokenMut_t tok) {
+  return new (Node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
-pri obj_mut_t new_lvar(char* name, type_mut_t ty) {
-  obj_mut_t var = new (obj_t, .name = name, .next = locals, .ty = ty);
-  locals        = var;
+pri ObjMut_t new_var(char* name, TypeMut_t ty) {
+  return new (Obj_t, .name = name, .ty = ty);
+}
+
+pri ObjMut_t new_lvar(char* name, TypeMut_t ty) {
+  ObjMut_t var = new (Obj_t, .name = name, .is_local = true, .next = locals, .ty = ty);
+  locals       = var;
 
   return var;
 }
 
-pri char* get_ident(token_mut_t tok) {
+pri ObjMut_t new_gvar(char* name, TypeMut_t ty) {
+  ObjMut_t var = new (Obj_t, .name = name, .next = globals, .ty = ty);
+  globals      = var;
+
+  return var;
+}
+
+pri char* get_ident(TokenMut_t tok) {
   if (tok->kind != TK_IDENT) {
     error_tok(tok, "expected an identifier");
   }
@@ -65,7 +77,7 @@ pri char* get_ident(token_mut_t tok) {
   return strndup(tok->loc, tok->len);
 }
 
-pri int get_number(token_mut_t tok) {
+pri int get_number(TokenMut_t tok) {
   if (tok->kind != TK_NUM) {
     error_tok(tok, "expected a number");
   }
@@ -74,24 +86,24 @@ pri int get_number(token_mut_t tok) {
 }
 
 /// declspec = "int"
-pri type_mut_t declspec(token_mut_t* rest, token_mut_t tok) {
+pri TypeMut_t declspec(TokenMut_t* rest, TokenMut_t tok) {
   *rest = skip(tok, "int");
   return ty_int;
 }
 
 /// func-params = (param ("," param)* ")
 /// param       = declspec declarator
-pri type_mut_t func_params(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
-  type_t head    = {};
-  type_mut_t cur = &head;
+pri TypeMut_t func_params(TokenMut_t* rest, TokenMut_t tok, TypeMut_t ty) {
+  Type_t head   = {};
+  TypeMut_t cur = &head;
 
   while (!equal(tok, ")")) {
     if (cur != &head) {
       tok = skip(tok, ",");
     }
 
-    type_mut_t basety = declspec(&tok, tok);
-    type_mut_t ty     = declarator(&tok, tok, basety);
+    TypeMut_t basety = declspec(&tok, tok);
+    TypeMut_t ty     = declarator(&tok, tok, basety);
     cur = cur->next = copy_type(ty);
   }
 
@@ -105,7 +117,7 @@ pri type_mut_t func_params(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
 /// type-suffix = ("(" func-params? ")")?
 ///             | "[" num "]" type-suffix
 ///             | ε
-pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
+pri TypeMut_t type_suffix(TokenMut_t* rest, TokenMut_t tok, TypeMut_t ty) {
   if (equal(tok, "(")) {
     return func_params(rest, tok->next, ty);
   }
@@ -122,7 +134,7 @@ pri type_mut_t type_suffix(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
 }
 
 /// declarator = "*"* ident type-suffix
-pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
+pri TypeMut_t declarator(TokenMut_t* rest, TokenMut_t tok, TypeMut_t ty) {
   while (consume(&tok, tok, "*")) {
     ty = pointer_to(ty);
   }
@@ -138,34 +150,34 @@ pri type_mut_t declarator(token_mut_t* rest, token_mut_t tok, type_mut_t ty) {
 }
 
 /// declaration = declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
-pri node_mut_t declaration(token_mut_t* rest, token_mut_t tok) {
-  type_mut_t basety = declspec(&tok, tok);
+pri NodeMut_t declaration(TokenMut_t* rest, TokenMut_t tok) {
+  TypeMut_t basety = declspec(&tok, tok);
 
-  node_t head    = {};
-  node_mut_t cur = &head;
-  int i          = 0;
+  Node_t head   = {};
+  NodeMut_t cur = &head;
+  int i         = 0;
 
   while (!equal(tok, ";")) {
     if (i++ > 0) {
       tok = skip(tok, ",");
     }
 
-    type_mut_t ty = declarator(&tok, tok, basety);
-    obj_mut_t var = new_lvar(get_ident(ty->name), ty);
+    TypeMut_t ty = declarator(&tok, tok, basety);
+    ObjMut_t var = new_lvar(get_ident(ty->name), ty);
 
     if (!equal(tok, "=")) {
       continue;
     }
 
-    node_mut_t lhs  = new_var(var, ty->name);
-    node_mut_t rhs  = assign(&tok, tok->next);
-    node_mut_t node = new_binary(ND_ASSIGN, lhs, rhs, tok);
+    NodeMut_t lhs  = new_var_node(var, ty->name);
+    NodeMut_t rhs  = assign(&tok, tok->next);
+    NodeMut_t node = new_binary(ND_ASSIGN, lhs, rhs, tok);
     cur = cur->next = new_unary(ND_EXPR_STMT, node, tok);
   }
 
-  node_mut_t node = new_node(ND_BLOCK, tok);
-  node->body      = head.next;
-  *rest           = tok->next;
+  NodeMut_t node = new_node(ND_BLOCK, tok);
+  node->body     = head.next;
+  *rest          = tok->next;
 
   return node;
 }
@@ -176,17 +188,17 @@ pri node_mut_t declaration(token_mut_t* rest, token_mut_t tok) {
 ///      | "while" "(" expr ")" stmt
 ///      | "{" compound-stmt
 ///      | expr-stmt
-pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
+pri NodeMut_t stmt(TokenMut_t* rest, TokenMut_t tok) {
   if (equal(tok, "return")) {
-    node_mut_t node = new_node(ND_RETURN, tok);
-    node->lhs       = expr(&tok, tok->next);
-    *rest           = skip(tok, ";");
+    NodeMut_t node = new_node(ND_RETURN, tok);
+    node->lhs      = expr(&tok, tok->next);
+    *rest          = skip(tok, ";");
     return node;
   }
 
   if (equal(tok, "for")) {
-    node_mut_t node = new_node(ND_FOR, tok);
-    tok             = skip(tok->next, "(");
+    NodeMut_t node = new_node(ND_FOR, tok);
+    tok            = skip(tok->next, "(");
 
     node->init = expr_stmt(&tok, tok);
 
@@ -207,11 +219,11 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   }
 
   if (equal(tok, "if")) {
-    node_mut_t node = new_node(ND_IF, tok);
-    tok             = skip(tok->next, "(");
-    node->cond      = expr(&tok, tok);
-    tok             = skip(tok, ")");
-    node->then      = stmt(&tok, tok);
+    NodeMut_t node = new_node(ND_IF, tok);
+    tok            = skip(tok->next, "(");
+    node->cond     = expr(&tok, tok);
+    tok            = skip(tok, ")");
+    node->then     = stmt(&tok, tok);
     if (equal(tok, "else")) {
       node->els = stmt(&tok, tok->next);
     }
@@ -221,11 +233,11 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
   }
 
   if (equal(tok, "while")) {
-    node_mut_t node = new_node(ND_FOR, tok);
-    tok             = skip(tok->next, "(");
-    node->cond      = expr(&tok, tok);
-    tok             = skip(tok, ")");
-    node->then      = stmt(rest, tok);
+    NodeMut_t node = new_node(ND_FOR, tok);
+    tok            = skip(tok->next, "(");
+    node->cond     = expr(&tok, tok);
+    tok            = skip(tok, ")");
+    node->then     = stmt(rest, tok);
 
     return node;
   }
@@ -238,9 +250,9 @@ pri node_mut_t stmt(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// compoound-stmt = (declaration | stmt)* "}"
-pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
-  node_t head    = {};
-  node_mut_t cur = &head;
+pri NodeMut_t compound_stmt(TokenMut_t* rest, TokenMut_t tok) {
+  Node_t head   = {};
+  NodeMut_t cur = &head;
 
   while (!equal(tok, "}")) {
     if (equal(tok, "int")) {
@@ -252,34 +264,34 @@ pri node_mut_t compound_stmt(token_mut_t* rest, token_mut_t tok) {
     add_type(cur);
   }
 
-  node_mut_t node = new (node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
-  *rest           = tok->next;
+  NodeMut_t node = new (Node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
+  *rest          = tok->next;
 
   return node;
 }
 
 /// expr-stmt = expr? ";"
-pri node_mut_t expr_stmt(token_mut_t* rest, token_mut_t tok) {
+pri NodeMut_t expr_stmt(TokenMut_t* rest, TokenMut_t tok) {
   if (equal(tok, ";")) {
     *rest = tok->next;
     return new_node(ND_BLOCK, tok);
   }
 
-  node_mut_t node = new_node(ND_EXPR_STMT, tok);
-  node->lhs       = expr(&tok, tok);
-  *rest           = skip(tok, ";");
+  NodeMut_t node = new_node(ND_EXPR_STMT, tok);
+  node->lhs      = expr(&tok, tok);
+  *rest          = skip(tok, ";");
 
   return node;
 }
 
 /// expr = assign
-pri node_mut_t expr(token_mut_t* rest, token_mut_t tok) {
+pri NodeMut_t expr(TokenMut_t* rest, TokenMut_t tok) {
   return assign(rest, tok);
 }
 
 /// assign = equality ("=" assign)?
-pri node_mut_t assign(token_mut_t* rest, token_mut_t tok) {
-  node_mut_t node = equality(&tok, tok);
+pri NodeMut_t assign(TokenMut_t* rest, TokenMut_t tok) {
+  NodeMut_t node = equality(&tok, tok);
 
   if (equal(tok, "=")) {
     return new_binary(ND_ASSIGN, node, assign(rest, tok->next), tok);
@@ -291,11 +303,11 @@ pri node_mut_t assign(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// equality = relational ("==" relational | "!=" relational)*
-pri node_mut_t equality(token_mut_t* rest, token_mut_t tok) {
-  node_mut_t node = relational(&tok, tok);
+pri NodeMut_t equality(TokenMut_t* rest, TokenMut_t tok) {
+  NodeMut_t node = relational(&tok, tok);
 
   for (;;) {
-    token_mut_t start = tok;
+    TokenMut_t start = tok;
 
     if (equal(tok, "==")) {
       node = new_binary(ND_EQ, node, relational(&tok, tok->next), start);
@@ -314,11 +326,11 @@ pri node_mut_t equality(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
-pri node_mut_t relational(token_mut_t* rest, token_mut_t tok) {
-  node_mut_t node = add(&tok, tok);
+pri NodeMut_t relational(TokenMut_t* rest, TokenMut_t tok) {
+  NodeMut_t node = add(&tok, tok);
 
   for (;;) {
-    token_mut_t start = tok;
+    TokenMut_t start = tok;
 
     if (equal(tok, "<")) {
       node = new_binary(ND_LT, node, add(&tok, tok->next), start);
@@ -346,7 +358,7 @@ pri node_mut_t relational(token_mut_t* rest, token_mut_t tok) {
   }
 }
 
-pri node_mut_t new_add(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
+pri NodeMut_t new_add(NodeMut_t lhs, NodeMut_t rhs, TokenMut_t tok) {
   add_type(lhs);
   add_type(rhs);
 
@@ -370,7 +382,7 @@ pri node_mut_t new_add(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
   return new_binary(ND_ADD, lhs, rhs, tok);
 }
 
-pri node_mut_t new_sub(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
+pri NodeMut_t new_sub(NodeMut_t lhs, NodeMut_t rhs, TokenMut_t tok) {
   add_type(lhs);
   add_type(rhs);
 
@@ -383,15 +395,15 @@ pri node_mut_t new_sub(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
   if (lhs->ty->base && is_integer(rhs->ty)) {
     rhs = new_binary(ND_MUL, rhs, new_number(lhs->ty->base->size, tok), tok);
     add_type(rhs);
-    node_mut_t node = new_binary(ND_SUB, lhs, rhs, tok);
-    node->ty        = lhs->ty;
+    NodeMut_t node = new_binary(ND_SUB, lhs, rhs, tok);
+    node->ty       = lhs->ty;
     return node;
   }
 
   // ptr - ptr
   if (lhs->ty->base && rhs->ty->base) {
-    node_mut_t node = new_binary(ND_SUB, lhs, rhs, tok);
-    node->ty        = ty_int;
+    NodeMut_t node = new_binary(ND_SUB, lhs, rhs, tok);
+    node->ty       = ty_int;
     return new_binary(ND_DIV, node, new_number(lhs->ty->base->size, tok), tok);
   }
 
@@ -401,11 +413,11 @@ pri node_mut_t new_sub(node_mut_t lhs, node_mut_t rhs, token_mut_t tok) {
 }
 
 /// add = mul ("+" mul | "-" mul)*
-pri node_mut_t add(token_mut_t* rest, token_mut_t tok) {
-  node_mut_t node = mul(&tok, tok);
+pri NodeMut_t add(TokenMut_t* rest, TokenMut_t tok) {
+  NodeMut_t node = mul(&tok, tok);
 
   for (;;) {
-    token_mut_t start = tok;
+    TokenMut_t start = tok;
 
     if (equal(tok, "+")) {
       node = new_add(node, mul(&tok, tok->next), start);
@@ -424,11 +436,11 @@ pri node_mut_t add(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// mul = unary ("*" unary | "/" primary)*
-pri node_mut_t mul(token_mut_t* rest, token_mut_t tok) {
-  node_mut_t node = unary(&tok, tok);
+pri NodeMut_t mul(TokenMut_t* rest, TokenMut_t tok) {
+  NodeMut_t node = unary(&tok, tok);
 
   for (;;) {
-    token_mut_t start = tok;
+    TokenMut_t start = tok;
 
     if (equal(tok, "*")) {
       node = new_binary(ND_MUL, node, unary(&tok, tok->next), start);
@@ -448,7 +460,7 @@ pri node_mut_t mul(token_mut_t* rest, token_mut_t tok) {
 
 /// unary = ("+" | "-" | "*" | "&") unary
 ///       | postfix
-pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
+pri NodeMut_t unary(TokenMut_t* rest, TokenMut_t tok) {
   if (equal(tok, "+")) {
     return unary(rest, tok->next);
   }
@@ -469,15 +481,15 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// postfix = primary ("[" expr "]")
-pri node_mut_t postfix(token_mut_t* rest, token_mut_t tok) {
-  node_mut_t node = primary(&tok, tok);
+pri NodeMut_t postfix(TokenMut_t* rest, TokenMut_t tok) {
+  NodeMut_t node = primary(&tok, tok);
 
   while (equal(tok, "[")) {
     // x[y] is short for *(x+y)
-    token_mut_t start = tok;
-    node_mut_t idx    = expr(&tok, tok->next);
-    tok               = skip(tok, "]");
-    node              = new_unary(ND_DEREF, new_add(node, idx, start), start);
+    TokenMut_t start = tok;
+    NodeMut_t idx    = expr(&tok, tok->next);
+    tok              = skip(tok, "]");
+    node             = new_unary(ND_DEREF, new_add(node, idx, start), start);
   }
 
   *rest = tok;
@@ -486,12 +498,12 @@ pri node_mut_t postfix(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// funcall = ident "(" (assign "," assign)*)? ")"
-pri node_mut_t funcall(token_mut_t* rest, token_mut_t tok) {
-  token_mut_t start = tok;
-  tok               = tok->next->next;
+pri NodeMut_t funcall(TokenMut_t* rest, TokenMut_t tok) {
+  TokenMut_t start = tok;
+  tok              = tok->next->next;
 
-  node_t head    = {};
-  node_mut_t cur = &head;
+  Node_t head   = {};
+  NodeMut_t cur = &head;
 
   while (!equal(tok, ")")) {
     if (cur != &head) {
@@ -503,23 +515,23 @@ pri node_mut_t funcall(token_mut_t* rest, token_mut_t tok) {
 
   *rest = skip(tok, ")");
 
-  node_mut_t node = new_node(ND_FUNCALL, start);
-  node->funcname  = strndup(start->loc, start->len);
-  node->args      = head.next;
+  NodeMut_t node = new_node(ND_FUNCALL, start);
+  node->funcname = strndup(start->loc, start->len);
+  node->args     = head.next;
 
   return node;
 }
 
 /// primary = "(" expr ")" | "sizeof" unary | ident func-args? | num
-pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
+pri NodeMut_t primary(TokenMut_t* rest, TokenMut_t tok) {
   if (equal(tok, "(")) {
-    node_mut_t node = expr(&tok, tok->next);
-    *rest           = skip(tok, ")");
+    NodeMut_t node = expr(&tok, tok->next);
+    *rest          = skip(tok, ")");
     return node;
   }
 
   if (equal(tok, "sizeof")) {
-    node_mut_t node = unary(rest, tok->next);
+    NodeMut_t node = unary(rest, tok->next);
     add_type(node);
     return new_number(node->ty->size, tok);
   }
@@ -531,18 +543,18 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
     }
 
     // 变量
-    obj_mut_t var = find_var(tok);
+    ObjMut_t var = find_var(tok);
     if (!var) {
       error_tok(tok, "undefined variable");
     }
     *rest = tok->next;
 
-    return new_var(var, tok);
+    return new_var_node(var, tok);
   }
 
   if (tok->kind == TK_NUM) {
-    node_mut_t node = new_number(tok->val, tok);
-    *rest           = tok->next;
+    NodeMut_t node = new_number(tok->val, tok);
+    *rest          = tok->next;
     return node;
   }
 
@@ -551,39 +563,38 @@ pri node_mut_t primary(token_mut_t* rest, token_mut_t tok) {
   return nullptr;
 }
 
-pri void create_param_lvars(type_mut_t param) {
+pri void create_param_lvars(TypeMut_t param) {
   if (param) {
     create_param_lvars(param->next);
     new_lvar(get_ident(param->name), param);
   }
 }
 
-pri function_mut_t function(token_mut_t* rest, token_mut_t tok) {
-  type_mut_t ty = declspec(&tok, tok);
-  ty            = declarator(&tok, tok, ty);
+pri TokenMut_t function(TokenMut_t tok, TypeMut_t basety) {
+  TypeMut_t ty = declarator(&tok, tok, basety);
+
+  ObjMut_t fn     = new_gvar(get_ident(ty->name), ty);
+  fn->is_function = true;
 
   locals = nullptr;
-
-  function_mut_t fn = u_talloc(function_t);
-  fn->name          = get_ident(ty->name);
   create_param_lvars(ty->params);
   fn->params = locals;
 
   tok        = skip(tok, "{");
-  fn->body   = compound_stmt(rest, tok);
+  fn->body   = compound_stmt(&tok, tok);
   fn->locals = locals;
 
-  return fn;
+  return tok;
 }
 
 /// program = function-definition*
-pub function_mut_t parse(token_mut_t tok) {
-  function_t head    = {};
-  function_mut_t cur = &head;
+pub ObjMut_t parse(TokenMut_t tok) {
+  globals = nullptr;
 
   while (tok->kind != TK_EOF) {
-    cur = cur->next = function(&tok, tok);
+    TypeMut_t basety = declspec(&tok, tok);
+    tok              = function(tok, basety);
   }
 
-  return head.next;
+  return globals;
 }

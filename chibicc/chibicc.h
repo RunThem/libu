@@ -1,7 +1,15 @@
 #include <u/u.h>
 
-typedef struct type* type_mut_t;
-typedef struct node* node_mut_t;
+#undef u_struct_def
+#define u_struct_def(T, ...)                                                                       \
+  struct T;                                                                                        \
+  typedef typeof(struct T) T##_t;                                                                  \
+  typedef typeof(struct T*) T##Mut_t;                                                              \
+  typedef typeof(const struct T*) T##Ref_t;                                                        \
+  struct __VA_ARGS__ T
+
+u_struct_def(Type);
+u_struct_def(Node);
 
 ///
 /// Tokenizer
@@ -13,11 +21,11 @@ typedef enum {
   TK_KEYWORD,  // 关键字
   TK_NUM,      // 数字
   TK_EOF,      // 文件结束符标志
-} token_kind_e;
+} TokenKind_e;
 
-u_struct_def(token) {
-  token_kind_e kind;  // Token 类型
-  token_mut_t next;   // 指向下一个 Token
+u_struct_def(Token) {
+  TokenKind_e kind;  // Token 类型
+  TokenMut_t next;   // 指向下一个 Token
 
   int val;    // 如果 .kind == TK_NUM
   char* loc;  // Token 的起始位置
@@ -27,31 +35,33 @@ u_struct_def(token) {
 /// 报错并退出程序
 pub void error(char* fmt, ...);
 pub void error_at(char* loc, char* fmt, ...);
-pub void error_tok(token_ref_t tok, char* fmt, ...);
-pub bool equal(token_ref_t tok, char* op);
-pub token_mut_t skip(token_ref_t tok, char* s);
-pub bool consume(token_mut_t* rest, token_mut_t tok, char* str);
-pub token_mut_t tokenize(char* p);
+pub void error_tok(TokenRef_t tok, char* fmt, ...);
+pub bool equal(TokenRef_t tok, char* op);
+pub TokenMut_t skip(TokenRef_t tok, char* s);
+pub bool consume(TokenMut_t* rest, TokenMut_t tok, char* str);
+pub TokenMut_t tokenize(char* p);
 
 ///
 /// Parser
 ///
 
-/// 局部变量
-u_struct_def(obj) {
-  obj_mut_t next;
+/// 变量或函数
+u_struct_def(Obj) {
+  ObjMut_t next;
   char* name;     // 变量名
-  type_mut_t ty;  // 类型
-  int offset;     // 栈偏移量
-};
+  TypeMut_t ty;   // 类型
+  bool is_local;  // 局部或全局/函数
 
-u_struct_def(function) {
-  function_mut_t next;
-  char* name;
-  obj_mut_t params;
+  // 局部变量
+  int offset;
 
-  node_mut_t body;
-  obj_mut_t locals;
+  // 全局变脸或函数
+  bool is_function;
+
+  // 函数
+  ObjMut_t params;
+  NodeMut_t body;
+  ObjMut_t locals;
   int stack_size;
 };
 
@@ -76,37 +86,37 @@ typedef enum {
   ND_EXPR_STMT,  // 表达式语句
   ND_VAR,        // 变量
   ND_NUM,        // 数字
-} node_kind_e;
+} NodeKind_e;
 
 /// Ast 节点
-u_struct_def(node) {
-  node_kind_e kind;  // 节点类型
-  node_mut_t next;   // 下一个节点
-  type_mut_t ty;     // 类型, 如 int 或 int*
-  token_mut_t tok;   // 代表 Token
+u_struct_def(Node) {
+  NodeKind_e kind;  // 节点类型
+  NodeMut_t next;   // 下一个节点
+  TypeMut_t ty;     // 类型, 如 int 或 int*
+  TokenMut_t tok;   // 代表 Token
 
-  node_mut_t lhs;  // 左子节点
-  node_mut_t rhs;  // 右子节点
+  NodeMut_t lhs;  // 左子节点
+  NodeMut_t rhs;  // 右子节点
 
   // if 或 for 语句
-  node_mut_t cond;
-  node_mut_t then;
-  node_mut_t els;
-  node_mut_t init;
-  node_mut_t inc;
+  NodeMut_t cond;
+  NodeMut_t then;
+  NodeMut_t els;
+  NodeMut_t init;
+  NodeMut_t inc;
 
   // 块
-  node_mut_t body;
+  NodeMut_t body;
 
   // 函数名
   char* funcname;
-  node_mut_t args;
+  NodeMut_t args;
 
-  obj_mut_t var;  // 如果 .kind == ND_VAR
-  int val;        // 如果 .kind == ND_NUM
+  ObjMut_t var;  // 如果 .kind == ND_VAR
+  int val;       // 如果 .kind == ND_NUM
 };
 
-pub function_mut_t parse(token_mut_t tok);
+pub ObjMut_t parse(TokenMut_t tok);
 
 ///
 /// Type checker
@@ -117,47 +127,47 @@ typedef enum {
   TY_PTR,
   TY_FUNC,
   TY_ARRAY,
-} type_kind_e;
+} TypeKind_e;
 
-u_struct_def(type) {
-  type_kind_e kind;
+u_struct_def(Type) {
+  TypeKind_e kind;
   int size;  // sizeof() 值
 
   // 指针类型或数组类型, 我们有意使用相同的成员来表示 C 语言中指针/数组的二元性.
   // 在许多期望指针的上下文中, 我们检查此成员而非 .kind 成员来确定某个类型是否为指针.
   // 这意味着在许多上下文中, 'T 类型的数组' 会自然地被当作 '指向 T 的指针' 来处理,
   // 这符合 C 语言规范的要求.
-  type_mut_t base;
+  TypeMut_t base;
 
   // 声明
-  token_mut_t name;
+  TokenMut_t name;
 
   // 数组
   int array_len;
 
   // 函数类型
-  type_mut_t return_ty;
-  type_mut_t params;
-  type_mut_t next;
+  TypeMut_t return_ty;
+  TypeMut_t params;
+  TypeMut_t next;
 };
 
-extern pub type_mut_t ty_int;
+extern pub TypeMut_t ty_int;
 
-pub bool is_integer(type_mut_t ty);
-type_mut_t copy_type(type_mut_t ty);
-pub type_mut_t pointer_to(type_mut_t base);
-pub type_mut_t func_type(type_mut_t return_ty);
-type_mut_t array_of(type_mut_t base, int size);
-pub void add_type(node_mut_t node);
+pub bool is_integer(TypeMut_t ty);
+pub TypeMut_t copy_type(TypeMut_t ty);
+pub TypeMut_t pointer_to(TypeMut_t base);
+pub TypeMut_t func_type(TypeMut_t return_ty);
+pub TypeMut_t array_of(TypeMut_t base, int size);
+pub void add_type(NodeMut_t node);
 
 ///
 /// Code generator
 ///
 
-pub void codegen(function_mut_t prog);
+pub void codegen(ObjMut_t prog);
 
 ///
 /// Dump
 ///
 
-pub void dump(function_ref_t prog);
+pub void dump(ObjMut_t prog);

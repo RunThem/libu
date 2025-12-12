@@ -4,9 +4,9 @@ pri int depth;
 
 pri char* argreg[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 
-pri function_mut_t current_fn = nullptr;
+pri ObjMut_t current_fn = nullptr;
 
-pri void gen_expr(node_ref_t node);
+pri void gen_expr(NodeRef_t node);
 
 pri int count() {
   pri int i = 1;
@@ -24,7 +24,7 @@ pri void pop(char* arg) {
 }
 
 /// 计算给定节点的绝对地址, 如果给定的节点不在内存中, 则会产生错误
-pri void gen_addr(node_ref_t node) {
+pri void gen_addr(NodeRef_t node) {
   switch (node->kind) {
     case ND_VAR: printf("  lea %d(%%rbp), %%rax\n", node->var->offset); return;
     case ND_DEREF: gen_expr(node->lhs); return;
@@ -42,7 +42,7 @@ typedef const struct Api* ApiRef_t;
 struct Api { };
 
 /// 从 %rax 所指向的位置加载一个值
-pri void load(type_mut_t ty) {
+pri void load(TypeMut_t ty) {
   if (ty->kind == TY_ARRAY) {
     // 如果是一个数组, 不要尝试将值加载到寄存器中, 因为通常我们无法将整个数组加载到寄存器中.
     // 因此, 对数组求值的结果不是数组本身, 而是数组的地址.
@@ -60,7 +60,7 @@ pri void store() {
 }
 
 /// 为给定节点生成代码
-pri void gen_expr(node_ref_t node) {
+pri void gen_expr(NodeRef_t node) {
   switch (node->kind) {
     case ND_NUM: printf("  mov $%d, %%rax\n", node->val); return;
     case ND_NEG:
@@ -85,7 +85,7 @@ pri void gen_expr(node_ref_t node) {
     case ND_FUNCALL: {
 
       int nargs = 0;
-      for (node_mut_t arg = node->args; arg; arg = arg->next) {
+      for (NodeMut_t arg = node->args; arg; arg = arg->next) {
         gen_expr(arg);
         push();
         nargs++;
@@ -141,7 +141,7 @@ pri void gen_expr(node_ref_t node) {
   error_tok(node->tok, "invalid expression");
 }
 
-pri void gen_stmt(node_mut_t node) {
+pri void gen_stmt(NodeMut_t node) {
   switch (node->kind) {
     case ND_IF: {
 
@@ -179,7 +179,7 @@ pri void gen_stmt(node_mut_t node) {
       return;
     }
     case ND_BLOCK:
-      for (node_mut_t n = node->body; n; n = n->next) {
+      for (NodeMut_t n = node->body; n; n = n->next) {
         gen_stmt(n);
       }
       return;
@@ -195,11 +195,13 @@ pri void gen_stmt(node_mut_t node) {
   error_tok(node->tok, "invalid statement");
 }
 
-pri void assign_lvar_offsets(function_mut_t prog) {
-  for (function_mut_t fn = prog; fn; fn = fn->next) {
+pri void assign_lvar_offsets(ObjMut_t prog) {
+  for (ObjMut_t fn = prog; fn; fn = fn->next) {
+    u_cnt_if(!fn->is_function);
+
     int offset = 0;
 
-    for (obj_mut_t var = fn->locals; var; var = var->next) {
+    for (ObjMut_t var = fn->locals; var; var = var->next) {
       offset += var->ty->size;
       var->offset = -offset;
     }
@@ -208,10 +210,12 @@ pri void assign_lvar_offsets(function_mut_t prog) {
   }
 }
 
-pub void codegen(function_mut_t prog) {
+pub void codegen(ObjMut_t prog) {
   assign_lvar_offsets(prog);
 
-  for (function_mut_t fn = prog; fn; fn = fn->next) {
+  for (ObjMut_t fn = prog; fn; fn = fn->next) {
+    u_cnt_if(!fn->is_function);
+
     printf("  .globl %s\n", fn->name);
     printf("%s:\n", fn->name);
     current_fn = fn;
@@ -222,7 +226,7 @@ pub void codegen(function_mut_t prog) {
     printf("  sub $%d, %%rsp\n", fn->stack_size);
 
     int i = 0;
-    for (obj_mut_t var = fn->params; var; var = var->next) {
+    for (ObjMut_t var = fn->params; var; var = var->next) {
       printf("  mov %s, %d(%%rbp)\n", argreg[i++], var->offset);
     }
 

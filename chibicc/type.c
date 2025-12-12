@@ -1,30 +1,30 @@
 #include "chibicc.h"
 
-pub type_mut_t ty_int = &me(type_t, TY_INT, 8);
+pub TypeMut_t ty_int = &me(Type_t, TY_INT, 8);
 
-pub bool is_integer(type_mut_t ty) {
+pub bool is_integer(TypeMut_t ty) {
   return ty->kind == TY_INT;
 }
 
-pub type_mut_t copy_type(type_mut_t ty) {
-  type_mut_t ret = u_talloc(type_t);
-  *ret           = *ty;
+pub TypeMut_t copy_type(TypeMut_t ty) {
+  TypeMut_t ret = u_talloc(Type_t);
+  *ret          = *ty;
   return ret;
 }
 
-pub type_mut_t pointer_to(type_mut_t base) {
-  return new(type_t, .kind = TY_PTR, .size = 8, .base = base);
+pub TypeMut_t pointer_to(TypeMut_t base) {
+  return new (Type_t, .kind = TY_PTR, .size = 8, .base = base);
 }
 
-pub type_mut_t func_type(type_mut_t return_ty) {
-  return new(type_t, .kind = TY_FUNC, .return_ty = return_ty);
+pub TypeMut_t func_type(TypeMut_t return_ty) {
+  return new (Type_t, .kind = TY_FUNC, .return_ty = return_ty);
 }
 
-pub type_mut_t array_of(type_mut_t base, int len) {
-  return new(type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
+pub TypeMut_t array_of(TypeMut_t base, int len) {
+  return new (Type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
 }
 
-pub void add_type(node_mut_t node) {
+pub void add_type(NodeMut_t node) {
   if (!node || node->ty) {
     return;
   }
@@ -37,11 +37,11 @@ pub void add_type(node_mut_t node) {
   add_type(node->init);
   add_type(node->inc);
 
-  for (node_mut_t n = node->body; n; n = n->next) {
+  for (NodeMut_t n = node->body; n; n = n->next) {
     add_type(n);
   }
 
-  for (node_mut_t n = node->args; n; n = n->next) {
+  for (NodeMut_t n = node->args; n; n = n->next) {
     add_type(n);
   }
 

@@ -11,7 +11,7 @@ pri void fmt(const char* fmt, ...) {
   printf("\n");
 }
 
-pri void dump_ast(node_ref_t node) {
+pri void dump_ast(NodeRef_t node) {
   switch (node->kind) {
     case ND_EXPR_STMT:
       fmt("ND_EXPR_STMT");
@@ -46,16 +46,16 @@ pri void dump_ast(node_ref_t node) {
   }
 }
 
-pub void dump(function_ref_t prog) {
+pub void dump(ObjMut_t prog) {
   fmt("stack-size: %d", prog->stack_size);
 
   int count = 0;
-  for (obj_ref_t var = prog->locals; var; var = var->next) {
+  for (ObjRef_t var = prog->locals; var; var = var->next) {
     fmt("lvar[%d]: %s, offset: %d", count, var->name, var->offset);
     count++;
   }
 
-  for (node_ref_t n = prog->body; n; n = n->next) {
+  for (NodeRef_t n = prog->body; n; n = n->next) {
     dump_ast(n);
   }
 }
