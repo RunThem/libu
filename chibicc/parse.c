@@ -15,6 +15,7 @@ pri node_mut_t equality(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t relational(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t add(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t mul(token_mut_t* rest, token_mut_t tok);
+pri node_mut_t postfix(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t unary(token_mut_t* rest, token_mut_t tok);
 pri node_mut_t primary(token_mut_t* rest, token_mut_t tok);
 
@@ -446,7 +447,7 @@ pri node_mut_t mul(token_mut_t* rest, token_mut_t tok) {
 }
 
 /// unary = ("+" | "-" | "*" | "&") unary
-///       | primary
+///       | postfix
 pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
   if (equal(tok, "+")) {
     return unary(rest, tok->next);
@@ -464,7 +465,24 @@ pri node_mut_t unary(token_mut_t* rest, token_mut_t tok) {
     return new_unary(ND_DEREF, unary(rest, tok->next), tok);
   }
 
-  return primary(rest, tok);
+  return postfix(rest, tok);
+}
+
+/// postfix = primary ("[" expr "]")
+pri node_mut_t postfix(token_mut_t* rest, token_mut_t tok) {
+  node_mut_t node = primary(&tok, tok);
+
+  while (equal(tok, "[")) {
+    // x[y] is short for *(x+y)
+    token_mut_t start = tok;
+    node_mut_t idx    = expr(&tok, tok->next);
+    tok               = skip(tok, "]");
+    node              = new_unary(ND_DEREF, new_add(node, idx, start), start);
+  }
+
+  *rest = tok;
+
+  return node;
 }
 
 /// funcall = ident "(" (assign "," assign)*)? ")"
