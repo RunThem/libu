@@ -19,6 +19,7 @@ typedef enum {
   TK_IDENT,    // 标识符
   TK_PUNCT,    // 符号
   TK_KEYWORD,  // 关键字
+  TK_STR,      // 字符串
   TK_NUM,      // 数字
   TK_EOF,      // 文件结束符标志
 } TokenKind_e;
@@ -27,9 +28,11 @@ u_struct_def(Token) {
   TokenKind_e kind;  // Token 类型
   TokenMut_t next;   // 指向下一个 Token
 
-  int val;    // 如果 .kind == TK_NUM
-  char* loc;  // Token 的起始位置
-  int len;    // Token 的长度
+  int val;       // 如果 .kind == TK_NUM
+  char* loc;     // Token 的起始位置
+  int len;       // Token 的长度
+  TypeMut_t ty;  // 如果是 TK_STR
+  char* str;     // 字符串字面量, 包括括终止 '\0'
 };
 
 /// 报错并退出程序
@@ -57,6 +60,9 @@ u_struct_def(Obj) {
 
   // 全局变脸或函数
   bool is_function;
+
+  // 全局变量
+  char* init_data;
 
   // 函数
   ObjMut_t params;

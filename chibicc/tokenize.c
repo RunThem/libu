@@ -113,6 +113,21 @@ pri bool is_keyword(TokenMut_t tok) {
   return false;
 }
 
+pri TokenMut_t read_string_literal(char* start) {
+  char* p = start + 1;
+
+  for (; *p != '"'; p++) {
+    if (*p == '\n' || *p == '\0') {
+      error_at(start, "unclosed string literal");
+    }
+  }
+
+  TokenMut_t tok = new_token(TK_STR, start, p + 1);
+  tok->ty        = array_of(ty_char, p - start);
+  tok->str       = strndup(start + 1, p - start - 1);
+  return tok;
+}
+
 pri void convert_keywords(TokenMut_t tok) {
   for (TokenMut_t t = tok; tok->kind != TK_EOF; t = t->next) {
     if (is_keyword(tok)) {
@@ -138,6 +153,12 @@ pub TokenMut_t tokenize(char* p) {
       char* q         = p;
       cur->val        = (int)strtoul(p, &p, 10);
       cur->len        = (int)(p - q);
+      continue;
+    }
+
+    if (*p == '"') {
+      cur = cur->next = read_string_literal(p);
+      p += cur->len;
       continue;
     }
 

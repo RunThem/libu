@@ -75,6 +75,26 @@ pri ObjMut_t new_gvar(char* name, TypeMut_t ty) {
   return var;
 }
 
+pri char* new_unique_name() {
+  pri int id = 0;
+
+  char* buf = u_zalloc(20);
+  sprintf(buf, ".L..%d", id++);
+
+  return buf;
+}
+
+pri ObjMut_t new_anon_gvar(TypeMut_t ty) {
+  return new_gvar(new_unique_name(), ty);
+}
+
+pri ObjMut_t new_string_literal(char* p, TypeMut_t ty) {
+  ObjMut_t var   = new_anon_gvar(ty);
+  var->init_data = p;
+
+  return var;
+}
+
 pri char* get_ident(TokenMut_t tok) {
   if (tok->kind != TK_IDENT) {
     error_tok(tok, "expected an identifier");
@@ -538,7 +558,7 @@ pri NodeMut_t funcall(TokenMut_t* rest, TokenMut_t tok) {
   return node;
 }
 
-/// primary = "(" expr ")" | "sizeof" unary | ident func-args? | num
+/// primary = "(" expr ")" | "sizeof" unary | ident func-args? | str | num
 pri NodeMut_t primary(TokenMut_t* rest, TokenMut_t tok) {
   if (equal(tok, "(")) {
     NodeMut_t node = expr(&tok, tok->next);
@@ -565,6 +585,12 @@ pri NodeMut_t primary(TokenMut_t* rest, TokenMut_t tok) {
     }
     *rest = tok->next;
 
+    return new_var_node(var, tok);
+  }
+
+  if (tok->kind == TK_STR) {
+    ObjMut_t var = new_string_literal(tok->str, tok->ty);
+    *rest        = tok->next;
     return new_var_node(var, tok);
   }
 

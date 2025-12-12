@@ -237,6 +237,14 @@ pri void emit_data(ObjMut_t prog) {
     printf("  .globl %s\n", var->name);
     printf("%s:\n", var->name);
     printf("  .zero %d\n", var->ty->size);
+
+    if (var->init_data) {
+      for (int i = 0; i < var->ty->size; i++) {
+        printf("  .byte %d\n", var->init_data[i]);
+      }
+    } else {
+      printf("  .zero %d\n", var->ty->size);
+    }
   }
 }
 
