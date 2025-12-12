@@ -91,6 +91,18 @@ pri bool is_ident2(char c) {
   return is_ident1(c) || ('0' <= c && c <= '9');
 }
 
+pri int from_hex(char c) {
+  if ('0' <= c && c <= '9') {
+    return c - '0';
+  }
+
+  if ('a' <= c && c <= 'f') {
+    return c - 'a' + 10;
+  }
+
+  return c - 'A' + 10;
+}
+
 /// 从 `p` 读取一个标点符号并返回其长度
 pri int read_punct(char* p) {
   if (startswitch(p, "==") || startswitch(p, "!=") || startswitch(p, "<=") ||
@@ -121,6 +133,21 @@ pri int read_escaped_char(char** new_pos, char* p) {
       if ('0' <= *p && *p <= '7') {
         c = (c << 3) + (*p++ - '0');
       }
+    }
+
+    *new_pos = p;
+    return c;
+  }
+
+  if (*p == 'x') {
+    p++;
+    if (!isxdigit(*p)) {
+      error_at(p, "invalid hex escape sequence");
+    }
+
+    int c = 0;
+    for (; isxdigit(*p); p++) {
+      c = (c << 4) + from_hex(*p);
     }
 
     *new_pos = p;
