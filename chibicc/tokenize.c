@@ -1,5 +1,8 @@
 #include "chibicc.h"
 
+/// 输入文件名
+pri char* current_filename;
+
 /// 输入字符串
 pri char* current_input;
 
@@ -14,10 +17,37 @@ pub void error(char* fmt, ...) {
   exit(1);
 }
 
-// 报告错误位置并退出程序
+// 报告一下格式的错误消息并退出程序
+//
+// foo.c:10: x = y + 1;
+//               ^ <error message here>
 pri void verror_at(char* loc, char* fmt, va_list ap) {
-  int pos = loc - current_input;
-  fprintf(stderr, "%s\n", current_input);
+  // 查找行内容位置
+  char* line = loc;
+  while (current_input < line && line[-1] != '\n') {
+    line--;
+  }
+
+  char* end = loc;
+  while (*end != '\n') {
+    end++;
+  }
+
+  // 获取行号
+  int line_no = 1;
+  for (char* p = current_input; p < line; p++) {
+    if (*p == '\n') {
+      line_no++;
+    }
+  }
+
+  // 打印行号
+  int ident = fprintf(stderr, "%s:%d: ", current_filename, line_no);
+  fprintf(stderr, "%.*s\n", (int)(end - line), line);
+
+  // 打印错误信息
+  int pos = loc - line + ident;
+
   fprintf(stderr, "%*s", pos, "");  // 打印多个空格
   fprintf(stderr, "^ ");
   vfprintf(stderr, fmt, ap);
@@ -74,7 +104,7 @@ pub bool consume(TokenMut_t* rest, TokenMut_t tok, char* str) {
 
 /// 创建 Token 实例
 pri TokenMut_t new_token(TokenKind_e kind, char* start, char* end) {
-  return new(Token_t, .kind = kind, .loc = start, .len = end - start);
+  return new (Token_t, .kind = kind, .loc = start, .len = end - start);
 }
 
 pri bool startswitch(char* p, char* q) {
@@ -215,10 +245,11 @@ pri void convert_keywords(TokenMut_t tok) {
 }
 
 /// 对给定字符串进行标记并返回新的 Token
-pub TokenMut_t tokenize(char* p) {
-  current_input  = p;
-  Token_t head   = {};
-  TokenMut_t cur = &head;
+pub TokenMut_t tokenize(char* filename, char* p) {
+  current_filename = filename;
+  current_input    = p;
+  Token_t head     = {};
+  TokenMut_t cur   = &head;
 
   while (*p) {
     if (isspace(*p)) {
@@ -264,4 +295,47 @@ pub TokenMut_t tokenize(char* p) {
   convert_keywords(cur);
 
   return head.next;
+}
+
+/// 返回给出的文件内容
+pri char* read_file(char* path) {
+  FILE* fp = {};
+
+  if (strcmp(path, "-") == 0) {
+    fp = stdin;
+  } else {
+    fp = fopen(path, "r");
+    if (!fp) {
+      error("cannot open %s: %s", path, strerror(errno));
+    }
+  }
+
+  char* buf     = {};
+  size_t buflen = {};
+  FILE* out     = open_memstream(&buf, &buflen);
+
+  for (;;) {
+    char buf2[4096] = {};
+    int n           = fread(buf2, 1, sizeof(buf2), fp);
+    u_brk_if(n == 0);
+
+    fwrite(buf2, 1, n, out);
+  }
+
+  if (fp != stdin) {
+    fclose(fp);
+  }
+
+  fflush(out);
+  if (buflen == 0 || buf[buflen - 1] != '\n') {
+    fputc('\n', out);
+  }
+  fputc('\0', out);
+  fclose(out);
+
+  return buf;
+}
+
+pub TokenMut_t tokenize_file(char* path) {
+  return tokenize(path, read_file(path));
 }

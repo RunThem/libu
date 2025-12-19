@@ -48,7 +48,7 @@ pub void error_tok(TokenRef_t tok, char* fmt, ...);
 pub bool equal(TokenRef_t tok, char* op);
 pub TokenMut_t skip(TokenRef_t tok, char* s);
 pub bool consume(TokenMut_t* rest, TokenMut_t tok, char* str);
-pub TokenMut_t tokenize(char* p);
+pub TokenMut_t tokenize_file(char* path);
 
 ///
 /// Parser
