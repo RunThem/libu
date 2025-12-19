@@ -96,6 +96,7 @@ typedef enum {
   ND_BLOCK,      // { ... }
   ND_FUNCALL,    // 函数调用
   ND_EXPR_STMT,  // 表达式语句
+  ND_STMT_EXPR,  // 语句表达式
   ND_VAR,        // 变量
   ND_NUM,        // 数字
 } NodeKind_e;
@@ -117,7 +118,7 @@ u_struct_def(Node) {
   NodeMut_t init;
   NodeMut_t inc;
 
-  // 块
+  // 块或语句表达式
   NodeMut_t body;
 
   // 函数名

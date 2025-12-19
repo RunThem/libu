@@ -14,15 +14,15 @@ pub TypeMut_t copy_type(TypeMut_t ty) {
 }
 
 pub TypeMut_t pointer_to(TypeMut_t base) {
-  return new(Type_t, .kind = TY_PTR, .size = 8, .base = base);
+  return new (Type_t, .kind = TY_PTR, .size = 8, .base = base);
 }
 
 pub TypeMut_t func_type(TypeMut_t return_ty) {
-  return new(Type_t, .kind = TY_FUNC, .return_ty = return_ty);
+  return new (Type_t, .kind = TY_FUNC, .return_ty = return_ty);
 }
 
 pub TypeMut_t array_of(TypeMut_t base, int len) {
-  return new(Type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
+  return new (Type_t, .kind = TY_ARRAY, .size = base->size * len, .base = base, .array_len = len);
 }
 
 pub void add_type(NodeMut_t node) {
@@ -84,6 +84,23 @@ pub void add_type(NodeMut_t node) {
       }
 
       node->ty = node->lhs->ty->base;
+      return;
+
+    case ND_STMT_EXPR:
+      if (node->body) {
+        NodeMut_t stmt = node->body;
+
+        while (stmt->next) {
+          stmt = stmt->next;
+        }
+
+        if (stmt->kind == ND_EXPR_STMT) {
+          node->ty = stmt->lhs->ty;
+          return;
+        }
+      }
+
+      error_tok(node->tok, "statement expression returning void is not supported");
       return;
 
     default: break;

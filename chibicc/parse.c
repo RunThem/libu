@@ -38,38 +38,38 @@ pri ObjMut_t find_var(TokenRef_t tok) {
 }
 
 pri NodeMut_t new_node(NodeKind_e kind, TokenMut_t tok) {
-  return new(Node_t, .kind = kind, .tok = tok);
+  return new (Node_t, .kind = kind, .tok = tok);
 }
 
 pri NodeMut_t new_binary(NodeKind_e kind, NodeMut_t lhs, NodeMut_t rhs, TokenMut_t tok) {
-  return new(Node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
+  return new (Node_t, .kind = kind, .lhs = lhs, .rhs = rhs, .tok = tok);
 }
 
 pri NodeMut_t new_unary(NodeKind_e kind, NodeMut_t expr, TokenMut_t tok) {
-  return new(Node_t, .kind = kind, .lhs = expr, .tok = tok);
+  return new (Node_t, .kind = kind, .lhs = expr, .tok = tok);
 }
 
 pri NodeMut_t new_number(int val, TokenMut_t tok) {
-  return new(Node_t, .kind = ND_NUM, .val = val, .tok = tok);
+  return new (Node_t, .kind = ND_NUM, .val = val, .tok = tok);
 }
 
 pri NodeMut_t new_var_node(ObjMut_t var, TokenMut_t tok) {
-  return new(Node_t, .kind = ND_VAR, .var = var, .tok = tok);
+  return new (Node_t, .kind = ND_VAR, .var = var, .tok = tok);
 }
 
 pri ObjMut_t new_var(char* name, TypeMut_t ty) {
-  return new(Obj_t, .name = name, .ty = ty);
+  return new (Obj_t, .name = name, .ty = ty);
 }
 
 pri ObjMut_t new_lvar(char* name, TypeMut_t ty) {
-  ObjMut_t var = new(Obj_t, .name = name, .is_local = true, .next = locals, .ty = ty);
+  ObjMut_t var = new (Obj_t, .name = name, .is_local = true, .next = locals, .ty = ty);
   locals       = var;
 
   return var;
 }
 
 pri ObjMut_t new_gvar(char* name, TypeMut_t ty) {
-  ObjMut_t var = new(Obj_t, .name = name, .next = globals, .ty = ty);
+  ObjMut_t var = new (Obj_t, .name = name, .next = globals, .ty = ty);
   globals      = var;
 
   return var;
@@ -297,7 +297,7 @@ pri NodeMut_t compound_stmt(TokenMut_t* rest, TokenMut_t tok) {
     add_type(cur);
   }
 
-  NodeMut_t node = new(Node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
+  NodeMut_t node = new (Node_t, .kind = ND_BLOCK, .body = head.next, .tok = tok);
   *rest          = tok->next;
 
   return node;
@@ -555,8 +555,21 @@ pri NodeMut_t funcall(TokenMut_t* rest, TokenMut_t tok) {
   return node;
 }
 
-/// primary = "(" expr ")" | "sizeof" unary | ident func-args? | str | num
+/// primary = "(" "{" stmt+ "}" ")"
+///         | "(" expr ")"
+///         | "sizeof" unary
+///         | ident func-args?
+///         | str
+///         | num
 pri NodeMut_t primary(TokenMut_t* rest, TokenMut_t tok) {
+  if (equal(tok, "(") && equal(tok->next, "{")) {
+    // Gnu 扩展: 语句表达式
+    NodeMut_t node = new_node(ND_STMT_EXPR, tok);
+    node->body     = compound_stmt(&tok, tok->next->next)->body;
+    *rest          = skip(tok, ")");
+    return node;
+  }
+
   if (equal(tok, "(")) {
     NodeMut_t node = expr(&tok, tok->next);
     *rest          = skip(tok, ")");

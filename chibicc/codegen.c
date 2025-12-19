@@ -7,7 +7,8 @@ pri char* argreg64[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 
 pri ObjMut_t current_fn = nullptr;
 
-pri void gen_expr(NodeRef_t node);
+pri void gen_expr(NodeMut_t node);
+pri void gen_stmt(NodeMut_t node);
 
 pri int count() {
   pri int i = 1;
@@ -79,7 +80,7 @@ pri void store(TypeMut_t ty) {
 }
 
 /// 为给定节点生成代码
-pri void gen_expr(NodeRef_t node) {
+pri void gen_expr(NodeMut_t node) {
   switch (node->kind) {
     case ND_NUM: printf("  mov $%d, %%rax\n", node->val); return;
     case ND_NEG:
@@ -100,6 +101,11 @@ pri void gen_expr(NodeRef_t node) {
       push();
       gen_expr(node->rhs);
       store(node->ty);
+      return;
+    case ND_STMT_EXPR:
+      for (NodeMut_t n = node->body; n; n = n->next) {
+        gen_stmt(n);
+      }
       return;
     case ND_FUNCALL: {
 
