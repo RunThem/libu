@@ -179,7 +179,7 @@ pub void add_type(NodeMut_t node);
 /// Code generator
 ///
 
-pub void codegen(ObjMut_t prog);
+pub void codegen(ObjMut_t prog, FILE* out);
 
 ///
 /// Dump

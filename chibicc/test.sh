@@ -14,20 +14,20 @@ int add6(int a, int b, int c, int d, int e, int f) {
 EOF
 
 assert() {
-  expected="$1"
-  input="$2"
+	expected="$1"
+	input="$2"
 
-  echo "$input" | ./chibicc - > tmp.s || exit
-  gcc -Wl,-w -Wa,--noexecstack -static -o tmp tmp.s tmp2.o
-  ./tmp
-  actual="$?"
+	echo "$input" | ./chibicc -o tmp.s - || exit
+	gcc -Wl,-w -Wa,--noexecstack -static -o tmp tmp.s tmp2.o
+	./tmp
+	actual="$?"
 
-  if [ "$actual" = "$expected" ]; then
-    echo "$input => $actual"
-  else
-    echo "$input => $expected expected, but got $actual"
-    exit 1
-  fi
+	if [ "$actual" = "$expected" ]; then
+		echo "$input => $actual"
+	else
+		echo "$input => $expected expected, but got $actual"
+		exit 1
+	fi
 }
 
 assert 0 'int main() { return 0; }'

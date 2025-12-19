@@ -1,5 +1,7 @@
 #include "chibicc.h"
 
+pri FILE* output_file;
+
 pri int depth;
 
 pri char* argreg8[]  = {"%dil", "%sil", "%dl", "%cl", "%r8b", "%r9b"};
@@ -13,10 +15,10 @@ pri void gen_stmt(NodeMut_t node);
 pri void println(char* fmt, ...) {
   va_list ap = {};
   va_start(ap, fmt);
-  vprintf(fmt, ap);
+  vfprintf(output_file, fmt, ap);
   va_end(ap);
 
-  printf("\n");
+  fprintf(output_file, "\n");
 }
 pri int count() {
   pri int i = 1;
@@ -296,7 +298,9 @@ pri void emit_text(ObjMut_t prog) {
   }
 }
 
-pub void codegen(ObjMut_t prog) {
+pub void codegen(ObjMut_t prog, FILE* out) {
+  output_file = out;
+
   assign_lvar_offsets(prog);
   emit_data(prog);
   emit_text(prog);

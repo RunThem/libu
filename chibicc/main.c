@@ -1,16 +1,70 @@
 #include "chibicc.h"
 
-int main(int argc, const char* argv[]) {
-  u_chk_if(argc != 2, 1, "%s: invalid number of arguments\n", argv[0]);
+pri char* opt_o;
+pri char* input_path;
+
+pri void usage(int status) {
+  fprintf(stderr, "chibicc [ -o <path> ] <file>\n");
+  exit(status);
+}
+
+pri void parse_args(int argc, char** argv) {
+  for (int i = 1; i < argc; i++) {
+    if (!strcmp(argv[1], "--help")) {
+      usage(0);
+    }
+
+    if (!strcmp(argv[i], "-o")) {
+      if (!argv[++i]) {
+        usage(1);
+      }
+
+      opt_o = argv[i];
+      continue;
+    }
+
+    if (!strncmp(argv[i], "-o", 2)) {
+      opt_o = argv[i] + 2;
+      continue;
+    }
+
+    if (argv[i][0] == '-' && argv[i][1] != '\0') {
+      error("unknown argument: %s", argv[i]);
+    }
+
+    input_path = argv[i];
+  }
+
+  if (!input_path) {
+    error("no input files");
+  }
+}
+
+pri FILE* open_file(char* path) {
+  if (!path || strcmp(path, "-") == 0) {
+    return stdout;
+  }
+
+  FILE* out = fopen(path, "w");
+  if (!out) {
+    error("cannot open output file: %s: %s", path, strerror(errno));
+  }
+
+  return out;
+}
+
+int main(int argc, char* argv[]) {
+  parse_args(argc, argv);
 
   // 词法分析与语法解析
-  TokenMut_t tok = tokenize_file((char*)argv[1]);
+  TokenMut_t tok = tokenize_file(input_path);
   ObjMut_t prog  = parse(tok);
 
   // dump(prog);
 
   // 遍历 AST 以写入汇编
-  codegen(prog);
+  FILE* out = open_file(opt_o);
+  codegen(prog, out);
 
   return 0;
 }
