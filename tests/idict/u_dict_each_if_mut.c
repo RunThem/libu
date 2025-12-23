@@ -3,7 +3,7 @@ test() {
     u_dict_t(int, int) t = u_dict_new(t);
 
     bool flag = true;
-    u_dict_each_if_mut(t, it, it->key % 2 == 0) {
+    u_dict_each_if_mut (t, it, it->key % 2 == 0) {
       flag = false;
     }
 
@@ -16,7 +16,7 @@ test() {
     bool flag = true;
     int cnt   = 0;
 
-    u_dict_each_if_mut(t, it, it->key % 2 == 0) {
+    u_dict_each_if_mut (t, it, it->key % 2 == 0) {
       mut_ptr_neq_nil(it);
 
       flag = false;
@@ -33,7 +33,7 @@ test() {
 
     cnt = 0;
 
-    u_dict_each_if_mut(t, it, it->key % 2 == 0) {
+    u_dict_each_if_mut (t, it, it->key % 2 == 0) {
       mut_ptr_neq_nil(it);
       cnt++;
 
@@ -44,7 +44,7 @@ test() {
 
     cnt = 0;
 
-    u_dict_each_if_mut(t, it, it->key % 2 != 0) {
+    u_dict_each_if_mut (t, it, it->key % 2 != 0) {
       mut_ptr_neq_nil(it);
 
       cnt++;

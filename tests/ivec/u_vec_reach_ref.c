@@ -15,9 +15,9 @@ test() {
     u_vec_t(int) v = make_vec(N)->ref;
 
     bool flag = true;
-    int i     = N-1;
+    int i     = N - 1;
 
-    u_vec_reach_ref(v, it) {
+    u_vec_reach_ref (v, it) {
       mut_ptr_neq_nil(it);
       flag = false;
       mut_eq(i, *it);

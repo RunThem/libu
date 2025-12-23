@@ -4,7 +4,7 @@ test() {
 
     bool flag = true;
 
-    u_dict_each_if(t, it, it.key % 2 == 0) {
+    u_dict_each_if (t, it, it.key % 2 == 0) {
       flag = false;
     }
 
@@ -17,7 +17,7 @@ test() {
     bool flag = true;
     int cnt   = 0;
 
-    u_dict_each_if(t, it, it.key % 2 == 0) {
+    u_dict_each_if (t, it, it.key % 2 == 0) {
       flag = false;
 
       mut_eq(it.key, it.val);

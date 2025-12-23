@@ -37,13 +37,13 @@ extern "C" {
  **************************************************************************************************/
 typedef struct {}* $dict_t;
 
-extern any_t $dict_new      (i32_t, i32_t, u_hash_fn);
-extern void  $dict_clear    (any_t);
-extern void  $dict_cleanup  (any_t);
-extern any_t $dict_at       (any_t, any_t);
-extern void  $dict_del      (any_t, any_t);
-extern any_t $dict_add      (any_t, any_t);
-extern any_t $dict_each     (any_t, bool);
+extern any_t $dict_new     (i32_t, i32_t, u_hash_fn);
+extern void  $dict_clear   (any_t);
+extern void  $dict_cleanup (any_t);
+extern any_t $dict_at      (any_t, any_t);
+extern void  $dict_del     (any_t, any_t);
+extern any_t $dict_add     (any_t, any_t);
+extern any_t $dict_each    (any_t, bool);
 
 /***************************************************************************************************
  * iType

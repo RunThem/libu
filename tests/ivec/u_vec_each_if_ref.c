@@ -4,7 +4,7 @@ test() {
 
     bool flag = true;
 
-    u_vec_each_if_ref(v, it, *it % 2 == 0) {
+    u_vec_each_if_ref (v, it, *it % 2 == 0) {
       flag = false;
     }
 
@@ -18,7 +18,7 @@ test() {
     int i     = 0;
     int cnt   = 0;
 
-    u_vec_each_if_ref(v, it, *it % 2 == 0) {
+    u_vec_each_if_ref (v, it, *it % 2 == 0) {
       mut_ptr_neq_nil(it);
 
       flag = false;

@@ -38,16 +38,16 @@ extern "C" {
  **************************************************************************************************/
 typedef struct {}* $list_t;
 
-extern any_t  $list_new      ();
-extern void   $list_cleanup  (any_t);
-extern any_t  $list_head     (any_t);
-extern any_t  $list_tail     (any_t);
-extern any_t  $list_prev     (any_t, any_t);
-extern any_t  $list_next     (any_t, any_t);
-extern void   $list_del      (any_t, any_t);
-extern any_t  $list_add      (any_t, any_t, any_t);
-extern any_t  $list_each     (any_t, bool);
-extern any_t  $list_reach    (any_t, bool);
+extern any_t $list_new     ();
+extern void  $list_cleanup (any_t);
+extern any_t $list_head    (any_t);
+extern any_t $list_tail    (any_t);
+extern any_t $list_prev    (any_t, any_t);
+extern any_t $list_next    (any_t, any_t);
+extern void  $list_del     (any_t, any_t);
+extern any_t $list_add     (any_t, any_t, any_t);
+extern any_t $list_each    (any_t, bool);
+extern any_t $list_reach   (any_t, bool);
 
 /***************************************************************************************************
  * iType

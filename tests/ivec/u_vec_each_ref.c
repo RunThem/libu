@@ -1,5 +1,4 @@
 test() {
 
-
   return 0;
 }

@@ -4,7 +4,7 @@ test() {
 
     bool flag = true;
 
-    u_tree_each_mut(t, it) {
+    u_tree_each_mut (t, it) {
       flag = false;
     }
 
@@ -17,7 +17,7 @@ test() {
     bool flag = true;
     int i     = 0;
 
-    u_tree_each_mut(t, it) {
+    u_tree_each_mut (t, it) {
       mut_ptr_neq_nil(it);
 
       flag = false;
@@ -38,7 +38,7 @@ test() {
     flag = true;
     i    = 0;
 
-    u_tree_each_mut(t, it) {
+    u_tree_each_mut (t, it) {
       mut_ptr_neq_nil(it);
 
       flag = false;

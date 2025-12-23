@@ -15,7 +15,7 @@ test() {
     u_vec_t(int) v = make_vec(N)->ref;
 
     bool flag = true;
-    int i     = N-1;
+    int i     = N - 1;
 
     u_vec_reach (v, it) {
       flag = false;

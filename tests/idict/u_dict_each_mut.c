@@ -4,7 +4,7 @@ test() {
 
     bool flag = true;
 
-    u_dict_each_mut(t, it) {
+    u_dict_each_mut (t, it) {
       flag = false;
     }
 
@@ -17,7 +17,7 @@ test() {
     bool flag = true;
     int i     = 0;
 
-    u_dict_each_mut(t, it) {
+    u_dict_each_mut (t, it) {
       mut_ptr_neq_nil(it);
 
       flag = false;
@@ -36,7 +36,7 @@ test() {
 
     flag = true;
 
-    u_dict_each_mut(t, it) {
+    u_dict_each_mut (t, it) {
       mut_ptr_neq_nil(it);
 
       flag = false;

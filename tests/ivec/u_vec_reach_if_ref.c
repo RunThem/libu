@@ -15,13 +15,13 @@ test() {
     u_vec_t(int) v = make_vec(N)->ref;
 
     bool flag = true;
-    int i     = N-2;
+    int i     = N - 2;
 
     u_vec_reach_if_ref (v, it, *it % 2 == 0) {
       flag = false;
       mut_eq(i, *it);
 
-      i-=2;
+      i -= 2;
     }
 
     mut_false(flag);

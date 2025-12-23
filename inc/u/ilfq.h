@@ -38,15 +38,14 @@ extern "C" {
 
 /* clang-format off */
 
-
 /***************************************************************************************************
  * Api
  **************************************************************************************************/
-extern any_t       $lfq_new     ();
-extern void        $lfq_cleanup (any_t);
-extern int         $lfq_len     (any_t);
-extern bool        $lfq_put     (any_t, any_t);
-extern any_t       $lfq_pop     (any_t);
+extern any_t $lfq_new     ();
+extern void  $lfq_cleanup (any_t);
+extern int   $lfq_len     (any_t);
+extern bool  $lfq_put     (any_t, any_t);
+extern any_t $lfq_pop     (any_t);
 
 /***************************************************************************************************
  * iType
@@ -61,27 +60,36 @@ extern any_t       $lfq_pop     (any_t);
       $lfq_new();                                                                                  \
     })
 
+
 #  define u_lfq_len(self)                                                                          \
     ({                                                                                             \
       $lfq_len(self);                                                                              \
     })
+
 
 #  define u_lfq_is_empty(self)                                                                     \
     ({                                                                                             \
       0 == $lfq_len(self);                                                                         \
     })
 
+
 #  define u_lfq_cleanup(self)                                                                      \
     do {                                                                                           \
+      assert(0 == $lfq_len(self));                                                                 \
+                                                                                                   \
       $lfq_cleanup(self);                                                                          \
                                                                                                    \
       self = nullptr;                                                                              \
     } while (0)
 
+
 #  define u_lfq_pop(self)                                                                          \
     ({                                                                                             \
+      assert(0 != $lfq_len(self));                                                                 \
+                                                                                                   \
       (typeof(self)) $lfq_pop(self);                                                               \
     })
+
 
 #  define u_lfq_put(self, obj)                                                                     \
     ({                                                                                             \

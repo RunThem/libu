@@ -38,13 +38,13 @@ extern "C" {
  **************************************************************************************************/
 typedef struct {}* $tree_t;
 
-extern any_t $tree_new      (i32_t, i32_t, u_cmp_fn);
-extern void  $tree_clear    (any_t);
-extern void  $tree_cleanup  (any_t);
-extern any_t $tree_at       (any_t, any_t);
-extern void  $tree_del      (any_t, any_t);
-extern any_t $tree_add      (any_t, any_t);
-extern any_t $tree_each     (any_t, bool);
+extern any_t $tree_new     (i32_t, i32_t, u_cmp_fn);
+extern void  $tree_clear   (any_t);
+extern void  $tree_cleanup (any_t);
+extern any_t $tree_at      (any_t, any_t);
+extern void  $tree_del     (any_t, any_t);
+extern any_t $tree_add     (any_t, any_t);
+extern any_t $tree_each    (any_t, bool);
 
 /***************************************************************************************************
  * iType

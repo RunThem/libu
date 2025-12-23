@@ -71,10 +71,10 @@ static inline int node_cmp(mnode_t x, mnode_t y) {
 
 /* fnv 64-bit hash function */
 pri inline u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
-  u_hash_t hash = 14695981039346656037U;
+  u_hash_t hash = 1469'5981'0393'4665'6037U;
 
   for (size_t i = 0; i < len; ++i) {
-    hash *= 1099511628211U;
+    hash *= 1'0995'1162'8211U;
     hash ^= (u64_t)ptr[i];
   }
 

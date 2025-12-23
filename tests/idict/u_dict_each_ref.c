@@ -4,7 +4,7 @@ test() {
 
     bool flag = true;
 
-    u_dict_each_ref(t, it) {
+    u_dict_each_ref (t, it) {
       flag = false;
     }
 
@@ -17,7 +17,7 @@ test() {
     bool flag = true;
     int i     = 0;
 
-    u_dict_each_ref(t, it) {
+    u_dict_each_ref (t, it) {
       flag = false;
       mut_eq(it->key, it->val);
 

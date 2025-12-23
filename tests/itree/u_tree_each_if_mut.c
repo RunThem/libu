@@ -3,7 +3,7 @@ test() {
     u_tree_t(int, int) t = u_tree_new(t, fn_cmp(int));
 
     bool flag = true;
-    u_tree_each_if_mut(t, it, it->key % 2 == 0) {
+    u_tree_each_if_mut (t, it, it->key % 2 == 0) {
       flag = false;
     }
 
@@ -17,7 +17,7 @@ test() {
     int i     = 0;
     int cnt   = 0;
 
-    u_tree_each_if_mut(t, it, it->key % 2 == 0) {
+    u_tree_each_if_mut (t, it, it->key % 2 == 0) {
       mut_ptr_neq_nil(it);
 
       flag = false;
@@ -38,7 +38,7 @@ test() {
     i   = 0;
     cnt = 0;
 
-    u_tree_each_if_mut(t, it, i++ % 2 == 0) {
+    u_tree_each_if_mut (t, it, i++ % 2 == 0) {
       mut_ptr_neq_nil(it);
       cnt++;
 
@@ -49,7 +49,7 @@ test() {
 
     i = 0;
 
-    u_tree_each_if_mut(t, it, i % 2 != 0) {
+    u_tree_each_if_mut (t, it, i % 2 != 0) {
       mut_ptr_neq_nil(it);
 
       cnt++;

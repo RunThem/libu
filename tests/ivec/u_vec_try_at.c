@@ -3,7 +3,7 @@ test() {
 
   {
     bool flag = false;
-    u_vec_try_at(v, 0) {
+    u_vec_try_at (v, 0) {
       mut_eq(0, it);
       flag = true;
     }
@@ -13,7 +13,7 @@ test() {
 
   {
     bool flag = false;
-    u_vec_try_at(v, 1) {
+    u_vec_try_at (v, 1) {
       mut_eq(1, it);
       flag = true;
     }
@@ -23,7 +23,7 @@ test() {
 
   {
     bool flag = false;
-    u_vec_try_at(v, N - 1) {
+    u_vec_try_at (v, N - 1) {
       mut_eq(N - 1, it);
       flag = true;
     }
@@ -33,7 +33,7 @@ test() {
 
   {
     bool flag = false;
-    u_vec_try_at(v, N) {
+    u_vec_try_at (v, N) {
       mut_eq(N, it);
       flag = true;
     }
@@ -43,7 +43,7 @@ test() {
 
   {
     bool flag = false;
-    u_vec_try_at(v, N, num) {
+    u_vec_try_at (v, N, num) {
       mut_eq(N, num);
       flag = true;
     }

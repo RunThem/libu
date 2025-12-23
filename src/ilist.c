@@ -171,7 +171,7 @@ pub any_t $list_add(any_t _self, any_t uidxptr, any_t uptr) {
 
   u_chk_if(self, nullptr);
 
-  node = new(lnode_t, .uptr = uptr);
+  node = new (lnode_t, .uptr = uptr);
   u_end_if(node);
 
   if (!uidxptr) {

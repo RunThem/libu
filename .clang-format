@@ -1,5 +1,5 @@
-# clang-format version: 14.0.6-2
----
+# clang-format version: 20
+# ---
 Language: Cpp
 BasedOnStyle: LLVM
 ColumnLimit: 100
@@ -54,28 +54,80 @@ SpacesInLineCommentPrefix:
   Maximum: 1
 
 ForEachMacros: [
-  'u_each',
-  'u_arr_each',
+    # other
+    "u_each",
 
-  'u_map_each',
-  'u_vec_each',
-  'u_tree_each',
-  'u_list_each',
+    # arr
+    "u_arr_each",
+    "u_arr_each_if",
+    "u_arr_each_mut",
+    "u_arr_each_if_mut",
+    "u_arr_reach",
+    "u_arr_reach_if",
+    "u_arr_reach_mut",
+    "u_arr_reach_if_mut",
 
-  'u_map_each_if',
-  'u_vec_each_if',
-  'u_tree_each_if',
-  'u_list_each_if',
-]
+    # vec
+    "u_vec_each",
+    "u_vec_each_if",
+    "u_vec_each_ref",
+    "u_vec_each_if_ref",
+    "u_vec_each_mut",
+    "u_vec_each_if_mut",
+
+    "u_vec_reach",
+    "u_vec_reach_if",
+    "u_vec_reach_ref",
+    "u_vec_reach_if_ref",
+    "u_vec_reach_mut",
+    "u_vec_reach_if_mut",
+
+    # tree
+    "u_tree_each",
+    "u_tree_each_if",
+    "u_tree_each_ref",
+    "u_tree_each_if_ref",
+    "u_tree_each_mut",
+    "u_tree_each_if_mut",
+
+    # dict
+    "u_dict_each",
+    "u_dict_each_if",
+    "u_dict_each_ref",
+    "u_dict_each_if_ref",
+    "u_dict_each_mut",
+    "u_dict_each_if_mut",
+
+    # list
+    "u_list_each_ref",
+    "u_list_each_if_ref",
+    "u_list_each_mut",
+    "u_list_each_if_mut",
+
+    "u_list_reach_ref",
+    "u_list_reach_if_ref",
+    "u_list_reach_mut",
+    "u_list_reach_if_mut",
+  ]
 
 IfMacros: [
-  'u_mtx_if',
-  'u_spmtx_if',
-  'u_rwmtx_if',
+    # other
+    "u_mtx_if",
+    "u_spmtx_if",
+    "u_rwmtx_if",
 
-  'u_map_try',
-  'u_vec_try',
-  'u_tree_try',
-  'u_list_try',
-]
-...
+    # vec
+    "u_vec_try_at",
+    "u_vec_try_at_ref",
+    "u_vec_try_at_mut",
+
+    # tree
+    "u_tree_try_at",
+    "u_tree_try_at_ref",
+    "u_tree_try_at_mut",
+
+    # dict
+    "u_dict_try_at",
+    "u_dict_try_at_ref",
+    "u_dict_try_at_mut",
+  ]

@@ -69,28 +69,28 @@ struct json_t {
 };
 
 #define json_n(_key)                                                                               \
-  char auto json = new(json_ref_t, .type = 0, .key = _key, .klen = strlen(_key));                  \
+  char auto json = new (json_ref_t, .type = 0, .key = _key, .klen = strlen(_key));                 \
                                                                                                    \
   json;                                                                                            \
   })
 
 #define json_t(_key)                                                                               \
   ({                                                                                               \
-    auto json = new(json_ref_t, .type = 1, .key = _key, .klen = strlen(_key));                     \
+    auto json = new (json_ref_t, .type = 1, .key = _key, .klen = strlen(_key));                    \
                                                                                                    \
     json;                                                                                          \
   })
 
 #define json_f(_key)                                                                               \
   ({                                                                                               \
-    auto json = new(json_ref_t, .type = 2, .key = _key, .klen = strlen(_key));                     \
+    auto json = new (json_ref_t, .type = 2, .key = _key, .klen = strlen(_key));                    \
                                                                                                    \
     json;                                                                                          \
   })
 
 #define json_s(_key, _str, ...)                                                                    \
   ({                                                                                               \
-    auto json = new(json_ref_t, .type = 3, .key = _key, .klen = strlen(_key), );                   \
+    auto json = new (json_ref_t, .type = 3, .key = _key, .klen = strlen(_key), );                  \
                                                                                                    \
     json->s    = _str;                                                                             \
     json->vlen = strlen(_str);                                                                     \
@@ -100,7 +100,7 @@ struct json_t {
 
 #define json_a(_key, ...)                                                                          \
   ({                                                                                               \
-    auto json = new(json_ref_t, .type = 4, .key = _key, .klen = strlen(_key), );                   \
+    auto json = new (json_ref_t, .type = 4, .key = _key, .klen = strlen(_key), );                  \
                                                                                                    \
     json->a    = u_vec_new(json_ref_t);                                                            \
     json->vlen = 0;                                                                                \
@@ -110,7 +110,7 @@ struct json_t {
 
 #define json_o(_key, ...)                                                                          \
   ({                                                                                               \
-    auto json = new(json_ref_t, .type = 5, .key = _key, .klen = strlen(_key), );                   \
+    auto json = new (json_ref_t, .type = 5, .key = _key, .klen = strlen(_key), );                  \
                                                                                                    \
     json->o    = u_vec_new(json_ref_t);                                                            \
     json->vlen = 0;                                                                                \

@@ -5,7 +5,7 @@ test() {
 
     bool flag = true;
 
-    u_vec_each_if_mut(v, it, *it % 2 == 0) {
+    u_vec_each_if_mut (v, it, *it % 2 == 0) {
       flag = false;
     }
 
@@ -19,7 +19,7 @@ test() {
     int i     = 0;
     int cnt   = 0;
 
-    u_vec_each_if_mut(v, it, *it % 2 == 0) {
+    u_vec_each_if_mut (v, it, *it % 2 == 0) {
       mut_ptr_neq_nil(it);
 
       flag = false;
@@ -38,7 +38,7 @@ test() {
     i   = 0;
     cnt = 0;
 
-    u_vec_each_if_mut(v, it, i++ % 2 == 0) {
+    u_vec_each_if_mut (v, it, i++ % 2 == 0) {
       mut_ptr_neq_nil(it);
       cnt++;
 
@@ -49,7 +49,7 @@ test() {
 
     i = 0;
 
-    u_vec_each_if_mut(v, it, i % 2 != 0) {
+    u_vec_each_if_mut (v, it, i % 2 != 0) {
       mut_ptr_neq_nil(it);
       cnt++;
 

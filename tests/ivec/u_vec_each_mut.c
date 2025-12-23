@@ -5,7 +5,7 @@ test() {
 
     bool flag = true;
 
-    u_vec_each_mut(v, it) {
+    u_vec_each_mut (v, it) {
       flag = false;
     }
 
@@ -18,7 +18,7 @@ test() {
     bool flag = true;
     int i     = 0;
 
-    u_vec_each_mut(v, it) {
+    u_vec_each_mut (v, it) {
       mut_ptr_neq_nil(it);
 
       flag = false;
@@ -36,7 +36,7 @@ test() {
 
     flag = true;
     i    = 0;
-    u_vec_each_mut(v, it) {
+    u_vec_each_mut (v, it) {
       mut_ptr_neq_nil(it);
 
       flag = false;

@@ -4,7 +4,7 @@ test() {
 
     bool flag = true;
 
-    u_vec_reach_if_mut(v, it, *it % 2 == 0) {
+    u_vec_reach_if_mut (v, it, *it % 2 == 0) {
       flag = false;
     }
 
@@ -17,7 +17,7 @@ test() {
     bool flag = true;
     int i     = N - 2;
 
-    u_vec_reach_if_mut(v, it, *it % 2 == 0) {
+    u_vec_reach_if_mut (v, it, *it % 2 == 0) {
       flag = false;
       mut_eq(i, *it);
 
@@ -32,7 +32,7 @@ test() {
     flag = true;
     i    = N - 1;
 
-    u_vec_reach_if_mut(v, it, i-- % 2 == 0) {
+    u_vec_reach_if_mut (v, it, i-- % 2 == 0) {
       flag = false;
       mut_eq(0, *it);
     }
@@ -41,9 +41,9 @@ test() {
     mut_eq(i, -1);
 
     flag = true;
-    i    = N-1;
+    i    = N - 1;
 
-    u_vec_reach_if_mut(v, it, i-- % 2 != 0) {
+    u_vec_reach_if_mut (v, it, i-- % 2 != 0) {
       flag = false;
       mut_eq(i + 1, *it);
     }
