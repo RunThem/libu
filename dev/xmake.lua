@@ -57,7 +57,7 @@ task('perf', function()
     import('core.project.project')
     import('core.project.config')
 
-    os.cd("$(builddir)")
+    os.cd('$(builddir)')
 
     local target = project.target(option.get('target'))
     if not target then
@@ -71,7 +71,7 @@ task('perf', function()
     print(vformat('%s/%s/%s', target:targetdir(), config.mode(), target:filename()))
 
     -- download [FlameGraph](https://github.com/brendangregg/FlameGraph)
-    if not os.exists("FlameGraph") then
+    if not os.exists('FlameGraph') then
       git.clone('https://github.com/brendangregg/FlameGraph', { depth = 1 })
     end
 
