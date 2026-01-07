@@ -2,13 +2,11 @@ local deps = { 'mimalloc', 'tbox' }
 
 add_requires(unpack(deps))
 
-target('dep', function()
-  set_kind('static')
-  set_default('false')
-
-  -- add_files('dyad.c')
-
-  add_packages(unpack(deps))
+target('uu', function()
+  set_kind('binary')
+  set_default(false)
+  add_files('uu.c', 'uu_test.c')
+  set_languages('c99')
 end)
 
 target('dev.c', function()
@@ -17,16 +15,9 @@ target('dev.c', function()
   add_files('dev.c')
   set_rundir('$(projectdir)')
 
-  -- add_rules('generic')
-
-  -- add_deps('dep')
   add_deps('u')
 
   add_packages(unpack(deps))
-
-  -- after_build(function(target)
-  --   os.trycp('$(projectdir)/$(builddir)/$(plat)/$(arch)/$(mode)/' .. target:name(), '$(projectdir)')
-  -- end)
 end)
 
 task('dev', function()
