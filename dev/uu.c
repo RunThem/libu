@@ -428,8 +428,8 @@ err0:
 
 void* __uu_dict_insert(void* _self, void* key, void* uptr) {
   uu_dict_mut_t self  = _self;
-  uu_node_mut_t *link = &self->root, parent, node;
-  int result          = 0;
+  uu_node_mut_t *link = &self->root, parent = NULL, node;
+  int result = 0;
 
   assert(self);
 

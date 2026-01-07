@@ -260,7 +260,7 @@ pri void tree_pop_rebalance(tree_mut_t self, tnode_mut_t node) {
 
     if (node->height != height) {
       node->height = height;
-    } else if (diff >= -1 && diff <= -1) {
+    } else if (diff >= -1 && diff <= 1) {
       break;
     }
 

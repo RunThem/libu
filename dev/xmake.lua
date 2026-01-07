@@ -4,7 +4,6 @@ add_requires(unpack(deps))
 
 target('uu', function()
   set_kind('binary')
-  set_default(false)
   add_files('uu.c', 'uu_test.c')
   set_languages('c99')
 end)

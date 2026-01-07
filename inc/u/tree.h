@@ -197,7 +197,7 @@ extern "C" {
                                                                                                    \
         if (n->h != h) {                                                                           \
           n->h = h;                                                                                \
-        } else if (d >= -1 && d <= -1) {                                                           \
+        } else if (d >= -1 && d <= 1) {                                                            \
           break;                                                                                   \
         }                                                                                          \
                                                                                                    \
