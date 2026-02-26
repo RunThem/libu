@@ -1,11 +1,18 @@
 local deps = { 'mimalloc', 'tbox' }
 
-add_requires(unpack(deps))
+add_requires(table.unpack(deps))
 
-target('uu', function()
+target('bench', function()
   set_kind('binary')
-  add_files('uu.c', 'uu_test.c')
-  set_languages('c99')
+  set_default(false)
+  add_files('bench.c')
+  set_rundir('$(projectdir)')
+
+  add_deps('u')
+
+  add_languages('gnu23')
+
+  add_packages(table.unpack(deps))
 end)
 
 target('dev.c', function()
@@ -16,7 +23,7 @@ target('dev.c', function()
 
   add_deps('u')
 
-  add_packages(unpack(deps))
+  add_packages(table.unpack(deps))
 end)
 
 task('dev', function()

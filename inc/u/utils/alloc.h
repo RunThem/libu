@@ -34,6 +34,7 @@ extern "C" {
 /* clang-format off */
 
 #  ifdef USE_MIMALLOC
+#    include <errno.h>
 #    include <mimalloc.h>
 
 #    define u_free(p)        ({               mi_free(p);                                                     })

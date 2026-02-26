@@ -31,6 +31,11 @@
 extern "C" {
 #  endif
 
+#  include "type.h"
+
+#  include <setjmp.h>
+#  include <stddef.h>
+
 /* clang-format off */
 
 /***************************************************************************************************

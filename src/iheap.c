@@ -43,7 +43,9 @@
  * Type
  **************************************************************************************************/
 u_struct_def(heap, [[gnu::packed]]) {
-  typeof_unqual(*(u_vec_t(heap_mut_t)){}) m;
+  any_t ref;
+  int len;
+  int cap;
 
   u_order_e order; /* { true: min, false: max } */
   i32_t itsize;
@@ -60,13 +62,13 @@ pri int heap_resize(heap_mut_t self) {
   i32_t cap  = 0;
   any_t root = nullptr;
 
-  cap = (self->m.cap < 1024) ? self->m.cap * 2 : self->m.cap + 512;
+  cap = (self->cap < 1024) ? self->cap * 2 : self->cap + 512;
 
   root = u_realloc(self->items, self->itsize * cap);
   u_end_if(root);
 
   self->items = root;
-  self->m.cap = cap;
+  self->cap   = cap;
 
   return 0;
 
@@ -88,9 +90,9 @@ pub any_t $heap_new(i32_t itsize, u_order_e order, u_cmp_fn fn) {
   self->itsize = itsize;
   self->cmp_fn = fn;
   self->order  = order;
-  self->m.cap  = 32;
-  self->m.len  = 0;
-  self->m.ref  = any(self);
+  self->cap    = 32;
+  self->len    = 0;
+  self->ref    = any(self);
 
   return self;
 
@@ -105,7 +107,7 @@ pub void $heap_clear(any_t _self) {
 
   u_chk_if(self);
 
-  self->m.len = 0;
+  self->len = 0;
 }
 
 pub void $heap_cleanup(any_t _self) {
@@ -121,21 +123,21 @@ pub any_t $heap_at(any_t _self) {
   heap_mut_t self = (heap_mut_t)_self;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->m.len == 0, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   return self->items;
 }
 
 pub void $heap_pop(any_t _self, any_t item) {
   heap_mut_t self = (heap_mut_t)_self;
-  int len         = self->m.len;
+  int len         = self->len;
   int idx         = 0;
   int lidx        = 0;
   int ridx        = 0;
   int pidx        = 0;
 
   u_chk_if(self);
-  u_chk_if(self->m.len == 0);
+  u_chk_if(self->len == 0);
 
   memcpy(item, self->items, self->itsize);
 
@@ -167,7 +169,7 @@ pub void $heap_pop(any_t _self, any_t item) {
 
   memcpy(at(idx), at(len - 1), self->itsize);
 
-  self->m.len--;
+  self->len--;
 }
 
 pub void $heap_put(any_t _self, any_t item) {
@@ -178,12 +180,12 @@ pub void $heap_put(any_t _self, any_t item) {
 
   u_chk_if(self);
 
-  if (self->m.len == self->m.cap) {
+  if (self->len == self->cap) {
     result = heap_resize(self);
     u_end_if(result != 0);
   }
 
-  for (idx = self->m.len; idx > 0; idx = pidx) {
+  for (idx = self->len; idx > 0; idx = pidx) {
     pidx = parent(idx);
 
     u_brk_if(self->cmp_fn(item, at(pidx)) == self->order);
@@ -193,7 +195,7 @@ pub void $heap_put(any_t _self, any_t item) {
 
   memcpy(at(idx), item, self->itsize);
 
-  self->m.len++;
+  self->len++;
 
   return;
 

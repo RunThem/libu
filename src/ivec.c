@@ -22,7 +22,10 @@
  *
  * */
 
-#include <u/u.h>
+// #include <u/u.h>
+#include "u/ivec.h"
+
+#include <string.h>
 
 /***************************************************************************************************
  * Macro
@@ -34,7 +37,9 @@
  * Type
  **************************************************************************************************/
 u_struct_def(vec, [[gnu::packed]]) {
-  typeof_unqual(*(u_vec_t(vec_mut_t)){}) m;
+  any_t ref;
+  int len;
+  int cap;
 
   i32_t itsize;
   i32_t idx; /* iter */
@@ -42,21 +47,9 @@ u_struct_def(vec, [[gnu::packed]]) {
 };
 
 /***************************************************************************************************
- * Let
- **************************************************************************************************/
-thread_local u_cmp_fn th_cmp_fn     = {};
-thread_local u_order_e th_cmp_order = {};
-
-/***************************************************************************************************
  * Function
  **************************************************************************************************/
-// pri inline int vec_cmp_fn(cany_t a, cany_t b) {
-//   int res = th_cmp_fn(a, b);
-//
-//   return th_cmp_order == U_ORDER_ASCEND ? res : -res;
-// }
-
-pub any_t $vec_new(i32_t itsize, i32_t cap) {
+pub any_t __u_vec_new(i32_t itsize, i32_t cap) {
   vec_mut_t self = nullptr;
 
   self = u_talloc(vec_t);
@@ -67,9 +60,9 @@ pub any_t $vec_new(i32_t itsize, i32_t cap) {
 
   self->idx    = 0;
   self->itsize = itsize;
-  self->m.cap  = cap;
-  self->m.len  = 0;
-  self->m.ref  = any(self);
+  self->cap    = cap;
+  self->len    = 0;
+  self->ref    = any(self);
 
   return self;
 
@@ -79,15 +72,15 @@ end:
   return nullptr;
 }
 
-pub void $vec_clear(any_t _self) {
+pub void __u_vec_clear(any_t _self) {
   vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
 
-  self->m.len = 0;
+  self->len = 0;
 }
 
-pub void $vec_cleanup(any_t _self) {
+pub void __u_vec_cleanup(any_t _self) {
   vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
@@ -96,7 +89,7 @@ pub void $vec_cleanup(any_t _self) {
   u_free_if(self);
 }
 
-pub bool $vec_resize(any_t _self, i32_t cap) {
+pub bool __u_vec_resize(any_t _self, i32_t cap) {
   vec_mut_t self = (vec_mut_t)_self;
   any_t items    = nullptr;
 
@@ -106,7 +99,7 @@ pub bool $vec_resize(any_t _self, i32_t cap) {
   u_end_if(items);
 
   self->items = items;
-  self->m.cap = cap;
+  self->cap   = cap;
 
   return 0;
 
@@ -114,7 +107,7 @@ end:
   return -1;
 }
 
-pub any_t $vec_at(any_t _self, i32_t idx) {
+pub any_t __u_vec_at(any_t _self, i32_t idx) {
   vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, nullptr);
@@ -122,35 +115,35 @@ pub any_t $vec_at(any_t _self, i32_t idx) {
   return at(idx);
 }
 
-pub void $vec_del(any_t _self, i32_t idx) {
+pub void __u_vec_del(any_t _self, i32_t idx) {
   vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self);
 
-  if (idx != self->m.len - 1) {
-    memmove(at(idx), at(idx + 1), (self->m.len - idx - 1) * self->itsize);
+  if (idx != self->len - 1) {
+    memmove(at(idx), at(idx + 1), (self->len - idx - 1) * self->itsize);
   }
 
-  self->m.len--;
+  self->len--;
 }
 
-pub any_t $vec_add(any_t _self, i32_t idx) {
+pub any_t __u_vec_add(any_t _self, i32_t idx) {
   vec_mut_t self = (vec_mut_t)_self;
   i32_t cap      = 0;
   int result     = 0;
 
   u_chk_if(self, nullptr);
 
-  if (self->m.len == self->m.cap) {
-    result = $vec_resize(_self, (i32_t)(self->m.cap * 1.5));
+  if (self->len == self->cap) {
+    result = __u_vec_resize(_self, (i32_t)(self->cap * 1.5));
     u_end_if(result != 0);
   }
 
-  if (idx != self->m.len) {
-    memmove(at(idx + 1), at(idx), (self->m.len - idx) * self->itsize);
+  if (idx != self->len) {
+    memmove(at(idx + 1), at(idx), (self->len - idx) * self->itsize);
   }
 
-  self->m.len++;
+  self->len++;
 
   return at(idx);
 
@@ -158,14 +151,14 @@ end:
   return nullptr;
 }
 
-pub any_t $vec_each(any_t _self, bool init) {
+pub any_t __u_vec_each(any_t _self, bool init) {
   vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->m.len == 0, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   if (!init) {
-    return (self->idx == self->m.len) ? nullptr : at(self->idx++);
+    return (self->idx == self->len) ? nullptr : at(self->idx++);
   }
 
   self->idx = 0;
@@ -173,78 +166,17 @@ pub any_t $vec_each(any_t _self, bool init) {
   return nullptr;
 }
 
-pub any_t $vec_reach(any_t _self, bool init) {
+pub any_t __u_vec_reach(any_t _self, bool init) {
   vec_mut_t self = (vec_mut_t)_self;
 
   u_chk_if(self, nullptr);
-  u_chk_if(self->m.len == 0, nullptr);
+  u_chk_if(self->len == 0, nullptr);
 
   if (!init) {
     return (self->idx == -1) ? nullptr : at(self->idx--);
   }
 
-  self->idx = self->m.len - 1;
+  self->idx = self->len - 1;
 
   return nullptr;
 }
-
-// pub void vec_sort(any_t _self, int (^cmp_fn)(void*, void*), u_order_e order) {
-//   vec_mut_t self = (vec_mut_t)_self;
-//
-//   u_chk_if(self);
-//   u_chk_if(cmp_fn);
-//   u_chk_if(self->len < 2);
-//
-//   // th_cmp_fn    = cmp_fn;
-//   // th_cmp_order = order;
-//   qsort(self->items, self->len, self->itsize, cmp_fn);
-// }
-
-#if 0
-
-pub void vec_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
-  vec_mut_t self = (vec_mut_t)_self;
-
-  u_chk_if(self);
-  u_chk_if(cmp_fn);
-  u_chk_if(self->len < 2);
-
-  th_cmp_fn    = cmp_fn;
-  th_cmp_order = order;
-  qsort(self->items, self->len, self->itsize, vec_cmp_fn);
-}
-
-pub bool vec_is_sort(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
-  vec_mut_t self = (vec_mut_t)_self;
-
-  u_chk_if(self, false);
-  u_chk_if(cmp_fn, false);
-
-  for (int i = 1; i < self->len; i++) {
-    if (order == cmp_fn(at(i - 1), at(i))) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-
-pub i64_t vec_pole(any_t _self, u_cmp_fn cmp_fn, u_order_e order) {
-  vec_mut_t self = (vec_mut_t)_self;
-  int result     = 0;
-
-  u_chk_if(self, -1);
-  u_chk_if(cmp_fn, -1);
-
-  result = 0;
-  for (int i = 1; i < self->len; i++) {
-    if (cmp_fn(at(result), at(i)) == order) {
-      result = i;
-    }
-  }
-
-  return result;
-}
-
-#endif
