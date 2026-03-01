@@ -22,25 +22,25 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_UTILS_H__
-#  define U_UTILS_H__
+#define U_UTILS_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  include "utils/alloc.h"
-#  include "utils/debug.h"
-#  include "utils/keyword.h"
-#  include "utils/misc.h"
-#  include "utils/print.h"
-#  include "utils/type.h"
-#  include "utils/va.h"
+/* clang-format off */
+#include "utils/va.h"
+#include "utils/keyword.h"
+#include "utils/debug.h"
+#include "utils/type.h"
+#include "utils/alloc.h"
+#include "utils/misc.h"
+#include "utils/print.h"
+/* clang-format on */
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_UTILS_H__ */

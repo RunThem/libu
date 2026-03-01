@@ -22,52 +22,35 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_KEYWORD_H__
-#  define U_KEYWORD_H__
+#define U_KEYWORD_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  define __file__ __FILE__
-#  define __line__ __LINE__
-#  define __func__ __func__
+#define __file__ __FILE__
+#define __line__ __LINE__
+#define __func__ __func__
 
-#  define auto __auto_type
+#define auto   __auto_type
+#define typeof __typeof__
 
-#  define pub        /* public */
-#  define pri static /* private */
+#define pub        /* public */
+#define pri static /* private */
 
-#  if __has_builtin(__builtin_classify_type)
-#    define typeclassify(t) (__builtin_classify_type(t))
-#    define is_ptr(t)       (typeclassify(t) == 5)
-#  else
-#    error "!__has_builtin(__builtin_classify_type)"
-#  endif
+#define typeeq(t1, t2)  (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#define typeclassify(t) (__builtin_classify_type(t))
+#define is_ptr(t)       (typeclassify(t) == 5)
 
-#  if __has_builtin(__builtin_types_compatible_p)
-#    define typeeq(t1, t2) (__builtin_types_compatible_p(typeof(t1), typeof(t2)))
+#ifdef NDEBUG
+#  define typecheck(x, y, msg)
+#else
+#  define typecheck(x, y, msg) _Static_assert(typeeq(x, y), msg)
+#endif
 
-#    ifdef NDEBUG
-#      define typecheck(x, y, msg)
-#    else
-#      define typecheck(x, y, msg)                                                                 \
-        do {                                                                                       \
-          const int typecheck = __builtin_types_compatible_p(typeof(x), typeof(y));                \
-          _Static_assert(typecheck, msg);                                                          \
-                                                                                                   \
-          (void)typecheck;                                                                         \
-        } while (0)
-#    endif
-
-#  else
-#    error "!__has_builtin(__builtin_types_compatible_p)"
-#  endif
-
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_KEYWORD_H__ */

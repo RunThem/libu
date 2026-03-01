@@ -17,7 +17,8 @@ add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
 includes('rules/*.lua')
 
 --- Language standard
-set_languages('clatest', 'cxxlatest')
+-- set_languages('clatest', 'cxxlatest')
+set_languages('c11', 'cxxlatest')
 
 --- Macro definition
 add_defines('_GNU_SOURCE=1')
@@ -75,7 +76,14 @@ add_includedirs('$(projectdir)/inc')
 --- libu target
 target('u', function()
   set_kind('static')
-  add_files('$(projectdir)/src/**.c')
+  -- add_files('$(projectdir)/src/**.c')
+  -- add_headerfiles('$(projectdir)/inc/(**.h)')
+  --
+  add_files('$(projectdir)/src/ivec.c')
+  add_files('$(projectdir)/src/itree.c')
+  add_files('$(projectdir)/src/idict.c')
+  add_files('$(projectdir)/src/ilock.c')
+  add_files('$(projectdir)/src/utils.c')
   add_headerfiles('$(projectdir)/inc/(**.h)')
 
   if has_config('mimalloc') then

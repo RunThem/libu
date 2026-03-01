@@ -71,7 +71,7 @@ struct json_t {
 
 #define json_n(_key)                                                                               \
   char auto json = new (json_ref_t, .type = 0, .key = _key, .klen = strlen(_key));                 \
-  nullptr_t json;                                                                                  \
+  NULL_t json;                                                                                     \
   })
 
 #define json_t(_key)                                                                               \
@@ -118,8 +118,8 @@ struct json_t {
     json;                                                                                          \
   })
 
-int main(int argc, const u_cstr_t argv[]) {
-  tb_init(nullptr, nullptr);
+int main(int argc, const cstr_t argv[]) {
+  tb_init(NULL, NULL);
 
 #if 0
   auto f = ^(int a) {
@@ -148,64 +148,29 @@ int main(int argc, const u_cstr_t argv[]) {
 
 #endif
 
-  u_vec_t(int) v = u_vec_new(v);
-
-  u_vec_clear(v);
-
-  u_vec_resize(v, 32);
-
-  u_vec_insert(v, 0, 12);
-
-  auto mut = u_vec_at_mut(v, 0);
-
-  auto ref = u_vec_at_ref(v, 0);
-
-  auto val = u_vec_at(v, 0);
-
-  u_vec_at(v, 0, 12);
-
-  u_vec_try_at (v, 0) {
-    int a = it;
-  }
-
-  u_vec_try_at_ref (v, 0) {
-    // *it = 0;
-  }
-
-  u_vec_try_at_mut (v, 0) {
-    *it = 0;
-  }
-
-  u_vec_each (v, it) {
-  }
-
-  u_vec_each_ref (v, it) {
-  }
-
-  u_vec_each_mut (v, it) {
-  }
-
-  u_vec_reach (v, it) {
-  }
-
-  u_vec_reach_ref (v, it) {
-  }
-
-  u_vec_find_nif_ref(v, *it == 3);
-
-  u_vec_remove(v, 0);
-
-  u_vec_cleanup(v);
-
   for (int a = 0; true; ({ break; })) {
     tb_trace_i("hello");
   }
 
-  (void)v->_->mut;
+  u_dict_t(int, int) d = u_dict_new(d);
 
-  auto a = nullptr;
+  u_dict_insert(d, 0, 0);
 
-  constexpr int s = 0;
+  auto ref = u_dict_at_ref(d, 0);
+
+  auto mut = u_dict_at_mut(d, 0);
+
+  tb_trace_i("%d", *mut);
+
+  u_dict_each (d, it) {
+    tb_trace_i("[%d] = %d", it.key, it.val);
+  }
+
+  tb_trace_i("len is %d", d->len);
+
+  auto val = u_dict_remove(d, 0);
+
+  auto a = NULL;
 
   auto result = __has_builtin(__builtin_types_compatible_p);
 

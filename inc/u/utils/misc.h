@@ -22,38 +22,33 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_MISC_H__
-#  define U_MISC_H__
+#define U_MISC_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  include "type.h"
-
-#  include <setjmp.h>
-#  include <stddef.h>
-
-/* clang-format off */
+#include "type.h"
 
 /***************************************************************************************************
  * Misc macro
  **************************************************************************************************/
-#  define any(p)        ((any_t)(p))
-#  define ch(c)         ((char)(#c[0]))
-#  define me(type, ...) ((type){__VA_ARGS__})
-#  define bit(byte, n)  (((byte) >> (n)) & 1)
+#define any(p)        ((any_t)(p))
+#define ch(c)         ((char)(#c[0]))
+#define me(type, ...) ((type){__VA_ARGS__})
+#define bit(byte, n)  (((byte) >> (n)) & 1)
 
-#  define new(type, ...)                                                                           \
-    ({                                                                                             \
-      type* _ = u_talloc(type);                                                                    \
+#define new(type, ...)                                                                             \
+  ({                                                                                               \
+    type* _ = u_talloc(type);                                                                      \
                                                                                                    \
-      if (_) { *_ = (type) {__VA_ARGS__}; }                                                        \
+    if (_) {                                                                                       \
+      *_ = (type){__VA_ARGS__};                                                                    \
+    }                                                                                              \
                                                                                                    \
-      _;                                                                                           \
-    })
+    _;                                                                                             \
+  })
 
 #define u_struct_def(T, ...)                                                                       \
   struct T;                                                                                        \
@@ -62,11 +57,9 @@ extern "C" {
   typedef typeof(const struct T*) T##_ref_t;                                                       \
   struct __VA_ARGS__ T
 
-#define u_each(i, n, ...) u_va_elseif(u_va_cnt_is(1, __VA_ARGS__)) (                               \
-      for (int i = n; i < u_va_at(0, __VA_ARGS__); i++)                                            \
-    )(                                                                                             \
-      for (int i = 0; i < n; i++)                                                                  \
-    )
+#define u_each(i, n, ...)                                                                          \
+  u_va_elseif(u_va_cnt_is(1, __VA_ARGS__))(for (int i = n; i < u_va_at(0, __VA_ARGS__); i++))(     \
+      for (int i = 0; i < n; i++))
 
 #define u_align_of_2pow(n)                                                                         \
   ({                                                                                               \
@@ -83,102 +76,57 @@ extern "C" {
     __n + 1;                                                                                       \
   })
 
-#  define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
+#define u_align_of(addr, size) ({ ((addr) + (size) - 1) & (~((size) - 1)); })
 
-#  define u_container_of(ptr, type, member)                                                        \
-    ({                                                                                             \
-      const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                            \
-      (type*)((char*)_container_of__mptr - offsetof(type, member));                                \
-    })
+#define u_container_of(ptr, type, member)                                                          \
+  ({                                                                                               \
+    const typeof(((type*)0)->member)* _container_of__mptr = any(ptr);                              \
+    (type*)((char*)_container_of__mptr - offsetof(type, member));                                  \
+  })
 
 extern bool $benchmark_entry(const char*, size_t);
-#  define u_bench(msg, ...) while ($benchmark_entry(msg, u_va_0th(1, __VA_ARGS__)))
-
-/***************************************************************************************************
- * Try catch
- **************************************************************************************************/
-#  define U_ERR_MSG_SIZE 2048
-
-typedef int error_t;
-
-typedef struct {
-  bool is_err;
-  jmp_buf label;
-  u_cstr_t file;
-  u_cstr_t func;
-  u_cstr_t expr;
-  size_t line;
-  error_t error;
-  int id;
-  char msg[U_ERR_MSG_SIZE];
-} __err__t;
-
-extern thread_local __err__t __err__;
-
-#define try      for (bzero(&__err__, sizeof(__err__)); !setjmp(__err__.label);)
-#define catch(e) for (auto e = __err__; e.is_err; e.is_err = false)
-#define panic(_expr, _id, ...)                                                                     \
-  do {                                                                                             \
-    __err__.is_err = true;                                                                         \
-    __err__.file   = __file__;                                                                     \
-    __err__.func   = __func__;                                                                     \
-    __err__.line   = __line__;                                                                     \
-    __err__.expr   = #_expr;                                                                       \
-    __err__.id     = _id;                                                                          \
-    __err__.error  = errno;                                                                        \
-                                                                                                   \
-    u_va_if(u_va_has(__VA_ARGS__)) (                                                               \
-      snprintf(__err__.msg, U_ERR_MSG_SIZE, __VA_ARGS__);                                          \
-    )                                                                                              \
-                                                                                                   \
-    longjmp(__err__.label, 1);                                                                     \
-  } while (0)
+#define u_bench(msg, ...) while ($benchmark_entry(msg, u_va_0th(1, __VA_ARGS__)))
 
 /***************************************************************************************************
  * Swap
  **************************************************************************************************/
-#  define u_swap(a, b)                                                                             \
-    do {                                                                                           \
-      auto _swap__tmp = a;                                                                         \
+#define u_swap(a, b)                                                                               \
+  do {                                                                                             \
+    auto _swap__tmp = a;                                                                           \
                                                                                                    \
-      (a) = (b);                                                                                   \
-      (b) = (_swap__tmp);                                                                          \
-    } while (0)
+    (a) = (b);                                                                                     \
+    (b) = (_swap__tmp);                                                                            \
+  } while (0)
 
 /***************************************************************************************************
  * Compe
  **************************************************************************************************/
-#  define u_min(x, y)                                                                              \
-    ({                                                                                             \
-      auto __min_x__ = (x);                                                                        \
-      auto __min_y__ = (y);                                                                        \
+#define u_min(x, y)                                                                                \
+  ({                                                                                               \
+    auto __min_x__ = (x);                                                                          \
+    auto __min_y__ = (y);                                                                          \
                                                                                                    \
-      (void)(&__min_x__ == &__min_y__);                                                            \
+    (void)(&__min_x__ == &__min_y__);                                                              \
                                                                                                    \
-      __min_x__ < __min_y__ ? __min_x__ : __min_y__;                                               \
-    })
+    __min_x__ < __min_y__ ? __min_x__ : __min_y__;                                                 \
+  })
 
-#  define u_max(x, y)                                                                              \
-    ({                                                                                             \
-      auto __max_x__ = (x);                                                                        \
-      auto __max_y__ = (y);                                                                        \
+#define u_max(x, y)                                                                                \
+  ({                                                                                               \
+    auto __max_x__ = (x);                                                                          \
+    auto __max_y__ = (y);                                                                          \
                                                                                                    \
-      (void)(&__max_x__ == &__max_y__);                                                            \
+    (void)(&__max_x__ == &__max_y__);                                                              \
                                                                                                    \
-      __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                               \
-    })
+    __max_x__ > __max_y__ ? __max_x__ : __max_y__;                                                 \
+  })
 
 /*
  *
  * '==' => true
  * '!=' => false
  * */
-#define fn_eq(type, ...)                                                                           \
-  u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
-    fn_eq_##type(__VA_ARGS__)                                                                      \
-  )(                                                                                               \
-    fn_eq_##type                                                                                   \
-  )
+#define fn_eq(type, ...) u_va_elseif(u_va_has(__VA_ARGS__))(fn_eq_##type(__VA_ARGS__))(fn_eq_##type)
 
 /*
  * '>'  => 1
@@ -186,26 +134,22 @@ extern thread_local __err__t __err__;
  * '<'  => -1
  * */
 #define fn_cmp(type, ...)                                                                          \
-  u_va_elseif(u_va_has(__VA_ARGS__)) (                                                             \
-    fn_cmp_##type(__VA_ARGS__)                                                                     \
-  )(                                                                                               \
-    fn_cmp_##type                                                                                  \
-  )
+  u_va_elseif(u_va_has(__VA_ARGS__))(fn_cmp_##type(__VA_ARGS__))(fn_cmp_##type)
 
-#  define fn_compe_dec(type)                                                                       \
-    extern bool fn_eq_##type(cany_t, cany_t);                                                      \
-    extern int fn_cmp_##type(cany_t, cany_t)
+#define fn_compe_dec(type)                                                                         \
+  extern bool fn_eq_##type(cany_t, cany_t);                                                        \
+  extern int fn_cmp_##type(cany_t, cany_t)
 
-#  define fn_compe_def(type, eq, cmp)                                                              \
-    bool fn_eq_##type(cany_t _x, cany_t _y) {                                                      \
-      type x = *(type*)_x, y = *(type*)_y;                                                         \
-      return (eq);                                                                                 \
-    }                                                                                              \
+#define fn_compe_def(type, eq, cmp)                                                                \
+  bool fn_eq_##type(cany_t _x, cany_t _y) {                                                        \
+    type x = *(type*)_x, y = *(type*)_y;                                                           \
+    return (eq);                                                                                   \
+  }                                                                                                \
                                                                                                    \
-    int fn_cmp_##type(cany_t _x, cany_t _y) {                                                      \
-      type x = *(type*)_x, y = *(type*)_y;                                                         \
-      return (eq) ? 0 : ((cmp) ? 1 : -1);                                                          \
-    }
+  int fn_cmp_##type(cany_t _x, cany_t _y) {                                                        \
+    type x = *(type*)_x, y = *(type*)_y;                                                           \
+    return (eq) ? 0 : ((cmp) ? 1 : -1);                                                            \
+  }
 
 fn_compe_dec(char);
 fn_compe_dec(byte_t);
@@ -225,10 +169,10 @@ fn_compe_dec(u64_t);
 fn_compe_dec(size_t);
 fn_compe_dec(ssize_t);
 
-#  ifdef __SIZEOF_INT128__
+#ifdef __SIZEOF_INT128__
 fn_compe_dec(i128_t);
 fn_compe_dec(u128_t);
-#  endif
+#endif
 
 extern u_hash_t u_hash_i8(const u8_t*, size_t);
 extern u_hash_t u_hash_i16(const u8_t*, size_t);
@@ -242,8 +186,8 @@ extern u_hash_t u_hash_u64(const u8_t*, size_t);
 
 /* clang-format on */
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_MISC_H__ */

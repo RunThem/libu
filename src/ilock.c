@@ -28,63 +28,49 @@
  * Function
  **************************************************************************************************/
 pub void u_spmtx_init(u_spmtx_ref_t self) {
-  u_chk_if(self);
-
-  u_atomic_init(&self->locked, false);
+  atomic_init(&self->locked, false);
 }
 
 pub void u_spmtx_lock(u_spmtx_ref_t self) {
-  u_chk_if(self);
-
-  while (u_atomic_swap(&self->locked, true))
+  while (atomic_exchange(&self->locked, true))
     ;
 }
 
 pub void u_spmtx_unlock(u_spmtx_ref_t self) {
-  u_chk_if(self);
-
-  u_atomic_swap(&self->locked, false);
+  atomic_exchange(&self->locked, false);
 }
 
 pub void u_rwmtx_init(u_rwmtx_ref_t self) {
   u_chk_if(self);
 
-  u_atomic_init(&self->cnt, 0);
-  u_atomic_init(&self->rwlock, false);
+  atomic_init(&self->cnt, 0);
+  atomic_init(&self->rwlock, false);
 }
 
 pub void u_rwmtx_rlock(u_rwmtx_ref_t self) {
-  u_chk_if(self);
-
   while (true) {
-    while (u_atomic_pop(&self->rwlock))
+    while (atomic_load(&self->rwlock))
       ;
 
-    u_atomic_add(&self->cnt, 1);
-    u_brk_if(u_atomic_pop(&self->rwlock) == false);
+    atomic_fetch_add(&self->cnt, 1);
+    u_brk_if(atomic_load(&self->rwlock) == false);
 
-    u_atomic_sub(&self->cnt, 1);
+    atomic_fetch_sub(&self->cnt, 1);
   }
 }
 
 pub void u_rwmtx_runlock(u_rwmtx_ref_t self) {
-  u_chk_if(self);
-
-  u_atomic_sub(&self->cnt, 1);
+  atomic_fetch_sub(&self->cnt, 1);
 }
 
 pub void u_rwmtx_wlock(u_rwmtx_ref_t self) {
-  u_chk_if(self);
-
-  while (u_atomic_swap(&self->rwlock, true))
+  while (atomic_exchange(&self->rwlock, true))
     ;
 
-  while (u_atomic_pop(&self->cnt))
+  while (atomic_load(&self->cnt))
     ;
 }
 
 pub void u_rwmtx_wunlock(u_rwmtx_ref_t self) {
-  u_chk_if(self);
-
-  u_atomic_swap(&self->rwlock, false);
+  atomic_exchange(&self->rwlock, false);
 }

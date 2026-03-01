@@ -22,8 +22,10 @@
  *
  * */
 
-#include <u/tree.h>
-#include <u/u.h>
+#include "tree.h"
+#include "u/idict.h"
+
+#include <string.h>
 
 U_TREE_DEFINE(m, u_malloc, u_free, int ksize; u_hash_t hash);
 
@@ -41,8 +43,9 @@ U_TREE_DEFINE(m, u_malloc, u_free, int ksize; u_hash_t hash);
 /***************************************************************************************************
  * type
  **************************************************************************************************/
-u_struct_def(dict, [[gnu::packed]]) {
-  typeof_unqual(*(u_dict_t(dict_mut_t, dict_mut_t)){}) m;
+u_struct_def(u_dict, [[gnu::packed]]) {
+  any_t ref;
+  int len;
 
   i32_t ksize;
   i32_t vsize;
@@ -61,7 +64,7 @@ u_struct_def(dict, [[gnu::packed]]) {
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
-static inline int node_cmp(mnode_t x, mnode_t y) {
+static inline int __u_dict_cmp_fn(mnode_t x, mnode_t y) {
   if (x->hash == y->hash) {
     return memcmp(x->u, y->u, x->ksize);
   }
@@ -70,25 +73,25 @@ static inline int node_cmp(mnode_t x, mnode_t y) {
 }
 
 /* fnv 64-bit hash function */
-pri inline u_hash_t hash_fnv64bit(const u8_t* ptr, size_t len) {
-  u_hash_t hash = 1469'5981'0393'4665'6037U;
+pri inline u_hash_t __u_dict_hash_fnv64bit(const u8_t* ptr, size_t len) {
+  u_hash_t hash = 14695981039346656037U;
 
   for (size_t i = 0; i < len; ++i) {
-    hash *= 1'0995'1162'8211U;
+    hash *= 1099511628211U;
     hash ^= (u64_t)ptr[i];
   }
 
   return hash;
 }
 
-pri void dict_rehash(dict_mut_t self) {
-  mtree_t* buckets = nullptr;
-  mnode_t next     = nullptr;
-  mnode_t node     = nullptr;
+pri void __u_dict_rehash(u_dict_mut_t self) {
+  mtree_t* buckets = NULL;
+  mnode_t next     = NULL;
+  mnode_t node     = NULL;
   int bucket_size  = self->bucket_size;
   i64_t limit      = 0;
 
-  limit = (self->m.len * 6) >> 2;
+  limit = (self->len * 6) >> 2;
   u_end_if(limit <= self->bucket_size);
 
   while (bucket_size < limit) {
@@ -99,7 +102,7 @@ pri void dict_rehash(dict_mut_t self) {
   u_end_if(buckets);
 
   for (int i = 0; i < bucket_size; i++) {
-    buckets[i] = mtree_new(node_cmp);
+    buckets[i] = mtree_new(__u_dict_cmp_fn);
   }
 
   for (int i = 0; i < self->bucket_size; i++) {
@@ -119,14 +122,13 @@ pri void dict_rehash(dict_mut_t self) {
   return;
 
 end:
+  return;
 }
 
-pub any_t $dict_new(i32_t ksize, i32_t vsize, u_hash_fn hash_fn) {
-  dict_mut_t self = nullptr;
+pub any_t __u_dict_new(i32_t ksize, i32_t vsize, u_hash_fn hash_fn) {
+  u_dict_mut_t self = NULL;
 
-  assert(ksize);
-
-  self = u_zalloc(sizeof(dict_t));
+  self = u_zalloc(sizeof(u_dict_t));
   u_end_if(self);
 
   self->iter_node = mtree_new_node(ksize + vsize);
@@ -138,15 +140,15 @@ pub any_t $dict_new(i32_t ksize, i32_t vsize, u_hash_fn hash_fn) {
   u_end_if(self->buckets);
 
   for (int i = 0; i < self->bucket_size; i++) {
-    self->buckets[i] = mtree_new(node_cmp);
+    self->buckets[i] = mtree_new(__u_dict_cmp_fn);
     u_end_if(self->buckets[i]);
   }
 
   self->iter_node->ksize = ksize;
   self->ksize            = ksize;
   self->vsize            = vsize;
-  self->hash_fn          = hash_fn ? hash_fn : hash_fnv64bit;
-  self->m.ref            = any(self);
+  self->hash_fn          = hash_fn ? hash_fn : __u_dict_hash_fnv64bit;
+  self->ref              = any(self);
 
   return self;
 
@@ -159,13 +161,13 @@ end:
   u_free_if(self->iter_node);
   u_free_if(self);
 
-  return nullptr;
+  return NULL;
 }
 
-pub void $dict_clear(any_t _self) {
-  dict_mut_t self = (dict_mut_t)_self;
-  mnode_t node    = nullptr;
-  mnode_t next    = nullptr;
+pub void __u_dict_clear(any_t _self) {
+  u_dict_mut_t self = (u_dict_mut_t)_self;
+  mnode_t node      = NULL;
+  mnode_t next      = NULL;
 
   u_chk_if(self);
 
@@ -179,11 +181,11 @@ pub void $dict_clear(any_t _self) {
     }
   }
 
-  self->m.len = 0;
+  self->len = 0;
 }
 
-pub void $dict_cleanup(any_t _self) {
-  dict_mut_t self = (dict_mut_t)_self;
+pub void __u_dict_cleanup(any_t _self) {
+  u_dict_mut_t self = (u_dict_mut_t)_self;
 
   u_chk_if(self);
 
@@ -196,13 +198,13 @@ pub void $dict_cleanup(any_t _self) {
   u_free(self);
 }
 
-pub any_t $dict_at(any_t _self, any_t key) {
-  dict_mut_t self = (dict_mut_t)_self;
-  mnode_t node    = nullptr;
-  u_hash_t hash   = 0;
-  int idx         = 0;
+pub any_t __u_dict_at(any_t _self, any_t key) {
+  u_dict_mut_t self = (u_dict_mut_t)_self;
+  mnode_t node      = NULL;
+  u_hash_t hash     = 0;
+  int idx           = 0;
 
-  u_chk_if(self, nullptr);
+  u_chk_if(self, NULL);
 
   hash = self->hash_fn(key, self->ksize);
   idx  = (int)(hash & self->mask_size);
@@ -216,32 +218,46 @@ pub any_t $dict_at(any_t _self, any_t key) {
   return &node->u[0];
 
 end:
-  return nullptr;
+  return NULL;
 }
 
-pub void $dict_del(any_t _self, any_t data) {
-  dict_mut_t self = (dict_mut_t)_self;
-  mnode_t node    = u_container_of(data, typeof(*(mnode_t){}), u);
-  int idx         = 0;
+pub void __u_dict_del(any_t _self, any_t key) {
+  u_dict_mut_t self = (u_dict_mut_t)_self;
+  mnode_t node      = NULL;
+  u_hash_t hash     = 0;
+  int idx           = 0;
 
   u_chk_if(self);
 
-  idx = (int)(node->hash & self->mask_size);
+  hash = self->hash_fn(key, self->ksize);
+  idx  = (int)(hash & self->mask_size);
+
+  self->iter_node->hash = hash;
+  memcpy(key(self->iter_node), key, self->ksize);
+
+  node = mtree_at(self->buckets[idx], self->iter_node);
+  u_end_if(node);
 
   mtree_pop(self->buckets[idx], node);
+
   mtree_del_node(node);
 
-  self->m.len--;
+  self->len--;
+
+  return;
+
+end:
+  return;
 }
 
-pub any_t $dict_add(any_t _self, any_t key) {
-  dict_mut_t self = (dict_mut_t)_self;
-  mtree_t tree    = nullptr;
-  mnode_t node    = nullptr;
-  u_hash_t hash   = 0;
-  int result      = 0;
+pub any_t __u_dict_add(any_t _self, any_t key) {
+  u_dict_mut_t self = (u_dict_mut_t)_self;
+  mtree_t tree      = NULL;
+  mnode_t node      = NULL;
+  u_hash_t hash     = 0;
+  int result        = 0;
 
-  u_chk_if(self, nullptr);
+  u_chk_if(self, NULL);
 
   hash = self->hash_fn(key, self->ksize);
   tree = self->buckets[hash & self->mask_size];
@@ -261,39 +277,39 @@ pub any_t $dict_add(any_t _self, any_t key) {
     u_end_if(result == false);
   }
 
-  dict_rehash(self);
+  __u_dict_rehash(self);
 
-  self->m.len++;
+  self->len++;
 
   return &node->u[0];
 
 end:
   u_free_if(node);
 
-  return nullptr;
+  return NULL;
 }
 
-pub any_t $dict_each(any_t _self, bool init) {
-  dict_mut_t self = (dict_mut_t)_self;
-  mnode_t iter    = nullptr;
+pub any_t __u_dict_each(any_t _self, bool init) {
+  u_dict_mut_t self = (u_dict_mut_t)_self;
+  mnode_t iter      = NULL;
 
-  u_chk_if(self, nullptr);
-  u_chk_if(self->m.len == 0, nullptr);
+  u_chk_if(self, NULL);
+  u_chk_if(self->len == 0, NULL);
 
   if (init) {
     self->iter_idx         = 0;
-    return self->iter_node = nullptr;
+    return self->iter_node = NULL;
   }
 
   iter = self->iter_node;
   while (true) {
-    if (iter == nullptr) {
+    if (iter == NULL) {
       iter = mtree_first(self->buckets[self->iter_idx]);
     } else {
       iter = mtree_next(iter);
     }
 
-    u_brk_if(iter != nullptr);
+    u_brk_if(iter != NULL);
 
     self->iter_idx++;
     u_end_if(self->iter_idx == self->bucket_size);
@@ -306,5 +322,5 @@ pub any_t $dict_each(any_t _self, bool init) {
   return &iter->u[0];
 
 end:
-  return nullptr;
+  return NULL;
 }

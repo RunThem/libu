@@ -22,7 +22,12 @@
  *
  * */
 
-#include <u/u.h>
+#include "u/utils.h"
+
+#include <ctype.h>
+#include <stdarg.h>
+#include <string.h>
+#include <time.h>
 
 /* clang-format off */
 
@@ -53,7 +58,6 @@ fn_compe_def(i128_t, (x == y), (x > y));
 fn_compe_def(u128_t, (x == y), (x > y));
 #endif
 
-fn_compe_def(u_str_t, (x->len == y->len && 0 == strcmp(x->ptr, y->ptr)), (strcmp(x->ptr, y->ptr)));
 
 /***************************************************************************************************
  * Hahs
@@ -71,7 +75,7 @@ pub inline u_hash_t u_hash_u64(const u8_t* ptr, size_t len) { return (u_hash_t) 
 /***************************************************************************************************
  * Display
  **************************************************************************************************/
-pub void $printb(u_cstr_t name, const u8_t* mem, size_t size) {
+pub void $printb(cstr_t name, const u8_t* mem, size_t size) {
   u8_t byte = 0;
 
   printf("\x1b[36;1m%s\x1b[0m(%ld)\n", name, size);
@@ -102,7 +106,7 @@ pub void $printb(u_cstr_t name, const u8_t* mem, size_t size) {
   printf("\n");
 }
 
-pub void $printh(u_cstr_t name, const u8_t* mem, size_t size) {
+pub void $printh(cstr_t name, const u8_t* mem, size_t size) {
   u8_t buf[17] = {0};
   size_t i     = 0;
   size_t pos   = 0;
@@ -138,6 +142,7 @@ pub void $printh(u_cstr_t name, const u8_t* mem, size_t size) {
   }
 }
 
+#if 0
 /***************************************************************************************************
  * Benchmark
  **************************************************************************************************/
@@ -214,6 +219,7 @@ pub bool $benchmark_entry(const char* msg, size_t cnt) {
 
   return bm.run;
 }
+#endif
 
 /***************************************************************************************************
  * Debug
@@ -231,11 +237,11 @@ pub void $dbg_write(int level, const char* file, int line, const char* fmt, ...)
   time_t t         = {};
   struct tm* tm    = {};
   va_list ap       = {};
-  error_t err      = {};
+  errno_t err      = {};
 
   err = errno;
 
-  t  = time(nullptr);
+  t  = time(NULL);
   tm = localtime(&t);
 
   va_start(ap, fmt);

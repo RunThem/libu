@@ -22,83 +22,90 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_DEBUG_H__
-#  define U_DEBUG_H__
+#define U_DEBUG_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  define u_die_if(expr)                                                                           \
-    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
-      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#ifndef u_xxx
+#  define u_xxx(fmt, ...)
+#endif
+
+#define u_die_if(expr)                                                                             \
+  if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                    \
+    u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                         \
                                                                                                    \
-      exit(EXIT_FAILURE);                                                                          \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+    exit(EXIT_FAILURE);                                                                            \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_brk_if(expr)                                                                           \
-    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
-      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
+#define u_brk_if(expr)                                                                             \
+  if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                    \
+    u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                         \
                                                                                                    \
-      break;                                                                                       \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+    break;                                                                                         \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_cnt_if(expr)                                                                           \
-    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
-      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
+#define u_cnt_if(expr)                                                                             \
+  if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                    \
+    u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                         \
                                                                                                    \
-      continue;                                                                                    \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+    continue;                                                                                      \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_chk_if(expr, ...)                                                                      \
-    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
-      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
+#define u_chk_if(expr, ...)                                                                        \
+  if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                    \
+    u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                         \
                                                                                                    \
-      return u_va_at(0, __VA_ARGS__);                                                              \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+    return u_va_at(0, __VA_ARGS__);                                                                \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_end_if(expr, ...)                                                                      \
-    if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                  \
-      u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                       \
+#define u_end_if(expr, ...)                                                                        \
+  if ((is_ptr(expr) && !(expr)) || (!is_ptr(expr) && (expr))) {                                    \
+    u_xxx("<%s>", is_ptr(expr) ? #expr " == nil" : #expr);                                         \
                                                                                                    \
-      goto u_va_0th(end, __VA_ARGS__);                                                             \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+    goto u_va_0th(end, __VA_ARGS__);                                                               \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_free_if(mem)                                                                           \
-    if (mem != nullptr) {                                                                          \
-      u_free(mem);                                                                                 \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+#define u_free_if(mem)                                                                             \
+  if (mem != NULL) {                                                                               \
+    u_free(mem);                                                                                   \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_close_if(fd)                                                                           \
-    if (fd >= 0) {                                                                                 \
-      close(fd);                                                                                   \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+#define u_close_if(fd)                                                                             \
+  if (fd >= 0) {                                                                                   \
+    close(fd);                                                                                     \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  define u_fclose_if(fp)                                                                          \
-    if (fp != nullptr) {                                                                           \
-      fclose(fp);                                                                                  \
-    }                                                                                              \
-    do {                                                                                           \
-    } while (0)
+#define u_fclose_if(fp)                                                                            \
+  if (fp != NULL) {                                                                                \
+    fclose(fp);                                                                                    \
+  }                                                                                                \
+  do {                                                                                             \
+  } while (0)
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_DEBUG_H__ */

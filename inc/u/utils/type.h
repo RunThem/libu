@@ -22,22 +22,21 @@
  *
  * */
 
-#pragma once
-
-#include <stddef.h>
 #ifndef U_TYPE_H__
-#  define U_TYPE_H__
+#define U_TYPE_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 /* clang-format off */
-typedef char* u_cstr_t;
-
 typedef char        byte_t;
+typedef char*       cstr_t;
 typedef void*       any_t;
 typedef const void* cany_t;
 
@@ -58,8 +57,9 @@ typedef long double f128_t;
 typedef __int128_t  i128_t;
 typedef __uint128_t u128_t;
 #  endif
+/* clang-format on */
 
-#  define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
+#define fnt(n, r, ...) r (*(n))(__VA_ARGS__)
 
 /*
  * a >  b  ->  1
@@ -92,10 +92,8 @@ typedef enum {
   U_ORDER_ASCEND  = 1,
 } u_order_e;
 
-/* clang-format on */
-
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_TYPE_H__ */

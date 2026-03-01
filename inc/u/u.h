@@ -22,68 +22,33 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_H__
-#  define U_H__
+#define U_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  if defined(__clang__) && __clang_major__ < 16
-#    error "Please use the Clang.v16 or later toolchain."
-#  endif
+// #  if defined(__clang__) && __clang_major__ < 16
+// #    error "Please use the Clang.v16 or later toolchain."
+// #  endif
+//
+// #  if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
+// #    error "Please use the GCC.v13 or later toolchain."
+// #  endif
 
-#  if defined(__GNUC__) && __GNUC__ < 13 && !defined(__clang__)
-#    error "Please use the GCC.v13 or later toolchain."
-#  endif
+#include "iarr.h"
+#include "ibuf.h"
+#include "idict.h"
+#include "iheap.h"
+#include "ilist.h"
+#include "ilock.h"
+#include "itree.h"
+#include "ivec.h"
+#include "utils.h"
 
-#  include <assert.h>
-#  include <ctype.h>
-#  include <errno.h>
-#  include <fcntl.h>
-#  include <setjmp.h>
-#  include <stdalign.h>
-#  include <stdarg.h>
-#  include <stdatomic.h>
-#  include <stdbool.h>
-#  include <stddef.h>
-#  include <stdint.h>
-#  include <stdio.h>
-#  include <stdlib.h>
-#  include <string.h>
-#  include <strings.h>
-#  include <sys/types.h>
-#  include <time.h>
-#  include <unistd.h>
-
-/* clang-format off */
-#  include "utils/va.h"
-#  include "utils/type.h"
-#  include "utils/keyword.h"
-#  include "utils/alloc.h"
-#  include "utils/misc.h"
-#  include "utils/debug.h"
-#  include "utils/print.h"
-
-#  include "iatomic.h"
-#  include "ilock.h"
-
-#  include "ibuf.h"
-#  include "istr.h"
-#  include "ilfq.h"
-
-#  include "iarr.h"
-#  include "ivec.h"
-#  include "idict.h"
-#  include "ilist.h"
-#  include "itree.h"
-#  include "iheap.h"
-/* clang-format on */
-
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_H__ */

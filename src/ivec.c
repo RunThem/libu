@@ -22,7 +22,6 @@
  *
  * */
 
-// #include <u/u.h>
 #include "u/ivec.h"
 
 #include <string.h>
@@ -36,7 +35,7 @@
 /***************************************************************************************************
  * Type
  **************************************************************************************************/
-u_struct_def(vec, [[gnu::packed]]) {
+u_struct_def(u_vec, [[gnu::packed]]) {
   any_t ref;
   int len;
   int cap;
@@ -50,9 +49,9 @@ u_struct_def(vec, [[gnu::packed]]) {
  * Function
  **************************************************************************************************/
 pub any_t __u_vec_new(i32_t itsize, i32_t cap) {
-  vec_mut_t self = nullptr;
+  u_vec_mut_t self = NULL;
 
-  self = u_talloc(vec_t);
+  self = u_talloc(u_vec_t);
   u_end_if(self);
 
   self->items = u_calloc(cap, itsize);
@@ -69,11 +68,11 @@ pub any_t __u_vec_new(i32_t itsize, i32_t cap) {
 end:
   u_free_if(self);
 
-  return nullptr;
+  return NULL;
 }
 
 pub void __u_vec_clear(any_t _self) {
-  vec_mut_t self = (vec_mut_t)_self;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
 
   u_chk_if(self);
 
@@ -81,7 +80,7 @@ pub void __u_vec_clear(any_t _self) {
 }
 
 pub void __u_vec_cleanup(any_t _self) {
-  vec_mut_t self = (vec_mut_t)_self;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
 
   u_chk_if(self);
 
@@ -90,8 +89,8 @@ pub void __u_vec_cleanup(any_t _self) {
 }
 
 pub bool __u_vec_resize(any_t _self, i32_t cap) {
-  vec_mut_t self = (vec_mut_t)_self;
-  any_t items    = nullptr;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
+  any_t items      = NULL;
 
   u_chk_if(self, -1);
 
@@ -108,15 +107,15 @@ end:
 }
 
 pub any_t __u_vec_at(any_t _self, i32_t idx) {
-  vec_mut_t self = (vec_mut_t)_self;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
 
-  u_chk_if(self, nullptr);
+  u_chk_if(self, NULL);
 
   return at(idx);
 }
 
 pub void __u_vec_del(any_t _self, i32_t idx) {
-  vec_mut_t self = (vec_mut_t)_self;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
 
   u_chk_if(self);
 
@@ -128,11 +127,11 @@ pub void __u_vec_del(any_t _self, i32_t idx) {
 }
 
 pub any_t __u_vec_add(any_t _self, i32_t idx) {
-  vec_mut_t self = (vec_mut_t)_self;
-  i32_t cap      = 0;
-  int result     = 0;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
+  i32_t cap        = 0;
+  int result       = 0;
 
-  u_chk_if(self, nullptr);
+  u_chk_if(self, NULL);
 
   if (self->len == self->cap) {
     result = __u_vec_resize(_self, (i32_t)(self->cap * 1.5));
@@ -148,35 +147,35 @@ pub any_t __u_vec_add(any_t _self, i32_t idx) {
   return at(idx);
 
 end:
-  return nullptr;
+  return NULL;
 }
 
 pub any_t __u_vec_each(any_t _self, bool init) {
-  vec_mut_t self = (vec_mut_t)_self;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
 
-  u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self, NULL);
+  u_chk_if(self->len == 0, NULL);
 
   if (!init) {
-    return (self->idx == self->len) ? nullptr : at(self->idx++);
+    return (self->idx == self->len) ? NULL : at(self->idx++);
   }
 
   self->idx = 0;
 
-  return nullptr;
+  return NULL;
 }
 
 pub any_t __u_vec_reach(any_t _self, bool init) {
-  vec_mut_t self = (vec_mut_t)_self;
+  u_vec_mut_t self = (u_vec_mut_t)_self;
 
-  u_chk_if(self, nullptr);
-  u_chk_if(self->len == 0, nullptr);
+  u_chk_if(self, NULL);
+  u_chk_if(self->len == 0, NULL);
 
   if (!init) {
-    return (self->idx == -1) ? nullptr : at(self->idx--);
+    return (self->idx == -1) ? NULL : at(self->idx--);
   }
 
   self->idx = self->len - 1;
 
-  return nullptr;
+  return NULL;
 }

@@ -22,16 +22,14 @@
  *
  * */
 
-#pragma once
-
 #ifndef U_PRINT_H__
-#  define U_PRINT_H__
+#define U_PRINT_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-#  include "type.h"
+#include "type.h"
 
 /***************************************************************************************************
  * Api
@@ -39,35 +37,29 @@ extern "C" {
 [[gnu::format(printf, 4, 5)]]
 extern void $dbg_write(int, const char*, int, const char*, ...);
 
-extern void $printh(u_cstr_t name, const u8_t* mem, size_t size);
-extern void $printb(u_cstr_t name, const u8_t* mem, size_t size);
+extern void $printh(cstr_t name, const u8_t* mem, size_t size);
+extern void $printb(cstr_t name, const u8_t* mem, size_t size);
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#  define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
-#  define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
+#define printh(mem, size) __printh(#mem, (u8_t*)mem, size);
+#define printb(mem, size) __printb(#mem, (u8_t*)mem, size);
 
-#  ifdef NDEBUG
-#    define u_err(fmt, ...)
-#    define u_war(fmt, ...)
-#    define u_inf(fmt, ...)
-#    define u_dbg(fmt, ...)
-#  else /* NDEBUG */
-#    define u_err(fmt, ...) $dbg_write(0, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#    define u_war(fmt, ...) $dbg_write(1, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#    define u_inf(fmt, ...) $dbg_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#    define u_dbg(fmt, ...) $dbg_write(3, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#  endif /* NDEBUG */
+#ifdef NDEBUG
+#  define u_err(fmt, ...)
+#  define u_war(fmt, ...)
+#  define u_inf(fmt, ...)
+#  define u_dbg(fmt, ...)
+#else /* NDEBUG */
+#  define u_err(fmt, ...) $dbg_write(0, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  define u_war(fmt, ...) $dbg_write(1, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  define u_inf(fmt, ...) $dbg_write(2, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#  define u_dbg(fmt, ...) $dbg_write(3, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
+#endif /* NDEBUG */
 
-#  ifndef LIBU_DEBUG
-#    define u_xxx(fmt, ...)
-#  else /* !LIBU_DEBUG */
-#    define u_xxx(fmt, ...) $dbg_write(4, __file__, __line__, fmt "\n" __VA_OPT__(, ) __VA_ARGS__)
-#  endif /* !LIBU_DEBUG */
-
-#  ifdef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_PRINT_H__ */

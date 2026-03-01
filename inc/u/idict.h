@@ -21,207 +21,334 @@
  * SOFTWARE.
  * */
 
-#pragma once
-
 #ifndef U_IDICT_H__
-#  define U_IDICT_H__
+#define U_IDICT_H__
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-#  endif
+#endif
 
-/* clang-format off */
+#include "utils.h"
 
 /***************************************************************************************************
- * Api
+ * Meta Type
  **************************************************************************************************/
-typedef struct {}* $dict_t;
-
-extern any_t $dict_new     (i32_t, i32_t, u_hash_fn);
-extern void  $dict_clear   (any_t);
-extern void  $dict_cleanup (any_t);
-extern any_t $dict_at      (any_t, any_t);
-extern void  $dict_del     (any_t, any_t);
-extern any_t $dict_add     (any_t, any_t);
-extern any_t $dict_each    (any_t, bool);
+typedef struct {
+} u_dict_meta_t;
 
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
-#  define u_dict_t(K, V)                                                                           \
-    typeof(const struct [[gnu::packed]] {                                                          \
-      any_t ref;                                                                                   \
-      int len;                                                                                     \
+#define u_dict_t(K, V)                                                                             \
+  typeof(const struct [[gnu::packed]] {                                                            \
+    any_t ref;                                                                                     \
+    int len;                                                                                       \
+                                                                                                   \
+    struct {                                                                                       \
+      u_dict_meta_t meta;                                                                          \
+                                                                                                   \
+      K key;                                                                                       \
+      K* kmut;                                                                                     \
+      const K* kref;                                                                               \
+                                                                                                   \
+      V val;                                                                                       \
+      V* vmut;                                                                                     \
+      const V* vref;                                                                               \
                                                                                                    \
       struct {                                                                                     \
-        $dict_t meta;                                                                              \
         K key;                                                                                     \
         V val;                                                                                     \
-        struct {       K key;       V val; }   pair;                                               \
-        struct { const K key; const V val; } * ref;                                                \
-        struct { const K key;       V val; } * mut;                                                \
-      } _[0]; /* Don't use this field. */                                                          \
-    }*)
+      } pair;                                                                                      \
+                                                                                                   \
+      struct {                                                                                     \
+        const K key;                                                                               \
+        const V val;                                                                               \
+      }* ref;                                                                                      \
+                                                                                                   \
+      struct {                                                                                     \
+        const K key;                                                                               \
+        V val;                                                                                     \
+      }* mut;                                                                                      \
+    } _[0]; /* Don't use this field. */                                                            \
+  }*)
 
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
-#  define u_dict_new(self, ...)                                                                    \
-    ({                                                                                             \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+#define u_dict_new(self, ...)                                                                      \
+  ({                                                                                               \
+    extern pub any_t __u_dict_new(i32_t, i32_t, u_hash_fn);                                        \
                                                                                                    \
-      self = $dict_new(sizeof(self->_[0].key), sizeof(self->_[0].val), u_va_0th(0, __VA_ARGS__));  \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_->meta, "meta type not's Dict<K, V>");                     \
+    }                                                                                              \
                                                                                                    \
-      self->ref;                                                                                   \
-    })
-
-
-#  define u_dict_is_valid(self, _key)                                                              \
-    ({                                                                                             \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+    (self) = __u_dict_new(sizeof((self)->_[0].key),                                                \
+                          sizeof((self)->_[0].val),                                                \
+                          u_va_0th(NULL, __VA_ARGS__));                                            \
                                                                                                    \
-      typeof_unqual(self->_[0].pair) __pair__ = {_key};                                            \
+    (self)->ref;                                                                                   \
+  })
+
+#define u_dict_clear(self, ...)                                                                    \
+  do {                                                                                             \
+    extern pub void __u_dict_clear(any_t);                                                         \
                                                                                                    \
-      (bool) (nullptr != $dict_at(self->ref, &__pair__.key));                                      \
-    })
-
-
-#  define u_dict_clear(self, ...)                                                                  \
-    do {                                                                                           \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                   \
                                                                                                    \
-      u_va_has_if(__VA_ARGS__) ( u_dict_each(self, it) { __VA_ARGS__ } )                           \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
                                                                                                    \
-      $dict_clear(self->ref);                                                                      \
-    } while (0)
-
-
-#  define u_dict_cleanup(self, ...)                                                                \
-    do {                                                                                           \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+    u_va_has_if(__VA_ARGS__)(u_dict_each (self, it){__VA_ARGS__});                                 \
                                                                                                    \
-      u_va_has_if(__VA_ARGS__) ( u_dict_each(self, it) { __VA_ARGS__ } )                           \
+    __u_dict_clear((self)->ref);                                                                   \
+  } while (0)
+
+#define u_dict_cleanup(self, ...)                                                                  \
+  do {                                                                                             \
+    extern pub void __u_dict_cleanup(any_t);                                                       \
                                                                                                    \
-      $dict_cleanup(self->ref);                                                                    \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                   \
                                                                                                    \
-      self = nullptr;                                                                              \
-    } while (0)
-
-
-#  define u_dict_at(self, _key, ...)                                                               \
-    ({                                                                                             \
-      *u_dict_at_mut(self, _key) u_va_has_if(__VA_ARGS__) ( = u_va_at(0, __VA_ARGS__) );           \
-    })
-
-
-#  define u_dict_at_ref(self, _key)                                                                \
-    ({                                                                                             \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
                                                                                                    \
-      typeof_unqual(self->_[0].key) __key__ = _key;                                                \
-      typeof_unqual(self->_[0].mut) __ref__ = $dict_at(self->ref, (any_t)&__key__);                \
+    u_va_has_if(__VA_ARGS__)(u_dict_each (self, it){__VA_ARGS__});                                 \
                                                                                                    \
-      assert(__ref__);                                                                             \
+    __u_dict_cleanup((self)->ref);                                                                 \
                                                                                                    \
-      &__ref__->val;                                                                               \
-    })
+    (self) = NULL;                                                                                 \
+  } while (0)
 
+#define u_dict_at(self, _key, ...)                                                                 \
+  ({                                                                                               \
+    ;                                                                                              \
+    *u_dict_at_mut(self, _key) u_va_has_if(__VA_ARGS__)(= u_va_at(0, __VA_ARGS__));                \
+  })
 
-#  define u_dict_at_mut(self, _key)                                                                \
-    ({                                                                                             \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+#define u_dict_at_ref(self, _key)                                                                  \
+  ({                                                                                               \
+    extern pub any_t __u_dict_at(any_t, any_t);                                                    \
                                                                                                    \
-      typeof_unqual(self->_[0].key) __key__ = _key;                                                \
-      typeof_unqual(self->_[0].mut) __mut__ = $dict_at(self->ref, (any_t)&__key__);                \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                   \
                                                                                                    \
-      assert(__mut__);                                                                             \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
                                                                                                    \
-      &__mut__->val;                                                                               \
-    })
-
-
-#  define u_dict_try_at(self, _key, ...)                                                           \
-    u_va_let(typeof_unqual(self->_[0].key), key, _key);                                            \
-    u_va_let(typeof_unqual(self->_[0].ref), ref, $dict_at(self->ref, (any_t)&u_va_var(key)));      \
-    if (u_va_var(ref))                                                                             \
-      for (auto u_va_0th(it, __VA_ARGS__) = u_va_var(ref)->val; u_va_var(ref); u_va_var(ref) = nullptr)
-
-
-#  define u_dict_try_at_ref(self, ...)                                                             \
-    u_va_let(typeof_unqual(self->_[0].key), key, _key);                                            \
-    u_va_let(typeof_unqual(self->_[0].ref), ref, $dict_at(self->ref, (any_t)&u_va_var(key)));      \
-    if (u_va_var(ref))                                                                             \
-      for (auto u_va_0th(it, __VA_ARGS__) = &u_va_var(ref)->val; u_va_var(ref); u_va_var(ref) = nullptr)
-
-
-#  define u_dict_try_at_mut(self, ...)                                                             \
-    u_va_let(typeof_unqual(self->_[0].key), key, _key);                                            \
-    u_va_let(typeof_unqual(self->_[0].mut), mut, $dict_at(self->ref, (any_t)&u_va_var(key)));      \
-    if (u_va_var(mut))                                                                             \
-      for (auto u_va_0th(it, __VA_ARGS__) = &u_va_var(mut)->val; u_va_var(mut); u_va_var(mut) = nullptr)
-
-
-#  define u_dict_remove(self, _key)                                                                \
-    ({                                                                                             \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+    typeof((self)->_->key) __key__   = _key;                                                       \
+    typeof((self)->_->ref) __ref__   = __u_dict_at((self)->ref, (any_t) & __key__);                \
+    typeof((self)->_->vref) __vref__ = __ref__ ? &__ref__->val : NULL;                             \
                                                                                                    \
-      typeof_unqual(self->_[0].pair) __pair__ = {_key};                                            \
-      typeof_unqual(self->_[0].ref) __ref__ = $dict_at(self->ref, &__pair__.key);                  \
-      assert(__ref__);                                                                             \
+    __vref__;                                                                                      \
+  })
+
+#define u_dict_at_mut(self, _key)                                                                  \
+  ({                                                                                               \
+    extern pub any_t __u_dict_at(any_t, any_t);                                                    \
                                                                                                    \
-      __pair__.val = __ref__->val;                                                                 \
-      $dict_del(self->ref, (any_t)__ref__);                                                        \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                   \
                                                                                                    \
-      __pair__.val;                                                                                \
-    })
-
-
-#  define u_dict_insert(self, _key, _val)                                                          \
-    do {                                                                                           \
-      typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                           \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
                                                                                                    \
-      typeof_unqual(self->_[0].pair) __pair__ = {_key, _val};                                      \
-      typeof_unqual(__pair__)* __mut__ = $dict_add(self->ref, (any_t)&__pair__.key);               \
-      assert(__mut__);                                                                             \
+    typeof((self)->_->key) __key__   = _key;                                                       \
+    typeof((self)->_->mut) __mut__   = __u_dict_at((self)->ref, (any_t) & __key__);                \
+    typeof((self)->_->vmut) __vmut__ = __mut__ ? &__mut__->val : NULL;                             \
                                                                                                    \
-      __mut__->key = __pair__.key;                                                                 \
-      __mut__->val = __pair__.val;                                                                 \
-    } while (0)
+    __vmut__;                                                                                      \
+  })
 
-
-#  define u_dict_each(self, it)                                                                    \
-    typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                             \
+#define u_dict_try_at(self, _key, ...)                                                             \
+  {                                                                                                \
+    typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
                                                                                                    \
-    (void)$dict_each(self->ref, !0);                                                               \
-    for (auto it = (typeof(self->_[0].pair)) {}; ({ typeof(it)* __ref__ = $dict_each(self->ref, !!0); if (__ref__) it = *__ref__; __ref__; }); )
-
-
-#  define u_dict_each_if(self, it, cond) u_dict_each(self, it) if (cond)
-
-
-#  define u_dict_each_ref(self, it)                                                                \
-    typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                             \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+  }                                                                                                \
                                                                                                    \
-    (void)$dict_each(self->ref, !0);                                                               \
-    for (auto it = (typeof(self->_[0].ref)) {}; (it = $dict_each(self->ref, !!0)); )
-
-
-#  define u_dict_each_if_ref(self, it, cond) u_dict_each_ref(self, it) if (cond)
-
-
-#  define u_dict_each_mut(self, it)                                                                \
-    typecheck($dict_t, self->_[0].meta, "meta type not's Dict<K, V>");                             \
+  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_->val)){}; ({                             \
+         extern pub any_t __u_dict_at(any_t, any_t);                                               \
                                                                                                    \
-    (void)$dict_each(self->ref, !0);                                                               \
-    for (auto it = (typeof(self->_[0].mut)) {}; (it = $dict_each(self->ref, !!0)); )
+         typeof((self)->_->key) __key__ = _key;                                                    \
+         typeof((self)->_->ref) __ref__ = __u_dict_at((self)->ref, (any_t) & __key__);             \
+                                                                                                   \
+         if (__ref__)                                                                              \
+           u_va_0th(it, __VA_ARGS__) = __ref__->val;                                               \
+                                                                                                   \
+         __ref__;                                                                                  \
+       });                                                                                         \
+       ({ break; }))
 
+#define u_dict_try_at_ref(self, ...)                                                               \
+  {                                                                                                \
+    typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_->vref)){}; ({                            \
+         extern pub any_t __u_dict_at(any_t, any_t);                                               \
+                                                                                                   \
+         typeof((self)->_->key) __key__ = _key;                                                    \
+         typeof((self)->_->ref) __ref__ = __u_dict_at((self)->ref, (any_t) & __key__);             \
+                                                                                                   \
+         if (__ref__)                                                                              \
+           u_va_0th(it, __VA_ARGS__) = &__ref__->val;                                              \
+                                                                                                   \
+         u_va_0th(it, __VA_ARGS__);                                                                \
+       });                                                                                         \
+       ({ break; }))
 
-#  define u_dict_each_if_mut(self, it, cond) u_dict_each_mut(self, it) if (cond)
+#define u_dict_try_at_mut(self, ...)                                                               \
+  {                                                                                                \
+    typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_->vmut)){}; ({                            \
+         extern pub any_t __u_dict_at(any_t, any_t);                                               \
+                                                                                                   \
+         typeof((self)->_->key) __key__ = _key;                                                    \
+         typeof((self)->_->mut) __mut__ = __u_dict_at((self)->ref, (any_t) & __key__);             \
+                                                                                                   \
+         if (__mut__)                                                                              \
+           u_va_0th(it, __VA_ARGS__) = &__mut__->val;                                              \
+                                                                                                   \
+         u_va_0th(it, __VA_ARGS__);                                                                \
+       });                                                                                         \
+       ({ break; }))
 
-/* clang-format on */
+#define u_dict_remove(self, _key)                                                                  \
+  ({                                                                                               \
+    extern pub any_t __u_dict_at(any_t, any_t);                                                    \
+    extern pub void __u_dict_del(any_t, any_t);                                                    \
+                                                                                                   \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                   \
+                                                                                                   \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
+                                                                                                   \
+    typeof((self)->_->key) __key__   = _key;                                                       \
+    typeof((self)->_[0].mut) __mut__ = __u_dict_at((self)->ref, (any_t) & __key__);                \
+                                                                                                   \
+    auto __val__ = (typeof((self)->_->val)){};                                                     \
+    if (__mut__) {                                                                                 \
+      __val__ = __mut__->val;                                                                      \
+      __u_dict_del((self)->ref, (any_t) & __key__);                                                \
+    }                                                                                              \
+                                                                                                   \
+    __val__;                                                                                       \
+  })
 
-#  ifdef __cplusplus
+#define u_dict_insert(self, _key, _val)                                                            \
+  do {                                                                                             \
+    extern pub any_t __u_dict_add(any_t, any_t);                                                   \
+                                                                                                   \
+    {                                                                                              \
+      typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                   \
+                                                                                                   \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
+                                                                                                   \
+    typeof((self)->_->key) __key__ = _key;                                                         \
+    typeof((self)->_->val) __val__ = _val;                                                         \
+    typeof((self)->_->mut) __mut__ = __u_dict_add((self)->ref, (any_t) & __key__);                 \
+                                                                                                   \
+    if (__mut__) {                                                                                 \
+      *(typeof((self)->_->kmut))(&__mut__->key) = __key__;                                         \
+      __mut__->val                              = __val__;                                         \
+    }                                                                                              \
+  } while (0)
+
+#define u_dict_each(self, it)                                                                      \
+  {                                                                                                \
+    extern pub any_t __u_dict_each(any_t, bool);                                                   \
+                                                                                                   \
+    typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+                                                                                                   \
+    (void)__u_dict_each((self)->ref, !0);                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto it = (typeof((self)->_->pair)){}; ({                                                   \
+         extern pub any_t __u_dict_each(any_t, bool);                                              \
+                                                                                                   \
+         typeof((self)->_->ref) __ref__ = __u_dict_each((self)->ref, !!0);                         \
+                                                                                                   \
+         if (__ref__) {                                                                            \
+           it.key = __ref__->key;                                                                  \
+           it.val = __ref__->val;                                                                  \
+         }                                                                                         \
+                                                                                                   \
+         __ref__;                                                                                  \
+       });)
+
+#define u_dict_each_if(self, it, cond)                                                             \
+  u_dict_each (self, it)                                                                           \
+    if (cond)
+
+#define u_dict_each_ref(self, it)                                                                  \
+  {                                                                                                \
+    extern pub any_t __u_dict_each(any_t, bool);                                                   \
+                                                                                                   \
+    typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+                                                                                                   \
+    (void)__u_dict_each((self)->ref, !0);                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto it = (typeof((self)->_->ref)){}; ({                                                    \
+         extern pub any_t __u_dict_each(any_t, bool);                                              \
+                                                                                                   \
+         it = __u_dict_each((self)->ref, !!0);                                                     \
+       });)
+
+#define u_dict_each_if_ref(self, it, cond)                                                         \
+  u_dict_each_ref (self, it)                                                                       \
+    if (cond)
+
+#define u_dict_each_mut(self, it)                                                                  \
+  {                                                                                                \
+    extern pub any_t __u_dict_each(any_t, bool);                                                   \
+                                                                                                   \
+    typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+                                                                                                   \
+    (void)__u_dict_each((self)->ref, !0);                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto it = (typeof((self)->_->mut)){}; ({                                                    \
+         extern pub any_t __u_dict_each(any_t, bool);                                              \
+                                                                                                   \
+         it = __u_dict_each((self)->ref, !!0);                                                     \
+       });)
+
+#define u_dict_each_if_mut(self, it, cond)                                                         \
+  u_dict_each_mut (self, it)                                                                       \
+    if (cond)
+
+#ifdef __cplusplus
 } /* extern "C" */
-#  endif
+#endif
 
 #endif /* !U_IDICT_H__ */
