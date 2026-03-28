@@ -1,4 +1,4 @@
-for _, file in ipairs(os.files('**.c')) do
+for _, file in ipairs(os.files('ivec/*.c')) do
   local name = path.basename(file)
 
   target(name, function()

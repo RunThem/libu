@@ -95,7 +95,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
     }                                                                                              \
                                                                                                    \
-    u_va_has_if(__VA_ARGS__)(u_vec_each (self, it){__VA_ARGS__});                                  \
+    u_va_has_if(__VA_ARGS__)(u_vec_each (self, it) { __VA_ARGS__; });                              \
                                                                                                    \
     __u_vec_clear((self)->ref);                                                                    \
   } while (0)
@@ -115,7 +115,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
     }                                                                                              \
                                                                                                    \
-    u_va_has_if(__VA_ARGS__)(u_vec_each (self, it){__VA_ARGS__});                                  \
+    u_va_has_if(__VA_ARGS__)(u_vec_each (self, it) { __VA_ARGS__; });                              \
                                                                                                    \
     __u_vec_cleanup((self)->ref);                                                                  \
                                                                                                    \
@@ -180,68 +180,6 @@ typedef struct {
                                                                                                    \
     (typeof((self)->_->mut))__u_vec_at((self)->ref, _idx);                                         \
   })
-
-/**
- * ::Vec<T>::try_at(self, idx) -> Option<it = T>
- * ::Vec<T>::try_at(self, idx, it) -> Option<it = T>
- */
-#define u_vec_try_at(self, _idx, ...)                                                              \
-  {                                                                                                \
-    typecheck(u_vec_meta_t, (self)->_->meta, "meta type not's Vec<T>");                            \
-                                                                                                   \
-    auto Self = (self);                                                                            \
-    assert(Self != NULL);                                                                          \
-  }                                                                                                \
-                                                                                                   \
-  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_->val)){}; ({                             \
-         extern pub any_t __u_vec_at(any_t, i32_t);                                                \
-                                                                                                   \
-         typeof((self)->_->ref) __ref__ = __u_vec_at((self)->ref, _idx);                           \
-                                                                                                   \
-         if (__ref__)                                                                              \
-           u_va_0th(it, __VA_ARGS__) = *__ref__;                                                   \
-                                                                                                   \
-         __ref__;                                                                                  \
-       });                                                                                         \
-       ({ break; }))
-
-/**
- * ::Vec<T>::try_at_ref(self, idx) -> Option<it = const T*>
- * ::Vec<T>::try_at_ref(self, idx, it) -> Option<it = const T*>
- */
-#define u_vec_try_at_ref(self, _idx, ...)                                                          \
-  {                                                                                                \
-    typecheck(u_vec_meta_t, (self)->_->meta, "meta type not's Vec<T>");                            \
-                                                                                                   \
-    auto Self = (self);                                                                            \
-    assert(Self != NULL);                                                                          \
-  }                                                                                                \
-                                                                                                   \
-  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_->ref)){}; ({                             \
-         extern pub any_t __u_vec_at(any_t, i32_t);                                                \
-                                                                                                   \
-         u_va_0th(it, __VA_ARGS__) = __u_vec_at((self)->ref, _idx);                                \
-       });                                                                                         \
-       ({ break; }))
-
-/**
- * ::Vec<T>::try_at_mut(self, idx) -> Option<it = T*>
- * ::Vec<T>::try_at_mut(self, idx, it) -> Option<it = T*>
- */
-#define u_vec_try_at_mut(self, _idx, ...)                                                          \
-  {                                                                                                \
-    typecheck(u_vec_meta_t, (self)->_->meta, "meta type not's Vec<T>");                            \
-                                                                                                   \
-    auto Self = (self);                                                                            \
-    assert(Self != NULL);                                                                          \
-  }                                                                                                \
-                                                                                                   \
-  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_->mut)){}; ({                             \
-         extern pub any_t __u_vec_at(any_t, i32_t);                                                \
-                                                                                                   \
-         u_va_0th(it, __VA_ARGS__) = __u_vec_at((self)->ref, _idx);                                \
-       });                                                                                         \
-       ({ break; }))
 
 /**
  * ::Vec<T>::remove(self, idx) -> T

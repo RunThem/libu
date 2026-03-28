@@ -26,5 +26,6 @@
 #define mut_ptr_neq_nil(ptr) do { if (!(ptr))        { inf("L.%d: %s == nil",  __LINE__, #ptr);    return -1; } } while (0)
 #define mut_ptr_eq_nil(ptr)  do { if ((ptr))         { inf("L.%d: %s != nil", __LINE__, #ptr);     return -1; } } while (0)
 #define mut_eq(a, b)         do { if (a != b)        { inf("L.%d: %s != %s",  __LINE__, #a, #b);   return -1; } } while (0)
-#define mut_str_eq(a, b)     do { if (!strcmp(a, b)) { inf("L.%d: '%s' != '%s'",  __LINE__, a, b); return -1; } } while (0)
+#define mut_str_eq(a, b)     do { if (strcmp(a, b) != 0) { inf("L.%d: '%s' != '%s'",  __LINE__, a, b); return -1; } } while (0)
 #define mut_ptr_eq(a, b)     do { if (any(a) != any(b)) { inf("L.%d: %s != %s",  __LINE__, #a, #b);   return -1; } } while (0)
+#define mut_ptr_neq(a, b)    do { if (any(a) == any(b)) { inf("L.%d: %s == %s",  __LINE__, #a, #b);   return -1; } } while (0)
