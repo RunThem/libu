@@ -39,6 +39,10 @@ typedef struct {
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
+
+/**
+ * ::Class Dict<K, V>
+ */
 #define u_dict_t(K, V)                                                                             \
   typeof(const struct [[gnu::packed]] {                                                            \
     any_t ref;                                                                                     \
@@ -75,6 +79,11 @@ typedef struct {
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
+
+/**
+ * ::Dict<K, V>::new(self) -> Self
+ * ::Dict<K, V>::new(self, hash_fn) -> Self
+ */
 #define u_dict_new(self, ...)                                                                      \
   ({                                                                                               \
     extern pub any_t __u_dict_new(i32_t, i32_t, u_hash_fn);                                        \
@@ -90,6 +99,10 @@ typedef struct {
     (self)->ref;                                                                                   \
   })
 
+/**
+ * ::Dict<K, V>::clear(self) -> !
+ * ::Dict<K, V>::clear(self, proc) -> !
+ */
 #define u_dict_clear(self, ...)                                                                    \
   do {                                                                                             \
     extern pub void __u_dict_clear(any_t);                                                         \
@@ -106,6 +119,10 @@ typedef struct {
     __u_dict_clear((self)->ref);                                                                   \
   } while (0)
 
+/**
+ * ::Dict<K, V>::cleanup(self) -> !
+ * ::Dict<K, V>::cleanup(self, proc) -> !
+ */
 #define u_dict_cleanup(self, ...)                                                                  \
   do {                                                                                             \
     extern pub void __u_dict_cleanup(any_t);                                                       \
@@ -124,12 +141,19 @@ typedef struct {
     (self) = NULL;                                                                                 \
   } while (0)
 
+/**
+ * ::Dict<K, V>::at(self, key) -> V
+ * ::Dict<K, V>::at(self, key, val) -> V
+ */
 #define u_dict_at(self, _key, ...)                                                                 \
   ({                                                                                               \
     ;                                                                                              \
     *u_dict_at_mut(self, _key) u_va_has_if(__VA_ARGS__)(= u_va_at(0, __VA_ARGS__));                \
   })
 
+/**
+ * ::Dict<K, V>::at_ref(self, key) -> const V*
+ */
 #define u_dict_at_ref(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_dict_at(any_t, any_t);                                                    \
@@ -148,6 +172,9 @@ typedef struct {
     __vref__;                                                                                      \
   })
 
+/**
+ * ::Dict<K, V>::at_mut(self, key) -> V*
+ */
 #define u_dict_at_mut(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_dict_at(any_t, any_t);                                                    \
@@ -166,6 +193,10 @@ typedef struct {
     __vmut__;                                                                                      \
   })
 
+/**
+ * ::Dict<K, V>::try_at(self, key) -> Option<it = V>
+ * ::Dict<K, V>::try_at(self, key, it) -> Option<it = V>
+ */
 #define u_dict_try_at(self, _key, ...)                                                             \
   {                                                                                                \
     typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
@@ -187,7 +218,11 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
-#define u_dict_try_at_ref(self, ...)                                                               \
+/**
+ * ::Dict<K, V>::try_at_ref(self, key) -> Option<it = const V*>
+ * ::Dict<K, V>::try_at_ref(self, key, it) -> Option<it = const V*>
+ */
+#define u_dict_try_at_ref(self, _key, ...)                                                               \
   {                                                                                                \
     typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
                                                                                                    \
@@ -208,7 +243,11 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
-#define u_dict_try_at_mut(self, ...)                                                               \
+/**
+ * ::Dict<K, V>::try_at_mut(self, key) -> Option<it = V*>
+ * ::Dict<K, V>::try_at_mut(self, key, it) -> Option<it = V*>
+ */
+#define u_dict_try_at_mut(self, _key, ...)                                                               \
   {                                                                                                \
     typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
                                                                                                    \
@@ -229,6 +268,9 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Dict<K, V>::remove(self, key) -> V
+ */
 #define u_dict_remove(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_dict_at(any_t, any_t);                                                    \
@@ -253,6 +295,9 @@ typedef struct {
     __val__;                                                                                       \
   })
 
+/**
+ * ::Dict<K, V>::insert(self, key, val) -> !
+ */
 #define u_dict_insert(self, _key, _val)                                                            \
   do {                                                                                             \
     extern pub any_t __u_dict_add(any_t, any_t);                                                   \
@@ -274,6 +319,9 @@ typedef struct {
     }                                                                                              \
   } while (0)
 
+/**
+ * ::Dict<K, V>::each(self, it) -> Iter<it = (K, V)>
+ */
 #define u_dict_each(self, it)                                                                      \
   {                                                                                                \
     extern pub any_t __u_dict_each(any_t, bool);                                                   \
@@ -299,10 +347,16 @@ typedef struct {
          __ref__;                                                                                  \
        });)
 
+/**
+ * ::Dict<K, V>::each_if(self, it, cond) -> Iter<it = (K, V)>
+ */
 #define u_dict_each_if(self, it, cond)                                                             \
   u_dict_each (self, it)                                                                           \
     if (cond)
 
+/**
+ * ::Dict<K, V>::each_ref(self, it) -> Iter<it = (const K, const V)*>
+ */
 #define u_dict_each_ref(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_dict_each(any_t, bool);                                                   \
@@ -321,10 +375,16 @@ typedef struct {
          it = __u_dict_each((self)->ref, !!0);                                                     \
        });)
 
+/**
+ * ::Dict<K, V>::each_if_ref(self, it, cond) -> Iter<it = (const K, const V)*>
+ */
 #define u_dict_each_if_ref(self, it, cond)                                                         \
   u_dict_each_ref (self, it)                                                                       \
     if (cond)
 
+/**
+ * ::Dict<K, V>::each_mut(self, it) -> Iter<it = (const K, V)*>
+ */
 #define u_dict_each_mut(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_dict_each(any_t, bool);                                                   \
@@ -343,6 +403,9 @@ typedef struct {
          it = __u_dict_each((self)->ref, !!0);                                                     \
        });)
 
+/**
+ * ::Dict<K, V>::each_if_mut(self, it, cond) -> Iter<it = (const K, V)*>
+ */
 #define u_dict_each_if_mut(self, it, cond)                                                         \
   u_dict_each_mut (self, it)                                                                       \
     if (cond)

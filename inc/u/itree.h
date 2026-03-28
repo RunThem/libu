@@ -40,6 +40,10 @@ typedef struct {
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
+
+/**
+ * ::Class Tree<K, V>
+ */
 #define u_tree_t(K, V)                                                                             \
   typeof(const struct [[gnu::packed]] {                                                            \
     any_t ref;                                                                                     \
@@ -76,6 +80,10 @@ typedef struct {
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
+
+/**
+ * ::Tree<K, V>::new(self, cmp_fn) -> Self
+ */
 #define u_tree_new(self, cmp_fn)                                                                   \
   ({                                                                                               \
     extern pub any_t __u_tree_new(i32_t, i32_t, u_cmp_fn);                                         \
@@ -92,6 +100,10 @@ typedef struct {
     (self)->ref;                                                                                   \
   })
 
+/**
+ * ::Tree<K, V>::clear(self) -> !
+ * ::Tree<K, V>::clear(self, proc) -> !
+ */
 #define u_tree_clear(self, ...)                                                                    \
   do {                                                                                             \
     extern pub void __u_tree_clear(any_t);                                                         \
@@ -108,6 +120,10 @@ typedef struct {
     __u_tree_clear((self)->ref);                                                                   \
   } while (0)
 
+/**
+ * ::Tree<K, V>::cleanup(self) -> !
+ * ::Tree<K, V>::cleanup(self, proc) -> !
+ */
 #define u_tree_cleanup(self, ...)                                                                  \
   do {                                                                                             \
     extern pub void __u_tree_cleanup(any_t);                                                       \
@@ -126,12 +142,19 @@ typedef struct {
     (self) = NULL;                                                                                 \
   } while (0)
 
+/**
+ * ::Tree<K, V>::at(self, key) -> V
+ * ::Tree<K, V>::at(self, key, val) -> V
+ */
 #define u_tree_at(self, _key, ...)                                                                 \
   ({                                                                                               \
     ;                                                                                              \
     *u_tree_at_mut(self, _key) u_va_has_if(__VA_ARGS__)(= u_va_at(0, __VA_ARGS__));                \
   })
 
+/**
+ * ::Tree<K, V>::at_ref(self, key) -> const V*
+ */
 #define u_tree_at_ref(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_tree_at(any_t, any_t);                                                    \
@@ -150,6 +173,9 @@ typedef struct {
     __vref__;                                                                                      \
   })
 
+/**
+ * ::Tree<K, V>::at_mut(self, key) -> V*
+ */
 #define u_tree_at_mut(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_tree_at(any_t, any_t);                                                    \
@@ -168,6 +194,10 @@ typedef struct {
     __vmut__;                                                                                      \
   })
 
+/**
+ * ::Tree<K, V>::try_at(self, key) -> Option<it = V>
+ * ::Tree<K, V>::try_at(self, key, it) -> Option<it = V>
+ */
 #define u_tree_try_at(self, _key, ...)                                                             \
   {                                                                                                \
     typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                       \
@@ -189,6 +219,10 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Tree<K, V>::try_at_ref(self, key) -> Option<it = const V*>
+ * ::Tree<K, V>::try_at_ref(self, key, it) -> Option<it = const V*>
+ */
 #define u_tree_try_at_ref(self, _key, ...)                                                         \
   {                                                                                                \
     typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                       \
@@ -210,6 +244,10 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Tree<K, V>::try_at_mut(self, key) -> Option<it = V*>
+ * ::Tree<K, V>::try_at_mut(self, key, it) -> Option<it = V*>
+ */
 #define u_tree_try_at_mut(self, _key, ...)                                                         \
   {                                                                                                \
     typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                       \
@@ -231,6 +269,9 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Tree<K, V>::remove(self, key) -> V
+ */
 #define u_tree_remove(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_tree_at(any_t, any_t);                                                    \
@@ -255,6 +296,9 @@ typedef struct {
     __val__;                                                                                       \
   })
 
+/**
+ * ::Tree<K, V>::insert(self, key, val) -> !
+ */
 #define u_tree_insert(self, _key, _val)                                                            \
   do {                                                                                             \
     extern pub any_t __u_tree_add(any_t, any_t);                                                   \
@@ -276,6 +320,9 @@ typedef struct {
     }                                                                                              \
   } while (0)
 
+/**
+ * ::Tree<K, V>::each(self, it) -> Iter<it = (K, V)>
+ */
 #define u_tree_each(self, it)                                                                      \
   {                                                                                                \
     extern pub any_t __u_tree_each(any_t, bool);                                                   \
@@ -301,10 +348,16 @@ typedef struct {
          __ref__;                                                                                  \
        });)
 
+/**
+ * ::Tree<K, V>::each_if(self, it, cond) -> Iter<it = (K, V)>
+ */
 #define u_tree_each_if(self, it, cond)                                                             \
   u_tree_each (self, it)                                                                           \
     if (cond)
 
+/**
+ * ::Tree<K, V>::each_ref(self, it) -> Iter<it = (const K, const V)*>
+ */
 #define u_tree_each_ref(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_tree_each(any_t, bool);                                                   \
@@ -323,10 +376,16 @@ typedef struct {
          it = __u_tree_each((self)->ref, !!0);                                                     \
        });)
 
+/**
+ * ::Tree<K, V>::each_if_ref(self, it, cond) -> Iter<it = (const K, const V)*>
+ */
 #define u_tree_each_if_ref(self, it, cond)                                                         \
   u_tree_each_ref (self, it)                                                                       \
     if (cond)
 
+/**
+ * ::Tree<K, V>::each_mut(self, it) -> Iter<it = (const K, V)*>
+ */
 #define u_tree_each_mut(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_tree_each(any_t, bool);                                                   \
@@ -345,6 +404,9 @@ typedef struct {
          it = __u_tree_each((self)->ref, !!0);                                                     \
        });)
 
+/**
+ * ::Tree<K, V>::each_if_mut(self, it, cond) -> Iter<it = (const K, V)*>
+ */
 #define u_tree_each_if_mut(self, it, cond)                                                         \
   u_tree_each_mut (self, it)                                                                       \
     if (cond)

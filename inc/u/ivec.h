@@ -40,6 +40,10 @@ typedef struct {
 /***************************************************************************************************
  * iType
  **************************************************************************************************/
+
+/**
+ * ::Class Vec<T>
+ */
 #define u_vec_t(T)                                                                                 \
   typeof(const struct [[gnu::packed]] {                                                            \
     any_t ref;                                                                                     \
@@ -58,6 +62,11 @@ typedef struct {
 /***************************************************************************************************
  * iApi
  **************************************************************************************************/
+
+/**
+ * ::Vec<T>::new(self) -> Self
+ * ::Vec<T>::new(self, cap) -> Self
+ */
 #define u_vec_new(self, ...)                                                                       \
   ({                                                                                               \
     extern pub any_t __u_vec_new(i32_t, i32_t);                                                    \
@@ -71,6 +80,10 @@ typedef struct {
     (self)->ref;                                                                                   \
   })
 
+/**
+ * ::Vec<T>::clear(self) -> !
+ * ::Vec<T>::clear(self, proc) -> !
+ */
 #define u_vec_clear(self, ...)                                                                     \
   do {                                                                                             \
     extern pub void __u_vec_clear(any_t);                                                          \
@@ -87,6 +100,10 @@ typedef struct {
     __u_vec_clear((self)->ref);                                                                    \
   } while (0)
 
+/**
+ * ::Vec<T>::cleanup(self) -> !
+ * ::Vec<T>::cleanup(self, proc) -> !
+ */
 #define u_vec_cleanup(self, ...)                                                                   \
   do {                                                                                             \
     extern pub void __u_vec_cleanup(any_t);                                                        \
@@ -105,6 +122,9 @@ typedef struct {
     (self) = NULL;                                                                                 \
   } while (0)
 
+/**
+ * ::Vec<T>::resize(self, cap) -> bool
+ */
 #define u_vec_resize(self, _cap)                                                                   \
   ({                                                                                               \
     extern pub bool __u_vec_resize(any_t, i32_t);                                                  \
@@ -122,18 +142,28 @@ typedef struct {
     __u_vec_resize((self)->ref, _cap);                                                             \
   })
 
+/**
+ * ::Vec<T>::at(self, idx) -> T
+ * ::Vec<T>::at(self, idx, val) -> T
+ */
 #define u_vec_at(self, _idx, ...)                                                                  \
   ({                                                                                               \
     ;                                                                                              \
     *u_vec_at_mut(self, _idx) u_va_has_if(__VA_ARGS__)(= u_va_at(0, __VA_ARGS__));                 \
   })
 
+/**
+ * ::Vec<T>::at_ref(self, idx) -> const T*
+ */
 #define u_vec_at_ref(self, _idx)                                                                   \
   ({                                                                                               \
     ;                                                                                              \
     (typeof((self)->_->ref))u_vec_at_mut(self, _idx);                                              \
   })
 
+/**
+ * ::Vec<T>::at_mut(self, idx) -> T*
+ */
 #define u_vec_at_mut(self, _idx)                                                                   \
   ({                                                                                               \
     extern pub any_t __u_vec_at(any_t, i32_t);                                                     \
@@ -151,6 +181,10 @@ typedef struct {
     (typeof((self)->_->mut))__u_vec_at((self)->ref, _idx);                                         \
   })
 
+/**
+ * ::Vec<T>::try_at(self, idx) -> Option<it = T>
+ * ::Vec<T>::try_at(self, idx, it) -> Option<it = T>
+ */
 #define u_vec_try_at(self, _idx, ...)                                                              \
   {                                                                                                \
     typecheck(u_vec_meta_t, (self)->_->meta, "meta type not's Vec<T>");                            \
@@ -171,6 +205,10 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Vec<T>::try_at_ref(self, idx) -> Option<it = const T*>
+ * ::Vec<T>::try_at_ref(self, idx, it) -> Option<it = const T*>
+ */
 #define u_vec_try_at_ref(self, _idx, ...)                                                          \
   {                                                                                                \
     typecheck(u_vec_meta_t, (self)->_->meta, "meta type not's Vec<T>");                            \
@@ -186,6 +224,10 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Vec<T>::try_at_mut(self, idx) -> Option<it = T*>
+ * ::Vec<T>::try_at_mut(self, idx, it) -> Option<it = T*>
+ */
 #define u_vec_try_at_mut(self, _idx, ...)                                                          \
   {                                                                                                \
     typecheck(u_vec_meta_t, (self)->_->meta, "meta type not's Vec<T>");                            \
@@ -201,6 +243,9 @@ typedef struct {
        });                                                                                         \
        ({ break; }))
 
+/**
+ * ::Vec<T>::remove(self, idx) -> T
+ */
 #define u_vec_remove(self, _idx)                                                                   \
   ({                                                                                               \
     extern pub void __u_vec_del(any_t, i32_t);                                                     \
@@ -222,13 +267,19 @@ typedef struct {
     __val__;                                                                                       \
   })
 
+/**
+ * ::Vec<T>::remove_front(self) -> T
+ */
 #define u_vec_remove_front(self) u_vec_remove(self, 0)
 
+/**
+ * ::Vec<T>::remove_back(self) -> T
+ */
 #define u_vec_remove_back(self) u_vec_remove(self, (self)->len - 1)
 
-/*
- * [0, 1, 2, 3, 4, _]
- * */
+/**
+ * ::Vec<T>::insert(self, idx, val) -> !
+ */
 #define u_vec_insert(self, _idx, _val)                                                             \
   do {                                                                                             \
     extern pub any_t __u_vec_add(any_t, i32_t);                                                    \
@@ -248,10 +299,19 @@ typedef struct {
     *__mut__ = _val;                                                                               \
   } while (0)
 
+/**
+ * ::Vec<T>::insert_front(self, val) -> !
+ */
 #define u_vec_insert_front(self, _val) u_vec_insert(self, 0, _val)
 
+/**
+ * ::Vec<T>::insert_back(self, val) -> !
+ */
 #define u_vec_insert_back(self, _val) u_vec_insert(self, (self)->len, _val)
 
+/**
+ * ::Vec<T>::each(self, it) -> Iter<it = T>
+ */
 #define u_vec_each(self, it)                                                                       \
   {                                                                                                \
     extern pub any_t __u_vec_each(any_t, bool);                                                    \
@@ -275,10 +335,16 @@ typedef struct {
          __ref__;                                                                                  \
        });)
 
+/**
+ * ::Vec<T>::each_if(self, it, cond) -> Iter<it = T>
+ */
 #define u_vec_each_if(self, it, cond)                                                              \
   u_vec_each (self, it)                                                                            \
     if (cond)
 
+/**
+ * ::Vec<T>::each_ref(self, it) -> Iter<it = const T*>
+ */
 #define u_vec_each_ref(self, it)                                                                   \
   {                                                                                                \
     extern pub any_t __u_vec_each(any_t, bool);                                                    \
@@ -297,10 +363,16 @@ typedef struct {
          it = __u_vec_each((self)->ref, !!0);                                                      \
        });)
 
+/**
+ * ::Vec<T>::each_if_ref(self, it, cond) -> Iter<it = const T*>
+ */
 #define u_vec_each_if_ref(self, it, cond)                                                          \
   u_vec_each_ref (self, it)                                                                        \
     if (cond)
 
+/**
+ * ::Vec<T>::each_mut(self, it) -> Iter<it = T*>
+ */
 #define u_vec_each_mut(self, it)                                                                   \
   {                                                                                                \
     extern pub any_t __u_vec_each(any_t, bool);                                                    \
@@ -319,10 +391,16 @@ typedef struct {
          it = __u_vec_each((self)->ref, !!0);                                                      \
        });)
 
+/**
+ * ::Vec<T>::each_if_mut(self, it, cond) -> Iter<it = T*>
+ */
 #define u_vec_each_if_mut(self, it, cond)                                                          \
   u_vec_each_mut (self, it)                                                                        \
     if (cond)
 
+/**
+ * ::Vec<T>::reach(self, it) -> Iter<it = T>
+ */
 #define u_vec_reach(self, it)                                                                      \
   {                                                                                                \
     extern pub any_t __u_vec_reach(any_t, bool);                                                   \
@@ -346,10 +424,16 @@ typedef struct {
          __ref__;                                                                                  \
        });)
 
+/**
+ * ::Vec<T>::reach_if(self, it, cond) -> Iter<it = T>
+ */
 #define u_vec_reach_if(self, it, cond)                                                             \
   u_vec_reach (self, it)                                                                           \
     if (cond)
 
+/**
+ * ::Vec<T>::reach_ref(self, it) -> Iter<it = const T*>
+ */
 #define u_vec_reach_ref(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_vec_reach(any_t, bool);                                                   \
@@ -368,10 +452,16 @@ typedef struct {
          it = __u_vec_reach((self)->ref, !!0);                                                     \
        });)
 
+/**
+ * ::Vec<T>::reach_if_ref(self, it, cond) -> Iter<it = const T*>
+ */
 #define u_vec_reach_if_ref(self, it, cond)                                                         \
   u_vec_reach_ref (self, it)                                                                       \
     if (cond)
 
+/**
+ * ::Vec<T>::reach_mut(self, it) -> Iter<it = T*>
+ */
 #define u_vec_reach_mut(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_vec_reach(any_t, bool);                                                   \
@@ -390,10 +480,16 @@ typedef struct {
          it = __u_vec_reach((self)->ref, !!0);                                                     \
        });)
 
+/**
+ * ::Vec<T>::reach_if_mut(self, it, cond) -> Iter<it = T*>
+ */
 #define u_vec_reach_if_mut(self, it, cond)                                                         \
   u_vec_reach_mut (self, it)                                                                       \
     if (cond)
 
+/**
+ * ::Vec<T>::find_if(self, cond) -> T
+ */
 #define u_vec_find_if(self, cond)                                                                  \
   ({                                                                                               \
     auto __val__ = (typeof(self->_->val)){};                                                       \
@@ -406,12 +502,24 @@ typedef struct {
     __val__;                                                                                       \
   })
 
+/**
+ * ::Vec<T>::find_nif(self, cond) -> T
+ */
 #define u_vec_find_nif(self, cond) u_vec_find_if(self, !(cond))
 
+/**
+ * ::Vec<T>::find_if_ref(self, cond) -> const T*
+ */
 #define u_vec_find_if_ref(self, cond) ({ (typeof((self)->_->ref))u_vec_find_if_mut(self, cond); })
 
+/**
+ * ::Vec<T>::find_nif_ref(self, cond) -> const T*
+ */
 #define u_vec_find_nif_ref(self, cond) u_vec_find_if_ref(self, !(cond))
 
+/**
+ * ::Vec<T>::find_if_mut(self, cond) -> T*
+ */
 #define u_vec_find_if_mut(self, cond)                                                              \
   ({                                                                                               \
     auto __mut__ = (typeof((self)->_->mut)){};                                                     \
@@ -424,8 +532,14 @@ typedef struct {
     __mut__;                                                                                       \
   })
 
+/**
+ * ::Vec<T>::find_nif_mut(self, cond) -> T*
+ */
 #define u_vec_find_nif_mut(self, cond) u_vec_find_if_mut(self, !(cond))
 
+/**
+ * ::Vec<T>::rfind_if(self, cond) -> T
+ */
 #define u_vec_rfind_if(self, cond)                                                                 \
   ({                                                                                               \
     auto __val__ = (typeof((self)->_->val)){};                                                     \
@@ -438,16 +552,28 @@ typedef struct {
     __val__;                                                                                       \
   })
 
+/**
+ * ::Vec<T>::rfind_nif(self, cond) -> T
+ */
 #define u_vec_rfind_nif(self, cond) u_vec_rfind_if(self, !(cond))
 
+/**
+ * ::Vec<T>::rfind_if_ref(self, cond) -> const T*
+ */
 #define u_vec_rfind_if_ref(self, cond)                                                             \
   ({                                                                                               \
     ;                                                                                              \
     (typeof((self)->_->ref))u_vec_rfind_if_mut(self, cond);                                        \
   })
 
+/**
+ * ::Vec<T>::rfind_nif_ref(self, cond) -> const T*
+ */
 #define u_vec_rfind_nif_ref(self, cond) u_vec_rfind_if_ref(self, !(cond))
 
+/**
+ * ::Vec<T>::rfind_if_mut(self, cond) -> T*
+ */
 #define u_vec_rfind_if_mut(self, cond)                                                             \
   ({                                                                                               \
     auto __mut__ = (typeof((self)->_->mut)){};                                                     \
@@ -460,6 +586,9 @@ typedef struct {
     __mut__;                                                                                       \
   })
 
+/**
+ * ::Vec<T>::rfind_nif_mut(self, cond) -> T*
+ */
 #define u_vec_rfind_nif_mut(self, cond) u_vec_rfind_if_mut(self, !(cond))
 
 #if 0
@@ -511,6 +640,9 @@ typedef struct {
     } while (0)
 #endif
 
+/**
+ * ::Vec<T>::all_if(self, cond) -> bool
+ */
 #define u_vec_all_if(self, cond)                                                                   \
   ({                                                                                               \
     bool __result__ = !0;                                                                          \
@@ -523,6 +655,9 @@ typedef struct {
     __result__;                                                                                    \
   })
 
+/**
+ * ::Vec<T>::all_if_ref(self, cond) -> bool
+ */
 #define u_vec_all_if_ref(self, cond)                                                               \
   ({                                                                                               \
     bool __result__ = !0;                                                                          \
@@ -535,6 +670,9 @@ typedef struct {
     __result__;                                                                                    \
   })
 
+/**
+ * ::Vec<T>::any_if(self, cond) -> bool
+ */
 #define u_vec_any_if(self, cond)                                                                   \
   ({                                                                                               \
     bool __result__ = !!0;                                                                         \
@@ -547,11 +685,14 @@ typedef struct {
     __result__;                                                                                    \
   })
 
+/**
+ * ::Vec<T>::any_if_ref(self, cond) -> bool
+ */
 #define u_vec_any_if_ref(self, cond)                                                               \
   ({                                                                                               \
     bool __result__ = !!0;                                                                         \
                                                                                                    \
-    u_vec_each_if_ref (self, it, !(cond)) {                                                        \
+    u_vec_each_if_ref (self, it, cond) {                                                           \
       __result__ = !0;                                                                             \
       break;                                                                                       \
     }                                                                                              \
