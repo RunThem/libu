@@ -45,10 +45,10 @@ typedef struct {
  * ::Class Vec<T>
  */
 #define u_vec_t(T)                                                                                 \
-  typeof(const struct {                                                                            \
-    any_t ref;                                                                                     \
-    int len;                                                                                       \
-    int cap;                                                                                       \
+  typeof(struct {                                                                                  \
+    const any_t ref;                                                                               \
+    const int len;                                                                                 \
+    const int cap;                                                                                 \
                                                                                                    \
     struct {                                                                                       \
       u_vec_meta_t meta;                                                                           \
@@ -57,8 +57,8 @@ typedef struct {
       int cap_t;                                                                                   \
       int idx_t;                                                                                   \
       T entry_t;                                                                                   \
-      T* mut_t;                                                                                    \
-      const T* ref_t;                                                                              \
+      T* entry_mut_t;                                                                              \
+      const T* entry_ref_t;                                                                        \
                                                                                                    \
       struct {                                                                                     \
         int cap;                                                                                   \
@@ -111,7 +111,7 @@ typedef struct {
           typecheck((self)->_[0].cap_t, u_va_at(0, __VA_ARGS__), "cap type not's int"));           \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.new_t) __cap__ = {u_va_0th(16, __VA_ARGS__), NULL};                                   \
                                                                                                    \
@@ -180,7 +180,7 @@ typedef struct {
       assert(Self->cap < Cap);                                                                     \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.resize_t) __cap__ = {_cap, NULL};                                                     \
                                                                                                    \
@@ -191,6 +191,7 @@ typedef struct {
  * ::Vec<T>::at(self, idx: int) -> T
  * ::Vec<T>::at(self, idx: int, entry: T) -> T
  */
+/* clang-format off */
 #define u_vec_at(self, _idx, ...)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_vec_at(any_t, i32_t);                                                     \
@@ -208,13 +209,19 @@ typedef struct {
       assert(Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
-    typeof(M.at_swap_t) __tuple__ = {_idx, __VA_ARGS__};                                           \
-    typeof(M.mut_t) __entry_mut__ = __u_vec_at((self)->ref, __tuple__.idx);                        \
+    u_va_elseif(u_va_has(__VA_ARGS__)) (                                                           \
+      typeof(M.at_swap_t) __tuple__ = {_idx, __VA_ARGS__};                                         \
+    )(                                                                                             \
+      typeof(M.at_t) __tuple__ = {_idx, NULL};                                                     \
+    );                                                                                             \
+                                                                                                   \
+    typeof(M.entry_mut_t) __entry_mut__ = __u_vec_at((self)->ref, __tuple__.idx);                  \
                                                                                                    \
     *__entry_mut__ u_va_has_if(__VA_ARGS__)(= __tuple__.entry);                                    \
   })
+/* clang-format on */
 
 /**
  * ::Vec<T>::at_ref(self, idx: int) -> const T*
@@ -234,12 +241,12 @@ typedef struct {
       assert(Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
-    typeof(M.at_t) __idx__        = {_idx, NULL};                                                  \
-    typeof(M.ref_t) __entry_ref__ = __u_vec_at((self)->ref, __idx__.idx);                          \
+    typeof(M.at_t) __idx__              = {_idx, NULL};                                            \
+    typeof(M.entry_ref_t) __entry_ref__ = __u_vec_at((self)->ref, __idx__.idx);                    \
                                                                                                    \
-    __entry_ref__;                                                                                 \
+    &__entry_ref__[0];                                                                             \
   })
 
 /**
@@ -260,12 +267,13 @@ typedef struct {
       assert(Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
-    typeof(M.at_t) __idx__        = {_idx, NULL};                                                  \
-    typeof(M.mut_t) __entry_mut__ = __u_vec_at((self)->ref, __idx__.idx);                          \
+    typeof(M.at_t) __idx__ = {_idx, NULL};                                                         \
                                                                                                    \
-    __entry_mut__;                                                                                 \
+    typeof(M.entry_mut_t) __entry_mut__ = __u_vec_at((self)->ref, __idx__.idx);                    \
+                                                                                                   \
+    &__entry_mut__[0];                                                                             \
   })
 
 /**
@@ -286,7 +294,7 @@ typedef struct {
       assert(Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.remove_t) __idx__ = {_idx, NULL};                                                     \
                                                                                                    \
@@ -322,10 +330,10 @@ typedef struct {
       assert(Idx <= Self->len);                                                                    \
     }                                                                                              \
                                                                                                    \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
-    typeof(M.insert_t) __tuple__  = {_idx, _entry};                                                \
-    typeof(M.mut_t) __entry_mut__ = __u_vec_add((self)->ref, __tuple__.idx);                       \
+    typeof(M.insert_t) __tuple__        = {_idx, _entry};                                          \
+    typeof(M.entry_mut_t) __entry_mut__ = __u_vec_add((self)->ref, __tuple__.idx);                 \
                                                                                                    \
     *__entry_mut__ = __tuple__.entry;                                                              \
   } while (0)
@@ -355,10 +363,10 @@ typedef struct {
     (void)__u_vec_each((self)->ref, !0);                                                           \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_[0].entry_t)){}; ({                                              \
+  for (typeof((self)->_[0].entry_t) it = {}; ({                                                    \
          extern pub any_t __u_vec_each(any_t, bool);                                               \
                                                                                                    \
-         typeof((self)->_[0].ref_t) __ref__ = __u_vec_each((self)->ref, !!0);                      \
+         typeof((self)->_[0].entry_ref_t) __ref__ = __u_vec_each((self)->ref, !!0);                \
                                                                                                    \
          if (__ref__)                                                                              \
            it = *__ref__;                                                                          \
@@ -388,7 +396,7 @@ typedef struct {
     (void)__u_vec_each((self)->ref, !0);                                                           \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_[0].ref_t)){}; ({                                                \
+  for (auto it = (typeof((self)->_[0].entry_ref_t)){}; ({                                          \
          extern pub any_t __u_vec_each(any_t, bool);                                               \
                                                                                                    \
          it = __u_vec_each((self)->ref, !!0);                                                      \
@@ -416,7 +424,7 @@ typedef struct {
     (void)__u_vec_each((self)->ref, !0);                                                           \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_[0].mut_t)){}; ({                                                \
+  for (auto it = (typeof((self)->_[0].entry_mut_t)){}; ({                                          \
          extern pub any_t __u_vec_each(any_t, bool);                                               \
                                                                                                    \
          it = __u_vec_each((self)->ref, !!0);                                                      \
@@ -477,7 +485,7 @@ typedef struct {
     (void)__u_vec_reach((self)->ref, !0);                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_[0].ref_t)){}; ({                                                \
+  for (auto it = (typeof((self)->_[0].entry_ref_t)){}; ({                                          \
          extern pub any_t __u_vec_reach(any_t, bool);                                              \
                                                                                                    \
          it = __u_vec_reach((self)->ref, !!0);                                                     \
@@ -505,7 +513,7 @@ typedef struct {
     (void)__u_vec_reach((self)->ref, !0);                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_[0].mut_t)){}; ({                                                \
+  for (auto it = (typeof((self)->_[0].entry_mut_t)){}; ({                                          \
          extern pub any_t __u_vec_reach(any_t, bool);                                              \
                                                                                                    \
          it = __u_vec_reach((self)->ref, !!0);                                                     \
@@ -523,7 +531,7 @@ typedef struct {
  */
 #define u_vec_find_if(self, cond)                                                                  \
   ({                                                                                               \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.entry_t) __entry__ = {};                                                              \
                                                                                                    \
@@ -544,7 +552,7 @@ typedef struct {
  * ::Vec<T>::find_if_ref(self, cond: <expr>) -> const T*
  */
 #define u_vec_find_if_ref(self, cond)                                                              \
-  ({ (typeof((self)->_[0].ref_t))u_vec_find_if_mut(self, cond); })
+  ({ (typeof((self)->_[0].entry_ref_t))u_vec_find_if_mut(self, cond); })
 
 /**
  * ::Vec<T>::find_nif_ref(self, cond: <expr>) -> const T*
@@ -556,9 +564,9 @@ typedef struct {
  */
 #define u_vec_find_if_mut(self, cond)                                                              \
   ({                                                                                               \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
-    typeof(M.mut_t) __entry_mut__ = {};                                                            \
+    typeof(M.entry_mut_t) __entry_mut__ = {};                                                      \
                                                                                                    \
     u_vec_each_if_mut (self, it, cond) {                                                           \
       __entry_mut__ = it;                                                                          \
@@ -578,7 +586,7 @@ typedef struct {
  */
 #define u_vec_rfind_if(self, cond)                                                                 \
   ({                                                                                               \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.entry_t) __entry__ = {};                                                              \
                                                                                                    \
@@ -601,7 +609,7 @@ typedef struct {
 #define u_vec_rfind_if_ref(self, cond)                                                             \
   ({                                                                                               \
     ;                                                                                              \
-    (typeof((self)->_[0].ref_t))u_vec_rfind_if_mut(self, cond);                                    \
+    (typeof((self)->_[0].entry_ref_t))u_vec_rfind_if_mut(self, cond);                              \
   })
 
 /**
@@ -614,9 +622,9 @@ typedef struct {
  */
 #define u_vec_rfind_if_mut(self, cond)                                                             \
   ({                                                                                               \
-    typeof_unqual((self)->_[0]) M = {};                                                            \
+    typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
-    typeof(M.mut_t) __entry_mut__ = {};                                                            \
+    typeof(M.entry_mut_t) __entry_mut__ = {};                                                      \
                                                                                                    \
     u_vec_reach_if_mut (self, it, cond) {                                                          \
       __entry_mut__ = it;                                                                          \
@@ -669,7 +677,7 @@ typedef struct {
     typeof(self) __self__ = u_vec_new(__self__, (self)->len);                                      \
                                                                                                    \
     u_vec_each_if_ref (self, it, cond) {                                                           \
-      u_vec_insert_back(__self__, it);                                                             \
+      u_vec_insert_back(__self__, *it);                                                            \
     }                                                                                              \
                                                                                                    \
     __self__;                                                                                      \

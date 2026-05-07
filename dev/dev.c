@@ -148,6 +148,7 @@ int main(int argc, const cstr_t argv[]) {
 
 #endif
 
+#if 0
   for (int a = 0; true; ({ break; })) {
     tb_trace_i("hello");
   }
@@ -177,6 +178,11 @@ int main(int argc, const cstr_t argv[]) {
   tb_trace_i("types_compatible_p is %d", result);
 
   tb_exit();
+#endif
+
+  extern void libu_vec();
+
+  libu_vec();
 
   return EXIT_SUCCESS;
 
@@ -201,6 +207,7 @@ void libu_vec() {
   auto entry_mut = u_vec_at_mut(vec, 0);
   auto entry_ref = u_vec_at_ref(vec, 0);
 
+#if 1
   u_vec_each (vec, it) {
     (void)it;
   }
@@ -219,6 +226,7 @@ void libu_vec() {
 
   auto v1 = u_vec_map_by(vec, { it = it * 3; });
   auto v2 = u_vec_filter_if(vec, it % 2 == 0);
+  auto v3 = u_vec_filter_if_ref(vec, *it % 2 == 0);
 
   u_vec_remove(vec, 0);
   u_vec_remove_front(vec);
@@ -229,4 +237,5 @@ void libu_vec() {
 
   u_vec_cleanup(vec);
   // u_vec_cleanup(vec, {});
+#endif
 }
