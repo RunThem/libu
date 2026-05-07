@@ -183,3 +183,50 @@ int main(int argc, const cstr_t argv[]) {
 end:
   return EXIT_FAILURE;
 }
+
+void libu_vec() {
+  u_vec_t(int) vec = u_vec_new(vec);
+
+  u_vec_t(int) _vec = u_vec_new(_vec, 128);
+
+  u_vec_resize(vec, 64);
+
+  u_vec_insert(vec, 0, 1);
+  u_vec_insert_back(vec, 2);
+  u_vec_insert_front(vec, 3);
+
+  u_vec_at(vec, 0, 32);
+
+  auto entry     = u_vec_at(vec, 0);
+  auto entry_mut = u_vec_at_mut(vec, 0);
+  auto entry_ref = u_vec_at_ref(vec, 0);
+
+  u_vec_each (vec, it) {
+    (void)it;
+  }
+
+  u_vec_each_ref (vec, ref) {
+    (void)ref;
+  }
+
+  u_vec_each_mut (vec, mut) {
+    (void)mut;
+  }
+
+  u_vec_find_if(vec, it == 1);
+
+  u_vec_find_if_mut(vec, *it == 0);
+
+  auto v1 = u_vec_map_by(vec, { it = it * 3; });
+  auto v2 = u_vec_filter_if(vec, it % 2 == 0);
+
+  u_vec_remove(vec, 0);
+  u_vec_remove_front(vec);
+  u_vec_remove_back(vec);
+
+  u_vec_clear(vec);
+  // u_vec_clear(vec, {});
+
+  u_vec_cleanup(vec);
+  // u_vec_cleanup(vec, {});
+}
