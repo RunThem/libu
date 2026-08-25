@@ -100,6 +100,8 @@ typedef struct {
 /**
  * ::Vec<T>::new(self) -> Self
  * ::Vec<T>::new(self, cap: int) -> Self
+ *
+ * 默认 cap == 16
  */
 #define u_vec_new(self, ...)                                                                       \
   ({                                                                                               \
@@ -123,6 +125,8 @@ typedef struct {
 /**
  * ::Vec<T>::clear(self) -> !
  * ::Vec<T>::clear(self, proc: <block>) -> !
+ *
+ * 仅将 Self.len 置零, 保留内存
  */
 #define u_vec_clear(self, ...)                                                                     \
   do {                                                                                             \
@@ -143,6 +147,8 @@ typedef struct {
 /**
  * ::Vec<T>::cleanup(self) -> !
  * ::Vec<T>::cleanup(self, proc: <block>) -> !
+ *
+ * 释放所有内存, 并将 Self 置为 NULL
  */
 #define u_vec_cleanup(self, ...)                                                                   \
   do {                                                                                             \
@@ -164,6 +170,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::resize(self, cap: int) -> bool
+ *
+ * 仅允许扩容, 不改变 Self.len
  */
 #define u_vec_resize(self, _cap)                                                                   \
   ({                                                                                               \
@@ -350,6 +358,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::each(self, it: <var-name>) -> Iter<it = T>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_each(self, it)                                                                       \
   {                                                                                                \
@@ -363,7 +373,7 @@ typedef struct {
     (void)__u_vec_each((self)->ref, !0);                                                           \
   }                                                                                                \
                                                                                                    \
-  for (typeof((self)->_[0].entry_t) it = {}; ({                                                    \
+  for (auto it = (typeof((self)->_[0].entry_t)){}; ({                                              \
          extern pub any_t __u_vec_each(any_t, bool);                                               \
                                                                                                    \
          typeof((self)->_[0].entry_ref_t) __ref__ = __u_vec_each((self)->ref, !!0);                \
@@ -376,6 +386,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::each_if(self, it: <var-name>, cond: <expr>) -> Iter<it = T>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_each_if(self, it, cond)                                                              \
   u_vec_each (self, it)                                                                            \
@@ -383,6 +395,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::each_ref(self, it: <var-name>) -> Iter<it = const T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_each_ref(self, it)                                                                   \
   {                                                                                                \
@@ -404,6 +418,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::each_if_ref(self, it: <var-name>, cond: <expr>) -> Iter<it = const T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_each_if_ref(self, it, cond)                                                          \
   u_vec_each_ref (self, it)                                                                        \
@@ -411,6 +427,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::each_mut(self, it: <var-name>) -> Iter<it = T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_each_mut(self, it)                                                                   \
   {                                                                                                \
@@ -432,6 +450,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::each_if_mut(self, it: <var-name>, cond: <expr>) -> Iter<it = T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_each_if_mut(self, it, cond)                                                          \
   u_vec_each_mut (self, it)                                                                        \
@@ -439,6 +459,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::reach(self, it: <var-name>) -> Iter<it = T>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_reach(self, it)                                                                      \
   {                                                                                                \
@@ -455,7 +477,7 @@ typedef struct {
   for (auto it = (typeof((self)->_[0].entry_t)){}; ({                                              \
          extern pub any_t __u_vec_reach(any_t, bool);                                              \
                                                                                                    \
-         typeof((self)->_[0].ref) __ref__ = __u_vec_reach((self)->ref, !!0);                       \
+         typeof((self)->_[0].entry_ref_t) __ref__ = __u_vec_reach((self)->ref, !!0);               \
                                                                                                    \
          if (__ref__)                                                                              \
            it = *__ref__;                                                                          \
@@ -465,6 +487,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::reach_if(self, it: <var-name>, cond: <expr>) -> Iter<it = T>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_reach_if(self, it, cond)                                                             \
   u_vec_reach (self, it)                                                                           \
@@ -472,6 +496,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::reach_ref(self, it: <var-name>) -> Iter<it = const T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_reach_ref(self, it)                                                                  \
   {                                                                                                \
@@ -493,6 +519,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::reach_if_ref(self, it: <var-name>, cond: <expr>) -> Iter<it = const T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_reach_if_ref(self, it, cond)                                                         \
   u_vec_reach_ref (self, it)                                                                       \
@@ -500,6 +528,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::reach_mut(self, it: <var-name>) -> Iter<it = T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_reach_mut(self, it)                                                                  \
   {                                                                                                \
@@ -521,6 +551,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::reach_if_mut(self, it: <var-name>, cond: <expr>) -> Iter<it = T*>
+ *
+ * 迭代游标存于 Vec 内部, 同一 Vec 不支持嵌套迭代
  */
 #define u_vec_reach_if_mut(self, it, cond)                                                         \
   u_vec_reach_mut (self, it)                                                                       \
@@ -528,6 +560,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::find_if(self, cond: <expr>) -> T
+ *
+ * 未命中返回零值
  */
 #define u_vec_find_if(self, cond)                                                                  \
   ({                                                                                               \
@@ -545,22 +579,30 @@ typedef struct {
 
 /**
  * ::Vec<T>::find_nif(self, cond: <expr>) -> T
+ *
+ * 未命中返回零值
  */
 #define u_vec_find_nif(self, cond) u_vec_find_if(self, !(cond))
 
 /**
  * ::Vec<T>::find_if_ref(self, cond: <expr>) -> const T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_find_if_ref(self, cond)                                                              \
   ({ (typeof((self)->_[0].entry_ref_t))u_vec_find_if_mut(self, cond); })
 
 /**
  * ::Vec<T>::find_nif_ref(self, cond: <expr>) -> const T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_find_nif_ref(self, cond) u_vec_find_if_ref(self, !(cond))
 
 /**
  * ::Vec<T>::find_if_mut(self, cond: <expr>) -> T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_find_if_mut(self, cond)                                                              \
   ({                                                                                               \
@@ -578,11 +620,15 @@ typedef struct {
 
 /**
  * ::Vec<T>::find_nif_mut(self, cond: <expr>) -> T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_find_nif_mut(self, cond) u_vec_find_if_mut(self, !(cond))
 
 /**
  * ::Vec<T>::rfind_if(self, cond: <expr>) -> T
+ *
+ * 未命中返回零值
  */
 #define u_vec_rfind_if(self, cond)                                                                 \
   ({                                                                                               \
@@ -600,25 +646,30 @@ typedef struct {
 
 /**
  * ::Vec<T>::rfind_nif(self, cond: <expr>) -> T
+ *
+ * 未命中返回零值
  */
 #define u_vec_rfind_nif(self, cond) u_vec_rfind_if(self, !(cond))
 
 /**
  * ::Vec<T>::rfind_if_ref(self, cond: <expr>) -> const T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_rfind_if_ref(self, cond)                                                             \
-  ({                                                                                               \
-    ;                                                                                              \
-    (typeof((self)->_[0].entry_ref_t))u_vec_rfind_if_mut(self, cond);                              \
-  })
+  ({ (typeof((self)->_[0].entry_ref_t))u_vec_rfind_if_mut(self, cond); })
 
 /**
  * ::Vec<T>::rfind_nif_ref(self, cond: <expr>) -> const T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_rfind_nif_ref(self, cond) u_vec_rfind_if_ref(self, !(cond))
 
 /**
  * ::Vec<T>::rfind_if_mut(self, cond: <expr>) -> T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_rfind_if_mut(self, cond)                                                             \
   ({                                                                                               \
@@ -636,11 +687,15 @@ typedef struct {
 
 /**
  * ::Vec<T>::rfind_nif_mut(self, cond: <expr>) -> T*
+ *
+ * 未命中返回 NULL
  */
 #define u_vec_rfind_nif_mut(self, cond) u_vec_rfind_if_mut(self, !(cond))
 
 /**
  * ::Vec<T>::map_by(self, proc: <block>) -> Self
+ *
+ * 在 proc 中修改 it 实现转换, 块返回值忽略
  */
 #define u_vec_map_by(self, proc)                                                                   \
   ({                                                                                               \
