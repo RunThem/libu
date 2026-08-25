@@ -222,7 +222,7 @@ typedef struct {
  * ::Dict<K, V>::try_at_ref(self, key) -> Option<it = const V*>
  * ::Dict<K, V>::try_at_ref(self, key, it) -> Option<it = const V*>
  */
-#define u_dict_try_at_ref(self, _key, ...)                                                               \
+#define u_dict_try_at_ref(self, _key, ...)                                                         \
   {                                                                                                \
     typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
                                                                                                    \
@@ -247,7 +247,7 @@ typedef struct {
  * ::Dict<K, V>::try_at_mut(self, key) -> Option<it = V*>
  * ::Dict<K, V>::try_at_mut(self, key, it) -> Option<it = V*>
  */
-#define u_dict_try_at_mut(self, _key, ...)                                                               \
+#define u_dict_try_at_mut(self, _key, ...)                                                         \
   {                                                                                                \
     typecheck(u_dict_meta_t, (self)->_[0].meta, "meta type not's Dict<K, V>");                     \
                                                                                                    \
