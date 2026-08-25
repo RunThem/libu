@@ -100,10 +100,10 @@ pub bool __u_vec_resize(any_t _self, i32_t cap) {
   self->items = items;
   self->cap   = cap;
 
-  return 0;
+  return true;
 
 end:
-  return -1;
+  return false;
 }
 
 pub any_t __u_vec_at(any_t _self, i32_t idx) {
@@ -135,7 +135,7 @@ pub any_t __u_vec_add(any_t _self, i32_t idx) {
 
   if (self->len == self->cap) {
     result = __u_vec_resize(_self, (i32_t)(self->cap * 1.5));
-    u_end_if(result != 0);
+    u_end_if(!result);
   }
 
   if (idx != self->len) {
