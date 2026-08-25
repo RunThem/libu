@@ -1,4 +1,4 @@
-local deps = { 'mimalloc', 'tbox' }
+local deps = { 'mimalloc', 'tbox', } -- 'neco' }
 
 add_requires(table.unpack(deps))
 
@@ -13,6 +13,13 @@ target('bench', function()
   add_languages('gnu23')
 
   add_packages(table.unpack(deps))
+end)
+
+target('hello.cxx', function()
+  set_kind('binary')
+  set_default(false)
+  add_files('hello.cxx')
+  set_rundir('$(projectdir)')
 end)
 
 target('dev.c', function()

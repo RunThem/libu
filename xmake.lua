@@ -17,7 +17,6 @@ add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
 includes('rules/*.lua')
 
 --- Language standard
--- set_languages('clatest', 'cxxlatest')
 set_languages('c11', 'cxxlatest')
 
 --- Macro definition
@@ -87,8 +86,8 @@ target('u', function()
   add_headerfiles('$(projectdir)/inc/(**.h)')
 
   if has_config('mimalloc') then
-    add_packages('mimalloc', { public = true })
+    add_packages('mimalloc', 'openssl')
   end
 end)
 
-includes('dev', 'tests')
+includes('dev')
