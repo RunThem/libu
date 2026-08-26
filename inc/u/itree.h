@@ -124,7 +124,7 @@ typedef struct {
     extern pub any_t __u_tree_new(i32_t, u_cmp_fn);                                                \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto CmpFn = (cmp_fn);                                                                       \
       assert(CmpFn != NULL);                                                                       \
@@ -146,7 +146,7 @@ typedef struct {
     extern pub void __u_tree_clear(any_t);                                                         \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -166,7 +166,7 @@ typedef struct {
     extern pub void __u_tree_cleanup(any_t);                                                       \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -182,13 +182,15 @@ typedef struct {
 /**
  * ::Tree<K, V>::at(self, key: K) -> V
  * ::Tree<K, V>::at(self, key: K, val: V) -> V
+ *
+ * Key 必须存在, 未命中触发断言
  */
 #define u_tree_at(self, _key, ...)                                                                 \
   ({                                                                                               \
     extern pub any_t __u_tree_at(any_t, any_t);                                                    \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -198,19 +200,22 @@ typedef struct {
                                                                                                    \
     typeof(M.at_t) __tuple__         = {_key, __VA_ARGS__};                                        \
     typeof(M.at_mut_t) __tuple_mut__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);          \
+    assert(__tuple_mut__);                                                                         \
                                                                                                    \
     __tuple_mut__->val u_va_has_if(__VA_ARGS__)(= __tuple__.val);                                  \
   })
 
 /**
  * ::Tree<K, V>::at_ref(self, key: K) -> const V*
+ *
+ * Key 必须存在, 未命中触发断言
  */
 #define u_tree_at_ref(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_tree_at(any_t, any_t);                                                    \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -220,19 +225,22 @@ typedef struct {
                                                                                                    \
     typeof(M.at_t) __tuple__         = {_key};                                                     \
     typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);          \
+    assert(__tuple_ref__);                                                                         \
                                                                                                    \
     &__tuple_ref__->val;                                                                           \
   })
 
 /**
  * ::Tree<K, V>::at_mut(self, key: K) -> V*
+ *
+ * Key 必须存在, 未命中触发断言
  */
 #define u_tree_at_mut(self, _key)                                                                  \
   ({                                                                                               \
     extern pub any_t __u_tree_at(any_t, any_t);                                                    \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -242,19 +250,101 @@ typedef struct {
                                                                                                    \
     typeof(M.at_t) __tuple__         = {_key};                                                     \
     typeof(M.at_mut_t) __tuple_mut__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);          \
+    assert(__tuple_mut__);                                                                         \
                                                                                                    \
     &__tuple_mut__->val;                                                                           \
   })
 
 /**
+ * ::Tree<K, V>::try_at(self, key: K) -> Option<it = V>
+ * ::Tree<K, V>::try_at(self, key: K, <var-name>) -> Option<it = V>
+ */
+#define u_tree_try_at(self, _key, ...)                                                             \
+  {                                                                                                \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){}; ({                         \
+         extern pub any_t __u_tree_at(any_t, any_t);                                               \
+                                                                                                   \
+         typeof((self)->_[0]) M = {};                                                              \
+                                                                                                   \
+         typeof(M.at_t) __tuple__         = {_key};                                                \
+         typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);     \
+                                                                                                   \
+         if (__tuple_ref__)                                                                        \
+           u_va_0th(it, __VA_ARGS__) = __tuple_ref__->val;                                         \
+                                                                                                   \
+         __tuple_ref__;                                                                            \
+       });                                                                                         \
+       ({ break; }))
+
+/**
+ * ::Tree<K, V>::try_at_ref(self, key: K) -> Option<it = const V*>
+ * ::Tree<K, V>::try_at_ref(self, key: K, <var-name>) -> Option<it = const V*>
+ */
+#define u_tree_try_at_ref(self, _key, ...)                                                         \
+  {                                                                                                \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){}; ({                     \
+         extern pub any_t __u_tree_at(any_t, any_t);                                               \
+                                                                                                   \
+         typeof((self)->_[0]) M = {};                                                              \
+                                                                                                   \
+         typeof(M.at_t) __tuple__         = {_key};                                                \
+         typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);     \
+                                                                                                   \
+         if (__tuple_ref__)                                                                        \
+           u_va_0th(it, __VA_ARGS__) = &__tuple_ref__->val;                                        \
+                                                                                                   \
+         __tuple_ref__;                                                                            \
+       });                                                                                         \
+       ({ break; }))
+
+/**
+ * ::Tree<K, V>::try_at_mut(self, key: K) -> Option<it = V*>
+ * ::Tree<K, V>::try_at_mut(self, key: K, <var-name>) -> Option<it = V*>
+ */
+#define u_tree_try_at_mut(self, _key, ...)                                                         \
+  {                                                                                                \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+  }                                                                                                \
+                                                                                                   \
+  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){}; ({                     \
+         extern pub any_t __u_tree_at(any_t, any_t);                                               \
+                                                                                                   \
+         typeof((self)->_[0]) M = {};                                                              \
+                                                                                                   \
+         typeof(M.at_t) __tuple__         = {_key};                                                \
+         typeof(M.at_mut_t) __tuple_mut__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);     \
+                                                                                                   \
+         if (__tuple_mut__)                                                                        \
+           u_va_0th(it, __VA_ARGS__) = &__tuple_mut__->val;                                        \
+                                                                                                   \
+         __tuple_mut__;                                                                            \
+       });                                                                                         \
+       ({ break; }))
+
+/**
  * ::Tree<K, V>::remove(self, key: K) -> !
  */
 #define u_tree_remove(self, _key)                                                                  \
-  ({                                                                                               \
+  do {                                                                                             \
     extern pub void __u_tree_del(any_t, any_t);                                                    \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -265,17 +355,19 @@ typedef struct {
     typeof(M.remove_t) __tuple__ = {_key};                                                         \
                                                                                                    \
     __u_tree_del((self)->ref, (any_t) & __tuple__.key);                                            \
-  })
+  } while (0)
 
 /**
  * ::Tree<K, V>::insert(self, key: K, val: V) -> !
+ *
+ * 重复 Key 触发断言
  */
 #define u_tree_insert(self, _key, _val)                                                            \
   do {                                                                                             \
     extern pub any_t __u_tree_add(any_t, any_t);                                                   \
                                                                                                    \
     {                                                                                              \
-      typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                     \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
                                                                                                    \
       auto Self = (self);                                                                          \
       assert(Self != NULL);                                                                        \
@@ -286,6 +378,7 @@ typedef struct {
     typeof(M.insert_t) __tuple__ = {_key, _val};                                                   \
                                                                                                    \
     typeof(M.insert_mut_t) __tuple_mut__ = __u_tree_add((self)->ref, (any_t) & __tuple__.key);     \
+    assert(__tuple_mut__);                                                                         \
                                                                                                    \
     __tuple_mut__->key = __tuple__.key;                                                            \
     __tuple_mut__->val = __tuple__.val;                                                            \
@@ -293,12 +386,14 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::each(self, it: <var-name>) -> Iter<it = (K, V)>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
  */
 #define u_tree_each(self, it)                                                                      \
   {                                                                                                \
     extern pub any_t __u_tree_each(any_t, bool);                                                   \
                                                                                                    \
-    typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                       \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
                                                                                                    \
     auto Self = (self);                                                                            \
     assert(Self != NULL);                                                                          \
@@ -306,7 +401,7 @@ typedef struct {
     (void)__u_tree_each((self)->ref, !0);                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_->each_t)){}; ({                                                 \
+  for (auto it = (typeof((self)->_[0].each_t)){}; ({                                               \
          extern pub any_t __u_tree_each(any_t, bool);                                              \
                                                                                                    \
          typeof((self)->_[0]) M = {};                                                              \
@@ -323,6 +418,8 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::each_if(self, it: <var-name>, cond: <expr>) -> Iter<it = (K, V)>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
  */
 #define u_tree_each_if(self, it, cond)                                                             \
   u_tree_each (self, it)                                                                           \
@@ -330,12 +427,14 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::each_ref(self, it: <var-name>) -> Iter<it = (const K, const V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
  */
 #define u_tree_each_ref(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_tree_each(any_t, bool);                                                   \
                                                                                                    \
-    typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                       \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
                                                                                                    \
     auto Self = (self);                                                                            \
     assert(Self != NULL);                                                                          \
@@ -343,7 +442,7 @@ typedef struct {
     (void)__u_tree_each((self)->ref, !0);                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_->each_ref_t)){}; ({                                             \
+  for (auto it = (typeof((self)->_[0].each_ref_t)){}; ({                                           \
          extern pub any_t __u_tree_each(any_t, bool);                                              \
                                                                                                    \
          it = __u_tree_each((self)->ref, !!0);                                                     \
@@ -351,6 +450,8 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::each_if_ref(self, it: <var-name>, cond: <expr>) -> Iter<it = (const K, const V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
  */
 #define u_tree_each_if_ref(self, it, cond)                                                         \
   u_tree_each_ref (self, it)                                                                       \
@@ -358,12 +459,14 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::each_mut(self, it: <var-name>) -> Iter<it = (const K, V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
  */
 #define u_tree_each_mut(self, it)                                                                  \
   {                                                                                                \
     extern pub any_t __u_tree_each(any_t, bool);                                                   \
                                                                                                    \
-    typecheck(u_tree_meta_t, (self)->_->meta, "meta type not's Tree<K, V>");                       \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
                                                                                                    \
     auto Self = (self);                                                                            \
     assert(Self != NULL);                                                                          \
@@ -371,7 +474,7 @@ typedef struct {
     (void)__u_tree_each((self)->ref, !0);                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto it = (typeof((self)->_->each_mut_t)){}; ({                                             \
+  for (auto it = (typeof((self)->_[0].each_mut_t)){}; ({                                           \
          extern pub any_t __u_tree_each(any_t, bool);                                              \
                                                                                                    \
          it = __u_tree_each((self)->ref, !!0);                                                     \
@@ -379,6 +482,8 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::each_if_mut(self, it: <var-name>, cond: <expr>) -> Iter<it = (const K, V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
  */
 #define u_tree_each_if_mut(self, it, cond)                                                         \
   u_tree_each_mut (self, it)                                                                       \
