@@ -226,6 +226,7 @@ typedef struct {
     );                                                                                             \
                                                                                                    \
     typeof(M.entry_mut_t) __entry_mut__ = __u_vec_at((self)->ref, __tuple__.idx);                  \
+    assert(__entry_mut__);                                                                         \
                                                                                                    \
     *__entry_mut__ u_va_has_if(__VA_ARGS__)(= __tuple__.entry);                                    \
   })
@@ -253,6 +254,7 @@ typedef struct {
                                                                                                    \
     typeof(M.at_t) __idx__              = {_idx, NULL};                                            \
     typeof(M.entry_ref_t) __entry_ref__ = __u_vec_at((self)->ref, __idx__.idx);                    \
+    assert(__entry_ref__);                                                                         \
                                                                                                    \
     &__entry_ref__[0];                                                                             \
   })
@@ -280,6 +282,7 @@ typedef struct {
     typeof(M.at_t) __idx__ = {_idx, NULL};                                                         \
                                                                                                    \
     typeof(M.entry_mut_t) __entry_mut__ = __u_vec_at((self)->ref, __idx__.idx);                    \
+    assert(__entry_mut__);                                                                         \
                                                                                                    \
     &__entry_mut__[0];                                                                             \
   })
