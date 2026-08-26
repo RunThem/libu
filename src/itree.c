@@ -499,3 +499,77 @@ pub any_t __u_tree_each(any_t _self, bool init) {
 end:
   return NULL;
 }
+
+pub any_t __u_tree_reach(any_t _self, bool init) {
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t iter = NULL;
+  tnode_mut_t last = NULL;
+
+  u_chk_if(self, NULL);
+  u_chk_if(self->len == 0, NULL);
+
+  if (init) {
+    return self->iter = NULL;
+  }
+
+  if (self->iter == NULL) {
+    iter = self->root;
+
+    while (iter->right) {
+      iter = iter->right;
+    }
+  } else {
+    iter = self->iter;
+
+    if (iter->left) {
+      iter = iter->left;
+      while (iter->right) {
+        iter = iter->right;
+      }
+    } else {
+      while (true) {
+        last = iter;
+        iter = iter->parent;
+
+        u_brk_if(!iter || iter->right == last);
+      }
+    }
+  }
+
+  u_end_if(iter);
+
+  self->iter = iter;
+
+  return &iter->data[0];
+
+end:
+  return NULL;
+}
+
+pub any_t __u_tree_min(any_t _self) {
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t node = self->root;
+
+  u_chk_if(self, NULL);
+  u_chk_if(self->len == 0, NULL);
+
+  while (node->left) {
+    node = node->left;
+  }
+
+  return &node->data[0];
+}
+
+pub any_t __u_tree_max(any_t _self) {
+  tree_mut_t self  = (tree_mut_t)_self;
+  tnode_mut_t node = self->root;
+
+  u_chk_if(self, NULL);
+  u_chk_if(self->len == 0, NULL);
+
+  while (node->right) {
+    node = node->right;
+  }
+
+  return &node->data[0];
+}

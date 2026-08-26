@@ -256,6 +256,75 @@ typedef struct {
   })
 
 /**
+ * ::Tree<K, V>::contains(self, key: K) -> bool
+ */
+#define u_tree_contains(self, _key)                                                                \
+  ({                                                                                               \
+    extern pub any_t __u_tree_at(any_t, any_t);                                                    \
+                                                                                                   \
+    {                                                                                              \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
+                                                                                                   \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
+                                                                                                   \
+    typeof((self)->_[0]) M = {};                                                                   \
+                                                                                                   \
+    typeof(M.at_t) __tuple__ = {_key};                                                             \
+                                                                                                   \
+    __u_tree_at((self)->ref, (any_t) & __tuple__.key) != NULL;                                     \
+  })
+
+/**
+ * ::Tree<K, V>::min(self) -> (const K, const V)*
+ *
+ * 空树触发断言
+ */
+#define u_tree_min(self)                                                                           \
+  ({                                                                                               \
+    extern pub any_t __u_tree_min(any_t);                                                          \
+                                                                                                   \
+    {                                                                                              \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
+                                                                                                   \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
+                                                                                                   \
+    typeof((self)->_[0]) M = {};                                                                   \
+                                                                                                   \
+    typeof(M.at_ref_t) __ref__ = __u_tree_min((self)->ref);                                        \
+    assert(__ref__ != NULL);                                                                       \
+                                                                                                   \
+    __ref__;                                                                                       \
+  })
+
+/**
+ * ::Tree<K, V>::max(self) -> (const K, const V)*
+ *
+ * 空树触发断言
+ */
+#define u_tree_max(self)                                                                           \
+  ({                                                                                               \
+    extern pub any_t __u_tree_max(any_t);                                                          \
+                                                                                                   \
+    {                                                                                              \
+      typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                   \
+                                                                                                   \
+      auto Self = (self);                                                                          \
+      assert(Self != NULL);                                                                        \
+    }                                                                                              \
+                                                                                                   \
+    typeof((self)->_[0]) M = {};                                                                   \
+                                                                                                   \
+    typeof(M.at_ref_t) __ref__ = __u_tree_max((self)->ref);                                        \
+    assert(__ref__ != NULL);                                                                       \
+                                                                                                   \
+    __ref__;                                                                                       \
+  })
+
+/**
  * ::Tree<K, V>::try_at(self, key: K) -> Option<it = V>
  * ::Tree<K, V>::try_at(self, key: K, <var-name>) -> Option<it = V>
  */
@@ -488,6 +557,105 @@ typedef struct {
 #define u_tree_each_if_mut(self, it, cond)                                                         \
   u_tree_each_mut (self, it)                                                                       \
     if (cond)
+
+/**
+ * ::Tree<K, V>::reach(self, it: <var-name>) -> Iter<it = (K, V)>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
+ */
+#define u_tree_reach(self, it)                                                                     \
+  {                                                                                                \
+    extern pub any_t __u_tree_reach(any_t, bool);                                                  \
+                                                                                                   \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+                                                                                                   \
+    (void)__u_tree_reach((self)->ref, !0);                                                         \
+  }                                                                                                \
+                                                                                                   \
+  for (auto it = (typeof((self)->_[0].each_t)){}; ({                                               \
+         extern pub any_t __u_tree_reach(any_t, bool);                                             \
+                                                                                                   \
+         typeof((self)->_[0]) M = {};                                                              \
+                                                                                                   \
+         typeof(M.each_mut_t) __tuple_mut__ = __u_tree_reach((self)->ref, !!0);                    \
+                                                                                                   \
+         if (__tuple_mut__) {                                                                      \
+           it.key = __tuple_mut__->key;                                                            \
+           it.val = __tuple_mut__->val;                                                            \
+         }                                                                                         \
+                                                                                                   \
+         __tuple_mut__;                                                                            \
+       });)
+
+/**
+ * ::Tree<K, V>::reach_if(self, it: <var-name>, cond: <expr>) -> Iter<it = (K, V)>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
+ */
+#define u_tree_reach_if(self, it, cond) u_tree_reach(self, it) if (cond)
+
+/**
+ * ::Tree<K, V>::reach_ref(self, it: <var-name>) -> Iter<it = (const K, const V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
+ */
+#define u_tree_reach_ref(self, it)                                                                 \
+  {                                                                                                \
+    extern pub any_t __u_tree_reach(any_t, bool);                                                  \
+                                                                                                   \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+                                                                                                   \
+    (void)__u_tree_reach((self)->ref, !0);                                                         \
+  }                                                                                                \
+                                                                                                   \
+  for (auto it = (typeof((self)->_[0].each_ref_t)){}; ({                                           \
+         extern pub any_t __u_tree_reach(any_t, bool);                                             \
+                                                                                                   \
+         it = __u_tree_reach((self)->ref, !!0);                                                    \
+       });)
+
+/**
+ * ::Tree<K, V>::reach_if_ref(self, it: <var-name>, cond: <expr>) -> Iter<it = (const K, const V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
+ */
+#define u_tree_reach_if_ref(self, it, cond) u_tree_reach_ref(self, it) if (cond)
+
+/**
+ * ::Tree<K, V>::reach_mut(self, it: <var-name>) -> Iter<it = (const K, V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
+ */
+#define u_tree_reach_mut(self, it)                                                                 \
+  {                                                                                                \
+    extern pub any_t __u_tree_reach(any_t, bool);                                                  \
+                                                                                                   \
+    typecheck(u_tree_meta_t, (self)->_[0].meta, "meta type not's Tree<K, V>");                     \
+                                                                                                   \
+    auto Self = (self);                                                                            \
+    assert(Self != NULL);                                                                          \
+                                                                                                   \
+    (void)__u_tree_reach((self)->ref, !0);                                                         \
+  }                                                                                                \
+                                                                                                   \
+  for (auto it = (typeof((self)->_[0].each_mut_t)){}; ({                                           \
+         extern pub any_t __u_tree_reach(any_t, bool);                                             \
+                                                                                                   \
+         it = __u_tree_reach((self)->ref, !!0);                                                    \
+       });)
+
+/**
+ * ::Tree<K, V>::reach_if_mut(self, it: <var-name>, cond: <expr>) -> Iter<it = (const K, V)*>
+ *
+ * 迭代游标存于 Tree 内部, 同一 Tree 不支持嵌套迭代
+ */
+#define u_tree_reach_if_mut(self, it, cond) u_tree_reach_mut(self, it) if (cond)
 
 #ifdef __cplusplus
 } /* extern "C" */
