@@ -1008,6 +1008,69 @@ void libu_tree() {
   }
   printf("  reach family          ok\n");
 
+  /* ---- map_by / filter_if / filter_if_ref ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 2, 20);
+    u_tree_insert(t, 3, 30);
+
+    /* map_by: proc 修改 val(不碰 key, 保持有序), 原树不变 */
+    auto mt = u_tree_map_by(t, { it.val *= 2; });
+    assert(mt != NULL);
+    assert(mt->len == 3);
+    assert(u_tree_at(mt, 1) == 20);
+    assert(u_tree_at(mt, 2) == 40);
+    assert(u_tree_at(mt, 3) == 60);
+    assert(u_tree_at(t, 1) == 10); /* 原树不变 */
+    u_tree_cleanup(mt);
+
+    /* filter_if / filter_if_ref */
+    auto ft = u_tree_filter_if(t, it.val >= 20);       /* [2,3] */
+    assert(ft->len == 2);
+    assert(u_tree_at(ft, 2) == 20);
+    assert(u_tree_at(ft, 3) == 30);
+    u_tree_cleanup(ft);
+
+    auto ftr = u_tree_filter_if_ref(t, it->val >= 30); /* [3] */
+    assert(ftr->len == 1);
+    assert(u_tree_at(ftr, 3) == 30);
+    u_tree_cleanup(ftr);
+
+    /* 空树 map/filter 得空树 */
+    u_tree_t(int, int) e = u_tree_new(e, cmp_int);
+    auto em = u_tree_map_by(e, { it.val = 0; });
+    auto ef = u_tree_filter_if(e, it.val > 0);
+    assert(em->len == 0 && ef->len == 0);
+    u_tree_cleanup(em);
+    u_tree_cleanup(ef);
+    u_tree_cleanup(e);
+
+    u_tree_cleanup(t);
+  }
+  printf("  map_by / filter       ok\n");
+
+  /* ---- all_if / any_if(含 ref) ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 2, 20);
+    u_tree_insert(t, 3, 30);
+
+    assert(u_tree_all_if(t, it.val > 0));
+    assert(!u_tree_all_if(t, it.val > 10));
+    assert(u_tree_any_if(t, it.val == 30));
+    assert(!u_tree_any_if(t, it.val == 99));
+
+    assert(u_tree_all_if_ref(t, it->val > 0));
+    assert(!u_tree_all_if_ref(t, it->val > 10));
+    assert(u_tree_any_if_ref(t, it->val == 30));
+    assert(!u_tree_any_if_ref(t, it->val == 99));
+
+    u_tree_cleanup(t);
+  }
+  printf("  all_if / any_if       ok\n");
+
   /* ---- 5. remove: 叶子/内部/根交错删除, 保持有序 ---- */
   {
     u_tree_t(int, int) t = u_tree_new(t, cmp_int);
