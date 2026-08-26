@@ -184,6 +184,10 @@ int main(int argc, const cstr_t argv[]) {
 
   libu_vec();
 
+  extern void libu_tree();
+
+  libu_tree();
+
   return EXIT_SUCCESS;
 
 end:
@@ -191,7 +195,7 @@ end:
 }
 
 void libu_vec() {
-  printf("[ivec] ================ Vec<T> ================\n");
+  printf("================ Vec<T> ================\n");
 
   /* ---- 1. new / cleanup: 默认容量, 指定容量, ref 自引用 ---- */
   {
@@ -212,7 +216,7 @@ void libu_vec() {
     u_vec_cleanup(v);
     assert(v == NULL);
   }
-  printf("[ivec]   new / cleanup         ok\n");
+  printf("  new / cleanup         ok\n");
 
   /* ---- 2. insert / insert_front / insert_back ---- */
   {
@@ -241,7 +245,7 @@ void libu_vec() {
     u_vec_cleanup(e);
     u_vec_cleanup(v);
   }
-  printf("[ivec]   insert family         ok\n");
+  printf("  insert family         ok\n");
 
   /* ---- 3. 自动扩容: 默认 cap 16, 插入超过容量触发隐式扩容 ---- */
   {
@@ -260,7 +264,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   auto grow             ok\n");
+  printf("  auto grow             ok\n");
 
   /* ---- 4. at / at_ref / at_mut ---- */
   {
@@ -290,7 +294,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   at / at_ref / at_mut  ok\n");
+  printf("  at / at_ref / at_mut  ok\n");
 
   /* ---- 5. remove / remove_front / remove_back ---- */
   {
@@ -321,7 +325,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   remove family         ok\n");
+  printf("  remove family         ok\n");
 
   /* ---- 6. resize: 只扩容, 不改 len, 成功返回 true ---- */
   {
@@ -341,7 +345,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   resize                ok\n");
+  printf("  resize                ok\n");
 
   /* ---- 7. each 家族(正向) ---- */
   {
@@ -402,7 +406,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   each family           ok\n");
+  printf("  each family           ok\n");
 
   /* ---- 8. reach 家族(反向) ---- */
   {
@@ -454,7 +458,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   reach family          ok\n");
+  printf("  reach family          ok\n");
 
   /* ---- 9. find / rfind 家族 ---- */
   {
@@ -512,7 +516,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   find / rfind family   ok\n");
+  printf("  find / rfind family   ok\n");
 
   /* ---- 10. map_by ---- */
   {
@@ -533,7 +537,7 @@ void libu_vec() {
     u_vec_cleanup(mv);
     u_vec_cleanup(v);
   }
-  printf("[ivec]   map_by                ok\n");
+  printf("  map_by                ok\n");
 
   /* ---- 11. filter_if / filter_if_ref ---- */
   {
@@ -561,7 +565,7 @@ void libu_vec() {
     u_vec_cleanup(none);
     u_vec_cleanup(v);
   }
-  printf("[ivec]   filter family         ok\n");
+  printf("  filter family         ok\n");
 
   /* ---- 12. all_if / any_if(含 ref) ---- */
   {
@@ -582,7 +586,7 @@ void libu_vec() {
 
     u_vec_cleanup(v);
   }
-  printf("[ivec]   all_if / any_if       ok\n");
+  printf("  all_if / any_if       ok\n");
 
   /* ---- 13. clear: len 归零, cap 保留 ---- */
   {
@@ -622,7 +626,7 @@ void libu_vec() {
     assert(calls == 2);
     assert(v == NULL);
   }
-  printf("[ivec]   clear / cleanup proc  ok\n");
+  printf("  clear / cleanup proc  ok\n");
 
   /* ---- 15. 空 vec 行为 ---- */
   {
@@ -657,7 +661,7 @@ void libu_vec() {
     u_vec_cleanup(fe);
     u_vec_cleanup(e);
   }
-  printf("[ivec]   empty vec             ok\n");
+  printf("  empty vec             ok\n");
 
   /* ---- 16. 压力: 批量插入(隐式扩容) / 头部删除 / 中间插入 ---- */
   {
@@ -691,7 +695,7 @@ void libu_vec() {
     u_vec_cleanup(m);
     u_vec_cleanup(v);
   }
-  printf("[ivec]   stress                ok\n");
+  printf("  stress                ok\n");
 
   /* ---- 17. 泛型: struct 元素 ---- */
   {
@@ -740,7 +744,447 @@ void libu_vec() {
     u_vec_cleanup(big);
     u_vec_cleanup(pts);
   }
-  printf("[ivec]   generic struct        ok\n");
+  printf("  generic struct        ok\n");
 
-  printf("[ivec] ============ all Vec tests passed ============\n");
+  printf("============ all Vec tests passed ============\n");
+
+  printf("\n");
+}
+
+typedef struct {
+  int id;
+  int score;
+} rec_t;
+
+static int cmp_int(cany_t a, cany_t b) {
+  int x = *(const int*)a;
+  int y = *(const int*)b;
+  return (x > y) - (x < y);
+}
+
+static int cmp_rec(cany_t a, cany_t b) {
+  const rec_t* x = (const rec_t*)a;
+  const rec_t* y = (const rec_t*)b;
+  return (x->id > y->id) - (x->id < y->id);
+}
+
+void libu_tree() {
+  printf("================ Tree<K, V> ================\n");
+
+  /* ---- 1. new / cleanup: len 为 0, ref 自引用, cleanup 置 NULL ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    assert(t);
+    assert(t->len == 0);
+    assert(t->ref == (any_t)t);
+
+    u_tree_cleanup(t);
+    assert(t == NULL);
+  }
+  printf("  new / cleanup         ok\n");
+
+  /* ---- 2. insert / at 家族 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 5, 50);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 9, 90);
+    u_tree_insert(t, 3, 30);
+    u_tree_insert(t, 7, 70);
+    assert(t->len == 5);
+
+    assert(u_tree_at(t, 1) == 10);
+    assert(u_tree_at(t, 3) == 30);
+    assert(u_tree_at(t, 5) == 50);
+    assert(u_tree_at(t, 7) == 70);
+    assert(u_tree_at(t, 9) == 90);
+
+    /* at(key, val): 写入并返回写入值, 其余不变 */
+    auto w = u_tree_at(t, 3, 33);
+    assert(w == 33);
+    assert(u_tree_at(t, 3) == 33);
+    assert(u_tree_at(t, 1) == 10);
+
+    /* at_ref: 只读指针 */
+    assert(*u_tree_at_ref(t, 7) == 70);
+
+    /* at_mut: 可写指针 */
+    int* m = u_tree_at_mut(t, 7);
+    assert(m != NULL);
+    *m = 77;
+    assert(u_tree_at(t, 7) == 77);
+    assert(u_tree_at(t, 9) == 90); /* 其余不变 */
+
+    u_tree_cleanup(t);
+  }
+  printf("  insert / at family    ok\n");
+
+  /* ---- 3. try_at 家族: 命中执行, 未命中跳过 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 2, 20);
+    u_tree_insert(t, 4, 40);
+
+    int found = 0;
+    u_tree_try_at (t, 2, v) {
+      found = 1;
+      assert(v == 20);
+    }
+    assert(found == 1);
+
+    found = 0;
+    u_tree_try_at (t, 99, v) {
+      found = 1;
+      (void)v;
+    }
+    assert(found == 0);
+
+    found = 0;
+    u_tree_try_at_ref (t, 4, r) {
+      found = 1;
+      assert(*r == 40);
+    }
+    assert(found == 1);
+
+    found = 0;
+    u_tree_try_at_ref (t, 99, r) {
+      found = 1;
+      (void)r;
+    }
+    assert(found == 0);
+
+    found = 0;
+    u_tree_try_at_mut (t, 2, m) {
+      found = 1;
+      *m    = 22;
+    }
+    assert(found == 1);
+    assert(u_tree_at(t, 2) == 22);
+
+    found = 0;
+    u_tree_try_at_mut (t, 99, m) {
+      found = 1;
+      (void)m;
+    }
+    assert(found == 0);
+
+    u_tree_cleanup(t);
+  }
+  printf("  try_at family         ok\n");
+
+  /* ---- contains / min / max ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 5, 50);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 9, 90);
+    u_tree_insert(t, 3, 30);
+    u_tree_insert(t, 7, 70);
+
+    assert(u_tree_contains(t, 1));
+    assert(u_tree_contains(t, 5));
+    assert(u_tree_contains(t, 9));
+    assert(!u_tree_contains(t, 0));
+    assert(!u_tree_contains(t, 42));
+
+    auto mn = u_tree_min(t);
+    assert(mn != NULL && mn->key == 1 && mn->val == 10);
+
+    auto mx = u_tree_max(t);
+    assert(mx != NULL && mx->key == 9 && mx->val == 90);
+
+    /* 单节点树 min == max */
+    u_tree_t(int, int) one = u_tree_new(one, cmp_int);
+    u_tree_insert(one, 7, 70);
+    assert(u_tree_min(one)->key == 7 && u_tree_max(one)->key == 7);
+    u_tree_cleanup(one);
+
+    u_tree_cleanup(t);
+  }
+  printf("  contains / min / max  ok\n");
+
+  /* ---- 4. each 家族: 中序遍历即有序 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 5, 50);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 9, 90);
+    u_tree_insert(t, 3, 30);
+    u_tree_insert(t, 7, 70);
+
+    const int expect[5] = {1, 3, 5, 7, 9};
+    int n               = 0;
+    u_tree_each (t, it) {
+      assert(it.key == expect[n]);
+      assert(it.val == it.key * 10);
+      n++;
+    }
+    assert(n == 5);
+
+    n = 0;
+    u_tree_each_if (t, it, it.key > 3) {
+      n++;
+    }
+    assert(n == 3);
+
+    n = 0;
+    u_tree_each_ref (t, ref) {
+      assert(ref->key == expect[n]);
+      assert(ref->val == expect[n] * 10);
+      n++;
+    }
+    assert(n == 5);
+
+    n = 0;
+    u_tree_each_if_ref (t, ref, ref->val > 50) {
+      n++;
+    }
+    assert(n == 2);
+
+    /* each_mut: 通过指针修改 val */
+    u_tree_each_mut (t, mut) {
+      mut->val += 1;
+    }
+    assert(u_tree_at(t, 5) == 51);
+    assert(u_tree_at(t, 1) == 11);
+
+    n = 0;
+    u_tree_each_if_mut (t, mut, mut->key == 1) {
+      n++;
+      mut->val = 0;
+    }
+    assert(n == 1);
+    assert(u_tree_at(t, 1) == 0);
+
+    u_tree_cleanup(t);
+  }
+  printf("  each family           ok\n");
+
+  /* ---- reach 家族: 反向中序即降序 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 5, 50);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 9, 90);
+    u_tree_insert(t, 3, 30);
+    u_tree_insert(t, 7, 70);
+
+    const int desc[5] = {9, 7, 5, 3, 1};
+    int n = 0;
+    u_tree_reach (t, it) {
+      assert(it.key == desc[n]);
+      assert(it.val == it.key * 10);
+      n++;
+    }
+    assert(n == 5);
+
+    n = 0;
+    u_tree_reach_if (t, it, it.key < 7) { n++; }
+    assert(n == 3);
+
+    n = 0;
+    u_tree_reach_ref (t, ref) {
+      assert(ref->key == desc[n]);
+      assert(ref->val == desc[n] * 10);
+      n++;
+    }
+    assert(n == 5);
+
+    n = 0;
+    u_tree_reach_if_ref (t, ref, ref->val < 50) { n++; }
+    assert(n == 2);
+
+    /* reach_mut: 反向修改 val */
+    u_tree_reach_mut (t, mut) { mut->val += 1; }
+    assert(u_tree_at(t, 9) == 91);
+    assert(u_tree_at(t, 1) == 11);
+
+    n = 0;
+    u_tree_reach_if_mut (t, mut, mut->key == 5) { n++; mut->val = 0; }
+    assert(n == 1);
+    assert(u_tree_at(t, 5) == 0);
+
+    u_tree_cleanup(t);
+  }
+  printf("  reach family          ok\n");
+
+  /* ---- 5. remove: 叶子/内部/根交错删除, 保持有序 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    for (int i = 0; i < 10; i++) {
+      u_tree_insert(t, i, i * 10);
+    }
+    assert(t->len == 10);
+
+    const int order[10] = {0, 9, 5, 2, 7, 1, 8, 3, 6, 4};
+    int removed[10]     = {0};
+
+    for (int i = 0; i < 10; i++) {
+      removed[order[i]] = 1;
+      u_tree_remove(t, order[i]);
+      assert(t->len == 9 - i);
+
+      int prev = -1;
+      int n    = 0;
+      u_tree_each (t, it) {
+        assert(it.key > prev);        /* 中序严格递增 */
+        assert(removed[it.key] == 0); /* 已删的键不在 */
+        prev = it.key;
+        n++;
+      }
+      assert(n == 9 - i);
+    }
+    assert(t->len == 0);
+
+    u_tree_cleanup(t);
+  }
+  printf("  remove                ok\n");
+
+  /* ---- 6. clear: len 归零, 可复用 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    for (int i = 0; i < 100; i++) {
+      u_tree_insert(t, i, i);
+    }
+    assert(t->len == 100);
+
+    u_tree_clear(t);
+    assert(t->len == 0);
+
+    u_tree_insert(t, 42, 4242);
+    assert(t->len == 1);
+    assert(u_tree_at(t, 42) == 4242);
+
+    u_tree_cleanup(t);
+  }
+  printf("  clear                 ok\n");
+
+  /* ---- 7. 压力: 1000 键乱序插入 + 全查 + 删 500 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+
+    int keys[1000];
+    for (int i = 0; i < 1000; i++) {
+      keys[i] = i;
+    }
+
+    /* 确定性伪随机洗牌(LCG, 不依赖 libc rand) */
+    unsigned s = 12345u;
+    for (int i = 0; i < 500; i++) {
+      s       = s * 1664525u + 1013904223u;
+      int j   = (int)(s % 1000u);
+      int tmp = keys[i];
+      keys[i] = keys[j];
+      keys[j] = tmp;
+    }
+
+    for (int i = 0; i < 1000; i++) {
+      u_tree_insert(t, keys[i], keys[i] * 2);
+    }
+    assert(t->len == 1000);
+
+    for (int i = 0; i < 1000; i++) {
+      assert(u_tree_at(t, i) == i * 2);
+    }
+
+    int prev = -1;
+    int n    = 0;
+    u_tree_each (t, it) {
+      assert(it.key > prev);
+      assert(it.val == it.key * 2);
+      prev = it.key;
+      n++;
+    }
+    assert(n == 1000);
+
+    /* 删除前 500 个(按洗牌后顺序) */
+    for (int i = 0; i < 500; i++) {
+      u_tree_remove(t, keys[i]);
+    }
+    assert(t->len == 500);
+
+    for (int i = 500; i < 1000; i++) {
+      assert(u_tree_at(t, keys[i]) == keys[i] * 2);
+    }
+    n = 0;
+    u_tree_each (t, it) {
+      n++;
+    }
+    assert(n == 500);
+
+    u_tree_cleanup(t);
+  }
+  printf("  stress                ok\n");
+
+  /* ---- 8. 泛型: struct 键 ---- */
+  {
+    u_tree_t(rec_t, int) t = u_tree_new(t, cmp_rec);
+    u_tree_insert(t, ((rec_t){1, 100}), 111);
+    u_tree_insert(t, ((rec_t){3, 300}), 333);
+    u_tree_insert(t, ((rec_t){2, 200}), 222);
+    assert(t->len == 3);
+
+    assert(u_tree_at(t, ((rec_t){2, 200})) == 222);
+    assert(u_tree_at(t, ((rec_t){1, 100})) == 111);
+
+    *u_tree_at_mut(t, ((rec_t){3, 300})) = 999;
+    assert(u_tree_at(t, ((rec_t){3, 300})) == 999);
+
+    int n = 0;
+    u_tree_each (t, it) {
+      assert(it.key.id == n + 1);
+      n++;
+    }
+    assert(n == 3);
+
+    u_tree_cleanup(t);
+  }
+  printf("  generic struct        ok\n");
+
+  /* ---- 9. 空树行为 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+
+    u_tree_each (t, it) {
+      assert(!"each must not iterate");
+    }
+    u_tree_each_ref (t, it) {
+      assert(!"each_ref must not iterate");
+    }
+    u_tree_each_mut (t, it) {
+      assert(!"each_mut must not iterate");
+    }
+    u_tree_reach (t, it) {
+      assert(!"reach must not iterate");
+    }
+    u_tree_reach_ref (t, it) {
+      assert(!"reach_ref must not iterate");
+    }
+    u_tree_reach_mut (t, it) {
+      assert(!"reach_mut must not iterate");
+    }
+
+    int found = 0;
+    u_tree_try_at (t, 1, v) {
+      found = 1;
+    }
+    u_tree_try_at_ref (t, 1, v) {
+      found = 1;
+    }
+    u_tree_try_at_mut (t, 1, v) {
+      found = 1;
+    }
+    assert(found == 0);
+
+    u_tree_remove(t, 1);
+    u_tree_clear(t);
+
+    u_tree_cleanup(t);
+    assert(t == NULL);
+  }
+  printf("  empty tree            ok\n");
+
+  printf("============ all Tree tests passed ============\n");
+
+  printf("\n");
 }
