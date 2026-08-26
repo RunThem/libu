@@ -657,6 +657,118 @@ typedef struct {
  */
 #define u_tree_reach_if_mut(self, it, cond) u_tree_reach_mut(self, it) if (cond)
 
+/**
+ * ::Tree<K, V>::map_by(self, proc: <block>) -> Self
+ *
+ * 在 proc 中修改 it 实现转换, 块返回值忽略; 若修改 key 需保证唯一, 重复触发断言
+ */
+#define u_tree_map_by(self, proc)                                                                  \
+  ({                                                                                               \
+    extern pub u_cmp_fn __u_tree_cmp_fn(any_t);                                                    \
+                                                                                                   \
+    typeof(self) __self__ = u_tree_new(__self__, __u_tree_cmp_fn((self)->ref));                    \
+                                                                                                   \
+    u_tree_each (self, it) {                                                                       \
+      proc;                                                                                        \
+                                                                                                   \
+      u_tree_insert(__self__, it.key, it.val);                                                     \
+    }                                                                                              \
+                                                                                                   \
+    __self__;                                                                                      \
+  })
+
+/**
+ * ::Tree<K, V>::filter_if(self, cond: <expr>) -> Self
+ */
+#define u_tree_filter_if(self, cond)                                                               \
+  ({                                                                                               \
+    extern pub u_cmp_fn __u_tree_cmp_fn(any_t);                                                    \
+                                                                                                   \
+    typeof(self) __self__ = u_tree_new(__self__, __u_tree_cmp_fn((self)->ref));                    \
+                                                                                                   \
+    u_tree_each_if (self, it, cond) {                                                              \
+      u_tree_insert(__self__, it.key, it.val);                                                     \
+    }                                                                                              \
+                                                                                                   \
+    __self__;                                                                                      \
+  })
+
+/**
+ * ::Tree<K, V>::filter_if_ref(self, cond: <expr>) -> Self
+ */
+#define u_tree_filter_if_ref(self, cond)                                                           \
+  ({                                                                                               \
+    extern pub u_cmp_fn __u_tree_cmp_fn(any_t);                                                    \
+                                                                                                   \
+    typeof(self) __self__ = u_tree_new(__self__, __u_tree_cmp_fn((self)->ref));                    \
+                                                                                                   \
+    u_tree_each_if_ref (self, it, cond) {                                                          \
+      u_tree_insert(__self__, it->key, it->val);                                                   \
+    }                                                                                              \
+                                                                                                   \
+    __self__;                                                                                      \
+  })
+
+/**
+ * ::Tree<K, V>::all_if(self, cond: <expr>) -> bool
+ */
+#define u_tree_all_if(self, cond)                                                                  \
+  ({                                                                                               \
+    bool __result__ = !0;                                                                          \
+                                                                                                   \
+    u_tree_each_if (self, it, !(cond)) {                                                           \
+      __result__ = !!0;                                                                            \
+      break;                                                                                       \
+    }                                                                                              \
+                                                                                                   \
+    __result__;                                                                                    \
+  })
+
+/**
+ * ::Tree<K, V>::all_if_ref(self, cond: <expr>) -> bool
+ */
+#define u_tree_all_if_ref(self, cond)                                                              \
+  ({                                                                                               \
+    bool __result__ = !0;                                                                          \
+                                                                                                   \
+    u_tree_each_if_ref (self, it, !(cond)) {                                                       \
+      __result__ = !!0;                                                                            \
+      break;                                                                                       \
+    }                                                                                              \
+                                                                                                   \
+    __result__;                                                                                    \
+  })
+
+/**
+ * ::Tree<K, V>::any_if(self, cond: <expr>) -> bool
+ */
+#define u_tree_any_if(self, cond)                                                                  \
+  ({                                                                                               \
+    bool __result__ = !!0;                                                                         \
+                                                                                                   \
+    u_tree_each_if (self, it, cond) {                                                              \
+      __result__ = !0;                                                                             \
+      break;                                                                                       \
+    }                                                                                              \
+                                                                                                   \
+    __result__;                                                                                    \
+  })
+
+/**
+ * ::Tree<K, V>::any_if_ref(self, cond: <expr>) -> bool
+ */
+#define u_tree_any_if_ref(self, cond)                                                              \
+  ({                                                                                               \
+    bool __result__ = !!0;                                                                         \
+                                                                                                   \
+    u_tree_each_if_ref (self, it, cond) {                                                          \
+      __result__ = !0;                                                                             \
+      break;                                                                                       \
+    }                                                                                              \
+                                                                                                   \
+    __result__;                                                                                    \
+  })
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

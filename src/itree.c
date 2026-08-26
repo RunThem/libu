@@ -573,3 +573,11 @@ pub any_t __u_tree_max(any_t _self) {
 
   return &node->data[0];
 }
+
+pub u_cmp_fn __u_tree_cmp_fn(any_t _self) {
+  tree_mut_t self = (tree_mut_t)_self;
+
+  u_chk_if(self, NULL);
+
+  return self->cmp_fn;
+}
