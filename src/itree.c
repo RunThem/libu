@@ -27,12 +27,6 @@
 /***************************************************************************************************
  * Macro
  **************************************************************************************************/
-#undef key
-#define key(node) (any(node) + sizeof(tnode_t))
-
-#undef val
-#define val(node) (any(node) + sizeof(tnode_t) + self->ksize)
-
 #undef lh
 #define lh(node) (((node)->left) ? ((node)->left)->height : 0)
 
@@ -61,8 +55,7 @@ u_struct_def(tree, [[gnu::packed]]) {
   any_t ref;
   int len;
 
-  i32_t ksize;
-  i32_t vsize;
+  i32_t size;
 
   u_cmp_fn cmp_fn;
 
@@ -81,7 +74,7 @@ pri tnode_mut_t __u_tree_new_node(tree_mut_t self, tnode_mut_t parent) {
     node       = self->free;
     self->free = node->parent;
   } else {
-    node = u_zalloc(sizeof(tnode_t) + self->ksize + self->vsize);
+    node = u_zalloc(sizeof(tnode_t) + self->size);
     u_end_if(node);
   }
 
@@ -299,17 +292,15 @@ pri void __u_tree_put_rebalance(tree_mut_t self, tnode_mut_t node) {
   }
 }
 
-pub any_t __u_tree_new(i32_t ksize, i32_t vsize, u_cmp_fn cmp_fn) {
+pub any_t __u_tree_new(i32_t size, u_cmp_fn cmp_fn) {
   tree_mut_t self = NULL;
 
-  u_chk_if(ksize == 0, NULL);
-  /* vsize == 0, support set */
+  u_chk_if(size == 0, NULL);
 
-  self = u_zalloc(sizeof(tree_t) + ksize + vsize);
+  self = u_zalloc(sizeof(tree_t) + size);
   u_end_if(self);
 
-  self->ksize  = ksize;
-  self->vsize  = vsize;
+  self->size   = size;
   self->cmp_fn = cmp_fn;
   self->ref    = any(self);
 
@@ -347,7 +338,9 @@ pub void __u_tree_clear(any_t _self) {
     u_free(node);
   }
 
-  self->len = 0;
+  self->len  = 0;
+  self->root = NULL;
+  self->iter = NULL;
 }
 
 pub void __u_tree_cleanup(any_t _self) {
