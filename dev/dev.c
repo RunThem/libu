@@ -1247,6 +1247,108 @@ void libu_tree() {
   }
   printf("  empty tree            ok\n");
 
+  /* ---- remove 缺失键: 静默 no-op, len 不变 ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 2, 20);
+    u_tree_insert(t, 3, 30);
+
+    u_tree_remove(t, 99); /* 不存在 */
+    u_tree_remove(t, -1); /* 不存在(负键合法) */
+    assert(t->len == 3);
+    assert(u_tree_contains(t, 1) && u_tree_contains(t, 2) && u_tree_contains(t, 3));
+    assert(!u_tree_contains(t, 99));
+
+    u_tree_remove(t, 2);
+    assert(t->len == 2);
+    u_tree_remove(t, 2); /* 已删, no-op */
+    assert(t->len == 2);
+    assert(!u_tree_contains(t, 2));
+
+    int prev = -1;
+    int n    = 0;
+    u_tree_each (t, it) {
+      assert(it.key > prev);
+      prev = it.key;
+      n++;
+    }
+    assert(n == 2);
+
+    u_tree_cleanup(t);
+  }
+  printf("  remove missing key     ok\n");
+
+  /* ---- clear / cleanup 带 proc (proc 按中序执行) ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    u_tree_insert(t, 5, 50);
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 9, 90);
+    u_tree_insert(t, 3, 30);
+    u_tree_insert(t, 7, 70);
+
+    int keys[5] = {0};
+    int n       = 0;
+    u_tree_clear(t, keys[n++] = it.key); /* proc: 按中序收集 key */
+    assert(n == 5);
+    for (int i = 0; i < 5; i++) {
+      assert(keys[i] == i * 2 + 1); /* 1,3,5,7,9 */
+    }
+    assert(t->len == 0);
+
+    u_tree_insert(t, 1, 10);
+    u_tree_insert(t, 2, 20);
+    n = 0;
+    u_tree_cleanup(t, n++); /* proc 计数 */
+    assert(n == 2);
+    assert(t == NULL);
+  }
+  printf("  clear / cleanup proc  ok\n");
+
+  /* ---- remove + reinsert (free-list 复用) ---- */
+  {
+    u_tree_t(int, int) t = u_tree_new(t, cmp_int);
+    for (int i = 0; i < 100; i++) {
+      u_tree_insert(t, i, i);
+    }
+    assert(t->len == 100);
+
+    for (int i = 0; i < 50; i++) {
+      u_tree_remove(t, i); /* 积累 free list */
+    }
+    assert(t->len == 50);
+    for (int i = 0; i < 50; i++) {
+      u_tree_insert(t, i, i); /* 消费 free list */
+    }
+    assert(t->len == 100);
+
+    for (int r = 0; r < 5; r++) { /* 多轮单删单插, 反复复用 free list */
+      for (int i = 0; i < 100; i++) {
+        u_tree_remove(t, i);
+        u_tree_insert(t, i, i);
+      }
+    }
+    assert(t->len == 100);
+
+    for (int i = 0; i < 100; i++) {
+      assert(u_tree_at(t, i) == i);
+    }
+
+    int prev = -1;
+    int n    = 0;
+    u_tree_each (t, it) {
+      assert(it.key > prev);
+      assert(it.val == it.key);
+      prev = it.key;
+      n++;
+    }
+    assert(n == 100);
+
+    u_tree_cleanup(t);
+  }
+  printf("  remove + reinsert     ok\n");
+
   printf("============ all Tree tests passed ============\n");
 
   printf("\n");
