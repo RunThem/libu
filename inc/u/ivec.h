@@ -214,7 +214,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -247,7 +247,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -274,7 +274,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -302,7 +302,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                                     \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -338,13 +338,14 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx <= Self->len);                                                                    \
+      assert(Idx >= 0 && Idx <= Self->len);                                                                    \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.insert_t) __tuple__        = {_idx, _entry};                                          \
     typeof(M.entry_mut_t) __entry_mut__ = __u_vec_add((self)->ref, __tuple__.idx);                 \
+    assert(__entry_mut__);                                                                          \
                                                                                                    \
     *__entry_mut__ = __tuple__.entry;                                                              \
   } while (0)
