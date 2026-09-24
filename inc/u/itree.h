@@ -336,7 +336,8 @@ typedef struct {
     assert(Self != NULL);                                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){}; ({                         \
+  for (int __once__ = 1; __once__; __once__ = 0)                                                   \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){}; __once__ && ({           \
          extern pub any_t __u_tree_at(any_t, any_t);                                               \
                                                                                                    \
          typeof((self)->_[0]) M = {};                                                              \
@@ -349,7 +350,7 @@ typedef struct {
                                                                                                    \
          __tuple_ref__;                                                                            \
        });                                                                                         \
-       ({ break; }))
+       __once__ = 0)
 
 /**
  * ::Tree<K, V>::try_at_ref(self, key: K) -> Option<it = const V*>
@@ -363,7 +364,8 @@ typedef struct {
     assert(Self != NULL);                                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){}; ({                     \
+  for (int __once__ = 1; __once__; __once__ = 0)                                                   \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){}; __once__ && ({       \
          extern pub any_t __u_tree_at(any_t, any_t);                                               \
                                                                                                    \
          typeof((self)->_[0]) M = {};                                                              \
@@ -376,7 +378,7 @@ typedef struct {
                                                                                                    \
          __tuple_ref__;                                                                            \
        });                                                                                         \
-       ({ break; }))
+       __once__ = 0)
 
 /**
  * ::Tree<K, V>::try_at_mut(self, key: K) -> Option<it = V*>
@@ -390,7 +392,8 @@ typedef struct {
     assert(Self != NULL);                                                                          \
   }                                                                                                \
                                                                                                    \
-  for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){}; ({                     \
+  for (int __once__ = 1; __once__; __once__ = 0)                                                   \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){}; __once__ && ({       \
          extern pub any_t __u_tree_at(any_t, any_t);                                               \
                                                                                                    \
          typeof((self)->_[0]) M = {};                                                              \
@@ -403,7 +406,7 @@ typedef struct {
                                                                                                    \
          __tuple_mut__;                                                                            \
        });                                                                                         \
-       ({ break; }))
+       __once__ = 0)
 
 /**
  * ::Tree<K, V>::remove(self, key: K) -> !
