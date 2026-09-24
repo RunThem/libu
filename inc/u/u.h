@@ -38,10 +38,7 @@ extern "C" {
 // #  endif
 
 #include "iarr.h"
-#include "ibuf.h"
 #include "idict.h"
-#include "iheap.h"
-#include "ilist.h"
 #include "ilock.h"
 #include "itree.h"
 #include "ivec.h"
