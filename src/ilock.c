@@ -22,15 +22,19 @@
  *
  * */
 
-#include <u/u.h>
+#include "u/ilock.h"
 
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
 pub void u_spmtx_init(u_spmtx_ref_t self) {
+  u_chk_if(self);
+
   atomic_init(&self->locked, false);
 }
 
+/* 自旋互斥锁: TAS (test-and-set), exchange 永远写 true,
+   旧值是 true 说明别人持锁 -> 继续空转; 旧值是 false 说明本轮自己抢到了 */
 pub void u_spmtx_lock(u_spmtx_ref_t self) {
   while (atomic_exchange(&self->locked, true))
     ;
@@ -47,6 +51,8 @@ pub void u_rwmtx_init(u_rwmtx_ref_t self) {
   atomic_init(&self->rwlock, false);
 }
 
+/* 读锁: 先等写标志落下, 再登记读者 (cnt++),
+   然后复查写标志: 若这中间写者插了进来, 就退回登记并重试 */
 pub void u_rwmtx_rlock(u_rwmtx_ref_t self) {
   while (true) {
     while (atomic_load(&self->rwlock))
@@ -63,6 +69,7 @@ pub void u_rwmtx_runlock(u_rwmtx_ref_t self) {
   atomic_fetch_sub(&self->cnt, 1);
 }
 
+/* 写锁: 先占住写标志 (后来者不论是读是写都会被挡住), 再等已登记的读者退完 */
 pub void u_rwmtx_wlock(u_rwmtx_ref_t self) {
   while (atomic_exchange(&self->rwlock, true))
     ;
