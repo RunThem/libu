@@ -5,26 +5,6 @@
 #include <u/u.h>
 
 /*
- * #[[flag]]
- *
- * */
-
-/*
- * namespace
- *
- * ua: arr
- * uv: vec
- * um: map
- * ut: avl
- * ul: lst
- * us: str
- * ub: buf
- * uf: file
- * ug: log
- * un: net
- * */
-
-/*
  * network
  *
  * tcp4://0.0.0.0:8080

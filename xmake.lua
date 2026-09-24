@@ -13,9 +13,6 @@ add_rules('mode.debug', 'mode.valgrind', 'mode.profile', 'mode.check', 'mode.rel
 --- Project file
 add_rules('plugin.compile_commands.autoupdate', { outputdir = 'build' })
 
---- Custom rules
-includes('rules/*.lua')
-
 --- Language standard
 set_languages('c11', 'cxxlatest')
 
