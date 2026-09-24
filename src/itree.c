@@ -64,6 +64,17 @@ u_struct_def(tree, [[gnu::packed]]) {
   tnode_mut_t iter; /* iter */
 };
 
+/* 私有实现的前缀必须和宏层句柄 (u_tree_t) 一致: 直接拿句柄类型当参照, 不引入任何新类型
+   K/V 随便给一个, 前缀不随 K/V 变化 (最后一条断言确认这一点) */
+typedef typeof(*((u_tree_t(int, int))NULL)) tree_handle_t;
+
+_Static_assert(offsetof(tree_t, ref) == offsetof(tree_handle_t, ref),
+               "tree_t.ref drifted from the Tree<K, V> handle");
+_Static_assert(offsetof(tree_t, len) == offsetof(tree_handle_t, len),
+               "tree_t.len drifted from the Tree<K, V> handle");
+_Static_assert(offsetof(typeof(*((u_tree_t(char, char))NULL)), len) == offsetof(tree_handle_t, len),
+               "Tree<K, V> handle prefix must not depend on K/V");
+
 /***************************************************************************************************
  * Function
  **************************************************************************************************/

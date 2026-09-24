@@ -42,6 +42,37 @@ typedef struct {
 
 /**
  * ::Class Dict<K, V>
+ *
+ * 哈希表 (桶内是一棵按 key 有序的小树); key / val 按值拷贝进表
+ *
+ *   u_dict_t(int, int) d = u_dict_new(d);    // 不传 hash_fn 时按 key 字节做 FNV64
+ *   u_dict_insert(d, 1, 100);
+ *   u_dict_insert(d, 2, 200);
+ *
+ *   u_dict_each_mut(d, it) {
+ *     it->val++;                             // 迭代顺序是桶序, 不保证插入序
+ *   }
+ *
+ *   int v = u_dict_at(d, 1);                 // key 不存在就断言 (release 下是空指针解引用)
+ *   int* p = u_dict_at_ref(d, 9);            // 未命中返回 NULL
+ *   if (u_dict_try_at(d, 9, it)) {           // 命中才进
+ *     ...
+ *   }
+ *
+ *   int old = u_dict_remove(d, 1);           // 返回被移除的值, 未命中返回零值
+ *   u_dict_cleanup(d);                       // 释放并置 NULL
+ *
+ * 只读视图 (直接读, 不要写): d->ref / d->len
+ *
+ * 约定:
+ *   - 默认哈希按 key 的原始字节 (FNV64): 只适合 POD key.
+ *     字符串或含指针的 key 只会哈希到指针本身, 必须自己传 hash_fn
+ *   - hash_fn 形如 u_hash_t (*)(const u8_t*, size_t), len 拿到的是 sizeof(K)
+ *   - insert: 重复 key 静默忽略 (不覆盖, 不报错); 装满了会自动扩容并重新哈希
+ *   - at 的写入形式也要求 key 已存在, 不会插入新 key
+ *   - 迭代顺序是桶序, 既不保证插入序也不保证有序; 游标存在 Dict 内部,
+ *     不支持嵌套迭代, 迭代中不要增删
+ *   - cleanup 不析构 key / val; 里面有需要释放的资源就传 proc
  */
 #define u_dict_t(K, V)                                                                             \
   typeof(const struct [[gnu::packed]] {                                                            \
@@ -118,6 +149,8 @@ typedef struct {
 /**
  * ::Dict<K, V>::new(self) -> Self
  * ::Dict<K, V>::new(self, hash_fn) -> Self
+ *
+ * 不传 hash_fn 时按 key 的原始字节做 FNV64, 只适合 POD key
  */
 #define u_dict_new(self, ...)                                                                      \
   ({                                                                                               \
@@ -157,6 +190,9 @@ typedef struct {
 /**
  * ::Dict<K, V>::cleanup(self) -> !
  * ::Dict<K, V>::cleanup(self, proc: <block>) -> !
+ *
+ * 释放所有桶和自身, 并把 Self 置为 NULL
+ * key / val 不析构, 里面有需要释放的资源就传 proc (proc 拿到的是可写视图)
  */
 #define u_dict_cleanup(self, ...)                                                                  \
   do {                                                                                             \
@@ -197,7 +233,7 @@ typedef struct {
                                                                                                    \
     typeof(M.at_t) __tuple__         = {_key, __VA_ARGS__};                                        \
     typeof(M.at_mut_t) __tuple_mut__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);          \
-    assert(__tuple_mut__);                                                                          \
+    assert(__tuple_mut__);                                                                         \
                                                                                                    \
     __tuple_mut__->val u_va_has_if(__VA_ARGS__)(= __tuple__.val);                                  \
   })
@@ -253,6 +289,9 @@ typedef struct {
 /**
  * ::Dict<K, V>::try_at(self, key: K) -> Option<it = V>
  * ::Dict<K, V>::try_at(self, key: K, <var-name>) -> Option<it = V>
+ *
+ * 返回值可直接当条件: 命中返回节点指针 (真值), 未命中返回 NULL
+ * 值形式未命中得到零值; 块形式只在命中时执行, 并绑定 it
  */
 #define u_dict_try_at(self, _key, ...)                                                             \
   {                                                                                                \
@@ -263,20 +302,21 @@ typedef struct {
   }                                                                                                \
                                                                                                    \
   for (int __once__ = 1; __once__; __once__ = 0)                                                   \
-    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){}; __once__ && ({           \
-         extern pub any_t __u_dict_at(any_t, any_t);                                               \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){};                          \
+         __once__ && ({                                                                            \
+           extern pub any_t __u_dict_at(any_t, any_t);                                             \
                                                                                                    \
-         typeof((self)->_[0]) M = {};                                                              \
+           typeof((self)->_[0]) M = {};                                                            \
                                                                                                    \
-         typeof(M.at_t) __tuple__         = {_key};                                                \
-         typeof(M.at_ref_t) __tuple_ref__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);     \
+           typeof(M.at_t) __tuple__         = {_key};                                              \
+           typeof(M.at_ref_t) __tuple_ref__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);   \
                                                                                                    \
-         if (__tuple_ref__)                                                                        \
-           u_va_0th(it, __VA_ARGS__) = __tuple_ref__->val;                                         \
+           if (__tuple_ref__)                                                                      \
+             u_va_0th(it, __VA_ARGS__) = __tuple_ref__->val;                                       \
                                                                                                    \
-         __tuple_ref__;                                                                            \
-       });                                                                                         \
-       __once__ = 0)
+           __tuple_ref__;                                                                          \
+         });                                                                                       \
+         __once__ = 0)
 
 /**
  * ::Dict<K, V>::try_at_ref(self, key: K) -> Option<it = const V*>
@@ -291,20 +331,21 @@ typedef struct {
   }                                                                                                \
                                                                                                    \
   for (int __once__ = 1; __once__; __once__ = 0)                                                   \
-    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){}; __once__ && ({       \
-         extern pub any_t __u_dict_at(any_t, any_t);                                               \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){};                      \
+         __once__ && ({                                                                            \
+           extern pub any_t __u_dict_at(any_t, any_t);                                             \
                                                                                                    \
-         typeof((self)->_[0]) M = {};                                                              \
+           typeof((self)->_[0]) M = {};                                                            \
                                                                                                    \
-         typeof(M.at_t) __tuple__         = {_key};                                                \
-         typeof(M.at_ref_t) __tuple_ref__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);     \
+           typeof(M.at_t) __tuple__         = {_key};                                              \
+           typeof(M.at_ref_t) __tuple_ref__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);   \
                                                                                                    \
-         if (__tuple_ref__)                                                                        \
-           u_va_0th(it, __VA_ARGS__) = &__tuple_ref__->val;                                        \
+           if (__tuple_ref__)                                                                      \
+             u_va_0th(it, __VA_ARGS__) = &__tuple_ref__->val;                                      \
                                                                                                    \
-         __tuple_ref__;                                                                            \
-       });                                                                                         \
-       __once__ = 0)
+           __tuple_ref__;                                                                          \
+         });                                                                                       \
+         __once__ = 0)
 
 /**
  * ::Dict<K, V>::try_at_mut(self, key: K) -> Option<it = V*>
@@ -319,20 +360,21 @@ typedef struct {
   }                                                                                                \
                                                                                                    \
   for (int __once__ = 1; __once__; __once__ = 0)                                                   \
-    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){}; __once__ && ({       \
-         extern pub any_t __u_dict_at(any_t, any_t);                                               \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){};                      \
+         __once__ && ({                                                                            \
+           extern pub any_t __u_dict_at(any_t, any_t);                                             \
                                                                                                    \
-         typeof((self)->_[0]) M = {};                                                              \
+           typeof((self)->_[0]) M = {};                                                            \
                                                                                                    \
-         typeof(M.at_t) __tuple__         = {_key};                                                \
-         typeof(M.at_mut_t) __tuple_mut__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);     \
+           typeof(M.at_t) __tuple__         = {_key};                                              \
+           typeof(M.at_mut_t) __tuple_mut__ = __u_dict_at((self)->ref, (any_t) & __tuple__.key);   \
                                                                                                    \
-         if (__tuple_mut__)                                                                        \
-           u_va_0th(it, __VA_ARGS__) = &__tuple_mut__->val;                                        \
+           if (__tuple_mut__)                                                                      \
+             u_va_0th(it, __VA_ARGS__) = &__tuple_mut__->val;                                      \
                                                                                                    \
-         __tuple_mut__;                                                                            \
-       });                                                                                         \
-       __once__ = 0)
+           __tuple_mut__;                                                                          \
+         });                                                                                       \
+         __once__ = 0)
 
 /**
  * ::Dict<K, V>::remove(self, key: K) -> V

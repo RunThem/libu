@@ -61,6 +61,17 @@ u_struct_def(u_dict, [[gnu::packed]]) {
   mnode_t iter_node;
 };
 
+/* 私有实现的前缀必须和宏层句柄 (u_dict_t) 一致: 直接拿句柄类型当参照, 不引入任何新类型
+   K/V 随便给一个, 前缀不随 K/V 变化 (最后一条断言确认这一点) */
+typedef typeof(*((u_dict_t(int, int))NULL)) dict_handle_t;
+
+_Static_assert(offsetof(u_dict_t, ref) == offsetof(dict_handle_t, ref),
+               "u_dict_t.ref drifted from the Dict<K, V> handle");
+_Static_assert(offsetof(u_dict_t, len) == offsetof(dict_handle_t, len),
+               "u_dict_t.len drifted from the Dict<K, V> handle");
+_Static_assert(offsetof(typeof(*((u_dict_t(char, char))NULL)), len) == offsetof(dict_handle_t, len),
+               "Dict<K, V> handle prefix must not depend on K/V");
+
 /***************************************************************************************************
  * Function
  **************************************************************************************************/

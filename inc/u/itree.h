@@ -43,6 +43,35 @@ typedef struct {
 
 /**
  * ::Class Tree<K, V>
+ *
+ * 自平衡二叉搜索树 (AVL); key / val 按值拷贝进节点
+ *
+ *   u_tree_t(int, int) t = u_tree_new(t, fn_cmp_int);
+ *   u_tree_insert(t, 1, 100);
+ *   u_tree_insert(t, 3, 300);
+ *
+ *   u_tree_each_mut(t, it) {          // 按 key 升序: (1, 100) (3, 300)
+ *     it->val++;
+ *   }
+ *
+ *   int v = u_tree_at(t, 1);          // key 不存在就断言
+ *   if (u_tree_try_at(t, 9, it)) {    // 命中才进
+ *     ...
+ *   }
+ *
+ *   u_tree_cleanup(t);                // 释放并置 NULL
+ *
+ * 只读视图 (直接读, 不要写): t->ref / t->len
+ *
+ * 约定:
+ *   - cmp_fn 必填, 形如 int (*)(const void*, const void*), 返回 >0 / 0 / <0
+ *   - key / val 进的是副本, 顺序由 cmp_fn 定义
+ *   - at / at_ref / at_mut: key 必须存在 (debug 断言); try_at 系列未命中不触发断言
+ *   - insert: 重复 key 触发断言; remove: key 不存在是静默 no-op
+ *   - min / max: 空树触发断言
+ *   - 迭代按 key 升序; 游标存在 Tree 内部, 不支持嵌套迭代, 迭代中不要增删
+ *   - map_by 在 proc 里改 it 完成转换, 改 key 要保证唯一 (重复触发断言)
+ *   - cleanup 不析构 key / val; 里面有需要释放的资源就传 proc
  */
 #define u_tree_t(K, V)                                                                             \
   typeof(const struct [[gnu::packed]] {                                                            \
@@ -118,6 +147,8 @@ typedef struct {
 
 /**
  * ::Tree<K, V>::new(self, cmp_fn: fn (K*, K*) -> int) -> Self
+ *
+ * cmp_fn 必填, debug 下断言非 NULL; 形如 int (*)(const void*, const void*), 返回 >0 / 0 / <0
  */
 #define u_tree_new(self, cmp_fn)                                                                   \
   ({                                                                                               \
@@ -327,6 +358,9 @@ typedef struct {
 /**
  * ::Tree<K, V>::try_at(self, key: K) -> Option<it = V>
  * ::Tree<K, V>::try_at(self, key: K, <var-name>) -> Option<it = V>
+ *
+ * 返回值可直接当条件: 命中返回节点指针 (真值), 未命中返回 NULL
+ * 值形式未命中得到零值; 块形式只在命中时执行, 并绑定 it
  */
 #define u_tree_try_at(self, _key, ...)                                                             \
   {                                                                                                \
@@ -337,24 +371,27 @@ typedef struct {
   }                                                                                                \
                                                                                                    \
   for (int __once__ = 1; __once__; __once__ = 0)                                                   \
-    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){}; __once__ && ({           \
-         extern pub any_t __u_tree_at(any_t, any_t);                                               \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_t)){};                          \
+         __once__ && ({                                                                            \
+           extern pub any_t __u_tree_at(any_t, any_t);                                             \
                                                                                                    \
-         typeof((self)->_[0]) M = {};                                                              \
+           typeof((self)->_[0]) M = {};                                                            \
                                                                                                    \
-         typeof(M.at_t) __tuple__         = {_key};                                                \
-         typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);     \
+           typeof(M.at_t) __tuple__         = {_key};                                              \
+           typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);   \
                                                                                                    \
-         if (__tuple_ref__)                                                                        \
-           u_va_0th(it, __VA_ARGS__) = __tuple_ref__->val;                                         \
+           if (__tuple_ref__)                                                                      \
+             u_va_0th(it, __VA_ARGS__) = __tuple_ref__->val;                                       \
                                                                                                    \
-         __tuple_ref__;                                                                            \
-       });                                                                                         \
-       __once__ = 0)
+           __tuple_ref__;                                                                          \
+         });                                                                                       \
+         __once__ = 0)
 
 /**
  * ::Tree<K, V>::try_at_ref(self, key: K) -> Option<it = const V*>
  * ::Tree<K, V>::try_at_ref(self, key: K, <var-name>) -> Option<it = const V*>
+ *
+ * 返回值可直接当条件: 命中返回节点指针, 未命中返回 NULL; 块形式只在命中时执行
  */
 #define u_tree_try_at_ref(self, _key, ...)                                                         \
   {                                                                                                \
@@ -365,24 +402,27 @@ typedef struct {
   }                                                                                                \
                                                                                                    \
   for (int __once__ = 1; __once__; __once__ = 0)                                                   \
-    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){}; __once__ && ({       \
-         extern pub any_t __u_tree_at(any_t, any_t);                                               \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_ref_t)){};                      \
+         __once__ && ({                                                                            \
+           extern pub any_t __u_tree_at(any_t, any_t);                                             \
                                                                                                    \
-         typeof((self)->_[0]) M = {};                                                              \
+           typeof((self)->_[0]) M = {};                                                            \
                                                                                                    \
-         typeof(M.at_t) __tuple__         = {_key};                                                \
-         typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);     \
+           typeof(M.at_t) __tuple__         = {_key};                                              \
+           typeof(M.at_ref_t) __tuple_ref__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);   \
                                                                                                    \
-         if (__tuple_ref__)                                                                        \
-           u_va_0th(it, __VA_ARGS__) = &__tuple_ref__->val;                                        \
+           if (__tuple_ref__)                                                                      \
+             u_va_0th(it, __VA_ARGS__) = &__tuple_ref__->val;                                      \
                                                                                                    \
-         __tuple_ref__;                                                                            \
-       });                                                                                         \
-       __once__ = 0)
+           __tuple_ref__;                                                                          \
+         });                                                                                       \
+         __once__ = 0)
 
 /**
  * ::Tree<K, V>::try_at_mut(self, key: K) -> Option<it = V*>
  * ::Tree<K, V>::try_at_mut(self, key: K, <var-name>) -> Option<it = V*>
+ *
+ * 返回值可直接当条件: 命中返回节点指针, 未命中返回 NULL; 块形式只在命中时执行
  */
 #define u_tree_try_at_mut(self, _key, ...)                                                         \
   {                                                                                                \
@@ -393,23 +433,26 @@ typedef struct {
   }                                                                                                \
                                                                                                    \
   for (int __once__ = 1; __once__; __once__ = 0)                                                   \
-    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){}; __once__ && ({       \
-         extern pub any_t __u_tree_at(any_t, any_t);                                               \
+    for (auto u_va_0th(it, __VA_ARGS__) = (typeof((self)->_[0].val_mut_t)){};                      \
+         __once__ && ({                                                                            \
+           extern pub any_t __u_tree_at(any_t, any_t);                                             \
                                                                                                    \
-         typeof((self)->_[0]) M = {};                                                              \
+           typeof((self)->_[0]) M = {};                                                            \
                                                                                                    \
-         typeof(M.at_t) __tuple__         = {_key};                                                \
-         typeof(M.at_mut_t) __tuple_mut__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);     \
+           typeof(M.at_t) __tuple__         = {_key};                                              \
+           typeof(M.at_mut_t) __tuple_mut__ = __u_tree_at((self)->ref, (any_t) & __tuple__.key);   \
                                                                                                    \
-         if (__tuple_mut__)                                                                        \
-           u_va_0th(it, __VA_ARGS__) = &__tuple_mut__->val;                                        \
+           if (__tuple_mut__)                                                                      \
+             u_va_0th(it, __VA_ARGS__) = &__tuple_mut__->val;                                      \
                                                                                                    \
-         __tuple_mut__;                                                                            \
-       });                                                                                         \
-       __once__ = 0)
+           __tuple_mut__;                                                                          \
+         });                                                                                       \
+         __once__ = 0)
 
 /**
  * ::Tree<K, V>::remove(self, key: K) -> !
+ *
+ * key 不存在是静默 no-op (不触发断言)
  */
 #define u_tree_remove(self, _key)                                                                  \
   do {                                                                                             \

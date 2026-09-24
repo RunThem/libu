@@ -43,6 +43,30 @@ typedef struct {
 
 /**
  * ::Class Vec<T>
+ *
+ * 连续内存的动态数组, 存值语义 (元素按值拷贝进数组)
+ *
+ *   u_vec_t(int) v = u_vec_new(v);   // 默认 cap == 16
+ *   u_vec_insert_back(v, 1);         // v == [1]
+ *   u_vec_insert_back(v, 3);         // v == [1, 3]
+ *   u_vec_insert(v, 1, 2);           // 在 idx 1 处插入, v == [1, 2, 3]
+ *
+ *   u_vec_each_mut(v, it) {
+ *     (*it) *= 10;                   // v == [10, 20, 30]
+ *   }
+ *
+ *   u_vec_cleanup(v);                // 释放内存, 并把 v 置为 NULL
+ *
+ * 只读视图 (直接读, 不要写): v->ref / v->len / v->cap
+ *
+ * 约定:
+ *   - 元素按值拷贝, T 需要能整体赋值
+ *   - 插入可能触发 realloc (cap * 1.5), 之前从 at_mut / each_mut 拿到的指针全部失效
+ *   - remove 用 memmove 补齐空位, 被删元素之后的元素会前移
+ *   - idx 越界 / self 为 NULL 在 debug 下触发断言
+ *   - clear 只把 len 置零并保留内存, cleanup 才释放内存
+ *   - 迭代游标存在 Vec 内部: 同一条 Vec 不支持嵌套迭代, 迭代中不要增删
+ *   - cleanup 不析构元素; T 里有需要释放的资源, 用 cleanup(self, proc) 自己处理
  */
 #define u_vec_t(T)                                                                                 \
   typeof(struct {                                                                                  \
@@ -148,7 +172,8 @@ typedef struct {
  * ::Vec<T>::cleanup(self) -> !
  * ::Vec<T>::cleanup(self, proc: <block>) -> !
  *
- * 释放所有内存, 并将 Self 置为 NULL
+ * 释放数组和自身, 并把 Self 置为 NULL
+ * 元素不析构, T 里有需要释放的资源就传 proc (proc 拿到的是可写视图)
  */
 #define u_vec_cleanup(self, ...)                                                                   \
   do {                                                                                             \
@@ -171,7 +196,7 @@ typedef struct {
 /**
  * ::Vec<T>::resize(self, cap: int) -> bool
  *
- * 仅允许扩容, 不改变 Self.len
+ * 仅允许扩容: cap 必须大于当前 cap (debug 断言), 不改变 Self.len
  */
 #define u_vec_resize(self, _cap)                                                                   \
   ({                                                                                               \
@@ -198,6 +223,9 @@ typedef struct {
 /**
  * ::Vec<T>::at(self, idx: int) -> T
  * ::Vec<T>::at(self, idx: int, entry: T) -> T
+ *
+ * 只读形式返回当前值; 带 entry 的形式是写入, 返回写入后的值
+ * idx 越界在 debug 下触发断言
  */
 /* clang-format off */
 #define u_vec_at(self, _idx, ...)                                                                  \
@@ -214,7 +242,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx >= 0 && Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                         \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -234,6 +262,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::at_ref(self, idx: int) -> const T*
+ *
+ * 指向数组内部, 插入 / 扩容后失效
  */
 #define u_vec_at_ref(self, _idx)                                                                   \
   ({                                                                                               \
@@ -247,7 +277,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx >= 0 && Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                         \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -261,6 +291,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::at_mut(self, idx: int) -> T*
+ *
+ * 指向数组内部, 可直接改; 插入 / 扩容后失效
  */
 #define u_vec_at_mut(self, _idx)                                                                   \
   ({                                                                                               \
@@ -274,7 +306,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx >= 0 && Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                         \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -289,6 +321,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::remove(self, idx: int) -> !
+ *
+ * 空位由后面的元素前移补齐 (memmove)
  */
 #define u_vec_remove(self, _idx)                                                                   \
   do {                                                                                             \
@@ -302,7 +336,7 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx >= 0 && Idx < Self->len);                                                                     \
+      assert(Idx >= 0 && Idx < Self->len);                                                         \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
@@ -324,6 +358,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::insert(self, idx: int, entry: T) -> !
+ *
+ * idx == len 等价于 insert_back; 可能触发扩容 (cap * 1.5)
  */
 #define u_vec_insert(self, _idx, _entry)                                                           \
   do {                                                                                             \
@@ -338,14 +374,14 @@ typedef struct {
       assert(Self != NULL);                                                                        \
                                                                                                    \
       auto Idx = _idx;                                                                             \
-      assert(Idx >= 0 && Idx <= Self->len);                                                                    \
+      assert(Idx >= 0 && Idx <= Self->len);                                                        \
     }                                                                                              \
                                                                                                    \
     typeof((self)->_[0]) M = {};                                                                   \
                                                                                                    \
     typeof(M.insert_t) __tuple__        = {_idx, _entry};                                          \
     typeof(M.entry_mut_t) __entry_mut__ = __u_vec_add((self)->ref, __tuple__.idx);                 \
-    assert(__entry_mut__);                                                                          \
+    assert(__entry_mut__);                                                                         \
                                                                                                    \
     *__entry_mut__ = __tuple__.entry;                                                              \
   } while (0)
@@ -699,6 +735,7 @@ typedef struct {
 /**
  * ::Vec<T>::map_by(self, proc: <block>) -> Self
  *
+ * 返回新的 Vec, 原 Vec 不动 (两个都要自己 cleanup)
  * 在 proc 中修改 it 实现转换, 块返回值忽略
  */
 #define u_vec_map_by(self, proc)                                                                   \
@@ -716,6 +753,8 @@ typedef struct {
 
 /**
  * ::Vec<T>::filter_if(self, cond: <expr>) -> Self
+ *
+ * 返回新的 Vec, 原 Vec 不动 (两个都要自己 cleanup)
  */
 #define u_vec_filter_if(self, cond)                                                                \
   ({                                                                                               \

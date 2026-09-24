@@ -45,6 +45,19 @@ u_struct_def(u_vec, [[gnu::packed]]) {
   any_t items;
 };
 
+/* 私有实现的前缀必须和宏层句柄 (u_vec_t) 一致: 直接拿句柄类型当参照, 不引入任何新类型
+   T 随便给一个, 前缀不随 T 变化 (最后一条断言确认这一点) */
+typedef typeof(*((u_vec_t(int))NULL)) vec_handle_t;
+
+_Static_assert(offsetof(u_vec_t, ref) == offsetof(vec_handle_t, ref),
+               "u_vec_t.ref drifted from the Vec<T> handle");
+_Static_assert(offsetof(u_vec_t, len) == offsetof(vec_handle_t, len),
+               "u_vec_t.len drifted from the Vec<T> handle");
+_Static_assert(offsetof(u_vec_t, cap) == offsetof(vec_handle_t, cap),
+               "u_vec_t.cap drifted from the Vec<T> handle");
+_Static_assert(offsetof(typeof(*((u_vec_t(char))NULL)), len) == offsetof(vec_handle_t, len),
+               "Vec<T> handle prefix must not depend on T");
+
 /***************************************************************************************************
  * Function
  **************************************************************************************************/
