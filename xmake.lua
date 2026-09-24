@@ -90,4 +90,4 @@ target('u', function()
   end
 end)
 
-includes('dev')
+includes('dev', 'test')
